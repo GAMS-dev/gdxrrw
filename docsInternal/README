@@ -1,0 +1,74 @@
+R CMD INSTALL --library=library gdxrrw_1.0.tar.gz
+
+Instruction file for R/GAMS interface "gdxrrw".
+
+All the source code is written in C and is in gdxrrw.c file. 
+
+To compile source code please execute "R CMD SHLIB gdxrrw.c gdxcc.c gclgms.c" from shell command prompt.  $$ NOTE: Recall in Matlab we use to define DCIA_WEX for 64 bit linux but in R I couldn't figure out how to do this so I have to change gdxcc.c file and hard coded to include lib..64.so file. (This is bug and need to be fixed some how in makefile). This will create gdxrrw.so file which can be loaded in R workspace (Only required if not using package..)
+
+All the functions "rgdx/wgdx/gams/gdxInfo" are exposed to R as External functions. They are defined in gdxrrw.R file. 
+
+for example 
+
+dyn.load("gdxrrw.so") 
+
+rgdx <- function(gdxFile, ...) 
+	{
+		.External('rgdx', gdxFile, ...)
+	}
+gdxInfo <- function(gdxFile)
+	{
+		.External("gdxInfo", gdxFile)
+	}
+wgdx <- function(gdxFile, ...)
+	{
+		.External("wgdx", gdxFile, ...)
+	}
+gams <- function(gamsModel, ...)
+	{
+		.External("gams", gamsModel, ...)
+	}
+
+To create a package please execute following command within R.
+
+1. package.skeleton(name="gdxrrw", code_files="gdxrrw.R")
+
+* Here please make sure that all the functions are defined in gdxrrw.R file and is should contain .First() and .last() methods. .First() method should contain command to load library using library() function. This is required to load gdxrrw.so to R library permanently. And .last() method should contain command to unload library. 
+
+Now 'gdxrrw' folder should be create in current directory. Now modify DESCRIPTION file and files in man folder. If not create by itself please create "src" folder and place all the source code including gdxcc.c gdxcc.h etc  files in that folder. 
+
+2. Now its time to check that package. From shell command prompt execute 
+"R CMD check /complete path of package/". Look at the error or warning and correct those.
+
+3. Now build zipped file for further distribution. From shell command prompt execute
+"R CMD build /complete path of package/"
+
+
+For further detail please refer R documentation at http://cran.r-project.org/doc/manuals/
+
+
+Installing a Package
+--------------------
+
+To install our package into an existing R:
+
+add R to path
+
+banquo> R CMD INSTALL /p/gams/R/testRPackage_1.0.tar.gz
+
+
+Compiling and Debugging
+---------------------------------------------
+To compile code from Linux command prompt:
+R CMD SHLIB gdxrrw.c gdxcc.c .....
+
+To Debug
+----------------------------------------------
+1. Start R using gdb as follows:
+R -d gdb --vanilla
+
+then type "run" to start R. Few useful gdb commands are "continue", "break" follow by line number to set break point, "traceback" to give complete stack trace, "exit" to exit.
+
+2. Start R using valgrind as follows:
+R -d "valgrind --tool=memcheck --leak-check=full --show-reachable=yes" --vanilla
+

@@ -1,0 +1,11 @@
+Package: gdxrrw
+Type: Package
+Title: GDXRRW, a interface between GAMS and R
+Version: 1.0
+Date: 2010-06-22
+Author: Rishabh Jain
+Maintainer: Rishabh Jain <rishabhjain99@gmail.com>
+Description: This is interface between GAMS and R. Please read detailed document about it. 
+License: GNU GPL
+LazyLoad: yes
+Packaged: 2010-06-22 14:36:49 UTC; root
