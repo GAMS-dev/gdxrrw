@@ -100,6 +100,9 @@ static int wUEL;
 
 static shortStringBuf_t lastErrMsg;
 
+static char ID[256] = "$Id$";
+static char strippedID[256];
+
 /* -------------------- Method declaration -----------------------*/
 static void 
 checkRgdxList(const SEXP lst, 
@@ -3462,10 +3465,7 @@ SEXP rgdx (SEXP args)
   
   gdxFileName = CHAR(STRING_ELT(fileName, 0));   
   
-  if(2 == arglen)
-    {
-      char ID[256] = "$Id: rgdx.c 16858 2010-04-08 19:31:31Z mferris $";
-      char strippedID[256];
+  if(2 == arglen) {
       int n;
 
       if (0 == strcmp("?", gdxFileName)) 
@@ -4295,8 +4295,6 @@ SEXP wgdx (SEXP args)
 
   if(2 == arglen)
     {
-    char ID[256] = "$Id: wgdx.c 16442 2010-03-11 09:52:25Z jain5 $";
-      char strippedID[256];
       int n;
 
       if (0 == strcmp("?", gdxFileName)) 
@@ -4333,8 +4331,6 @@ SEXP gams (SEXP args)
     result = R_NilValue;
   FILE *fp;
   char *gmsFileName, *input, *writeDataStr, *fileExt, *p;
-  char ID[256] = "$Id: gams.c 17309 2010-04-30 08:40:59Z jain5 $";
-  char strippedID[256];
   int writeData, rc, n, i, arglen;
   int auditRun = 0;
   
@@ -4362,8 +4358,6 @@ SEXP gams (SEXP args)
 
   if(2 == arglen)
     {
-      char ID[256] = "$Id: wgdx.c 16442 2010-03-11 09:52:25Z jain5 $";
-      char strippedID[256];
       int n;
 
       if (0 == strcmp("?", input)) 
