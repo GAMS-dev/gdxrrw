@@ -2974,12 +2974,12 @@ writeGdx(char *gdxFileName,
 {
   FILE *matdata;
   SEXP uelIndex, compName, valData;
-  SEXP mainBuffer, subBuffer, tmp;
+  SEXP mainBuffer, subBuffer;
   struct wgdxStruct **data;
   gdxUelIndex_t uelIndices;
   gdxValues_t   vals;
   shortStringBuf_t msgBuf; 
-  char *expText, *symbolName, *stringUelIndex;
+  char *expText, *stringUelIndex;
   int rc, errNum;
   int i, j, k, z, found;
   SEXP dimVect;
@@ -3399,7 +3399,7 @@ SEXP rgdx (SEXP args)
   shortStringBuf_t msgBuf;
   shortStringBuf_t uelName;
   char  *uelElementName; 
-  char *gdxFileName;
+  const char *gdxFileName;
   int symIdx, symDim, symType;
   int rc, errNum, ACount, mrows, ncols, nUEL, iUEL;
   int  k, kk, iRec, nRecs, index, totNumber, changeIdx, nonZero;
@@ -3463,27 +3463,22 @@ SEXP rgdx (SEXP args)
       error("Wrong Argument Type");
     }
   
-  gdxFileName = CHAR(STRING_ELT(fileName, 0));   
+  gdxFileName = CHAR(STRING_ELT(fileName, 0));
   
-  if(2 == arglen) {
-      int n;
-
-      if (0 == strcmp("?", gdxFileName)) 
-        {
-          n = (int)strlen (ID);
-          memcpy (strippedID, ID+1, n-2);
-          strippedID[n-2] = '\0';
-          warning("R-file source info: %s",
-                  strippedID );
-          return R_NilValue;
-        } /* if audit run */
-    } /* if one arg, of character type */
+  if (2 == arglen) {
+    if (0 == strcmp("?", gdxFileName)) {
+      int n = (int)strlen (ID);
+      memcpy (strippedID, ID+1, n-2);
+      strippedID[n-2] = '\0';
+      warning("R-file source info: %s", strippedID);
+      return R_NilValue;
+    } /* if audit run */
+  } /* if one arg, of character type */
 
   /* ------------------- check if the GDX file exists --------------- */
   checkFileExtension (gdxFileName);
-  fin = fopen ( gdxFileName, "r");
-  if (fin==NULL)
-  {
+  fin = fopen (gdxFileName, "r");
+  if (fin==NULL) {
     sprintf (buf, "File '%s' not found!\n", gdxFileName );
     error(buf);
   }
@@ -3493,7 +3488,7 @@ SEXP rgdx (SEXP args)
   inputData = malloc(sizeof(*inputData));
 
   inputData->dForm = sparse;
-  inputData->compress = 0; 
+  inputData->compress = 0;
   inputData->dField = level;
   inputData->ts = 0;
   inputData->te = 0;
@@ -3511,7 +3506,7 @@ SEXP rgdx (SEXP args)
 
   /* ---- load the GDX API ---- */
   rc = gdxGetReady (msgBuf, sizeof(msgBuf));
-  if (! rc) 
+  if (! rc)
   {
     Rprintf ("Error loading the GDX API\n");
     Rprintf ("%s\n", msgBuf);
@@ -4293,20 +4288,15 @@ SEXP wgdx (SEXP args)
   gdxFileName = CHAR(STRING_ELT(fileName, 0));
   checkFileExtension (gdxFileName);
 
-  if(2 == arglen)
-    {
-      int n;
-
-      if (0 == strcmp("?", gdxFileName)) 
-        {
-          n = (int)strlen (ID);
-          memcpy (strippedID, ID+1, n-2);
-          strippedID[n-2] = '\0';
-          warning("R-file source info: %s",
-                  strippedID );
-          return R_NilValue;
-        } /* if audit run */
-    } /* if one arg, of character type */
+  if (2 == arglen) {
+    if (0 == strcmp("?", gdxFileName)) {
+      int n = (int)strlen (ID);
+      memcpy (strippedID, ID+1, n-2);
+      strippedID[n-2] = '\0';
+      warning("R-file source info: %s", strippedID);
+      return R_NilValue;
+    } /* if audit run */
+  } /* if one arg, of character type */
 
   symbolList = malloc((arglen-2)*sizeof(*symbolList));
   /* get the pointer of input argument and store it locally for better access  */
@@ -4356,20 +4346,15 @@ SEXP gams (SEXP args)
 
   input = CHAR(STRING_ELT(firstArg, 0));
 
-  if(2 == arglen)
-    {
-      int n;
-
-      if (0 == strcmp("?", input)) 
-        {
-          n = (int)strlen (ID);
-          memcpy (strippedID, ID+1, n-2);
-          strippedID[n-2] = '\0';
-          warning("R-file source info: %s",
-                  strippedID );
-          return R_NilValue;
-        } /* if audit run */
-    } /* if one arg, of character type */
+  if (2 == arglen) {
+    if (0 == strcmp("?", input)) {
+      int n = (int)strlen (ID);
+      memcpy (strippedID, ID+1, n-2);
+      strippedID[n-2] = '\0';
+      warning("R-file source info: %s", strippedID);
+      return R_NilValue;
+    } /* if audit run */
+  } /* if one arg, of character type */
   
   checkStringLength(input);
   gmsFileName = strtok(input, " ");
