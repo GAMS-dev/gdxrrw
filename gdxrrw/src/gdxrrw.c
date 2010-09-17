@@ -103,19 +103,19 @@ static shortStringBuf_t lastErrMsg;
 /* -------------------- Method declaration -----------------------*/
 static void 
 checkRgdxList(const SEXP lst, 
-	      struct rgdxStruct *data);
+              struct rgdxStruct *data);
 
 static void
 checkWgdxList(const SEXP lst,
-	      int i,
-	      SEXP uelIndex,
-	      struct wgdxStruct **data,
-	      int fromGAMS);
+              int i,
+              SEXP uelIndex,
+              struct wgdxStruct **data,
+              int fromGAMS);
 
 void
 registerInputUEL(SEXP uelOut, 
-		 int k, 
-		 SEXP uelIndex);
+                 int k, 
+                 SEXP uelIndex);
 
 static void
 getGDXMsg(void);
@@ -132,7 +132,7 @@ GSExec(char *command,
        int showWindow);
 SEXP
 getGlobalUEL(SEXP globalUEL,
-	     int withCompress);
+             int withCompress);
 
 SEXP 
 getGamsSoln(char *gmsFileName);
@@ -144,25 +144,25 @@ getGlobalString(const char *globName);
 
 char*
 delete_char(char *src, 
-	    char c, 
-	    int len);
+            char c, 
+            int len);
 
 void
 createUelOut(SEXP val, 
-	     SEXP uelOut, 
-	     dType_t dType,
-	     dForm_t dForm);
+             SEXP uelOut, 
+             dType_t dType,
+             dForm_t dForm);
 
 void
 checkForValidData(SEXP val, 
-		  SEXP uelOut, 
-		  dType_t dType, 
-		  dForm_t dForm);
+                  SEXP uelOut, 
+                  dType_t dType, 
+                  dForm_t dForm);
 
 
 char *val2str(gdxHandle_t Tptr, 
-	      double val, 
-	      char *s);
+              double val, 
+              char *s);
 
 void 
 checkFileExtension (char *fileName); 
@@ -175,59 +175,59 @@ char
 
 int 
 getNonZeroElements(gdxHandle_t gdxHandle, 
-		   int symIdx, 
-		   dField_t *dField);
+                   int symIdx, 
+                   dField_t *dField);
 
 SEXP 
 compressData(SEXP data, 
-	     SEXP globalUEL, 
-	     SEXP uelOut,
-	     int numberOfUel, 
-	     int symbolDim, 
-	     int nRec);
+             SEXP globalUEL, 
+             SEXP uelOut,
+             int numberOfUel, 
+             int symbolDim, 
+             int nRec);
 
 SEXP 
 sparseToFull(SEXP compVal, 
-	     SEXP compFullVal,
-	     SEXP compUels,
-	     int type,
-	     int nRec,
-	     int symbolDim);
+             SEXP compFullVal,
+             SEXP compUels,
+             int type,
+             int nRec,
+             int symbolDim);
 
 SEXP 
 createElementMatrix(SEXP compVal,
-		    SEXP textElement, 
-		    SEXP compTe, 
-		    SEXP compUels,
-		    int symbolDim,
-		    int nRec);
+                    SEXP textElement, 
+                    SEXP compTe, 
+                    SEXP compUels,
+                    int symbolDim,
+                    int nRec);
 
 void 
 checkForRepetition(SEXP bufferUel);
 
 SEXP 
 convertToOutput(SEXP bufferUel, 
-		SEXP tmpUel);
+                SEXP tmpUel);
 
 int 
 checkIfExist(int k,
-	     SEXP filterUel,
-	     char *uelName);
+             SEXP filterUel,
+             char *uelName);
 
 void
 registerInputUEL(SEXP uelOut, 
-		 int k, 
-		 SEXP uelIndex);
+                 int k, 
+                 SEXP uelIndex);
 
 static void 
 writeGdx(char *fileName, 
-	 int arglen,
-	 SEXP *argList,	
-	 int fromGAMS);
+         int arglen,
+         SEXP *argList, 
+         int fromGAMS);
 
 static void
 readGdx(char *fileName,
-	int fromGAMS);
+        int fromGAMS);
 
 
 /*-------------------- Method exposed to R -----------------------*/
@@ -342,18 +342,18 @@ callGams(const char *gamsFile)
   if (consoleType != NULL) 
     {
       if (strcmp(consoleType,"invisible") == 0) 
-	{
-	  showWindow = SW_HIDE;
-	}
+        {
+          showWindow = SW_HIDE;
+        }
       else if (strcmp(consoleType,"normal") == 0) 
-	{
-	  showWindow = SW_SHOWDEFAULT;
-	}
+        {
+          showWindow = SW_SHOWDEFAULT;
+        }
       /* else warning message */
       else 
-	{
-	  warning("To change default behavior of 'show', please enter it as 'invisible' or 'normal' \n" ); 
-	  Rprintf("You entered it as %s. \n", consoleType);
+        {
+          warning("To change default behavior of 'show', please enter it as 'invisible' or 'normal' \n" ); 
+          Rprintf("You entered it as %s. \n", consoleType);
     }
       free(consoleType);
   }
@@ -365,13 +365,13 @@ callGams(const char *gamsFile)
     {
       getGamsPath (absGamsPath);
       if('\0' == absGamsPath[0]) 
-	{
-	  gamsExeName = gamsExeBaseName;
-	}
+        {
+          gamsExeName = gamsExeBaseName;
+        }
       else 
-	{
-	  gamsExeName = absGamsPath;
-	}
+        {
+          gamsExeName = absGamsPath;
+        }
     }
   else 
     {
@@ -407,16 +407,16 @@ callGams(const char *gamsFile)
   while (word != NULL) 
     {
       if (1 == strspn(word,"lL")) 
-	{
-	  if (1 == strspn(&word[1],"oO")) 
-	    {
-	      if (strlen(word) == 2 || 1 == strspn(&word[2],"=") || 
-		  7 == strspn(&word[2],"goptinGOPTIN")) 
-		{
-		  loThere = 1;
-		}
-	    }
-	}
+        {
+          if (1 == strspn(&word[1],"oO")) 
+            {
+              if (strlen(word) == 2 || 1 == strspn(&word[2],"=") || 
+                  7 == strspn(&word[2],"goptinGOPTIN")) 
+                {
+                  loThere = 1;
+                }
+            }
+        }
       word = strtok(NULL," -");
     }
   if (loThere == 0) 
@@ -431,16 +431,16 @@ callGams(const char *gamsFile)
       errMsg = formatMessage (err);
     if (NULL == gamsPath) 
       {
-	if (2 == err) 
-	  {
-	    Rprintf("error: cannot find gams - please set path appropriately\n");
-	    error( "Could not run %s: %s", gamsExeBaseName, errMsg);
-	  }
+        if (2 == err) 
+          {
+            Rprintf("error: cannot find gams - please set path appropriately\n");
+            error( "Could not run %s: %s", gamsExeBaseName, errMsg);
+          }
       }
     else 
       {
-	errorr("Could not run %s: %s: check gams.path", 
-	       gamsPath, errMsg);
+        errorr("Could not run %s: %s: check gams.path", 
+               gamsPath, errMsg);
       }
 #else
     /* non-Windows */
@@ -465,8 +465,8 @@ callGams(const char *gamsFile)
   rc: return code from the program
 */
 static int GSExec(char *command, 
-		  int *progrc, 
-		  int showWindow)
+                  int *progrc, 
+                  int showWindow)
 {
 
 #if defined(_WIN32)
@@ -481,8 +481,8 @@ static int GSExec(char *command,
   StartupInfo.dwFlags = (STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES);
   StartupInfo.wShowWindow = showWindow;
   if (FALSE == CreateProcess(NULL,command,NULL,NULL,FALSE,
-			     NORMAL_PRIORITY_CLASS,NULL,NULL,
-			     &StartupInfo,&ProcessInformation)) {
+                             NORMAL_PRIORITY_CLASS,NULL,NULL,
+                             &StartupInfo,&ProcessInformation)) {
     *progrc = 0;
     return GetLastError();
   } 
@@ -522,7 +522,7 @@ static int GSExec(char *command,
 
 SEXP
 getGlobalUEL(SEXP globalUEL,
-	     int withCompress)
+             int withCompress)
 {
   SEXP gamso, tmp, lstName, tmpUel, bufferUel;
   int i, j, infields, found;
@@ -551,56 +551,56 @@ getGlobalUEL(SEXP globalUEL,
       i=0;
       infields = length(gamso);
       if(infields == 0)
-	{
-	  wUEL = 0;
-	}
+        {
+          wUEL = 0;
+        }
       /* Checking if field data is for "name" */
       for (i = 0; i < infields; i++)
-	{
-	  if(strcmp("uels", CHAR(STRING_ELT(lstName, i))) == 0)
-	    {
-	      found = 1;
-	      break;
-	    }
-	}
+        {
+          if(strcmp("uels", CHAR(STRING_ELT(lstName, i))) == 0)
+            {
+              found = 1;
+              break;
+            }
+        }
 
       if(found == 1 && globalGams == 1)
-	{
-	  tmp = VECTOR_ELT(gamso, i);
-	  if(tmp != NULL)
-	    {
-	      if(withCompress == 1)
-		{
-		  error("Compression is not allowed with Input UEL.");
-		}
-	      if( TYPEOF(tmp) != VECSXP  )
-		{
-		  Rprintf ("List component 'uels'  must be a list - found %d instead. \n",TYPEOF(tmp));
-		  error("Input list component 'uels' must be a list.");
-		}
-	      else
-		{	      
-		  PROTECT(globalUEL = allocVector(VECSXP, length(tmp)));
-		  gamsAlloc++;
-		  for(j = 0; j < length(tmp); j++)
-		    {
-		      tmpUel = VECTOR_ELT(tmp, j);
-		      if(tmpUel == R_NilValue)
-			{
-			  error("Empty Uel is not allowed ");
-			}
-		      else
-			{
-			  bufferUel = allocVector(STRSXP, length(tmpUel));
-			  /* Convert to output  */
-			  bufferUel =  convertToOutput(bufferUel, tmpUel);
-			  SET_VECTOR_ELT(globalUEL, j, bufferUel);		       
-			  wUEL = 1;
-			}
-		    }
-		}
-	    }
-	}
+        {
+          tmp = VECTOR_ELT(gamso, i);
+          if(tmp != NULL)
+            {
+              if(withCompress == 1)
+                {
+                  error("Compression is not allowed with Input UEL.");
+                }
+              if( TYPEOF(tmp) != VECSXP  )
+                {
+                  Rprintf ("List component 'uels'  must be a list - found %d instead. \n",TYPEOF(tmp));
+                  error("Input list component 'uels' must be a list.");
+                }
+              else
+                {             
+                  PROTECT(globalUEL = allocVector(VECSXP, length(tmp)));
+                  gamsAlloc++;
+                  for(j = 0; j < length(tmp); j++)
+                    {
+                      tmpUel = VECTOR_ELT(tmp, j);
+                      if(tmpUel == R_NilValue)
+                        {
+                          error("Empty Uel is not allowed ");
+                        }
+                      else
+                        {
+                          bufferUel = allocVector(STRSXP, length(tmpUel));
+                          /* Convert to output  */
+                          bufferUel =  convertToOutput(bufferUel, tmpUel);
+                          SET_VECTOR_ELT(globalUEL, j, bufferUel);                     
+                          wUEL = 1;
+                        }
+                    }
+                }
+            }
+        }
     }      
   return globalUEL;  
 }/* End of getGlobalUels  */
@@ -668,9 +668,9 @@ getGamsSoln(char *gmsFileName)
       if (!*s) continue;
 
       if (sscanf(s, "$set matout %s", astring) == 1)
-	{
-	  break;
-	}
+        {
+          break;
+        }
     }
   fclose(fp);
 
@@ -678,24 +678,24 @@ getGamsSoln(char *gmsFileName)
     {
       array[0]=strtok(line," ");
       if(array[0]==NULL)
-	{
-	  Rprintf("No test to search.\n");
-	}
+        {
+          Rprintf("No test to search.\n");
+        }
       for(loop=1; loop<50; loop++)
-	{
-	  array[loop]=strtok(NULL," ");
+        {
+          array[loop]=strtok(NULL," ");
 
-	  if(array[loop]==NULL)
-	    {
-	      break;
-	    }
-	  else 
-	    {
-	      delete_char(array[loop], ',', 0);
-	      delete_char(array[loop], '\'', 0);
-	      delete_char(array[loop], '"', 0);
-	    }
-	}
+          if(array[loop]==NULL)
+            {
+              break;
+            }
+          else 
+            {
+              delete_char(array[loop], ',', 0);
+              delete_char(array[loop], '\'', 0);
+              delete_char(array[loop], '"', 0);
+            }
+        }
     }
   
   /* At least one element is there in GDX file  */
@@ -705,633 +705,633 @@ getGamsSoln(char *gmsFileName)
       wUEL = 0;
       inputData->filterUel = getGlobalUEL(inputData->filterUel, inputData->compress);
       if(wUEL == 0)
-	{
-	  inputData->withUel = 0;	  
-	}
+        {
+          inputData->withUel = 0;         
+        }
       else
-	{
-	  inputData->withUel = 1;
-	}
+        {
+          inputData->withUel = 1;
+        }
       gForm = getGlobalString("form");
       if (gForm != NULL)
-	{        
-	  if(strcmp(gForm,"full") == 0)
-	    {
-	      inputData->dForm = full;
-	    }
-	  else if(strcmp(gForm,"sparse") == 0)
-	    {
-	      inputData->dForm = sparse;
-	    }      
-	  else
-	    {
-	      /* else warning message */
-	      warning("To change default behavior of 'form', please enter it as 'full' or 'sparse' \n" ); 
-	      Rprintf("You entered it as %s. \n", gForm);  
-	    }
-	}  
+        {        
+          if(strcmp(gForm,"full") == 0)
+            {
+              inputData->dForm = full;
+            }
+          else if(strcmp(gForm,"sparse") == 0)
+            {
+              inputData->dForm = sparse;
+            }      
+          else
+            {
+              /* else warning message */
+              warning("To change default behavior of 'form', please enter it as 'full' or 'sparse' \n" ); 
+              Rprintf("You entered it as %s. \n", gForm);  
+            }
+        }  
 
       field = getGlobalString("field"); 
       if(field != NULL)
-	{    
-	  if(strcmp(field, "l") == 0)
-	    {
-	      inputData->dField = level;
-	    }
-	  else if(strcmp(field, "m") == 0)
-	    {
-	      inputData->dField = marginal;
-	    }
-	  else if(strcmp(field, "lo") == 0)
-	    {
-	      inputData->dField = lower;
-	    }
-	  else if(strcmp(field, "up") == 0)
-	    {
-	      inputData->dField = upper;
-	    }
-	  else if(strcmp(field, "s") == 0)
-	    {
-	      inputData->dField = scale;
-	    }
-	  else 
-	    {
-	      /* else warning message */
-	      warning(" To change default behavior of 'field', please enter it as 'l/m/lo/up/s'. \n" ); 
-	      Rprintf("You entered it as %s. \n", field);
-	    }
-	}
+        {    
+          if(strcmp(field, "l") == 0)
+            {
+              inputData->dField = level;
+            }
+          else if(strcmp(field, "m") == 0)
+            {
+              inputData->dField = marginal;
+            }
+          else if(strcmp(field, "lo") == 0)
+            {
+              inputData->dField = lower;
+            }
+          else if(strcmp(field, "up") == 0)
+            {
+              inputData->dField = upper;
+            }
+          else if(strcmp(field, "s") == 0)
+            {
+              inputData->dField = scale;
+            }
+          else 
+            {
+              /* else warning message */
+              warning(" To change default behavior of 'field', please enter it as 'l/m/lo/up/s'. \n" ); 
+              Rprintf("You entered it as %s. \n", field);
+            }
+        }
 
       outStyle = 0;    
       outputStyle = getGlobalString("output");
       if ((outputStyle != NULL) && ('\0' != *outputStyle))  
-	{    
-	  if( strcmp(outputStyle,"std") == 0)
-	    {
-	      outStyle = 1;
-	    }    
-	  else
-	    {
-	      /* else warning message */
-	      warning("To change default behavior of 'output', please enter it as 'std'. \n" ); 
-	      Rprintf("You entered it as %s. \n", outputStyle);  
-	    }
-	}
+        {    
+          if( strcmp(outputStyle,"std") == 0)
+            {
+              outStyle = 1;
+            }    
+          else
+            {
+              /* else warning message */
+              warning("To change default behavior of 'output', please enter it as 'std'. \n" ); 
+              Rprintf("You entered it as %s. \n", outputStyle);  
+            }
+        }
 
       /* -------------Start reading data from gdx file------------------- */   
       gdxFile = array[2];
       fin = fopen (gdxFile,"r");
       if (fin==NULL)
-	{
-	  sprintf (buf, "File '%s' not found!\n", gdxFile);
-	  error(buf);
-	}
+        {
+          sprintf (buf, "File '%s' not found!\n", gdxFile);
+          error(buf);
+        }
       fclose(fin);
 
       /* ---- load the GDX API ---- */
       rc = gdxGetReady (msgBuf, sizeof(msgBuf));
       if (! rc) 
-	{
-	  Rprintf ("Error loading the GDX API\n");
-	  Rprintf ("%s\n", msgBuf);
-	  sprintf (buf, "Error loading the GDX API: %s", msgBuf);
-	  error (buf);
-	}
+        {
+          Rprintf ("Error loading the GDX API\n");
+          Rprintf ("%s\n", msgBuf);
+          sprintf (buf, "Error loading the GDX API: %s", msgBuf);
+          error (buf);
+        }
       rc = gdxCreate (&gdxHandle, msgBuf, sizeof(msgBuf));
       rc = gdxOpenRead (gdxHandle, gdxFile, &errNum);
       if (errNum || 0 == rc) 
-	{
-	  error("Could not gdx file with gdxOpenRead");
-	}  
+        {
+          error("Could not gdx file with gdxOpenRead");
+        }  
 
       gdxSymbolInfo (gdxHandle, 1, inputData->name, &symDim, &symType);
       /* checking that symbol is of type parameter/set/equaltion/variable */
       if (!(symType == dt_par || symType == dt_set || symType == dt_var || symType == dt_equ)) 
-	{
-	  Rprintf("GDX symbol %s (index=1, symDim=%d, symType=%d)"
-		  " is not recognized as set, parameter, variable, or equation\n",
-		  inputData->name, symDim, symType);
-	  error("Invalid symbol. Please check listing file. \n");
-	}
+        {
+          Rprintf("GDX symbol %s (index=1, symDim=%d, symType=%d)"
+                  " is not recognized as set, parameter, variable, or equation\n",
+                  inputData->name, symDim, symType);
+          error("Invalid symbol. Please check listing file. \n");
+        }
 
       /* Get global UEL from GDX file */
       (void) gdxUMUelInfo (gdxHandle, &nUEL, &highestMappedUEL);
       PROTECT(UEList = allocVector(STRSXP, nUEL));
       gamsAlloc++;
       for (iUEL = 1;  iUEL <= nUEL;  iUEL++) 
-	{
-	  if (!gdxUMUelGet (gdxHandle, iUEL, uelName, &UELUserMapping))
-	    {
-	      error("Could not gdxUMUelGet");
-	    }
-	  SET_STRING_ELT(UEList, iUEL-1, mkChar(uelName));
-	}
+        {
+          if (!gdxUMUelGet (gdxHandle, iUEL, uelName, &UELUserMapping))
+            {
+              error("Could not gdxUMUelGet");
+            }
+          SET_STRING_ELT(UEList, iUEL-1, mkChar(uelName));
+        }
 
       /* Checking dimension of input uel and paramter in GDX file.
-	 If they are not equal then error.  */
+         If they are not equal then error.  */
   
       if(inputData->withUel == 1 && length(inputData->filterUel) != symDim)
-	{
-	  error("Dimension of UEL entered does not match with symbol in GDX");
-	}
+        {
+          error("Dimension of UEL entered does not match with symbol in GDX");
+        }
       /* Creating default uel if none entered */
       if(inputData->withUel == 0)
-	{
-	  PROTECT(compUels = allocVector(VECSXP, symDim));
-	  gamsAlloc++;
-	  for(defaultIndex = 0; defaultIndex < symDim; defaultIndex++)
-	    {
-	      SET_VECTOR_ELT(compUels, defaultIndex, UEList);
-	    }
-	} 
+        {
+          PROTECT(compUels = allocVector(VECSXP, symDim));
+          gamsAlloc++;
+          for(defaultIndex = 0; defaultIndex < symDim; defaultIndex++)
+            {
+              SET_VECTOR_ELT(compUels, defaultIndex, UEList);
+            }
+        } 
 
       /* Start reading data  */
       gdxDataReadRawStart (gdxHandle, 1, &nRecs);
       /* if it is a parameter, add 1 to the dimension */
       mrows = nRecs;
       if (symType != dt_set)
-	{
-	  ncols = symDim+1;
-	}
+        {
+          ncols = symDim+1;
+        }
       else 
-	{
-	  ncols = symDim;
-	}
+        {
+          ncols = symDim;
+        }
 
       /* TODO: filter UEL 
-	 this is to check total number of elements that matches
-	 in Input UEL. Then create a 2D double matrix for sparse format.      
-	 compute total number of elements matched in Input UEL.
+         this is to check total number of elements that matches
+         in Input UEL. Then create a 2D double matrix for sparse format.      
+         compute total number of elements matched in Input UEL.
       */
       mwNElements = 0; 
   
       if(inputData->withUel == 1)
-	{
-	  maxPossibleElements = 1;
-	  for(z = 0; z < symDim; z++)
-	    {
-	      mwNElements = length(VECTOR_ELT(inputData->filterUel, z));
-	      maxPossibleElements = maxPossibleElements*mwNElements;
-	    }      
-	  mwNElements = 0;
+        {
+          maxPossibleElements = 1;
+          for(z = 0; z < symDim; z++)
+            {
+              mwNElements = length(VECTOR_ELT(inputData->filterUel, z));
+              maxPossibleElements = maxPossibleElements*mwNElements;
+            }      
+          mwNElements = 0;
 
-	  for(iRec = 0;  iRec < nRecs;  iRec++)
-	    {        
-	      gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-	      b = 0;
-	      for(k = 0; k < symDim; k++)
-		{                              
-		  uelProperty = 0;
-		  uelElementName = CHAR( STRING_ELT(UEList, uels[k]-1)  );
-		  uelProperty = checkIfExist(k, inputData->filterUel, uelElementName);
-		  /* uel element exists */
-		  if(uelProperty > 0)
-		    {
-		      b++; 
-		    }		    		  
-		  else
-		    {
-		      break;          		      
-		    }
-		}
-	      if(b == symDim)
-		{
-		  mwNElements++;
-		  if(mwNElements == maxPossibleElements)
-		    {
-		      break;
-		    }
-		}
-	    }
-	  iRec = 0;
-	  k = 0;
-	}
+          for(iRec = 0;  iRec < nRecs;  iRec++)
+            {        
+              gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+              b = 0;
+              for(k = 0; k < symDim; k++)
+                {                              
+                  uelProperty = 0;
+                  uelElementName = CHAR( STRING_ELT(UEList, uels[k]-1)  );
+                  uelProperty = checkIfExist(k, inputData->filterUel, uelElementName);
+                  /* uel element exists */
+                  if(uelProperty > 0)
+                    {
+                      b++; 
+                    }                             
+                  else
+                    {
+                      break;                          
+                    }
+                }
+              if(b == symDim)
+                {
+                  mwNElements++;
+                  if(mwNElements == maxPossibleElements)
+                    {
+                      break;
+                    }
+                }
+            }
+          iRec = 0;
+          k = 0;
+        }
       /* Allocating memory for 2D sparse matrix */
       if(inputData->withUel == 1) 
-	{
-	  PROTECT(compVal = allocMatrix(REALSXP, mwNElements, ncols));
-	  gamsAlloc++;    
-	  if(inputData->te && symType == dt_set)
-	    {
-	      PROTECT(textElement = allocVector(STRSXP, mwNElements));
-	      gamsAlloc++;
-	    } 
-	}
+        {
+          PROTECT(compVal = allocMatrix(REALSXP, mwNElements, ncols));
+          gamsAlloc++;    
+          if(inputData->te && symType == dt_set)
+            {
+              PROTECT(textElement = allocVector(STRSXP, mwNElements));
+              gamsAlloc++;
+            } 
+        }
       if(inputData->withUel == 0) 
-	{
-	  /*  check for non zero elements for variable and equation  */
-	  if(symType == dt_var || symType == dt_equ )
-	    {
-	      mrows = getNonZeroElements(gdxHandle, 1, &inputData->dField);
-	    }
-	  /* Creat 2D sparse R array  */
-	  PROTECT(compVal = allocMatrix(REALSXP, mrows, ncols));
-	  gamsAlloc++;
-	  if(inputData->te && symType == dt_set)
-	    {	     
-	      PROTECT(textElement = allocVector(STRSXP, mrows));
-	      gamsAlloc++;
-	    } 
-	}
+        {
+          /*  check for non zero elements for variable and equation  */
+          if(symType == dt_var || symType == dt_equ )
+            {
+              mrows = getNonZeroElements(gdxHandle, 1, &inputData->dField);
+            }
+          /* Creat 2D sparse R array  */
+          PROTECT(compVal = allocMatrix(REALSXP, mrows, ncols));
+          gamsAlloc++;
+          if(inputData->te && symType == dt_set)
+            {        
+              PROTECT(textElement = allocVector(STRSXP, mrows));
+              gamsAlloc++;
+            } 
+        }
 
       p = REAL(compVal);
       /* TODO/TEST: filtered read */
       if(inputData->withUel == 1)
-	{	  
-	  matched = 0;
-	  gdxDataReadRawStart (gdxHandle, 1, &nRecs);
-	    
-	  returnedIndex = malloc(symDim*sizeof(*returnedIndex));
-	  for (iRec = 0;  iRec < nRecs;  iRec++) 
-	    {
-	      gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-	      index = 0;
-	      totNumber = 1;
-	      b = 0;
-		  
-	      for (k = 0;  k < symDim;  k++) 
-		{
-		  uelProperty = 0;
-		  returnedIndex[k] = 0;
-		  uelElementName = CHAR( STRING_ELT(UEList, uels[k]-1)  );
-		  uelProperty = checkIfExist(k, inputData->filterUel, uelElementName);
-		  if(uelProperty > 0)
-		    {
-		      returnedIndex[k] = uelProperty;            
-		      b++;
-		    } 
-		  else 
-		    {
-		      break;
-		    }
-		}
-	      if(b == symDim)
-		{
-		  for(sparesIndex = 0; sparesIndex < symDim; sparesIndex++ )
-		    {
-		      p[matched + sparesIndex*mwNElements] = returnedIndex[sparesIndex];
-		    }
-		  index = matched + symDim*(int)mwNElements;			
-		  matched = matched +1;
+        {         
+          matched = 0;
+          gdxDataReadRawStart (gdxHandle, 1, &nRecs);
+            
+          returnedIndex = malloc(symDim*sizeof(*returnedIndex));
+          for (iRec = 0;  iRec < nRecs;  iRec++) 
+            {
+              gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+              index = 0;
+              totNumber = 1;
+              b = 0;
+                  
+              for (k = 0;  k < symDim;  k++) 
+                {
+                  uelProperty = 0;
+                  returnedIndex[k] = 0;
+                  uelElementName = CHAR( STRING_ELT(UEList, uels[k]-1)  );
+                  uelProperty = checkIfExist(k, inputData->filterUel, uelElementName);
+                  if(uelProperty > 0)
+                    {
+                      returnedIndex[k] = uelProperty;            
+                      b++;
+                    } 
+                  else 
+                    {
+                      break;
+                    }
+                }
+              if(b == symDim)
+                {
+                  for(sparesIndex = 0; sparesIndex < symDim; sparesIndex++ )
+                    {
+                      p[matched + sparesIndex*mwNElements] = returnedIndex[sparesIndex];
+                    }
+                  index = matched + symDim*(int)mwNElements;                    
+                  matched = matched +1;
 
-		  if (symType != dt_set) 
-		    {
-		      if (gdxMapValue (gdxHandle, values[inputData->dField], &k)) /* it's special */
-			{ 
-			  switch (k) 
-			    {
-			    case sv_valpin:                                                          
-			      p[index] = NA_REAL;
-			      break;
-			    case sv_valmin:                                                           
-			      p[index] = NA_REAL;
-			      break;
-			    case sv_valeps:
-			      p[index] = 0;
-			      break;
-			    case sv_normal:
-			      p[index] = values[inputData->dField];
-			      break;
-			    case sv_valund:
-			    case sv_valna:
-			      p[index] = NA_REAL;
-			      break;
-			    default:
-			      sprintf(buf, 
-				      "Unrecognized map-value %d returned for %g",
-				      k, 
-				      values[inputData->dField]);
-			      error(buf);
-			    } /* end of switch/case */
-			}
-		      else
-			{
-			  p[index] = values[inputData->dField];
-			}
-		    }
-		}
-	      if(matched == maxPossibleElements)
-		{
-		  break;
-		}
-	    }
-	  free(returnedIndex);
-	}/* End of with uels  */
+                  if (symType != dt_set) 
+                    {
+                      if (gdxMapValue (gdxHandle, values[inputData->dField], &k)) /* it's special */
+                        { 
+                          switch (k) 
+                            {
+                            case sv_valpin:                                                          
+                              p[index] = NA_REAL;
+                              break;
+                            case sv_valmin:                                                           
+                              p[index] = NA_REAL;
+                              break;
+                            case sv_valeps:
+                              p[index] = 0;
+                              break;
+                            case sv_normal:
+                              p[index] = values[inputData->dField];
+                              break;
+                            case sv_valund:
+                            case sv_valna:
+                              p[index] = NA_REAL;
+                              break;
+                            default:
+                              sprintf(buf, 
+                                      "Unrecognized map-value %d returned for %g",
+                                      k, 
+                                      values[inputData->dField]);
+                              error(buf);
+                            } /* end of switch/case */
+                        }
+                      else
+                        {
+                          p[index] = values[inputData->dField];
+                        }
+                    }
+                }
+              if(matched == maxPossibleElements)
+                {
+                  break;
+                }
+            }
+          free(returnedIndex);
+        }/* End of with uels  */
       else
-	{	  
-	  nonZero = 0;
-	  if(symType == dt_var || symType == dt_equ )
-	    {
-	      gdxDataReadRawStart (gdxHandle, 1, &nRecs);
-	    }    
-	  
-	          
-	  for (iRec = 0;  iRec < nRecs;  iRec++)
-	    {
-	      gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-	      if(symType == dt_set || values[inputData->dField] != 0)
-		{
-		  index = 0;
-		  /* For non zero */
-		  for (kk = 0;  kk < symDim;  kk++) 
-		    {
-		      p[nonZero+kk*mrows] = uels[kk];
-		      index = nonZero+symDim*mrows;
-		    }
-		  nonZero++;
-		  if (symType != dt_set) 
-		    {
-		      if (gdxMapValue (gdxHandle, values[inputData->dField], &k)) /* it's special */
-			{ 
-			  switch (k) 
-			    {
-			    case sv_valpin:                  
-			      p[index] = NA_REAL;
-			      break;
-			    case sv_valmin:                 
-			      p[index] = -NA_REAL;
-			      break;
-			    case sv_valeps:
-			      p[index] = 0;
-			      break;
-			    case sv_normal:
-			      p[index] = values[inputData->dField];
-			      break;
-			    case sv_valund:
-			    case sv_valna:
-			      p[index] = NA_REAL;
-			      break;
-			    default:
-			      sprintf(buf, 
-				      "Unrecognized map-value %d returned for %g",
-				      k, 
-				      values[inputData->dField]);
-			      error(buf);
-			    }
-			}
-		      else
-			{
-			  p[index] = values[inputData->dField];
-			}
-		    }
-		} /* end of if(set || val != 0) */
-	    } /* loop over GDX records */	    
-	}
+        {         
+          nonZero = 0;
+          if(symType == dt_var || symType == dt_equ )
+            {
+              gdxDataReadRawStart (gdxHandle, 1, &nRecs);
+            }    
+          
+                  
+          for (iRec = 0;  iRec < nRecs;  iRec++)
+            {
+              gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+              if(symType == dt_set || values[inputData->dField] != 0)
+                {
+                  index = 0;
+                  /* For non zero */
+                  for (kk = 0;  kk < symDim;  kk++) 
+                    {
+                      p[nonZero+kk*mrows] = uels[kk];
+                      index = nonZero+symDim*mrows;
+                    }
+                  nonZero++;
+                  if (symType != dt_set) 
+                    {
+                      if (gdxMapValue (gdxHandle, values[inputData->dField], &k)) /* it's special */
+                        { 
+                          switch (k) 
+                            {
+                            case sv_valpin:                  
+                              p[index] = NA_REAL;
+                              break;
+                            case sv_valmin:                 
+                              p[index] = -NA_REAL;
+                              break;
+                            case sv_valeps:
+                              p[index] = 0;
+                              break;
+                            case sv_normal:
+                              p[index] = values[inputData->dField];
+                              break;
+                            case sv_valund:
+                            case sv_valna:
+                              p[index] = NA_REAL;
+                              break;
+                            default:
+                              sprintf(buf, 
+                                      "Unrecognized map-value %d returned for %g",
+                                      k, 
+                                      values[inputData->dField]);
+                              error(buf);
+                            }
+                        }
+                      else
+                        {
+                          p[index] = values[inputData->dField];
+                        }
+                    }
+                } /* end of if(set || val != 0) */
+            } /* loop over GDX records */           
+        }
 
       /* Converting data into its compressed form. */
       if(inputData->compress == 1)
-	{
-	  PROTECT(compUels = allocVector(VECSXP, symDim));
-	  compVal = compressData(compVal, UEList, compUels, nUEL, symDim, mrows);
-	}
+        {
+          PROTECT(compUels = allocVector(VECSXP, symDim));
+          compVal = compressData(compVal, UEList, compUels, nUEL, symDim, mrows);
+        }
 
       /* Converting sparse data into full matrix */ 
       if(inputData->dForm == full) 
-	{
-	  switch (symDim)
-	    {
-	    case 0:
-	      {
-		PROTECT(compFullVal = allocVector(REALSXP, 1));
-		gamsAlloc++;
-		if(compVal != R_NilValue && REAL(compVal) != NULL)
-		  {
-		    REAL(compFullVal)[0] = REAL(compVal)[0];
-		  }
-		else
-		  {
-		    REAL(compFullVal)[0] = 0;
-		  }
-		break;
-	      }
-	    case 1:
-	      {
-		PROTECT(dimVect = allocVector(REALSXP, 2));
-		gamsAlloc++;		
-		dimVal = REAL(dimVect);
+        {
+          switch (symDim)
+            {
+            case 0:
+              {
+                PROTECT(compFullVal = allocVector(REALSXP, 1));
+                gamsAlloc++;
+                if(compVal != R_NilValue && REAL(compVal) != NULL)
+                  {
+                    REAL(compFullVal)[0] = REAL(compVal)[0];
+                  }
+                else
+                  {
+                    REAL(compFullVal)[0] = 0;
+                  }
+                break;
+              }
+            case 1:
+              {
+                PROTECT(dimVect = allocVector(REALSXP, 2));
+                gamsAlloc++;            
+                dimVal = REAL(dimVect);
 
-		if(inputData->withUel == 1)
-		  {
-		    dimVal[0] = length(VECTOR_ELT(inputData->filterUel, 0));
-		    PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(inputData->filterUel, 0))));
-		    gamsAlloc++;
-		    compFullVal = sparseToFull(compVal, compFullVal, inputData->filterUel, symType, mwNElements, symDim);
-		  }
-		else
-		  {
-		    dimVal[0] = length(VECTOR_ELT(compUels, 0));
-		    PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(compUels, 0))));
-		    gamsAlloc++;
-		    compFullVal = sparseToFull(compVal, compFullVal, compUels, symType, mrows, symDim);
-		  }
-		dimVal[1] = 1;
-		setAttrib(compFullVal, R_DimSymbol, dimVect);
-		break;
-	      }
-	    default :
-	      {
-		PROTECT(dimVect = allocVector(REALSXP, symDim));
-		gamsAlloc++;
-		totalElement = 1;
-		dimVal = REAL(dimVect);	    
-		ndimension = 0;	
-		if(inputData->withUel == 1)
-		  {
-		    for(ndimension = 0; ndimension < symDim; ndimension++) 
-		      {
-			dimVal[ndimension] = length(VECTOR_ELT(inputData->filterUel, ndimension));
-			totalElement = (totalElement * length(VECTOR_ELT(inputData->filterUel, ndimension)));
-		      }
-		  }
-		else
-		  {
-		    for(ndimension = 0; ndimension < symDim; ndimension++) 
-		      {
-			dimVal[ndimension] = length(VECTOR_ELT(compUels, ndimension)); 
-			totalElement = (totalElement * length(VECTOR_ELT(compUels, ndimension)));
-		      }		   
-		  }
-		PROTECT(compFullVal = allocVector(REALSXP, totalElement));
-		gamsAlloc++;
-		if(inputData->withUel ==1)
-		  {
-		    compFullVal = sparseToFull(compVal, compFullVal, inputData->filterUel, symType, mwNElements, symDim);
-		  }
-		else
-		  {
-		    compFullVal = sparseToFull(compVal, compFullVal, compUels, symType, mrows, symDim);
-		  }
+                if(inputData->withUel == 1)
+                  {
+                    dimVal[0] = length(VECTOR_ELT(inputData->filterUel, 0));
+                    PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(inputData->filterUel, 0))));
+                    gamsAlloc++;
+                    compFullVal = sparseToFull(compVal, compFullVal, inputData->filterUel, symType, mwNElements, symDim);
+                  }
+                else
+                  {
+                    dimVal[0] = length(VECTOR_ELT(compUels, 0));
+                    PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(compUels, 0))));
+                    gamsAlloc++;
+                    compFullVal = sparseToFull(compVal, compFullVal, compUels, symType, mrows, symDim);
+                  }
+                dimVal[1] = 1;
+                setAttrib(compFullVal, R_DimSymbol, dimVect);
+                break;
+              }
+            default :
+              {
+                PROTECT(dimVect = allocVector(REALSXP, symDim));
+                gamsAlloc++;
+                totalElement = 1;
+                dimVal = REAL(dimVect);     
+                ndimension = 0; 
+                if(inputData->withUel == 1)
+                  {
+                    for(ndimension = 0; ndimension < symDim; ndimension++) 
+                      {
+                        dimVal[ndimension] = length(VECTOR_ELT(inputData->filterUel, ndimension));
+                        totalElement = (totalElement * length(VECTOR_ELT(inputData->filterUel, ndimension)));
+                      }
+                  }
+                else
+                  {
+                    for(ndimension = 0; ndimension < symDim; ndimension++) 
+                      {
+                        dimVal[ndimension] = length(VECTOR_ELT(compUels, ndimension)); 
+                        totalElement = (totalElement * length(VECTOR_ELT(compUels, ndimension)));
+                      }            
+                  }
+                PROTECT(compFullVal = allocVector(REALSXP, totalElement));
+                gamsAlloc++;
+                if(inputData->withUel ==1)
+                  {
+                    compFullVal = sparseToFull(compVal, compFullVal, inputData->filterUel, symType, mwNElements, symDim);
+                  }
+                else
+                  {
+                    compFullVal = sparseToFull(compVal, compFullVal, compUels, symType, mrows, symDim);
+                  }
 
-		setAttrib(compFullVal, R_DimSymbol, dimVect);
-		break;
-	      }
-	    }
-	}   
+                setAttrib(compFullVal, R_DimSymbol, dimVect);
+                break;
+              }
+            }
+        }   
       /* Create a 1-by-1 array of structs. */
       if (outStyle == 0) 
-	{
-	  /* List form  */
-	  
-	  /* Creating string vector for symbol Name  */
-	  PROTECT(compName = allocVector(STRSXP, 1) );
-	  SET_STRING_ELT(compName, 0, mkChar(inputData->name));
-	  gamsAlloc++;  
-	  /* Creating string vector for symbol type  */  
-	  PROTECT(compType = allocVector(STRSXP, 1) );
-	  gamsAlloc++;
-	  switch (symType)
-	    {
-	    case dt_set:
-	      SET_STRING_ELT( compType, 0, mkChar(types[0]) );
-	      break;
-	    case dt_par:
-	      SET_STRING_ELT( compType, 0, mkChar(types[1]) );
-	      break;
-	    case dt_var:
-	      SET_STRING_ELT( compType, 0, mkChar(types[2]) );
-	      break;
-	    case dt_equ:
-	      SET_STRING_ELT( compType, 0, mkChar(types[3]) );
-	      break;
-	    default:
-	      error("Unrecognized type of symbol found.");
-	    }
+        {
+          /* List form  */
+          
+          /* Creating string vector for symbol Name  */
+          PROTECT(compName = allocVector(STRSXP, 1) );
+          SET_STRING_ELT(compName, 0, mkChar(inputData->name));
+          gamsAlloc++;  
+          /* Creating string vector for symbol type  */  
+          PROTECT(compType = allocVector(STRSXP, 1) );
+          gamsAlloc++;
+          switch (symType)
+            {
+            case dt_set:
+              SET_STRING_ELT( compType, 0, mkChar(types[0]) );
+              break;
+            case dt_par:
+              SET_STRING_ELT( compType, 0, mkChar(types[1]) );
+              break;
+            case dt_var:
+              SET_STRING_ELT( compType, 0, mkChar(types[2]) );
+              break;
+            case dt_equ:
+              SET_STRING_ELT( compType, 0, mkChar(types[3]) );
+              break;
+            default:
+              error("Unrecognized type of symbol found.");
+            }
 
-	  /* Creating int vector for symbol Dim  */  
-	  PROTECT(compDim = allocVector(INTSXP, 1) );
-	  INTEGER(compDim)[0] = symDim;
-	  gamsAlloc++;
-	  /* Creating string vector for val data form */  
-	  PROTECT(compForm = allocVector(STRSXP, 1) );
-	  gamsAlloc++;
-	  if(inputData->dForm == full)
-	    {
-	      SET_STRING_ELT(compForm, 0, mkChar(forms[0]));
-	    }
-	  else 
-	    {
-	      SET_STRING_ELT(compForm, 0, mkChar(forms[1]));
-	    }
+          /* Creating int vector for symbol Dim  */  
+          PROTECT(compDim = allocVector(INTSXP, 1) );
+          INTEGER(compDim)[0] = symDim;
+          gamsAlloc++;
+          /* Creating string vector for val data form */  
+          PROTECT(compForm = allocVector(STRSXP, 1) );
+          gamsAlloc++;
+          if(inputData->dForm == full)
+            {
+              SET_STRING_ELT(compForm, 0, mkChar(forms[0]));
+            }
+          else 
+            {
+              SET_STRING_ELT(compForm, 0, mkChar(forms[1]));
+            }
 
-	  /* Create a string vector for symbol  field  */
-	  if(symType == dt_var || symType == dt_equ)
-	    {
-	      outFields++;
-	      PROTECT(compField = allocVector(STRSXP, 1));
-	      gamsAlloc++;
-	      switch(inputData->dField)
-		{
-		case level:
-		  SET_STRING_ELT(compField, 0, mkChar( fields[0] ));
-		  break;
-		case marginal:
-		  SET_STRING_ELT(compField, 0, mkChar( fields[1] ));
-		  break;
-		case upper:
-		  SET_STRING_ELT(compField, 0, mkChar( fields[2] ));
-		  break;
-		case lower:
-		  SET_STRING_ELT(compField, 0, mkChar( fields[3] ));
-		  break;
-		case scale:
-		  SET_STRING_ELT(compField, 0, mkChar( fields[4] ));
-		  break;
-		default:
-		  error("Unrecognized type of symbol found.");
-		} 
-	    }	  
+          /* Create a string vector for symbol  field  */
+          if(symType == dt_var || symType == dt_equ)
+            {
+              outFields++;
+              PROTECT(compField = allocVector(STRSXP, 1));
+              gamsAlloc++;
+              switch(inputData->dField)
+                {
+                case level:
+                  SET_STRING_ELT(compField, 0, mkChar( fields[0] ));
+                  break;
+                case marginal:
+                  SET_STRING_ELT(compField, 0, mkChar( fields[1] ));
+                  break;
+                case upper:
+                  SET_STRING_ELT(compField, 0, mkChar( fields[2] ));
+                  break;
+                case lower:
+                  SET_STRING_ELT(compField, 0, mkChar( fields[3] ));
+                  break;
+                case scale:
+                  SET_STRING_ELT(compField, 0, mkChar( fields[4] ));
+                  break;
+                default:
+                  error("Unrecognized type of symbol found.");
+                } 
+            }     
 
-	  PROTECT(OPListComp = allocVector(STRSXP, outFields));
-	  gamsAlloc++;
-	  /* populating list component names  */
-	  SET_STRING_ELT(OPListComp, 0, mkChar("name"));
-	  SET_STRING_ELT(OPListComp, 1, mkChar("type"));
-	  SET_STRING_ELT(OPListComp, 2, mkChar("dim"));
-	  SET_STRING_ELT(OPListComp, 3, mkChar("val"));
-	  SET_STRING_ELT(OPListComp, 4, mkChar("form"));
-	  SET_STRING_ELT(OPListComp, 5, mkChar("uels"));
+          PROTECT(OPListComp = allocVector(STRSXP, outFields));
+          gamsAlloc++;
+          /* populating list component names  */
+          SET_STRING_ELT(OPListComp, 0, mkChar("name"));
+          SET_STRING_ELT(OPListComp, 1, mkChar("type"));
+          SET_STRING_ELT(OPListComp, 2, mkChar("dim"));
+          SET_STRING_ELT(OPListComp, 3, mkChar("val"));
+          SET_STRING_ELT(OPListComp, 4, mkChar("form"));
+          SET_STRING_ELT(OPListComp, 5, mkChar("uels"));
 
-	  nField = 5;
+          nField = 5;
 
-	  if(symType == dt_var || symType == dt_equ)
-	    {
-	      nField++;
-	      SET_STRING_ELT(OPListComp, nField, mkChar("field"));
-	    }
-	  if(inputData->ts)
-	    {
-	      nField++;
-	      SET_STRING_ELT(OPListComp, nField, mkChar("ts"));
-	    }
-	  if(inputData->te)
-	    {
-	      nField++;
-	      SET_STRING_ELT(OPListComp, nField, mkChar("te"));
-	    }
+          if(symType == dt_var || symType == dt_equ)
+            {
+              nField++;
+              SET_STRING_ELT(OPListComp, nField, mkChar("field"));
+            }
+          if(inputData->ts)
+            {
+              nField++;
+              SET_STRING_ELT(OPListComp, nField, mkChar("ts"));
+            }
+          if(inputData->te)
+            {
+              nField++;
+              SET_STRING_ELT(OPListComp, nField, mkChar("te"));
+            }
 
   
 
-	  PROTECT(OPList = allocVector(VECSXP, outFields));
-	  gamsAlloc++;
+          PROTECT(OPList = allocVector(VECSXP, outFields));
+          gamsAlloc++;
 
-	  /* populating list component vector  */
-	  SET_VECTOR_ELT(OPList, 0, compName);
-	  SET_VECTOR_ELT(OPList, 1, compType);
-	  SET_VECTOR_ELT(OPList, 2, compDim);
-	  if(inputData->dForm == full)
-	    {
-	      SET_VECTOR_ELT(OPList, 3, compFullVal);
-	    }
-	  else
-	    {
-	      SET_VECTOR_ELT(OPList, 3, compVal);
-	    }
-	  SET_VECTOR_ELT(OPList, 4, compForm);
-	  if(inputData->withUel)
-	    {
-	      SET_VECTOR_ELT(OPList, 5, inputData->filterUel);	  
-	    }
-	  else
-	    {
-	      SET_VECTOR_ELT(OPList, 5, compUels);	  
-	    }
+          /* populating list component vector  */
+          SET_VECTOR_ELT(OPList, 0, compName);
+          SET_VECTOR_ELT(OPList, 1, compType);
+          SET_VECTOR_ELT(OPList, 2, compDim);
+          if(inputData->dForm == full)
+            {
+              SET_VECTOR_ELT(OPList, 3, compFullVal);
+            }
+          else
+            {
+              SET_VECTOR_ELT(OPList, 3, compVal);
+            }
+          SET_VECTOR_ELT(OPList, 4, compForm);
+          if(inputData->withUel)
+            {
+              SET_VECTOR_ELT(OPList, 5, inputData->filterUel);    
+            }
+          else
+            {
+              SET_VECTOR_ELT(OPList, 5, compUels);        
+            }
 
-	  nField = 5;
-	  if(symType == dt_var || symType == dt_equ)
-	    {
-	      nField++;
-	      SET_VECTOR_ELT(OPList, nField, compField);
-	    }
-	  if(inputData->ts)
-	    {
-	      nField++;
-	      SET_VECTOR_ELT(OPList, nField, compTs);
-	    }
-	  if(inputData->te)
-	    {
-	      nField++;
-	      SET_VECTOR_ELT(OPList, nField, compTe);
-	    }
+          nField = 5;
+          if(symType == dt_var || symType == dt_equ)
+            {
+              nField++;
+              SET_VECTOR_ELT(OPList, nField, compField);
+            }
+          if(inputData->ts)
+            {
+              nField++;
+              SET_VECTOR_ELT(OPList, nField, compTs);
+            }
+          if(inputData->te)
+            {
+              nField++;
+              SET_VECTOR_ELT(OPList, nField, compTe);
+            }
 
-	  /* Setting attribute name  */
-	  setAttrib(OPList, R_NamesSymbol, OPListComp);	  
-	}
+          /* Setting attribute name  */
+          setAttrib(OPList, R_NamesSymbol, OPListComp);   
+        }
       else
-	{
-	  /* Only value */
-	  OPList = compVal;
-	}
-	    
+        {
+          /* Only value */
+          OPList = compVal;
+        }
+            
 
       if (!gdxDataReadDone (gdxHandle)) 
-	{
-	  error ("Could not gdxDataReadDone");
-	}
+        {
+          error ("Could not gdxDataReadDone");
+        }
       errNum = gdxClose (gdxHandle);
       if (errNum != 0) 
-	{
-	  error("Errors detected when closing gdx file");
-	}
+        {
+          error("Errors detected when closing gdx file");
+        }
       (void) gdxFree (&gdxHandle);  
     }
   free(inputData);
@@ -1372,58 +1372,58 @@ int isCompress()
       infields = length(gamso);
       /* Checking if field data is for "name" */
       for (i = 0; i < infields; i++)
-	{
-	  if(strcmp("compress", CHAR(STRING_ELT(lstName, i))) == 0)
-	    {
-	      found = 1;
-	      break;
-	    }
-	}
+        {
+          if(strcmp("compress", CHAR(STRING_ELT(lstName, i))) == 0)
+            {
+              found = 1;
+              break;
+            }
+        }
   
       if(found == 1 && globalGams)
-	{
-	  tmp = VECTOR_ELT(gamso, i);
-	  if(TYPEOF(tmp) == STRSXP)
-	    {
-	      checkStringLength( CHAR(STRING_ELT(tmp, 0)));
-	      str = changeToLower(CHAR(STRING_ELT(tmp, 0)));
-	      if (str != NULL)      
-		{
-		  if(strcmp(str,"true") == 0)
-		    {
-		      compress = 1;
-		    }
-		  else if(strcmp(str,"false") == 0)
-		    {
-		      compress = 0;
-		    }
-		  else
-		    {
-		      /* else warning message */
-		      warning("To change default behavior of 'compress', please enter it as 'true' or 'false' \n" ); 
-		      Rprintf("You entered it as %s. \n", str);  
-		    }	  
-		}
-	    }
-	  else if(TYPEOF(tmp) == LGLSXP)
-	    {
-	      logical = LOGICAL(tmp)[0];
-	      if(logical == TRUE)
-		{
-		  compress = 1;
-		}
-	      else
-		{
-		  compress = 0;
-		}
-	    }
-	  else
-	    {
-	      warning("To change default behavior of 'compress', please enter it as either string or as logical.\n");
-	      Rprintf("You entered it as %d. \n", TYPEOF(tmp));
-	      return 0;
-	    }            
-	}
+        {
+          tmp = VECTOR_ELT(gamso, i);
+          if(TYPEOF(tmp) == STRSXP)
+            {
+              checkStringLength( CHAR(STRING_ELT(tmp, 0)));
+              str = changeToLower(CHAR(STRING_ELT(tmp, 0)));
+              if (str != NULL)      
+                {
+                  if(strcmp(str,"true") == 0)
+                    {
+                      compress = 1;
+                    }
+                  else if(strcmp(str,"false") == 0)
+                    {
+                      compress = 0;
+                    }
+                  else
+                    {
+                      /* else warning message */
+                      warning("To change default behavior of 'compress', please enter it as 'true' or 'false' \n" ); 
+                      Rprintf("You entered it as %s. \n", str);  
+                    }     
+                }
+            }
+          else if(TYPEOF(tmp) == LGLSXP)
+            {
+              logical = LOGICAL(tmp)[0];
+              if(logical == TRUE)
+                {
+                  compress = 1;
+                }
+              else
+                {
+                  compress = 0;
+                }
+            }
+          else
+            {
+              warning("To change default behavior of 'compress', please enter it as either string or as logical.\n");
+              Rprintf("You entered it as %d. \n", TYPEOF(tmp));
+              return 0;
+            }            
+        }
     }
   return compress;
 }
@@ -1460,29 +1460,29 @@ getGlobalString(const char *globName)
       infields = length(gamso);
       /* Checking if field data is for "name" */
       for (i = 0; i < infields; i++)
-	{
-	  if(strcmp(globName, CHAR(STRING_ELT(lstName, i))) == 0)
-	    {
-	      found = 1;
-	      break;
-	    }
-	}
+        {
+          if(strcmp(globName, CHAR(STRING_ELT(lstName, i))) == 0)
+            {
+              found = 1;
+              break;
+            }
+        }
 
       if(found == 1 && globalGams == 1)
-	{
-	  tmp = VECTOR_ELT(gamso, i);
-	  if(TYPEOF(tmp) == STRSXP)
-	    {
-	      checkStringLength( CHAR(STRING_ELT(tmp, 0)));
-	      str = changeToLower(CHAR(STRING_ELT(tmp, 0)));	  
-	    }
-	  else
-	    {
-	      warning("To change default behavior of %s, please enter it as string.\n", globName );
-	      Rprintf("You entered it as %d. \n", TYPEOF(tmp));
-	      return NULL;
-	    }
-	}
+        {
+          tmp = VECTOR_ELT(gamso, i);
+          if(TYPEOF(tmp) == STRSXP)
+            {
+              checkStringLength( CHAR(STRING_ELT(tmp, 0)));
+              str = changeToLower(CHAR(STRING_ELT(tmp, 0)));      
+            }
+          else
+            {
+              warning("To change default behavior of %s, please enter it as string.\n", globName );
+              Rprintf("You entered it as %d. \n", TYPEOF(tmp));
+              return NULL;
+            }
+        }
     } 
   return str;
 } /* getGlobalString */
@@ -1492,8 +1492,8 @@ getGlobalString(const char *globName)
 /* Delete single character from string  */
 char*
 delete_char(char *src, 
-	    char c, 
-	    int len)
+            char c, 
+            int len)
 {
   char *dst;
   int i;
@@ -1523,9 +1523,9 @@ delete_char(char *src,
 
 void
 createUelOut(SEXP val, 
-	     SEXP uelOut, 
-	     dType_t dType,
-	     dForm_t dForm)
+             SEXP uelOut, 
+             dType_t dType,
+             dForm_t dForm)
 {
   SEXP  dims, bufferUel;
   int i, j, k;
@@ -1541,75 +1541,75 @@ createUelOut(SEXP val,
       nrows = INTEGER(dims)[0];
       ncols = INTEGER(dims)[1];
       if(dType == parameter)
-	{
-	  ncols--;
-	}
+        {
+          ncols--;
+        }
 
       if(TYPEOF(val) == REALSXP)
-	{
-	  P = REAL(val);	 
-	  for(i = 0; i < ncols; i++)
-	    {
-	      for(j = 0; j < nrows; j++)
-		{
-		  if (P[j + i*nrows] > max) 
-		    {
-		      max = (int) P[j + i*nrows];
-		    }
-		}
-	      bufferUel = allocVector(STRSXP, max);
-	      for(k = 1; k <= max; k++)
-		{
-		  sprintf(buffer, "%d", k);
-		  SET_STRING_ELT(bufferUel, k-1, mkChar(buffer));
-		}
-	      SET_VECTOR_ELT(uelOut, i, duplicate(bufferUel)); 
-	      max = 0;     
-	    }   
-	}
+        {
+          P = REAL(val);         
+          for(i = 0; i < ncols; i++)
+            {
+              for(j = 0; j < nrows; j++)
+                {
+                  if (P[j + i*nrows] > max) 
+                    {
+                      max = (int) P[j + i*nrows];
+                    }
+                }
+              bufferUel = allocVector(STRSXP, max);
+              for(k = 1; k <= max; k++)
+                {
+                  sprintf(buffer, "%d", k);
+                  SET_STRING_ELT(bufferUel, k-1, mkChar(buffer));
+                }
+              SET_VECTOR_ELT(uelOut, i, duplicate(bufferUel)); 
+              max = 0;     
+            }   
+        }
       else if(TYPEOF(val) == INTSXP)
-	{
-	  intVal = INTEGER(val);
+        {
+          intVal = INTEGER(val);
 
-	  for(i = 0; i < ncols; i++)
-	    {
-	      for(j = 0; j < nrows; j++)
-		{
-		  if (intVal[j + i*nrows] > max) 
-		    {
-		      max =  intVal[j + i*nrows];
-		    }
-		}
-	      bufferUel = allocVector(STRSXP, max);
-	      for(k = 1; k <= max; k++)
-		{
-		  sprintf(buffer, "%d", k);
-		  SET_STRING_ELT(bufferUel, k-1, mkChar(buffer));
-		}
-	      SET_VECTOR_ELT(uelOut, i, duplicate(bufferUel)); 
-	      max = 0;     
-	    }	  
-	}
+          for(i = 0; i < ncols; i++)
+            {
+              for(j = 0; j < nrows; j++)
+                {
+                  if (intVal[j + i*nrows] > max) 
+                    {
+                      max =  intVal[j + i*nrows];
+                    }
+                }
+              bufferUel = allocVector(STRSXP, max);
+              for(k = 1; k <= max; k++)
+                {
+                  sprintf(buffer, "%d", k);
+                  SET_STRING_ELT(bufferUel, k-1, mkChar(buffer));
+                }
+              SET_VECTOR_ELT(uelOut, i, duplicate(bufferUel)); 
+              max = 0;     
+            }     
+        }
     }
   else
     {     
       /*
-	Create default uel. 
-	Here there is no need to calcualte max as number 
-	of elements in each dimension is all what I need. 
+        Create default uel. 
+        Here there is no need to calcualte max as number 
+        of elements in each dimension is all what I need. 
       */      
       ndims = length(uelOut);
       for(i = 0; i < ndims; i++)
-	{
-	  bufferUel = allocVector(STRSXP, INTEGER(dims)[i]);
-	  
-	  for(k = 1; k <= INTEGER(dims)[i]; k++)
-	    {
-	      sprintf(buffer, "%d", k);
-	      SET_STRING_ELT(bufferUel, k-1, mkChar(buffer));
-	    }
-	  SET_VECTOR_ELT(uelOut, i, bufferUel);
-	} 
+        {
+          bufferUel = allocVector(STRSXP, INTEGER(dims)[i]);
+          
+          for(k = 1; k <= INTEGER(dims)[i]; k++)
+            {
+              sprintf(buffer, "%d", k);
+              SET_STRING_ELT(bufferUel, k-1, mkChar(buffer));
+            }
+          SET_VECTOR_ELT(uelOut, i, bufferUel);
+        } 
     }
 } /* createUelOut  */
 
@@ -1617,9 +1617,9 @@ createUelOut(SEXP val,
 /* This method check the validity of input data with input uels and dims */
 void
 checkForValidData(SEXP val, 
-		  SEXP uelOut, 
-		  dType_t dType, 
-		  dForm_t dForm)
+                  SEXP uelOut, 
+                  dType_t dType, 
+                  dForm_t dForm)
 {
   SEXP dims;  
   int i, j;
@@ -1652,77 +1652,77 @@ checkForValidData(SEXP val,
       ncols = INTEGER(dims)[1];
 
       if(dType == parameter)
-	{
-	  ncols--;
-	}       
+        {
+          ncols--;
+        }       
       if(nuels != ncols)
-	{
-	  error("Number of columns in sparse data does not match with uels.");
-	}
+        {
+          error("Number of columns in sparse data does not match with uels.");
+        }
       for(i = 0; i < ncols; i++)
-	{
-	  for(j = 0; j < nrows; j++)
-	    {
-	      if(P[j + i*nrows] - floor(P[j + i*nrows]) > 0)
-		{
-		  error("Non-integer coordinates are not allowed in index columns of sparse data");
-		}
-	      if(P[j + i*nrows] < 1)
-		{
-		  error("Non-positive coordinates are not allowed in index columns of sparse data");
-		}
-	      /* if(!mxIsFinite(P[j + i*nrows]))
-		{
-		  error("Only finite numbers are allowed in index columns of sparse data");
-		  } */
-	      if (P[j + i*nrows] > max) 
-		{
-		  max = (int) P[j + i*nrows];
-		}
-	    }
-	  if(max > (int)length(VECTOR_ELT(uelOut, i )))
-	    {
-	      error("Row index in sparse matrix exceeds number of elements in UEL for that column.");
-	    }
-	  max = 0;
-	}
+        {
+          for(j = 0; j < nrows; j++)
+            {
+              if(P[j + i*nrows] - floor(P[j + i*nrows]) > 0)
+                {
+                  error("Non-integer coordinates are not allowed in index columns of sparse data");
+                }
+              if(P[j + i*nrows] < 1)
+                {
+                  error("Non-positive coordinates are not allowed in index columns of sparse data");
+                }
+              /* if(!mxIsFinite(P[j + i*nrows]))
+                {
+                  error("Only finite numbers are allowed in index columns of sparse data");
+                  } */
+              if (P[j + i*nrows] > max) 
+                {
+                  max = (int) P[j + i*nrows];
+                }
+            }
+          if(max > (int)length(VECTOR_ELT(uelOut, i )))
+            {
+              error("Row index in sparse matrix exceeds number of elements in UEL for that column.");
+            }
+          max = 0;
+        }
     }
   else 
     {
       /* get dimension of full matrix == number of columns in uels */
       ndims = length(dims);
       if(!((nuels == 0 || nuels == 1) && ndims ==2) && nuels != ndims)
-	{
-	  error("Number of dimension in full data does not match with uels.");
-	}
+        {
+          error("Number of dimension in full data does not match with uels.");
+        }
 
       /* special check for vector */
       if(nuels == 1 && INTEGER(dims)[1] != 1)
-	{
-	  error("Vector should have only 1 dimensional column elements.");
-	}
+        {
+          error("Vector should have only 1 dimensional column elements.");
+        }
       /* special check for scalar */
       if(nuels == 0 && ( INTEGER(dims)[0] != 1 || INTEGER(dims)[1] != 1))
-	{
-	  error("Scalar should have only one element.");                  
-	}
+        {
+          error("Scalar should have only one element.");                  
+        }
       /* number of elements in each dimension == number of elements in UEL 
       for(i = 0; i < (int)nuels; i++)
-	{
-	  if( !( INTEGER(dims)[i] == 1 &&  (int)mxGetN(mxGetCell(uelOut, i )) == 0) 
-	      && INTEGER(dims)[i] > mxGetN(mxGetCell(uelOut, i )))
-	    {
-	      error("Number of element in full format data exceeds corresponding elements in UEL.");
-	    }
-	} */
+        {
+          if( !( INTEGER(dims)[i] == 1 &&  (int)mxGetN(mxGetCell(uelOut, i )) == 0) 
+              && INTEGER(dims)[i] > mxGetN(mxGetCell(uelOut, i )))
+            {
+              error("Number of element in full format data exceeds corresponding elements in UEL.");
+            }
+        } */
     }
 }/* checkForValidData */
 
 
 /* Only called from gdxInfo  */
 char *val2str(gdxHandle_t Tptr, 
-	      double val, 
-	      char *s) 
+              double val, 
+              char *s) 
 {  
   int sv;
 
@@ -1734,9 +1734,9 @@ char *val2str(gdxHandle_t Tptr,
     {
       gdxMapValue(Tptr, val, &sv);
       if (sv_normal != sv)
-	sprintf(s,"%s", gmsSVText[sv]);
+        sprintf(s,"%s", gmsSVText[sv]);
       else
-	sprintf(s,"%g", val);
+        sprintf(s,"%g", val);
       return s;
     }
 }
@@ -1755,7 +1755,7 @@ checkFileExtension (char *fileName)
   {
     if (strlen(fileName) < GMS_SSSIZE-4)
       {
-	fileName = strcat(fileName, ".gdx");
+        fileName = strcat(fileName, ".gdx");
       }
     else 
     {
@@ -1782,7 +1782,7 @@ checkStringLength(const char *str)
   else if ((int)strlen(str) >= sizeof(shortStringBuf_t)) 
   {
     error("The data entered is too long: len=%d exceeds limit=%d.",
-	  (int)strlen(str), (int)sizeof(shortStringBuf_t));
+          (int)strlen(str), (int)sizeof(shortStringBuf_t));
   }
 } /* checkStringLength */
 
@@ -1810,8 +1810,8 @@ char
 /* Return number of non - Zero elements of variable/equation */
 int 
 getNonZeroElements(gdxHandle_t gdxHandle, 
-		   int symIdx, 
-		   dField_t *dField)
+                   int symIdx, 
+                   dField_t *dField)
 {  
   int nRecs, changeIdx, i, nonZero;
   gdxUelIndex_t uels;
@@ -1834,11 +1834,11 @@ getNonZeroElements(gdxHandle_t gdxHandle,
    value matrix and re-index output matrix. And it also remove non present uel elements from UEL */
 SEXP 
 compressData(SEXP data, 
-	     SEXP globalUEL, 
-	     SEXP uelOut,
-	     int numberOfUel, 
-	     int symbolDim, 
-	     int nRec)
+             SEXP globalUEL, 
+             SEXP uelOut,
+             int numberOfUel, 
+             int symbolDim, 
+             int nRec)
 {
   int *mask, i, j, k, l, total, elements;
   double *col;
@@ -1850,38 +1850,38 @@ compressData(SEXP data,
     {
       /* step 1: set all mask value to zero. */
       for(j = 0; j < numberOfUel; j++)
-	{
-	  mask[j] = 0;
-	}
+        {
+          mask[j] = 0;
+        }
       total = 0;
       /* step 2: loop through data martix column and set mask = 1 for corresponding positions */
       for(k = 0; k < nRec; k++)
-	{
-	  if(mask[(int)col[k + nRec*i] - 1] == 0)
-	    {
-	      mask[(int)col[k + nRec*i] - 1] = 1;
-	      total = total + 1;
-	    }
-	}
+        {
+          if(mask[(int)col[k + nRec*i] - 1] == 0)
+            {
+              mask[(int)col[k + nRec*i] - 1] = 1;
+              total = total + 1;
+            }
+        }
       /* step 3: create cellArray with size = total, fill in UEL if mask[] = 1 */
       /* step 4: step through 1's at mask and create sum */      
       bufferUel = allocVector(STRSXP, total);
       elements = 0;
       for(l = 0; l < numberOfUel; l++)
-	{
-	  if(mask[l] == 1)
-	    {
-	      elements = elements + 1;
-	      mask[l] = elements;
-	      SET_STRING_ELT(bufferUel, elements -1, duplicate(STRING_ELT(globalUEL, l)));
-	    }
-	}
+        {
+          if(mask[l] == 1)
+            {
+              elements = elements + 1;
+              mask[l] = elements;
+              SET_STRING_ELT(bufferUel, elements -1, duplicate(STRING_ELT(globalUEL, l)));
+            }
+        }
       /* step 5: step through column and update index value = mask[] */
       l = 0;
       for(l = 0; l < nRec; l++)
-	{
-	  col[l + nRec*i] = mask[(int)col[l + nRec*i] - 1];
-	}
+        {
+          col[l + nRec*i] = mask[(int)col[l + nRec*i] - 1];
+        }
       SET_VECTOR_ELT(uelOut, i, bufferUel);
     }
   free(mask);
@@ -1893,11 +1893,11 @@ compressData(SEXP data,
 /* This method converts sparse data into full data */
 SEXP 
 sparseToFull(SEXP compVal, 
-	     SEXP compFullVal,
-	     SEXP compUels,
-	     int type,
-	     int nRec,
-	     int symbolDim)
+             SEXP compFullVal,
+             SEXP compUels,
+             int type,
+             int nRec,
+             int symbolDim)
 {
   int i,j, iRec,  nCols;  
   double *p, *pVal;
@@ -1920,18 +1920,18 @@ sparseToFull(SEXP compVal,
       index = 0;
       totNumber = 1;
       for(i = 0; i < nCols; i++)
-	{
-	  index = index + (p[iRec + nRec*i] - 1)*totNumber;
-	  totNumber = (totNumber)*length(VECTOR_ELT(compUels, i));
-	}
+        {
+          index = index + (p[iRec + nRec*i] - 1)*totNumber;
+          totNumber = (totNumber)*length(VECTOR_ELT(compUels, i));
+        }
       if(type != dt_set)
-	{
-	  pVal[index] = p[iRec + nRec*symbolDim];
-	}
+        {
+          pVal[index] = p[iRec + nRec*symbolDim];
+        }
       else
-	{
-	  pVal[index] = 1;
-	}
+        {
+          pVal[index] = 1;
+        }
     }
   return compFullVal;
 }/* End of sparseToFull */
@@ -1940,11 +1940,11 @@ sparseToFull(SEXP compVal,
 /* create text element Matrix from sparse data and element vector */
 SEXP 
 createElementMatrix(SEXP compVal,
-		    SEXP textElement, 
-		    SEXP compTe, 
-		    SEXP compUels,
-		    int symbolDim,
-		    int nRec)
+                    SEXP textElement, 
+                    SEXP compTe, 
+                    SEXP compUels,
+                    int symbolDim,
+                    int nRec)
 {
   int i, j, iRec, index, totNumber;
   double *p;
@@ -2002,11 +2002,11 @@ checkForRepetition(SEXP bufferUel)
     {
 
       if(0 == strcmp(elements[i], elements[i+1])) 
-      	{ 
-      	  Rprintf("Input UEL have repeated entry of '%s' \n",  
-      		  elements[i]); 
-      	  error("Repetition in input UEL is not allowed."); 
-      	} 
+        { 
+          Rprintf("Input UEL have repeated entry of '%s' \n",  
+                  elements[i]); 
+          error("Repetition in input UEL is not allowed."); 
+        } 
     }
   free(*elements);
 }
@@ -2016,7 +2016,7 @@ checkForRepetition(SEXP bufferUel)
 /* This method convert input UEL cell into output cell array of strings */
 SEXP 
 convertToOutput(SEXP bufferUel, 
-		SEXP tmpUel)
+                SEXP tmpUel)
 {       
   int  len; 
   char buffer [256];
@@ -2028,27 +2028,27 @@ convertToOutput(SEXP bufferUel,
   if(TYPEOF(tmpUel) == REALSXP )
     {     
       doubleData = REAL(tmpUel);
-      for(w = 0; w < len; w++)	
-	{
-	  sprintf(buffer, "%g", doubleData[w]);
-	  SET_STRING_ELT(bufferUel, w, mkChar(buffer));
-	}      
+      for(w = 0; w < len; w++)  
+        {
+          sprintf(buffer, "%g", doubleData[w]);
+          SET_STRING_ELT(bufferUel, w, mkChar(buffer));
+        }      
     }
   else if( TYPEOF(tmpUel) == INTSXP )
     {
       intData = INTEGER(tmpUel);      
-      for(w = 0; w < len; w++)	
-	{
-	  sprintf(buffer, "%i", intData[w]);
-	  SET_STRING_ELT(bufferUel, w, mkChar(buffer));
-	}      
+      for(w = 0; w < len; w++)  
+        {
+          sprintf(buffer, "%i", intData[w]);
+          SET_STRING_ELT(bufferUel, w, mkChar(buffer));
+        }      
     }
   else if(TYPEOF(tmpUel) == STRSXP)
     {
       for(w = 0; w < len; w++)
-	{
-	  SET_STRING_ELT(bufferUel, w, duplicate(STRING_ELT(tmpUel, w)));
-	}
+        {
+          SET_STRING_ELT(bufferUel, w, duplicate(STRING_ELT(tmpUel, w)));
+        }
     }
    
   checkForRepetition(bufferUel);
@@ -2058,8 +2058,8 @@ convertToOutput(SEXP bufferUel,
 
 
 int checkIfExist(int k,
-		 SEXP filterUel,
-		 char *uelName)
+                 SEXP filterUel,
+                 char *uelName)
 {  
   SEXP tmpUel;
   int i, n;
@@ -2085,8 +2085,8 @@ int checkIfExist(int k,
 
 void
 registerInputUEL(SEXP uelOut, 
-		 int k, 
-		 SEXP uelIndex)
+                 int k, 
+                 SEXP uelIndex)
 {  
   int i, j, rc, gi; 
   char bufChar[256];
@@ -2133,10 +2133,10 @@ registerInputUEL(SEXP uelOut,
 /* This function validate input structure and set certain global variables */
 void
 checkWgdxList(SEXP structure, 
-	      int k,
-	      SEXP uelIndex,
-	      struct  wgdxStruct **data,
-	      int fromGAMS)
+              int k,
+              SEXP uelIndex,
+              struct  wgdxStruct **data,
+              int fromGAMS)
 {
   SEXP lstName, tmp, tmpUel;
   SEXP dimension;
@@ -2191,7 +2191,7 @@ checkWgdxList(SEXP structure,
       Rprintf ("Input lsit components must be according to this specification: \n");
       Rprintf ("'name', 'type', 'val', 'dim', 'uels', 'form', 'ts'. \n");
       error("Incorrect type of input list component '%s' specified.",
-	    compName);
+            compName);
     }
   }
 
@@ -2206,26 +2206,26 @@ checkWgdxList(SEXP structure,
   for (i = 0; i < infields; i++)
     {
       if(strcmp("name", CHAR(STRING_ELT(lstName, i))) == 0)
-	{
-	  found = 1;
-	  break;
-	}
+        {
+          found = 1;
+          break;
+        }
     }
   
   if(found == 1)
     {
       tmp = VECTOR_ELT(structure, i);
       if(TYPEOF(tmp) == STRSXP)
-	{
-	  checkStringLength( CHAR(STRING_ELT(tmp, 0)));
-	  strcpy( data[k]->name, CHAR(STRING_ELT(tmp, 0)) ); 
-	}
+        {
+          checkStringLength( CHAR(STRING_ELT(tmp, 0)));
+          strcpy( data[k]->name, CHAR(STRING_ELT(tmp, 0)) ); 
+        }
       else
-	{
-	  Rprintf ("List compenent 'name' must be a string - found %d instead \n", 
-		   TYPEOF(tmp) );
-	  error("Input list compenent 'name' must be string.\n");	  
-	}
+        {
+          Rprintf ("List compenent 'name' must be a string - found %d instead \n", 
+                   TYPEOF(tmp) );
+          error("Input list compenent 'name' must be string.\n");         
+        }
     }
   else
     {
@@ -2240,25 +2240,25 @@ checkWgdxList(SEXP structure,
   for (i = 0; i < infields; i++)
     {
       if(strcmp("ts", CHAR(STRING_ELT(lstName, i))) == 0)
-	{
-	  found = 1;
-	  break;
-	}
+        {
+          found = 1;
+          break;
+        }
     }
   if(found == 1)
     {
       tmp = VECTOR_ELT(structure, i);
       if(TYPEOF(tmp) == STRSXP)
-	{
-	  checkStringLength( CHAR(STRING_ELT(tmp, 0)));	  
-	  data[k]->withTs = 1;
-	}
+        {
+          checkStringLength( CHAR(STRING_ELT(tmp, 0)));   
+          data[k]->withTs = 1;
+        }
       else
-	{
-	  Rprintf ("List compenent 'ts' must be a string - found %d instead \n", 
-		   TYPEOF(tmp) );
-	  error("Input list compenent 'ts' must be string.\n");	  
-	}
+        {
+          Rprintf ("List compenent 'ts' must be a string - found %d instead \n", 
+                   TYPEOF(tmp) );
+          error("Input list compenent 'ts' must be string.\n");   
+        }
     }
 
   i=0;
@@ -2267,38 +2267,38 @@ checkWgdxList(SEXP structure,
   for (i = 0; i < infields; i++)
     {
       if(strcmp("form", CHAR(STRING_ELT(lstName, i))) == 0)
-	{
-	  found = 1;
-	  break;
-	}
+        {
+          found = 1;
+          break;
+        }
     }
   
   if(found == 1)
     {
       tmp = VECTOR_ELT(structure, i);
       if( TYPEOF(tmp) != STRSXP )
-	{
-	  Rprintf ("List compenent 'form' must be a string - found %d instead \n", 
-		   TYPEOF(tmp) );
-	  error("Input list compenent 'form' must be string");	    
-	}
+        {
+          Rprintf ("List compenent 'form' must be a string - found %d instead \n", 
+                   TYPEOF(tmp) );
+          error("Input list compenent 'form' must be string");      
+        }
       if(strlen( CHAR(STRING_ELT(tmp, 0)) ) == 0)
-	{
-	  error("Input lsit component 'form' must be either 'full' or 'sparse'.");
-	}
+        {
+          error("Input lsit component 'form' must be either 'full' or 'sparse'.");
+        }
       str = changeToLower( CHAR(STRING_ELT(tmp, 0)) );
       if ( 0 == strcmp("full", str) )
-	{
-	  data[k]->dForm = full;
-	}
+        {
+          data[k]->dForm = full;
+        }
       else if ( 0 == strcmp("sparse", str) ) 
-	{
-	  data[k]->dForm = sparse;
-	}
+        {
+          data[k]->dForm = sparse;
+        }
       else 
-	{
-	  error("Input list compenent 'form' must be either 'full' or 'sparse'.");
-	}      
+        {
+          error("Input list compenent 'form' must be either 'full' or 'sparse'.");
+        }      
     }
 
   i=0;
@@ -2307,40 +2307,40 @@ checkWgdxList(SEXP structure,
   for (i = 0; i < infields; i++)
     {
       if(strcmp("type", CHAR(STRING_ELT(lstName, i))) == 0)
-	{
-	  found = 1;
-	  break;
-	}
+        {
+          found = 1;
+          break;
+        }
     }
   
   if(found == 1)
     {
       tmp = VECTOR_ELT(structure, i);
       if( TYPEOF(tmp) != STRSXP )
-	{
-	  Rprintf ("List compenent 'type' must be a string - found %d instead \n", 
-		   TYPEOF(tmp) );
-	  error("Input list compenent 'type' must be string.\n");
-	}
+        {
+          Rprintf ("List compenent 'type' must be a string - found %d instead \n", 
+                   TYPEOF(tmp) );
+          error("Input list compenent 'type' must be string.\n");
+        }
       if(strlen( CHAR(STRING_ELT(tmp, 0)) ) == 0)
-	{
-	  Rprintf("Before changing to lower");
-	  error("Input lsit component 'type' must be either 'set' or 'parameter'.\n");
-	}
+        {
+          Rprintf("Before changing to lower");
+          error("Input lsit component 'type' must be either 'set' or 'parameter'.\n");
+        }
       str = changeToLower( CHAR(STRING_ELT(tmp, 0)) );
       if ( 0 == strcmp("set", str) )
-	{
-	  data[k]->dType = set;
-	}
+        {
+          data[k]->dType = set;
+        }
       else if ( 0 == strcmp("parameter", str) ) 
-	{
-	  data[k]->dType = parameter;
-	}
+        {
+          data[k]->dType = parameter;
+        }
       else 
-	{
-	  Rprintf("type found = %s\n", str);
-	  error("Input list compenent 'type' must be either 'set' or 'parameter'.\n");
-	}      
+        {
+          Rprintf("type found = %s\n", str);
+          error("Input list compenent 'type' must be either 'set' or 'parameter'.\n");
+        }      
     }
 
   i=0;
@@ -2349,54 +2349,54 @@ checkWgdxList(SEXP structure,
   for (i = 0; i < infields; i++)
     {
       if(strcmp("dim", CHAR(STRING_ELT(lstName, i))) == 0)
-	{
-	  found = 1;
-	  break;
-	}
+        {
+          found = 1;
+          break;
+        }
     }
   if(found == 1)
     {
       tmp = VECTOR_ELT(structure, i);
      
       if(TYPEOF(tmp) == INTSXP)
-	{
-	  if(length(tmp) != 1)
-	    {
-	      error("Input list component 'dim' must have only one element.\n");	
-	    }
-	  /* for negative value  */
-	  if(INTEGER(tmp)[0] < 0)
-	    {
-	      error("Negative value is not allowed as valid input for 'dim'.\n");
-	    }
-	  withDim = 1;
-	  data[k]->dim = INTEGER(tmp)[0];	  
-	} 
+        {
+          if(length(tmp) != 1)
+            {
+              error("Input list component 'dim' must have only one element.\n");        
+            }
+          /* for negative value  */
+          if(INTEGER(tmp)[0] < 0)
+            {
+              error("Negative value is not allowed as valid input for 'dim'.\n");
+            }
+          withDim = 1;
+          data[k]->dim = INTEGER(tmp)[0];         
+        } 
       else if(TYPEOF(tmp) == REALSXP )
-	{
-	  if(length(tmp) != 1)
-	    {
-	      error("Input list component 'dim' must have only one element.\n");	
-	    }
-	  /* For fractional value  */ 
-	  else if(REAL(tmp)[0] - floor(REAL(tmp)[0]) > 0)
-	    {
-	      error("Non-integer value is not allowed as valid input for 'dim'.\n");
-	    }
-	  /* for Negeative value  */
-	  else if(REAL(tmp)[0] < 0)
-	    {
-	      error("Negative value is not allowed as valid input for 'dim'.\n");
-	    }
-	  withDim = 1;
-	  data[k]->dim = (int) REAL(tmp)[0];
-	}
+        {
+          if(length(tmp) != 1)
+            {
+              error("Input list component 'dim' must have only one element.\n");        
+            }
+          /* For fractional value  */ 
+          else if(REAL(tmp)[0] - floor(REAL(tmp)[0]) > 0)
+            {
+              error("Non-integer value is not allowed as valid input for 'dim'.\n");
+            }
+          /* for Negeative value  */
+          else if(REAL(tmp)[0] < 0)
+            {
+              error("Negative value is not allowed as valid input for 'dim'.\n");
+            }
+          withDim = 1;
+          data[k]->dim = (int) REAL(tmp)[0];
+        }
       else
-	{
-	  Rprintf ("List compenent 'dim' must be a numeric - found %d instead \n", 
-		   TYPEOF(tmp));
-	  error("Input list compenent 'dim' must be integer.\n");	  
-	}
+        {
+          Rprintf ("List compenent 'dim' must be a numeric - found %d instead \n", 
+                   TYPEOF(tmp));
+          error("Input list compenent 'dim' must be integer.\n");         
+        }
     }
 
   i=0;
@@ -2405,55 +2405,55 @@ checkWgdxList(SEXP structure,
   for (i = 0; i < infields; i++)
     {
       if(strcmp("uels", CHAR(STRING_ELT(lstName, i))) == 0)
-	{
-	  found = 1;
-	  break;
-	}
+        {
+          found = 1;
+          break;
+        }
     }
 
   if(found == 1)
     {
       tmp = VECTOR_ELT(structure, i);
       if(TYPEOF(tmp) != VECSXP)
-	{
-	  Rprintf ("List compenent 'uels' must be a un-named list - found %d instead \n", 
-		   TYPEOF(tmp));
-	  error("Input list compenent 'uels' must be unnamed list.\n");
-	}
+        {
+          Rprintf ("List compenent 'uels' must be a un-named list - found %d instead \n", 
+                   TYPEOF(tmp));
+          error("Input list compenent 'uels' must be unnamed list.\n");
+        }
       else
-	{
-	  if(length(tmp) == 0)
-	    {
-	      error("Empty input list component 'uels' is not allowed.\n");
-	    }
-	  PROTECT(uelOut = allocVector(VECSXP, length(tmp)));
-	  wAlloc++;
-	  for(j = 0; j < length(tmp); j++)
-	    {
-	      tmpUel = VECTOR_ELT(tmp, j);
-	      if(tmpUel == R_NilValue)
-		{
-		  error("Empty Input  field (uels) not allowed");
-		}
-	      if(TYPEOF(tmpUel) == STRSXP )
-		{
-		  /*  checkStringLength( CHAR(STRING_ELT(tmp, 0)) ); */
-		  SET_VECTOR_ELT(uelOut, j, tmpUel);
-		}
-	      else if(  TYPEOF(tmpUel) == REALSXP || TYPEOF(tmpUel) == INTSXP )
-		{
-		  /* Convert to output  */
-		  bufferUel = allocVector(STRSXP, length(tmpUel));
-		  bufferUel =  convertToOutput(bufferUel, tmpUel);
-		  SET_VECTOR_ELT(uelOut, j, bufferUel);		  
-		}
-	      else 
-		{
-		  error("Input uels must be either string vector of numeric vector.\n");
-		}
-	    }	  
-	  data[k]->withUel = 1;
-	}
+        {
+          if(length(tmp) == 0)
+            {
+              error("Empty input list component 'uels' is not allowed.\n");
+            }
+          PROTECT(uelOut = allocVector(VECSXP, length(tmp)));
+          wAlloc++;
+          for(j = 0; j < length(tmp); j++)
+            {
+              tmpUel = VECTOR_ELT(tmp, j);
+              if(tmpUel == R_NilValue)
+                {
+                  error("Empty Input  field (uels) not allowed");
+                }
+              if(TYPEOF(tmpUel) == STRSXP )
+                {
+                  /*  checkStringLength( CHAR(STRING_ELT(tmp, 0)) ); */
+                  SET_VECTOR_ELT(uelOut, j, tmpUel);
+                }
+              else if(  TYPEOF(tmpUel) == REALSXP || TYPEOF(tmpUel) == INTSXP )
+                {
+                  /* Convert to output  */
+                  bufferUel = allocVector(STRSXP, length(tmpUel));
+                  bufferUel =  convertToOutput(bufferUel, tmpUel);
+                  SET_VECTOR_ELT(uelOut, j, bufferUel);           
+                }
+              else 
+                {
+                  error("Input uels must be either string vector of numeric vector.\n");
+                }
+            }     
+          data[k]->withUel = 1;
+        }
     }
 
   i=0;
@@ -2462,88 +2462,88 @@ checkWgdxList(SEXP structure,
   for (i = 0; i < infields; i++)
     {
       if(strcmp("val", CHAR(STRING_ELT(lstName, i))) == 0)
-	{
-	  found = 1;
-	  break;
-	}
+        {
+          found = 1;
+          break;
+        }
     }
   if(found == 1)
     {
       tmp = VECTOR_ELT(structure, i);
       if(fromGAMS == 1 && TYPEOF(tmp) == STRSXP)
-	{
-	  checkStringLength(CHAR(STRING_ELT(tmp, 0)));
-	  strcat(specialCommand, "--");
-	  strcat(specialCommand,  data[k]->name);
-	  strcat(specialCommand, "=");
-	  strcat(specialCommand, CHAR(STRING_ELT(tmp, 0)));
-	  strcat(specialCommand, " ");    
-	  return;
-	}
+        {
+          checkStringLength(CHAR(STRING_ELT(tmp, 0)));
+          strcat(specialCommand, "--");
+          strcat(specialCommand,  data[k]->name);
+          strcat(specialCommand, "=");
+          strcat(specialCommand, CHAR(STRING_ELT(tmp, 0)));
+          strcat(specialCommand, " ");    
+          return;
+        }
       dimension = getAttrib(tmp, R_DimSymbol);      
       if( TYPEOF(tmp) == REALSXP || TYPEOF(tmp) == INTSXP )
-	{	 	  
-	  if(data[k]->dForm == sparse)
-	    {
-	      if(length(dimension) != 2)
-		{
-		 Rprintf("You have entered %d dimensional matrix.\n", length(dimension));
-		 error("Only 2 dimensional val is allowed as valid input in sparse format.");
-		}
-	      /* getting data matrix */
-	      sz = INTEGER(dimension)[0];
-	      if (sz > INT_MAX) 
-		{
-		  error("Input list component 'val' exceeds row limit of %d",
-			INT_MAX);
-		}
-	      sz = INTEGER(dimension)[1];
-	      if (sz > INT_MAX) 
-		{
-		  error("Input list component 'val' exceeds column limit of %d", 
-			INT_MAX);
-		}
-	      nCoords = sz;
-	      if (parameter == data[k]->dType)
-		{
-		  nCoords--;
-		}      
-	      if (nCoords > GMS_MAX_INDEX_DIM) 
-		{
-		  error("Input list compoment 'val' exceeds GDX dimension limit of %d.", 
-			GMS_MAX_INDEX_DIM);
-		}
-	      data[k]->withVal = 1;
-	    }
-	  else
-	    {
-	      /* This is for Full/Dense data  */
-	      if(length(dimension) > GMS_MAX_INDEX_DIM)
-		{
-		  error("Input list component 'val' exceeds GDX dimension limit of %d.", 
-			GMS_MAX_INDEX_DIM);
-		}
-	      if(withDim == 1 && (data[k]->dim == 0 || data[k]->dim == 1)  && length(dimension) == 2)
-		{
-		  nCoords = data[k]->dim;
-		}
-	      else if(withDim == 1 &&  data[k]->dim !=  length(dimension))
-		{
-		  error("Inconsistent dimension found. Value entered for 'dim' doesn't matches with 'val'.\n");
-		}
-	      else
-		{
-		  nCoords =  length(dimension);  
-		}
-	      data[k]->withVal = 1;
-	    }
-	}
+        {                 
+          if(data[k]->dForm == sparse)
+            {
+              if(length(dimension) != 2)
+                {
+                 Rprintf("You have entered %d dimensional matrix.\n", length(dimension));
+                 error("Only 2 dimensional val is allowed as valid input in sparse format.");
+                }
+              /* getting data matrix */
+              sz = INTEGER(dimension)[0];
+              if (sz > INT_MAX) 
+                {
+                  error("Input list component 'val' exceeds row limit of %d",
+                        INT_MAX);
+                }
+              sz = INTEGER(dimension)[1];
+              if (sz > INT_MAX) 
+                {
+                  error("Input list component 'val' exceeds column limit of %d", 
+                        INT_MAX);
+                }
+              nCoords = sz;
+              if (parameter == data[k]->dType)
+                {
+                  nCoords--;
+                }      
+              if (nCoords > GMS_MAX_INDEX_DIM) 
+                {
+                  error("Input list compoment 'val' exceeds GDX dimension limit of %d.", 
+                        GMS_MAX_INDEX_DIM);
+                }
+              data[k]->withVal = 1;
+            }
+          else
+            {
+              /* This is for Full/Dense data  */
+              if(length(dimension) > GMS_MAX_INDEX_DIM)
+                {
+                  error("Input list component 'val' exceeds GDX dimension limit of %d.", 
+                        GMS_MAX_INDEX_DIM);
+                }
+              if(withDim == 1 && (data[k]->dim == 0 || data[k]->dim == 1)  && length(dimension) == 2)
+                {
+                  nCoords = data[k]->dim;
+                }
+              else if(withDim == 1 &&  data[k]->dim !=  length(dimension))
+                {
+                  error("Inconsistent dimension found. Value entered for 'dim' doesn't matches with 'val'.\n");
+                }
+              else
+                {
+                  nCoords =  length(dimension);  
+                }
+              data[k]->withVal = 1;
+            }
+        }
       else
-	{
-	  Rprintf("List component 'val' must be a double matrix - found %d instead. \n", 
-		  TYPEOF(tmp));
-	  error("Input list component 'val' must be double matrix");	  
-	}
+        {
+          Rprintf("List component 'val' must be a double matrix - found %d instead. \n", 
+                  TYPEOF(tmp));
+          error("Input list component 'val' must be double matrix");      
+        }
     }
   else if(data[k]->dType == parameter  || data[k]->withUel == 0 )
     {
@@ -2557,14 +2557,14 @@ checkWgdxList(SEXP structure,
     {
       /* special check for scalar */
       if(withDim == 1 && data[k]->dim == 0 && length(tmp) != 1)
-	{
-	  error("Scalar should have only one element.");
-	}
+        {
+          error("Scalar should have only one element.");
+        }
       /* special check for vector */
       if(withDim == 1 && data[k]->dim == 1 && INTEGER(dimension)[1] != 1)
-	{
-	  error("Vector should have only 1 dimensional column elements.");
-	}
+        {
+          error("Vector should have only 1 dimensional column elements.");
+        }
       PROTECT(uelOut = allocVector(VECSXP, nCoords));
       wAlloc++;
       createUelOut(tmp, uelOut, data[k]->dType, data[k]->dForm);
@@ -2615,19 +2615,19 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
       compName = CHAR(STRING_ELT(lstName, i));
       /* Checking for valid field name */
       if( !((0 == strcmp("name", compName ))
-	    || (0 == strcmp("uels", compName ))
-	    || (0 == strcmp("compress", compName ))
-	    || (0 == strcmp("dim", compName ))
-	    || (0 == strcmp("form", compName ))
-	    || (0 == strcmp("field", compName ))
-	    || (0 == strcmp("te", compName ))
-	    || (0 == strcmp("ts", compName ))) )
-	{
-	  Rprintf ("Input lsit components must be according to this specification: \n");
-	  Rprintf ("'name', 'type', 'val', 'dim', 'uels', 'form', 'ts'. \n");
-	  error("Incorrect type of input list component '%s' specified.",
-		compName);
-	}
+            || (0 == strcmp("uels", compName ))
+            || (0 == strcmp("compress", compName ))
+            || (0 == strcmp("dim", compName ))
+            || (0 == strcmp("form", compName ))
+            || (0 == strcmp("field", compName ))
+            || (0 == strcmp("te", compName ))
+            || (0 == strcmp("ts", compName ))) )
+        {
+          Rprintf ("Input lsit components must be according to this specification: \n");
+          Rprintf ("'name', 'type', 'val', 'dim', 'uels', 'form', 'ts'. \n");
+          error("Incorrect type of input list component '%s' specified.",
+                compName);
+        }
     }
 
   i=0;
@@ -2635,26 +2635,26 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
   for (i = 0; i < nField; i++)
     {
       if(strcmp("name", CHAR(STRING_ELT(lstName, i))) == 0)
-	{
-	  found = 1;
-	  break;
-	}
+        {
+          found = 1;
+          break;
+        }
     }
   
   if(found == 1)
     {
       tmp = VECTOR_ELT(lst, i);
       if(TYPEOF(tmp) == STRSXP)
-	{
-	  checkStringLength( CHAR(STRING_ELT(tmp, 0)) );
-	  strcpy( data->name, CHAR(STRING_ELT(tmp, 0)) ); 
-	}
+        {
+          checkStringLength( CHAR(STRING_ELT(tmp, 0)) );
+          strcpy( data->name, CHAR(STRING_ELT(tmp, 0)) ); 
+        }
       else
-	{
-	  Rprintf ("List compenent 'name' must be a string - found %d instead \n", 
-		   TYPEOF(tmp) );
-	  error("Input list compenent 'name' must be string.\n");	  
-	}
+        {
+          Rprintf ("List compenent 'name' must be a string - found %d instead \n", 
+                   TYPEOF(tmp) );
+          error("Input list compenent 'name' must be string.\n");         
+        }
     }
   else
     {
@@ -2668,37 +2668,37 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
   for (i = 0; i < nField; i++)
     {
       if(strcmp("form", CHAR(STRING_ELT(lstName, i))) == 0)
-	{
-	  found = 1;
-	  break;
-	}
+        {
+          found = 1;
+          break;
+        }
     }
   if(found == 1)
     {
       tmp = VECTOR_ELT(lst, i);
       if( TYPEOF(tmp) != STRSXP )
-	{
-	  Rprintf ("List compenent 'form' must be a string - found %d instead \n", 
-		   TYPEOF(tmp) );
-	  error("Input list compenent 'form' must be string");	    
-	}
+        {
+          Rprintf ("List compenent 'form' must be a string - found %d instead \n", 
+                   TYPEOF(tmp) );
+          error("Input list compenent 'form' must be string");      
+        }
       if(strlen( CHAR(STRING_ELT(tmp, 0)) ) == 0)
-	{
-	  error("Input lsit component 'form' must be either 'full' or 'sparse'.");
-	}
+        {
+          error("Input lsit component 'form' must be either 'full' or 'sparse'.");
+        }
       str = changeToLower( CHAR(STRING_ELT(tmp, 0)) );
       if ( 0 == strcmp("full", str) )
-	{
-	  data->dForm = full;
-	}
+        {
+          data->dForm = full;
+        }
       else if ( 0 == strcmp("sparse", str) ) 
-	{
-	  data->dForm = sparse;
-	}
+        {
+          data->dForm = sparse;
+        }
       else 
-	{
-	  error("Input list compenent 'form' must be either 'full' or 'sparse'.");
-	}      
+        {
+          error("Input list compenent 'form' must be either 'full' or 'sparse'.");
+        }      
     }
 
   /* Checking for 'compress'. Default it to 'false' */
@@ -2707,53 +2707,53 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
   for (i = 0; i < nField; i++)
     {
       if(strcmp("compress", CHAR(STRING_ELT(lstName, i))) == 0)
-	{
-	  found = 1;
-	  break;
-	}
+        {
+          found = 1;
+          break;
+        }
     }
 
   if(found == 1)
     {
       tmp = VECTOR_ELT(lst, i);
       if( TYPEOF(tmp) == STRSXP )
-	{
-	  if(strlen( CHAR(STRING_ELT(tmp, 0)) ) == 0)
-	    {
-	      error("Input lsit component 'compress' must be either 'true' or 'false'.");
-	    }
-	  str = changeToLower( CHAR(STRING_ELT(tmp, 0)) );
-	  if ( 0 == strcmp("true", str) )
-	    {
-	      data->compress = 1;
-	    }
-	  else if ( 0 == strcmp("false", str) ) 
-	    {
-	      data->compress = 0;
-	    }
-	  else 
-	    {
-	      error("Input list compenent 'form' must be either 'true' or 'false'.");
-	    }	   	   
-	}
+        {
+          if(strlen( CHAR(STRING_ELT(tmp, 0)) ) == 0)
+            {
+              error("Input lsit component 'compress' must be either 'true' or 'false'.");
+            }
+          str = changeToLower( CHAR(STRING_ELT(tmp, 0)) );
+          if ( 0 == strcmp("true", str) )
+            {
+              data->compress = 1;
+            }
+          else if ( 0 == strcmp("false", str) ) 
+            {
+              data->compress = 0;
+            }
+          else 
+            {
+              error("Input list compenent 'form' must be either 'true' or 'false'.");
+            }              
+        }
       else if( TYPEOF(tmp) == LGLSXP)
-	{
-	  compress = LOGICAL(tmp)[0];
-	  if(compress == TRUE)
-	    {
-	      data->compress = 1;
-	    }
-	  else
-	    {
-	      data->compress = 0;
-	    }
-	}
+        {
+          compress = LOGICAL(tmp)[0];
+          if(compress == TRUE)
+            {
+              data->compress = 1;
+            }
+          else
+            {
+              data->compress = 0;
+            }
+        }
       else
-	{
-	  Rprintf ("List compenent 'compress' must be either string or logical - found %d instead \n", 
-		   TYPEOF(tmp) );
-	  error("Input list compenent 'compress' must be either string or logical"); 
-	}
+        {
+          Rprintf ("List compenent 'compress' must be either string or logical - found %d instead \n", 
+                   TYPEOF(tmp) );
+          error("Input list compenent 'compress' must be either string or logical"); 
+        }
     }
 
   /* Checking for field.  Default it to 'level' */
@@ -2762,51 +2762,51 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
   for (i = 0; i < nField; i++)
     {
       if(strcmp("field", CHAR(STRING_ELT(lstName, i))) == 0)
-	{
-	  found = 1;
-	  break;
-	}
+        {
+          found = 1;
+          break;
+        }
     }
 
   if( found == 1)
     {
       tmp = VECTOR_ELT(lst, i);
       if( TYPEOF(tmp) != STRSXP )
-	{
-	  Rprintf ("List compenent 'field' must be a string - found %d instead \n", 
-		   TYPEOF(tmp) );
-	  error("Input list compenent 'field' must be string");	    
-	}
+        {
+          Rprintf ("List compenent 'field' must be a string - found %d instead \n", 
+                   TYPEOF(tmp) );
+          error("Input list compenent 'field' must be string");     
+        }
       if(strlen( CHAR(STRING_ELT(tmp, 0)) ) == 0)
-	{
-	  error("Input list component 'field' must be from 'l', 'm', 'lo', 'up' or 's'.");
-	}
+        {
+          error("Input list component 'field' must be from 'l', 'm', 'lo', 'up' or 's'.");
+        }
       str = changeToLower( CHAR(STRING_ELT(tmp, 0)) );
       data->withField = 1;
       if ( 0 == strcmp("l", str) )
-	{
-	  data->dField = level;
-	}
+        {
+          data->dField = level;
+        }
       else if ( 0 == strcmp("m", str) ) 
-	{
-	  data->dField = marginal;
-	}
+        {
+          data->dField = marginal;
+        }
       else if ( 0 == strcmp("lo", str) ) 
-	{
-	  data->dField = lower;
-	}
+        {
+          data->dField = lower;
+        }
       else if ( 0 == strcmp("up", str) ) 
-	{
-	  data->dField = upper;
-	}
+        {
+          data->dField = upper;
+        }
       else if ( 0 == strcmp("s", str) ) 
-	{
-	  data->dField = scale;
-	}
+        {
+          data->dField = scale;
+        }
       else 
-	{
-	  error("Input list component 'field' must be from 'l', 'm', 'lo', 'up' or 's'.");
-	}     
+        {
+          error("Input list component 'field' must be from 'l', 'm', 'lo', 'up' or 's'.");
+        }     
     }
 
   /* Checking for ts. Default it to 'false' */
@@ -2815,48 +2815,48 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
   for (i = 0; i < nField; i++)
     {
       if(strcmp("ts", CHAR(STRING_ELT(lstName, i))) == 0)
-	{
-	  found = 1;
-	  break;
-	}
+        {
+          found = 1;
+          break;
+        }
     }
 
   if(found == 1)
     {
       tmp = VECTOR_ELT(lst, i);
       if( TYPEOF(tmp) == STRSXP )
-	{
-	  if(strlen( CHAR(STRING_ELT(tmp, 0)) ) == 0)
-	    {
-	      error("Input lsit component 'ts' must be either 'true' or 'false'.");
-	    }
-	  str = changeToLower( CHAR(STRING_ELT(tmp, 0)) );
-	  if ( 0 == strcmp("true", str) )
-	    {
-	      data->ts = 1;
-	    }
-	  else if ( 0 == strcmp("false", str) ) 
-	    {
-	      data->ts = 0;
-	    }
-	  else 
-	    {
-	      error("Input list compenent 'ts' must be either 'true' or 'false'.");
-	    }	   	   
-	}
+        {
+          if(strlen( CHAR(STRING_ELT(tmp, 0)) ) == 0)
+            {
+              error("Input lsit component 'ts' must be either 'true' or 'false'.");
+            }
+          str = changeToLower( CHAR(STRING_ELT(tmp, 0)) );
+          if ( 0 == strcmp("true", str) )
+            {
+              data->ts = 1;
+            }
+          else if ( 0 == strcmp("false", str) ) 
+            {
+              data->ts = 0;
+            }
+          else 
+            {
+              error("Input list compenent 'ts' must be either 'true' or 'false'.");
+            }              
+        }
       else if( TYPEOF(tmp) == LGLSXP)
-	{
-	  if( LOGICAL(tmp)[0] == TRUE)
-	    {
-	      data->ts = 1;
-	    }
-	}
+        {
+          if( LOGICAL(tmp)[0] == TRUE)
+            {
+              data->ts = 1;
+            }
+        }
       else
-	{
-	  Rprintf ("List compenent 'ts' must be either string or logical - found %d instead \n", 
-		   TYPEOF(tmp) );
-	  error("Input list compenent 'ts' must be either string or logical"); 
-	}
+        {
+          Rprintf ("List compenent 'ts' must be either string or logical - found %d instead \n", 
+                   TYPEOF(tmp) );
+          error("Input list compenent 'ts' must be either string or logical"); 
+        }
     }
 
   /* Checking for 'te'. Default it to 'false' */
@@ -2865,52 +2865,52 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
   for (i = 0; i < nField; i++)
     {
       if(strcmp("te", CHAR(STRING_ELT(lstName, i))) == 0)
-	{
-	  found = 1;
-	  break;
-	}
+        {
+          found = 1;
+          break;
+        }
     }
 
   if(found == 1)
     {
       tmp = VECTOR_ELT(lst, i);
       if( TYPEOF(tmp) == STRSXP )
-	{
-	  if(strlen( CHAR(STRING_ELT(tmp, 0)) ) == 0)
-	    {
-	      error("Input lsit component 'te' must be either 'true' or 'false'.");
-	    }
-	  str = changeToLower( CHAR(STRING_ELT(tmp, 0)) );
-	  if ( 0 == strcmp("true", str) )
-	    {
-	      data->te = 1;
-	    }
-	  else if ( 0 == strcmp("false", str) ) 
-	    {
-	      data->te = 0;
-	    }
-	  else 
-	    {
-	      error("Input list component 'te' must be either 'true' or 'false'.");
-	    }	   	   
-	}
+        {
+          if(strlen( CHAR(STRING_ELT(tmp, 0)) ) == 0)
+            {
+              error("Input lsit component 'te' must be either 'true' or 'false'.");
+            }
+          str = changeToLower( CHAR(STRING_ELT(tmp, 0)) );
+          if ( 0 == strcmp("true", str) )
+            {
+              data->te = 1;
+            }
+          else if ( 0 == strcmp("false", str) ) 
+            {
+              data->te = 0;
+            }
+          else 
+            {
+              error("Input list component 'te' must be either 'true' or 'false'.");
+            }              
+        }
       else if( TYPEOF(tmp) == LGLSXP)
-	{
-	  if( LOGICAL(tmp)[0] == TRUE)
-	    {
-	      data->te = 1;
-	    }
-	  else
-	    {
-	      data->te = 0;
-	    }	       
-	}
+        {
+          if( LOGICAL(tmp)[0] == TRUE)
+            {
+              data->te = 1;
+            }
+          else
+            {
+              data->te = 0;
+            }          
+        }
       else
-	{
-	  Rprintf ("List component 'te' must be either string or logical - found %d instead \n", 
-		   TYPEOF(tmp) );
-	  error("Input list component 'te' must be either string or logical"); 
-	}
+        {
+          Rprintf ("List component 'te' must be either string or logical - found %d instead \n", 
+                   TYPEOF(tmp) );
+          error("Input list component 'te' must be either string or logical"); 
+        }
     }
 
   /* Checking for uels. Used in filtered read */
@@ -2919,40 +2919,40 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
   for (i = 0; i < nField; i++)
     {
       if(strcmp("uels", CHAR(STRING_ELT(lstName, i))) == 0)
-	{
-	  found = 1;
-	  break;
-	}
+        {
+          found = 1;
+          break;
+        }
     }
 
   if(found == 1)
     {
       tmp = VECTOR_ELT(lst, i);
       if(TYPEOF(tmp) != VECSXP)
-	{
-	  error("List component 'uels' must be a list.");
-	}
+        {
+          error("List component 'uels' must be a list.");
+        }
       else
-	{ 
-	  PROTECT(data->filterUel = allocVector(VECSXP, length(tmp)));
-	  alloc++;
-	  for(j = 0; j < length(tmp); j++)
-	    {
-	      tmpUel = VECTOR_ELT(tmp, j);
-	      if(tmpUel == R_NilValue)
-		{
-		  error("Empty Uel is not allowed ");
-		}
-	      else
-		{
-		  bufferUel = allocVector(STRSXP, length(tmpUel));
-		  /* Convert to output  */
-		  bufferUel =  convertToOutput(bufferUel, tmpUel);
-		  SET_VECTOR_ELT(data->filterUel, j, bufferUel);		       
-		}
-	    }
-	  data->withUel = 1;
-	}
+        { 
+          PROTECT(data->filterUel = allocVector(VECSXP, length(tmp)));
+          alloc++;
+          for(j = 0; j < length(tmp); j++)
+            {
+              tmpUel = VECTOR_ELT(tmp, j);
+              if(tmpUel == R_NilValue)
+                {
+                  error("Empty Uel is not allowed ");
+                }
+              else
+                {
+                  bufferUel = allocVector(STRSXP, length(tmpUel));
+                  /* Convert to output  */
+                  bufferUel =  convertToOutput(bufferUel, tmpUel);
+                  SET_VECTOR_ELT(data->filterUel, j, bufferUel);                       
+                }
+            }
+          data->withUel = 1;
+        }
     }
 }
 
@@ -2965,9 +2965,9 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
 */
 static void 
 writeGdx(char *gdxFileName, 
-	 int arglen,
-	 SEXP *symbolList,	
-	 int fromGAMS)
+         int arglen,
+         SEXP *symbolList,      
+         int fromGAMS)
 {
   FILE *matdata;
   SEXP uelIndex, compName, valData;
@@ -2994,12 +2994,12 @@ writeGdx(char *gdxFileName,
       inputTime = "compile";
       inputTime = getGlobalString("input");  
       if (NULL == inputTime)
-	inputTime = "compile";
+        inputTime = "compile";
 
       if ((matdata = fopen("matdata.gms","w")) == NULL)
-	error("Cannot write 'matdata.gms' file.");
+        error("Cannot write 'matdata.gms' file.");
       if (strcmp(inputTime,"exec") != 0) {
-	fprintf(matdata,"$gdxin matdata.gdx\n");
+        fprintf(matdata,"$gdxin matdata.gdx\n");
       }
     }
 
@@ -3010,7 +3010,7 @@ writeGdx(char *gdxFileName,
       Rprintf ("Error loading the GDX API\n");
       Rprintf ("%s\n", msgBuf);
       error("Error loading the GDX API: %s", 
-	    msgBuf);
+            msgBuf);
     }
   rc = gdxCreate (&gdxHandle, msgBuf, sizeof(msgBuf));
   if (! rc) 
@@ -3029,7 +3029,7 @@ writeGdx(char *gdxFileName,
   if (errNum || 0 == rc)
     {
       error("Could not open gdx file with gdxOpenWrite: %s",
-	    lastErrMsg);
+            lastErrMsg);
     }
 
   rc = gdxUELRegisterStrStart (gdxHandle);
@@ -3046,13 +3046,13 @@ writeGdx(char *gdxFileName,
   for (i = 0; i < arglen-2; i++)
     { 
       if(TYPEOF(symbolList[i]) != VECSXP)
-	{
-	  error("Incorrect type of input argument entered. List expected\n");
-	}
+        {
+          error("Incorrect type of input argument entered. List expected\n");
+        }
       else
-	{
-	  checkWgdxList(symbolList[i], i, uelIndex, data, fromGAMS);	
-	}
+        {
+          checkWgdxList(symbolList[i], i, uelIndex, data, fromGAMS);    
+        }
     }
 
   rc = gdxUELRegisterDone(gdxHandle);
@@ -3067,288 +3067,288 @@ writeGdx(char *gdxFileName,
   for (i = 0; i < arglen-2; i++)
     {
       /* 
-	 Looking for 'val'
-	 This is the glitch that i am worried about
+         Looking for 'val'
+         This is the glitch that i am worried about
       */
       compName = getAttrib(symbolList[i], R_NamesSymbol);
       for (j = 0; j < length(symbolList[i]); j++)
-	{
-	  if(strcmp("val", CHAR(STRING_ELT(compName, j))) == 0)
-	    {
-	      found = 1;
-	      break;
-	    }
-	}
+        {
+          if(strcmp("val", CHAR(STRING_ELT(compName, j))) == 0)
+            {
+              found = 1;
+              break;
+            }
+        }
   
       if(found == 1)
-	{
-	  valData = VECTOR_ELT(symbolList[i], j);
-	}
+        {
+          valData = VECTOR_ELT(symbolList[i], j);
+        }
       /* This is special check  */
       if(fromGAMS == 0 
-	 || ( fromGAMS == 1 
-	      && (found == 0 || TYPEOF(valData) != STRSXP)))
-	{	  	
-	  mainBuffer = VECTOR_ELT(uelIndex, i);      	 
-	  if(fromGAMS)
-	    {	  
-	      if (strcmp(inputTime,"exec") == 0) 
-		{
-		  fprintf(matdata,"execute_load 'matdata.gdx' %s;\n", data[i]->name);
-		}
-	      else 
-		{
-		  fprintf(matdata,"$kill %s\n$load %s\n",  data[i]->name, data[i]->name);
-		}
-	    }
-	  /* creating value for set that does not have .val */      
-	  if(data[i]->dType == set)
-	    {
-	      if(data[i]->withVal == 0 &&  data[i]->withUel == 1)
-		{
-		  nColumns = length(mainBuffer);
-		  PROTECT(dimVect = allocVector(REALSXP, nColumns));
-		  wAlloc++;
-		  totalElement = 1;
-		  dimVal = REAL(dimVect);
-		  ndimension = 0;
+         || ( fromGAMS == 1 
+              && (found == 0 || TYPEOF(valData) != STRSXP)))
+        {               
+          mainBuffer = VECTOR_ELT(uelIndex, i);          
+          if(fromGAMS)
+            {     
+              if (strcmp(inputTime,"exec") == 0) 
+                {
+                  fprintf(matdata,"execute_load 'matdata.gdx' %s;\n", data[i]->name);
+                }
+              else 
+                {
+                  fprintf(matdata,"$kill %s\n$load %s\n",  data[i]->name, data[i]->name);
+                }
+            }
+          /* creating value for set that does not have .val */      
+          if(data[i]->dType == set)
+            {
+              if(data[i]->withVal == 0 &&  data[i]->withUel == 1)
+                {
+                  nColumns = length(mainBuffer);
+                  PROTECT(dimVect = allocVector(REALSXP, nColumns));
+                  wAlloc++;
+                  totalElement = 1;
+                  dimVal = REAL(dimVect);
+                  ndimension = 0;
 
-		  for(ndimension = 0; ndimension < (int)nColumns; ndimension++) 
-		    {
-		      dimVal[ndimension] = length(VECTOR_ELT(mainBuffer, ndimension));
-		      totalElement = (totalElement * length(VECTOR_ELT(mainBuffer, ndimension)));
-		    }
-		  PROTECT(valData = allocVector(REALSXP, totalElement));
-		  wAlloc++;
-		  p = REAL(valData);
-		  for (index = 0; index < totalElement; index++)
-		    {
-		      p[index] = 1;
-		    }
-		  setAttrib(valData, R_DimSymbol, dimVect);
-		  index = 0;
-		  data[i]->dForm = full;
-		}
-	    }
-	  if(data[i]->withTs == 1)
-	    {
-	      /* Looking for 'ts'  */
-	      j = 0;
-	      found = 0;
-	      for (j = 0; j < length(symbolList[i]); j++)
-		{
-		  if(strcmp("ts", CHAR(STRING_ELT(compName, j))) == 0)
-		    {
-		      found = 1;
-		      break;
-		    }
-		}
+                  for(ndimension = 0; ndimension < (int)nColumns; ndimension++) 
+                    {
+                      dimVal[ndimension] = length(VECTOR_ELT(mainBuffer, ndimension));
+                      totalElement = (totalElement * length(VECTOR_ELT(mainBuffer, ndimension)));
+                    }
+                  PROTECT(valData = allocVector(REALSXP, totalElement));
+                  wAlloc++;
+                  p = REAL(valData);
+                  for (index = 0; index < totalElement; index++)
+                    {
+                      p[index] = 1;
+                    }
+                  setAttrib(valData, R_DimSymbol, dimVect);
+                  index = 0;
+                  data[i]->dForm = full;
+                }
+            }
+          if(data[i]->withTs == 1)
+            {
+              /* Looking for 'ts'  */
+              j = 0;
+              found = 0;
+              for (j = 0; j < length(symbolList[i]); j++)
+                {
+                  if(strcmp("ts", CHAR(STRING_ELT(compName, j))) == 0)
+                    {
+                      found = 1;
+                      break;
+                    }
+                }
   
-	      if(found == 1)
-		{
-		  expText = CHAR(STRING_ELT( VECTOR_ELT(symbolList[i], j) , 0));
-		}
-	    }
-	  else
-	    {
-	      expText = "R data from GDXRRW";
-	    }
+              if(found == 1)
+                {
+                  expText = CHAR(STRING_ELT( VECTOR_ELT(symbolList[i], j) , 0));
+                }
+            }
+          else
+            {
+              expText = "R data from GDXRRW";
+            }
 
-	  if(data[i]->dForm == sparse)
-	    {
-	      dimVect = getAttrib(valData, R_DimSymbol);
-	      nColumns = INTEGER(dimVect)[1];
-	      nRows =INTEGER(dimVect)[0];
+          if(data[i]->dForm == sparse)
+            {
+              dimVect = getAttrib(valData, R_DimSymbol);
+              nColumns = INTEGER(dimVect)[1];
+              nRows =INTEGER(dimVect)[0];
 
-	      if(data[i]->dType == parameter)
-		{
-		  nColumns--;
-		  rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
-					     nColumns, GMS_DT_PAR, 0);
-		}
-	      else
-		{
-		  rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
-					     nColumns, GMS_DT_SET, 0);
-		}
-	      if (!rc) 
-		{
-		  error("Could not write data with gdxDataWriteMapStart");
-		}
-	 
-	      /* 
-		 TODO: This is furstrating. 
-		 Find a better way to deal with REAL and INTEGER
-		 I don't want to loop over whole data set and convert from int to double
-	      */
-	      if(TYPEOF(valData) == REALSXP)
-		{
-		  p = REAL(valData);
-		}
-	      else if(TYPEOF(valData) == INTSXP)
-		{
-		  p = (double*)INTEGER(valData);
-		}
-	      j = 0; k = 0;
-	      for(j = 0; j < nRows; j++)
-		{
-		  for(k = 0; k < nColumns; k++)
-		    {
-		      subBuffer =  VECTOR_ELT(mainBuffer, k);		  
-		      stringUelIndex = CHAR(STRING_ELT(subBuffer, p[nRows*k + j]-1 ));
-		      uelIndices[k] = atoi(stringUelIndex);
-		    }
-		  if(data[i]->dType == parameter)
-		    {
-		      vals[0] = p[nRows*(nColumns) + j];
-		      if (vals[0] != 0 && gdxMapValue (gdxHandle, vals[0], &z))  /* it's special */
-			{ 
-			  switch (z)
-			    {
-			    case sv_valpin:
-			      vals[0] =  NA_REAL;
-			      break;
-			    case sv_valmin:                           
-			      vals[0] = NA_REAL;
-			      break;
-			    case sv_valeps:
-			      vals[0] = 0;
-			      break;
-			    case sv_valund:
-			    case sv_valna:
-			      vals[0] = NA_REAL;
-			      break;
-			    default:                          
-			      error("Unrecognized map-value %d returned for %g", 
-				    z, 
-				    vals[0]);
-			    } /* end of switch/case */
-			}                     
-		    }
-		  /* No need to write zero values */
-		  if((data[i]->dType == parameter && vals[0] != 0) 
-		     || data[i]->dType == set)
-		    {
-		      rc = gdxDataWriteMap(gdxHandle, uelIndices, vals);
-		      if (!rc) 
-			{
-			  error("Could not write parameter MAP with gdxDataWriteMap");
-			}
-		    }
-		}
-				
-	      if(!gdxDataWriteDone(gdxHandle))
-		{
-		  error("Could not end writing parameter with gdxDataWriteMapStart");
-		}
-	    }
-	  else
-	    {
-	      total_num_of_elements = length(valData);
-	      dimVect = getAttrib(valData, R_DimSymbol);	 
-	      nColumns = length(mainBuffer);
-	      subscript = malloc(nColumns*sizeof(*subscript));
-	      if(data[i]->dType == parameter)
-		{         
-		  rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
-					     nColumns, GMS_DT_PAR, 0);
-		}
-	      else
-		{
-		  rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
-					     nColumns, GMS_DT_SET, 0);
-		}
-	      if (!rc) 
-		{
-		  error("Could not write data with gdxDataWriteMapStart");
-		}
-	      for (index = 0; index < total_num_of_elements; index++)
-		{
-		  subindex = index;
-		  if(nColumns > 0)
-		    {
-		      for (d = nColumns-1; ; d--)             
-			{
-			  subBuffer =  VECTOR_ELT(mainBuffer, d);
-			  for (total=1, inner=0; inner<d; inner++)
-			    {
-			      total *= INTEGER(dimVect)[inner];
-			    }
-			  subscript[d] = subindex / total;
+              if(data[i]->dType == parameter)
+                {
+                  nColumns--;
+                  rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
+                                             nColumns, GMS_DT_PAR, 0);
+                }
+              else
+                {
+                  rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
+                                             nColumns, GMS_DT_SET, 0);
+                }
+              if (!rc) 
+                {
+                  error("Could not write data with gdxDataWriteMapStart");
+                }
+         
+              /* 
+                 TODO: This is furstrating. 
+                 Find a better way to deal with REAL and INTEGER
+                 I don't want to loop over whole data set and convert from int to double
+              */
+              if(TYPEOF(valData) == REALSXP)
+                {
+                  p = REAL(valData);
+                }
+              else if(TYPEOF(valData) == INTSXP)
+                {
+                  p = (double*)INTEGER(valData);
+                }
+              j = 0; k = 0;
+              for(j = 0; j < nRows; j++)
+                {
+                  for(k = 0; k < nColumns; k++)
+                    {
+                      subBuffer =  VECTOR_ELT(mainBuffer, k);             
+                      stringUelIndex = CHAR(STRING_ELT(subBuffer, p[nRows*k + j]-1 ));
+                      uelIndices[k] = atoi(stringUelIndex);
+                    }
+                  if(data[i]->dType == parameter)
+                    {
+                      vals[0] = p[nRows*(nColumns) + j];
+                      if (vals[0] != 0 && gdxMapValue (gdxHandle, vals[0], &z))  /* it's special */
+                        { 
+                          switch (z)
+                            {
+                            case sv_valpin:
+                              vals[0] =  NA_REAL;
+                              break;
+                            case sv_valmin:                           
+                              vals[0] = NA_REAL;
+                              break;
+                            case sv_valeps:
+                              vals[0] = 0;
+                              break;
+                            case sv_valund:
+                            case sv_valna:
+                              vals[0] = NA_REAL;
+                              break;
+                            default:                          
+                              error("Unrecognized map-value %d returned for %g", 
+                                    z, 
+                                    vals[0]);
+                            } /* end of switch/case */
+                        }                     
+                    }
+                  /* No need to write zero values */
+                  if((data[i]->dType == parameter && vals[0] != 0) 
+                     || data[i]->dType == set)
+                    {
+                      rc = gdxDataWriteMap(gdxHandle, uelIndices, vals);
+                      if (!rc) 
+                        {
+                          error("Could not write parameter MAP with gdxDataWriteMap");
+                        }
+                    }
+                }
+                                
+              if(!gdxDataWriteDone(gdxHandle))
+                {
+                  error("Could not end writing parameter with gdxDataWriteMapStart");
+                }
+            }
+          else
+            {
+              total_num_of_elements = length(valData);
+              dimVect = getAttrib(valData, R_DimSymbol);         
+              nColumns = length(mainBuffer);
+              subscript = malloc(nColumns*sizeof(*subscript));
+              if(data[i]->dType == parameter)
+                {         
+                  rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
+                                             nColumns, GMS_DT_PAR, 0);
+                }
+              else
+                {
+                  rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
+                                             nColumns, GMS_DT_SET, 0);
+                }
+              if (!rc) 
+                {
+                  error("Could not write data with gdxDataWriteMapStart");
+                }
+              for (index = 0; index < total_num_of_elements; index++)
+                {
+                  subindex = index;
+                  if(nColumns > 0)
+                    {
+                      for (d = nColumns-1; ; d--)             
+                        {
+                          subBuffer =  VECTOR_ELT(mainBuffer, d);
+                          for (total=1, inner=0; inner<d; inner++)
+                            {
+                              total *= INTEGER(dimVect)[inner];
+                            }
+                          subscript[d] = subindex / total;
 
-			  stringUelIndex = CHAR(STRING_ELT(subBuffer, subscript[d]));
+                          stringUelIndex = CHAR(STRING_ELT(subBuffer, subscript[d]));
 
-			  uelIndices[d] = atoi(stringUelIndex);
+                          uelIndices[d] = atoi(stringUelIndex);
 
-			  subindex = subindex % total;
-			  if (d == 0) 
-			    {
-			      break;
-			    }
-			}/* for loop over "d" */
-		    }
+                          subindex = subindex % total;
+                          if (d == 0) 
+                            {
+                              break;
+                            }
+                        }/* for loop over "d" */
+                    }
 
-		  if(TYPEOF(valData) == REALSXP)
-		    {
-		      p = REAL(valData);
-		    }
-		  else if(TYPEOF(valData) == INTSXP)
-		    {
-		      p = (double*)INTEGER(valData);
-		    }
-		  if(data[i]->dType == parameter)
-		    {
-		      vals[0] = p[index];
-		      if (vals[0] != 0 && gdxMapValue (gdxHandle, vals[0], &z))  /* it's special */
-			{ 
-			  switch (z)
-			    {
-			    case sv_valpin:
-			      vals[0] = NA_REAL;
-			      break;
-			    case sv_valmin:                           
-			      vals[0] = NA_REAL;
-			      break;
-			    case sv_valeps:
-			      vals[0] = 0;
-			      break;
-			    case sv_valund:
-			    case sv_valna:
-			      vals[0] = NA_REAL;
-			      break;
-			    default:                          
-			      error("Unrecognized map-value %d returned for %g", 
-				    z, 
-				    vals[0]);
-			    } /* end of switch/case */
-			}
-		    }
-		  /* No need to write zero values */
-		  if((data[i]->dType == parameter && vals[0] != 0)
-		     || (data[i]->dType == set && p[index] == 1))
-		    {
-		      rc = gdxDataWriteMap(gdxHandle, uelIndices, vals);
-		      if (!rc) 
-			{
-			  error("Could not write parameter MAP with gdxDataWriteMap");
-			}
-		    }
-		  /*  } End of real data  */
-		} /* for loop over "index" */
-	      if(!gdxDataWriteDone(gdxHandle))
-		{
-		  error("Could not end writing data with gdxDataWriteMapStart");
-		}	      
-	    } /* end of writing full data */
-	}
+                  if(TYPEOF(valData) == REALSXP)
+                    {
+                      p = REAL(valData);
+                    }
+                  else if(TYPEOF(valData) == INTSXP)
+                    {
+                      p = (double*)INTEGER(valData);
+                    }
+                  if(data[i]->dType == parameter)
+                    {
+                      vals[0] = p[index];
+                      if (vals[0] != 0 && gdxMapValue (gdxHandle, vals[0], &z))  /* it's special */
+                        { 
+                          switch (z)
+                            {
+                            case sv_valpin:
+                              vals[0] = NA_REAL;
+                              break;
+                            case sv_valmin:                           
+                              vals[0] = NA_REAL;
+                              break;
+                            case sv_valeps:
+                              vals[0] = 0;
+                              break;
+                            case sv_valund:
+                            case sv_valna:
+                              vals[0] = NA_REAL;
+                              break;
+                            default:                          
+                              error("Unrecognized map-value %d returned for %g", 
+                                    z, 
+                                    vals[0]);
+                            } /* end of switch/case */
+                        }
+                    }
+                  /* No need to write zero values */
+                  if((data[i]->dType == parameter && vals[0] != 0)
+                     || (data[i]->dType == set && p[index] == 1))
+                    {
+                      rc = gdxDataWriteMap(gdxHandle, uelIndices, vals);
+                      if (!rc) 
+                        {
+                          error("Could not write parameter MAP with gdxDataWriteMap");
+                        }
+                    }
+                  /*  } End of real data  */
+                } /* for loop over "index" */
+              if(!gdxDataWriteDone(gdxHandle))
+                {
+                  error("Could not end writing data with gdxDataWriteMapStart");
+                }             
+            } /* end of writing full data */
+        }
     }    /* End of for(i) loop  */
 
   if(fromGAMS)
     {   
       if (strcmp(inputTime,"exec") != 0) 
-	{
-	  fprintf(matdata,"$gdxin\n"); 
-	}
+        {
+          fprintf(matdata,"$gdxin\n"); 
+        }
       fclose(matdata);
     }
   /* Close GDX file  */
@@ -3357,8 +3357,8 @@ writeGdx(char *gdxFileName,
     {
       getGDXMsg ();
       error("GDXRRW:wgdx:GDXError",
-	    "Could not gdxClose: %s",
-	    lastErrMsg);
+            "Could not gdxClose: %s",
+            lastErrMsg);
     }
   (void) gdxFree (&gdxHandle);
   
@@ -3469,14 +3469,14 @@ SEXP rgdx (SEXP args)
       int n;
 
       if (0 == strcmp("?", gdxFileName)) 
-	{
-	  n = (int)strlen (ID);
-	  memcpy (strippedID, ID+1, n-2);
-	  strippedID[n-2] = '\0';
-	  warning("R-file source info: %s",
-		  strippedID );
-	  return R_NilValue;
-	} /* if audit run */
+        {
+          n = (int)strlen (ID);
+          memcpy (strippedID, ID+1, n-2);
+          strippedID[n-2] = '\0';
+          warning("R-file source info: %s",
+                  strippedID );
+          return R_NilValue;
+        } /* if audit run */
     } /* if one arg, of character type */
 
   /* ------------------- check if the GDX file exists --------------- */
@@ -3505,7 +3505,7 @@ SEXP rgdx (SEXP args)
     checkRgdxList(symbolList, inputData);
     if(inputData->compress == 1 && inputData->withUel == 1)
       {
-	error("Compression is not allowed with input UEL\n");
+        error("Compression is not allowed with input UEL\n");
       }
   }
 
@@ -3531,36 +3531,36 @@ SEXP rgdx (SEXP args)
       /* start searching for symbol  */
       rc = gdxFindSymbol (gdxHandle, inputData->name, &symIdx);
       if (! rc) 
-	{
-	  sprintf (buf, "GDX file %s contains no symbol named '%s'\n", 
-		   gdxFileName,
-		   inputData->name );
-	  error (buf);
-	}
+        {
+          sprintf (buf, "GDX file %s contains no symbol named '%s'\n", 
+                   gdxFileName,
+                   inputData->name );
+          error (buf);
+        }
       gdxSymbolInfo (gdxHandle, symIdx, buf, &symDim, &symType);
       if(inputData->ts == 1)
-	{
-	  gdxSymbolInfoX(gdxHandle, symIdx, &ACount, &rc, sText);	
-	}
+        {
+          gdxSymbolInfoX(gdxHandle, symIdx, &ACount, &rc, sText);       
+        }
 
       /* checking that symbol is of type parameter/set/equaltion/variable */
       if (!(symType == dt_par || symType == dt_set || symType == dt_var || symType == dt_equ)) 
-	{
-	  sprintf(buf, "GDX symbol %s (index=%d, symDim=%d, symType=%d)"
-		  " is not recognized as set, parameter, variable, or equation\n",
-		  inputData->name, symIdx, symDim, symType);
-	  error(buf);
-	}
+        {
+          sprintf(buf, "GDX symbol %s (index=%d, symDim=%d, symType=%d)"
+                  " is not recognized as set, parameter, variable, or equation\n",
+                  inputData->name, symIdx, symDim, symType);
+          error(buf);
+        }
       else if ((symType == dt_par || symType == dt_set) && inputData->withField == 1)
-	{
-	  error("Symbol '%s' is either set or parameter that can't have field.", 
-		inputData->name);
-	}
+        {
+          error("Symbol '%s' is either set or parameter that can't have field.", 
+                inputData->name);
+        }
       if(inputData->te == 1 && symType != dt_set)
-	{
-	  error("Text elements only exist for set and symbol '%s' is not a set.", 
-		inputData->name);
-	}
+        {
+          error("Text elements only exist for set and symbol '%s' is not a set.", 
+                inputData->name);
+        }
     } 
   /* Get global UEL from GDX file */
   (void) gdxUMUelInfo (gdxHandle, &nUEL, &highestMappedUEL);
@@ -3578,499 +3578,499 @@ SEXP rgdx (SEXP args)
   if(withList)
     {
       /* Checking dimension of input uel and paramter in GDX file.
-	 If they are not equal then error.  */
+         If they are not equal then error.  */
 
       if(inputData->withUel == 1 && length(inputData->filterUel) != symDim)
-	{
-	  error("Dimension of UEL entered does not match with symbol in GDX");
-	}
+        {
+          error("Dimension of UEL entered does not match with symbol in GDX");
+        }
       /* Creating default uel if none entered */
       if(inputData->withUel != 1)
-	{
-	  PROTECT(compUels = allocVector(VECSXP, symDim));
-	  alloc++;
-	  for(defaultIndex = 0; defaultIndex < symDim; defaultIndex++)
-	    {
-	      SET_VECTOR_ELT(compUels, defaultIndex, UEList);
-	    }
-	} 
+        {
+          PROTECT(compUels = allocVector(VECSXP, symDim));
+          alloc++;
+          for(defaultIndex = 0; defaultIndex < symDim; defaultIndex++)
+            {
+              SET_VECTOR_ELT(compUels, defaultIndex, UEList);
+            }
+        } 
 
       /* Start reading data  */
       gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
       /* if it is a parameter, add 1 to the dimension */
       mrows = nRecs;
       if (symType != dt_set)
-	{
-	  ncols = symDim+1;
-	}
+        {
+          ncols = symDim+1;
+        }
       else 
-	{
-	  ncols = symDim;
-	}
+        {
+          ncols = symDim;
+        }
       
       /* TODO: filter UEL */
       /* this is to check total number of elements that matches
-	 in Input UEL. Then create a 2D double matrix for sparse format.      
-	 compute total number of elements matched in Input UEL.
+         in Input UEL. Then create a 2D double matrix for sparse format.      
+         compute total number of elements matched in Input UEL.
       */
       mwNElements = 0; 
     
       if(inputData->withUel == 1)
-	{
-	  maxPossibleElements = 1;
-	  for(z = 0; z < symDim; z++)
-	    {
-	      mwNElements = length(VECTOR_ELT(inputData->filterUel, z));
-	      maxPossibleElements = maxPossibleElements*mwNElements;
-	    }      
-	  mwNElements = 0;
+        {
+          maxPossibleElements = 1;
+          for(z = 0; z < symDim; z++)
+            {
+              mwNElements = length(VECTOR_ELT(inputData->filterUel, z));
+              maxPossibleElements = maxPossibleElements*mwNElements;
+            }      
+          mwNElements = 0;
 
-	  for(iRec = 0;  iRec < nRecs;  iRec++)
-	    {        
-	      gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-	      b = 0;
-	      for(k = 0; k < symDim; k++)
-		{                              
-		  uelProperty = 0;
-		  uelElementName = CHAR( STRING_ELT(UEList, uels[k]-1)  );
-		  uelProperty = checkIfExist(k, inputData->filterUel, uelElementName);
-		  /* uel element exists */
-		  if(uelProperty > 0)
-		    {
-		      b++; 
-		    }		    		  
-		  else
-		    {
-		      break;          		      
-		    }
-		}
-	      if(b == symDim)
-		{
-		  mwNElements++;
-		  if(mwNElements == maxPossibleElements)
-		    {
-		      break;
-		    }
-		}
-	    }
-	  iRec = 0;
-	  k = 0;
-	}
+          for(iRec = 0;  iRec < nRecs;  iRec++)
+            {        
+              gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+              b = 0;
+              for(k = 0; k < symDim; k++)
+                {                              
+                  uelProperty = 0;
+                  uelElementName = CHAR( STRING_ELT(UEList, uels[k]-1)  );
+                  uelProperty = checkIfExist(k, inputData->filterUel, uelElementName);
+                  /* uel element exists */
+                  if(uelProperty > 0)
+                    {
+                      b++; 
+                    }                             
+                  else
+                    {
+                      break;                          
+                    }
+                }
+              if(b == symDim)
+                {
+                  mwNElements++;
+                  if(mwNElements == maxPossibleElements)
+                    {
+                      break;
+                    }
+                }
+            }
+          iRec = 0;
+          k = 0;
+        }
       /* Allocating memory for 2D sparse matrix */
       if(inputData->withUel == 1) 
-	{
-	  PROTECT(compVal = allocMatrix(REALSXP, mwNElements, ncols));
-	  alloc++;    
-	  if(inputData->te && symType == dt_set)
-	    {
-	      PROTECT(textElement = allocVector(STRSXP, mwNElements));
-	      alloc++;
-	    } 
-	}
+        {
+          PROTECT(compVal = allocMatrix(REALSXP, mwNElements, ncols));
+          alloc++;    
+          if(inputData->te && symType == dt_set)
+            {
+              PROTECT(textElement = allocVector(STRSXP, mwNElements));
+              alloc++;
+            } 
+        }
       if(inputData->withUel == 0) 
-	{
-	  /*  check for non zero elements for variable and equation  */
-	  if(symType == dt_var || symType == dt_equ )
-	    {
-	      mrows = getNonZeroElements(gdxHandle, symIdx, &inputData->dField);
-	    }
-	  /* Creat 2D sparse R array  */
-	  PROTECT(compVal = allocMatrix(REALSXP, mrows, ncols));
-	  alloc++;
-	  if(inputData->te && symType == dt_set)
-	    {	     
-	      PROTECT(textElement = allocVector(STRSXP, mrows));
-	      alloc++;
-	    } 
-	}
+        {
+          /*  check for non zero elements for variable and equation  */
+          if(symType == dt_var || symType == dt_equ )
+            {
+              mrows = getNonZeroElements(gdxHandle, symIdx, &inputData->dField);
+            }
+          /* Creat 2D sparse R array  */
+          PROTECT(compVal = allocMatrix(REALSXP, mrows, ncols));
+          alloc++;
+          if(inputData->te && symType == dt_set)
+            {        
+              PROTECT(textElement = allocVector(STRSXP, mrows));
+              alloc++;
+            } 
+        }
 
       p = REAL(compVal);
       /* TODO/TEST: filtered read */
       if(inputData->withUel == 1)
-	{	  
-	  matched = 0;
-	  gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
-	  /* TODO/TEST: text elements with UEL  */
-	  if(inputData->te == 1)
-	    {
-	      returnedIndex = malloc(symDim*sizeof(*returnedIndex));	      
-	      for (iRec = 0;  iRec < nRecs;  iRec++) 
-		{
-		  gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-		  index = 0;
-		  totNumber = 1;
-		  b = 0;
-		  for (k = 0;  k < symDim;  k++) 
-		    {
-		      uelProperty = 0;
-		      returnedIndex[k] = 0;
-		      uelElementName = CHAR( STRING_ELT(UEList, uels[k]-1)  );
-		      uelProperty = checkIfExist(k, inputData->filterUel, uelElementName);		      
-		      if(uelProperty > 0)
-			{
-			  returnedIndex[k] = uelProperty;            
-			  b++;
-			} 
-		      else 
-			{
-			  break;
-			}
-		    }
-		  if(b == symDim)
-		    {
-		      for(sparesIndex = 0; sparesIndex < symDim; sparesIndex++ )
-			{
-			  p[matched + sparesIndex*mwNElements] = returnedIndex[sparesIndex];
-			}
-		      
-		      index = matched + symDim*(int)mwNElements;
+        {         
+          matched = 0;
+          gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
+          /* TODO/TEST: text elements with UEL  */
+          if(inputData->te == 1)
+            {
+              returnedIndex = malloc(symDim*sizeof(*returnedIndex));          
+              for (iRec = 0;  iRec < nRecs;  iRec++) 
+                {
+                  gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+                  index = 0;
+                  totNumber = 1;
+                  b = 0;
+                  for (k = 0;  k < symDim;  k++) 
+                    {
+                      uelProperty = 0;
+                      returnedIndex[k] = 0;
+                      uelElementName = CHAR( STRING_ELT(UEList, uels[k]-1)  );
+                      uelProperty = checkIfExist(k, inputData->filterUel, uelElementName);                    
+                      if(uelProperty > 0)
+                        {
+                          returnedIndex[k] = uelProperty;            
+                          b++;
+                        } 
+                      else 
+                        {
+                          break;
+                        }
+                    }
+                  if(b == symDim)
+                    {
+                      for(sparesIndex = 0; sparesIndex < symDim; sparesIndex++ )
+                        {
+                          p[matched + sparesIndex*mwNElements] = returnedIndex[sparesIndex];
+                        }
+                      
+                      index = matched + symDim*(int)mwNElements;
                      
-		      if(values[GMS_VAL_LEVEL]) 
-			{ 
-			  elementIndex = (int) values[GMS_VAL_LEVEL];
-			  gdxGetElemText(gdxHandle, elementIndex, msg, &IDum);
-			  SET_STRING_ELT(textElement, matched, mkChar(msg));
-			}
-		      else
-			{
-			  strcpy(stringEle, "");
-			  for (kk = 0;  kk < symDim;  kk++) 
-			    {			 			 
-			      strcat(stringEle, CHAR(STRING_ELT(UEList, uels[kk]-1))  );
-			      if(kk != symDim-1)
-				{
-				  strcat(stringEle, ".");
-				}              
-			    }
-			  SET_STRING_ELT(textElement, matched, mkChar(stringEle));
-			  kk = 0;
-			}
-		      matched = matched +1;  
-		    }
-		  if(matched == maxPossibleElements)
-		    {
-		      break;
-		    }
-		}
-	      free(returnedIndex);
-	    } /* End of inputData->te == 1  */
-	  else
-	    {
-	      returnedIndex = malloc(symDim*sizeof(*returnedIndex));
-	      for (iRec = 0;  iRec < nRecs;  iRec++) 
-		{
-		  gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-		  index = 0;
-		  totNumber = 1;
-		  b = 0;
-		  
-		  for (k = 0;  k < symDim;  k++) 
-		    {
-		      uelProperty = 0;
-		      returnedIndex[k] = 0;
-		      uelElementName = CHAR( STRING_ELT(UEList, uels[k]-1)  );
-		      uelProperty = checkIfExist(k, inputData->filterUel, uelElementName);
-		      if(uelProperty > 0)
-			{
-			  returnedIndex[k] = uelProperty;            
-			  b++;
-			} 
-		      else 
-			{
-			  break;
-			}
-		    }
-		  if(b == symDim)
-		    {
-		      for(sparesIndex = 0; sparesIndex < symDim; sparesIndex++ )
-			{
-			  p[matched + sparesIndex*mwNElements] = returnedIndex[sparesIndex];
-			}
-		      index = matched + symDim*(int)mwNElements;			
-		      matched = matched +1;
+                      if(values[GMS_VAL_LEVEL]) 
+                        { 
+                          elementIndex = (int) values[GMS_VAL_LEVEL];
+                          gdxGetElemText(gdxHandle, elementIndex, msg, &IDum);
+                          SET_STRING_ELT(textElement, matched, mkChar(msg));
+                        }
+                      else
+                        {
+                          strcpy(stringEle, "");
+                          for (kk = 0;  kk < symDim;  kk++) 
+                            {                                            
+                              strcat(stringEle, CHAR(STRING_ELT(UEList, uels[kk]-1))  );
+                              if(kk != symDim-1)
+                                {
+                                  strcat(stringEle, ".");
+                                }              
+                            }
+                          SET_STRING_ELT(textElement, matched, mkChar(stringEle));
+                          kk = 0;
+                        }
+                      matched = matched +1;  
+                    }
+                  if(matched == maxPossibleElements)
+                    {
+                      break;
+                    }
+                }
+              free(returnedIndex);
+            } /* End of inputData->te == 1  */
+          else
+            {
+              returnedIndex = malloc(symDim*sizeof(*returnedIndex));
+              for (iRec = 0;  iRec < nRecs;  iRec++) 
+                {
+                  gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+                  index = 0;
+                  totNumber = 1;
+                  b = 0;
+                  
+                  for (k = 0;  k < symDim;  k++) 
+                    {
+                      uelProperty = 0;
+                      returnedIndex[k] = 0;
+                      uelElementName = CHAR( STRING_ELT(UEList, uels[k]-1)  );
+                      uelProperty = checkIfExist(k, inputData->filterUel, uelElementName);
+                      if(uelProperty > 0)
+                        {
+                          returnedIndex[k] = uelProperty;            
+                          b++;
+                        } 
+                      else 
+                        {
+                          break;
+                        }
+                    }
+                  if(b == symDim)
+                    {
+                      for(sparesIndex = 0; sparesIndex < symDim; sparesIndex++ )
+                        {
+                          p[matched + sparesIndex*mwNElements] = returnedIndex[sparesIndex];
+                        }
+                      index = matched + symDim*(int)mwNElements;                        
+                      matched = matched +1;
 
-		      if (symType != dt_set) 
-			{
-			  if (gdxMapValue (gdxHandle, values[dField], &k)) /* it's special */
-			    { 
-			      switch (k) 
-				{
-				case sv_valpin:                                                          
-				  p[index] = NA_REAL;
-				  break;
-				case sv_valmin:                                                           
-				  p[index] = NA_REAL;
-				  break;
-				case sv_valeps:
-				  p[index] = 0;
-				  break;
-				case sv_normal:
-				  p[index] = values[dField];
-				  break;
-				case sv_valund:
-				case sv_valna:
-				  p[index] = NA_REAL;
-				  break;
-				default:
-				  sprintf(buf, 
-					  "Unrecognized map-value %d returned for %g",
-					  k, 
-					  values[dField]);
-				  error(buf);
-				} /* end of switch/case */
-			    }
-			  else
-			    {
-			      p[index] = values[dField];
-			    }
-			}
-		    }
-		  if(matched == maxPossibleElements)
-		    {
-		      break;
-		    }
-		}
-	      free(returnedIndex);
-	    } /* End of else of if(te)   */
-	}/* End of with uels  */
+                      if (symType != dt_set) 
+                        {
+                          if (gdxMapValue (gdxHandle, values[dField], &k)) /* it's special */
+                            { 
+                              switch (k) 
+                                {
+                                case sv_valpin:                                                          
+                                  p[index] = NA_REAL;
+                                  break;
+                                case sv_valmin:                                                           
+                                  p[index] = NA_REAL;
+                                  break;
+                                case sv_valeps:
+                                  p[index] = 0;
+                                  break;
+                                case sv_normal:
+                                  p[index] = values[dField];
+                                  break;
+                                case sv_valund:
+                                case sv_valna:
+                                  p[index] = NA_REAL;
+                                  break;
+                                default:
+                                  sprintf(buf, 
+                                          "Unrecognized map-value %d returned for %g",
+                                          k, 
+                                          values[dField]);
+                                  error(buf);
+                                } /* end of switch/case */
+                            }
+                          else
+                            {
+                              p[index] = values[dField];
+                            }
+                        }
+                    }
+                  if(matched == maxPossibleElements)
+                    {
+                      break;
+                    }
+                }
+              free(returnedIndex);
+            } /* End of else of if(te)   */
+        }/* End of with uels  */
       else
-	{	  
-	  nonZero = 0;
-	  if(symType == dt_var || symType == dt_equ )
-	    {
-	      gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
-	    }
-	  /* text elements  */
-	  if(inputData->te == 1)
-	    {	      
-	      for (iRec = 0;  iRec < nRecs;  iRec++) 
-		{
-		  gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-		  if(values[GMS_VAL_LEVEL]) 
-		    {      
-		      elementIndex = (int) values[GMS_VAL_LEVEL];
-		      gdxGetElemText(gdxHandle, elementIndex, msg, &IDum);
-		      SET_STRING_ELT(textElement, nonZero, mkChar(msg));
-		    }
-		  else
-		    {
-		      strcpy(stringEle, "");
-		      for (kk = 0;  kk < symDim;  kk++) 
-			{			 			 
-			  strcat(stringEle, CHAR(STRING_ELT(UEList, uels[kk]-1))  );
-			  if(kk != symDim-1)
-			    {
-			      strcat(stringEle, ".");
-			    }              
-			}
-		      SET_STRING_ELT(textElement, nonZero, mkChar(stringEle));
-		      kk = 0;
-		    }
-		  index = 0;
+        {         
+          nonZero = 0;
+          if(symType == dt_var || symType == dt_equ )
+            {
+              gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
+            }
+          /* text elements  */
+          if(inputData->te == 1)
+            {         
+              for (iRec = 0;  iRec < nRecs;  iRec++) 
+                {
+                  gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+                  if(values[GMS_VAL_LEVEL]) 
+                    {      
+                      elementIndex = (int) values[GMS_VAL_LEVEL];
+                      gdxGetElemText(gdxHandle, elementIndex, msg, &IDum);
+                      SET_STRING_ELT(textElement, nonZero, mkChar(msg));
+                    }
+                  else
+                    {
+                      strcpy(stringEle, "");
+                      for (kk = 0;  kk < symDim;  kk++) 
+                        {                                                
+                          strcat(stringEle, CHAR(STRING_ELT(UEList, uels[kk]-1))  );
+                          if(kk != symDim-1)
+                            {
+                              strcat(stringEle, ".");
+                            }              
+                        }
+                      SET_STRING_ELT(textElement, nonZero, mkChar(stringEle));
+                      kk = 0;
+                    }
+                  index = 0;
 
-		  for (kk = 0;  kk < symDim;  kk++) 
-		    {
-		      p[nonZero+kk*mrows] = uels[kk];
-		      index = nonZero+symDim*mrows;
-		    }
-		  nonZero++;
-		}  /* loop over GDX records */
-	    }
-	  else
-	    {      
-	      for (iRec = 0;  iRec < nRecs;  iRec++)
-		{
-		  gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-		  if(symType == dt_set || values[inputData->dField] != 0)
-		    {
-		      index = 0;
-		      /* For non zero */
-		      for (kk = 0;  kk < symDim;  kk++) 
-			{
-			  p[nonZero+kk*mrows] = uels[kk];
-			  index = nonZero+symDim*mrows;
-			}
-		      nonZero++;
-		      if (symType != dt_set) 
-			{
-			  if (gdxMapValue (gdxHandle, values[inputData->dField], &k)) /* it's special */
-			    { 
-			      switch (k) 
-				{
-				case sv_valpin:                  
-				  p[index] = NA_REAL;
-				  break;
-				case sv_valmin:                 
-				  p[index] = -NA_REAL;
-				  break;
-				case sv_valeps:
-				  p[index] = 0;
-				  break;
-				case sv_normal:
-				  p[index] = values[dField];
-				  break;
-				case sv_valund:
-				case sv_valna:
-				  p[index] = NA_REAL;
-				  break;
-				default:
-				  sprintf(buf, 
-					  "Unrecognized map-value %d returned for %g",
-					  k, 
-					  values[inputData->dField]);
-				  error(buf);
-				}
-			    }
-			  else
-			    {
-			      p[index] = values[inputData->dField];
-			    }
-			}
-		    } /* end of if(set || val != 0) */
-		} /* loop over GDX records */
-	    }
-	}
+                  for (kk = 0;  kk < symDim;  kk++) 
+                    {
+                      p[nonZero+kk*mrows] = uels[kk];
+                      index = nonZero+symDim*mrows;
+                    }
+                  nonZero++;
+                }  /* loop over GDX records */
+            }
+          else
+            {      
+              for (iRec = 0;  iRec < nRecs;  iRec++)
+                {
+                  gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+                  if(symType == dt_set || values[inputData->dField] != 0)
+                    {
+                      index = 0;
+                      /* For non zero */
+                      for (kk = 0;  kk < symDim;  kk++) 
+                        {
+                          p[nonZero+kk*mrows] = uels[kk];
+                          index = nonZero+symDim*mrows;
+                        }
+                      nonZero++;
+                      if (symType != dt_set) 
+                        {
+                          if (gdxMapValue (gdxHandle, values[inputData->dField], &k)) /* it's special */
+                            { 
+                              switch (k) 
+                                {
+                                case sv_valpin:                  
+                                  p[index] = NA_REAL;
+                                  break;
+                                case sv_valmin:                 
+                                  p[index] = -NA_REAL;
+                                  break;
+                                case sv_valeps:
+                                  p[index] = 0;
+                                  break;
+                                case sv_normal:
+                                  p[index] = values[dField];
+                                  break;
+                                case sv_valund:
+                                case sv_valna:
+                                  p[index] = NA_REAL;
+                                  break;
+                                default:
+                                  sprintf(buf, 
+                                          "Unrecognized map-value %d returned for %g",
+                                          k, 
+                                          values[inputData->dField]);
+                                  error(buf);
+                                }
+                            }
+                          else
+                            {
+                              p[index] = values[inputData->dField];
+                            }
+                        }
+                    } /* end of if(set || val != 0) */
+                } /* loop over GDX records */
+            }
+        }
 
       /* Converting data into its compressed form. */
       if(inputData->compress == 1)
-	{
-	  PROTECT(compUels = allocVector(VECSXP, symDim));
-	  compVal = compressData(compVal, UEList, compUels, nUEL, symDim, mrows);
-	}
+        {
+          PROTECT(compUels = allocVector(VECSXP, symDim));
+          compVal = compressData(compVal, UEList, compUels, nUEL, symDim, mrows);
+        }
       /* TODO/TEST: create full dimensional string matrix  */      
       if(inputData->te == 1)
-	{
-	  if(symDim == 1)
-	    {
-	      PROTECT(elVect = allocVector(REALSXP, 2));
-	      alloc++;
+        {
+          if(symDim == 1)
+            {
+              PROTECT(elVect = allocVector(REALSXP, 2));
+              alloc++;
 
-	      dimElVect = REAL(elVect);
-	      dimElVect[0] = length(VECTOR_ELT(compUels, 0));
-	      dimElVect[1] = 1;
+              dimElVect = REAL(elVect);
+              dimElVect[0] = length(VECTOR_ELT(compUels, 0));
+              dimElVect[1] = 1;
 
-	      PROTECT(compTe = allocVector(STRSXP, length(VECTOR_ELT(compUels, 0)) ));
-	      alloc++;
+              PROTECT(compTe = allocVector(STRSXP, length(VECTOR_ELT(compUels, 0)) ));
+              alloc++;
 
-	      compTe = createElementMatrix(compVal, textElement, compTe, compUels, symDim, mrows);
-	      setAttrib(compTe, R_DimSymbol, elVect); 
-	    }
-	  else
-	    {
-	      ndimension = 0;
-	      PROTECT(elVect = allocVector(REALSXP, symDim));
-	      alloc++;
-	      totalElement = 1;
-	      dimElVect = REAL(elVect);
-	      if(inputData->withUel)
-		{
-		  for(ndimension = 0; ndimension < symDim; ndimension++) 
-		    {
-		      dimElVect[ndimension] = length(VECTOR_ELT(inputData->filterUel, ndimension));
-		      totalElement = (totalElement * length(VECTOR_ELT(inputData->filterUel, ndimension)));
-		    }
-		  PROTECT(compTe = allocVector(STRSXP, totalElement));
-		  alloc++;	      
-		  compTe = createElementMatrix(compVal, textElement, compTe, inputData->filterUel, symDim, mwNElements);
-		  setAttrib(compTe, R_DimSymbol, elVect); 
-		}
-	      else
-		{
-		  for(ndimension = 0; ndimension < symDim; ndimension++) 
-		    {
-		      dimElVect[ndimension] = length(VECTOR_ELT(compUels, ndimension));
-		      totalElement = (totalElement * length(VECTOR_ELT(compUels, ndimension)));
-		    }
-		  PROTECT(compTe = allocVector(STRSXP, totalElement));
-		  alloc++;	      
-		  compTe = createElementMatrix(compVal, textElement, compTe, compUels, symDim, mrows);
-		  setAttrib(compTe, R_DimSymbol, elVect); 
-		}
-	    }
-	}
+              compTe = createElementMatrix(compVal, textElement, compTe, compUels, symDim, mrows);
+              setAttrib(compTe, R_DimSymbol, elVect); 
+            }
+          else
+            {
+              ndimension = 0;
+              PROTECT(elVect = allocVector(REALSXP, symDim));
+              alloc++;
+              totalElement = 1;
+              dimElVect = REAL(elVect);
+              if(inputData->withUel)
+                {
+                  for(ndimension = 0; ndimension < symDim; ndimension++) 
+                    {
+                      dimElVect[ndimension] = length(VECTOR_ELT(inputData->filterUel, ndimension));
+                      totalElement = (totalElement * length(VECTOR_ELT(inputData->filterUel, ndimension)));
+                    }
+                  PROTECT(compTe = allocVector(STRSXP, totalElement));
+                  alloc++;            
+                  compTe = createElementMatrix(compVal, textElement, compTe, inputData->filterUel, symDim, mwNElements);
+                  setAttrib(compTe, R_DimSymbol, elVect); 
+                }
+              else
+                {
+                  for(ndimension = 0; ndimension < symDim; ndimension++) 
+                    {
+                      dimElVect[ndimension] = length(VECTOR_ELT(compUels, ndimension));
+                      totalElement = (totalElement * length(VECTOR_ELT(compUels, ndimension)));
+                    }
+                  PROTECT(compTe = allocVector(STRSXP, totalElement));
+                  alloc++;            
+                  compTe = createElementMatrix(compVal, textElement, compTe, compUels, symDim, mrows);
+                  setAttrib(compTe, R_DimSymbol, elVect); 
+                }
+            }
+        }
       
     /* Converting sparse data into full matrix */
       if(inputData->dForm == full)
-	{
-	  switch (symDim)
-	    {
-	    case 0:
-	      {
-		PROTECT(compFullVal = allocVector(REALSXP, 1));
-		alloc++;
-		if(compVal != R_NilValue && REAL(compVal) != NULL)
-		  {
-		    REAL(compFullVal)[0] = REAL(compVal)[0];
-		  }
-		else
-		  {
-		    REAL(compFullVal)[0] = 0;
-		  }
-		break;
-	      }
-	    case 1:
-	      {
-		PROTECT(dimVect = allocVector(REALSXP, 2));
-		alloc++;		
-		dimVal = REAL(dimVect);
+        {
+          switch (symDim)
+            {
+            case 0:
+              {
+                PROTECT(compFullVal = allocVector(REALSXP, 1));
+                alloc++;
+                if(compVal != R_NilValue && REAL(compVal) != NULL)
+                  {
+                    REAL(compFullVal)[0] = REAL(compVal)[0];
+                  }
+                else
+                  {
+                    REAL(compFullVal)[0] = 0;
+                  }
+                break;
+              }
+            case 1:
+              {
+                PROTECT(dimVect = allocVector(REALSXP, 2));
+                alloc++;                
+                dimVal = REAL(dimVect);
 
-		if(inputData->withUel == 1)
-		  {
-		    dimVal[0] = length(VECTOR_ELT(inputData->filterUel, 0));
-		    PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(inputData->filterUel, 0))));
-		    alloc++;
-		    compFullVal = sparseToFull(compVal, compFullVal, inputData->filterUel, symType, mwNElements, symDim);
-		  }
-		else
-		  {
-		    dimVal[0] = length(VECTOR_ELT(compUels, 0));
-		    PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(compUels, 0))));
-		    alloc++;
-		    compFullVal = sparseToFull(compVal, compFullVal, compUels, symType, mrows, symDim);
-		  }
-		dimVal[1] = 1;
-		setAttrib(compFullVal, R_DimSymbol, dimVect);
-		break;
-	      }
-	    default :
-	      {
-		PROTECT(dimVect = allocVector(REALSXP, symDim));
-		alloc++;
-		totalElement = 1;
-		dimVal = REAL(dimVect);	    
-		ndimension = 0;	
-		if(inputData->withUel == 1)
-		  {
-		    for(ndimension = 0; ndimension < symDim; ndimension++) 
-		      {
-			dimVal[ndimension] = length(VECTOR_ELT(inputData->filterUel, ndimension));
-			totalElement = (totalElement * length(VECTOR_ELT(inputData->filterUel, ndimension)));
-		      }
-		  }
-		else
-		  {
-		    for(ndimension = 0; ndimension < symDim; ndimension++) 
-		      {
-			dimVal[ndimension] = length(VECTOR_ELT(compUels, ndimension)); 
-			totalElement = (totalElement * length(VECTOR_ELT(compUels, ndimension)));
-		      }		   
-		  }
-		PROTECT(compFullVal = allocVector(REALSXP, totalElement));
-		alloc++;
-		if(inputData->withUel ==1)
-		  {
-		    compFullVal = sparseToFull(compVal, compFullVal, inputData->filterUel, symType, mwNElements, symDim);
-		  }
-		else
-		  {
-		    compFullVal = sparseToFull(compVal, compFullVal, compUels, symType, mrows, symDim);
-		  }
+                if(inputData->withUel == 1)
+                  {
+                    dimVal[0] = length(VECTOR_ELT(inputData->filterUel, 0));
+                    PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(inputData->filterUel, 0))));
+                    alloc++;
+                    compFullVal = sparseToFull(compVal, compFullVal, inputData->filterUel, symType, mwNElements, symDim);
+                  }
+                else
+                  {
+                    dimVal[0] = length(VECTOR_ELT(compUels, 0));
+                    PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(compUels, 0))));
+                    alloc++;
+                    compFullVal = sparseToFull(compVal, compFullVal, compUels, symType, mrows, symDim);
+                  }
+                dimVal[1] = 1;
+                setAttrib(compFullVal, R_DimSymbol, dimVect);
+                break;
+              }
+            default :
+              {
+                PROTECT(dimVect = allocVector(REALSXP, symDim));
+                alloc++;
+                totalElement = 1;
+                dimVal = REAL(dimVect);     
+                ndimension = 0; 
+                if(inputData->withUel == 1)
+                  {
+                    for(ndimension = 0; ndimension < symDim; ndimension++) 
+                      {
+                        dimVal[ndimension] = length(VECTOR_ELT(inputData->filterUel, ndimension));
+                        totalElement = (totalElement * length(VECTOR_ELT(inputData->filterUel, ndimension)));
+                      }
+                  }
+                else
+                  {
+                    for(ndimension = 0; ndimension < symDim; ndimension++) 
+                      {
+                        dimVal[ndimension] = length(VECTOR_ELT(compUels, ndimension)); 
+                        totalElement = (totalElement * length(VECTOR_ELT(compUels, ndimension)));
+                      }            
+                  }
+                PROTECT(compFullVal = allocVector(REALSXP, totalElement));
+                alloc++;
+                if(inputData->withUel ==1)
+                  {
+                    compFullVal = sparseToFull(compVal, compFullVal, inputData->filterUel, symType, mwNElements, symDim);
+                  }
+                else
+                  {
+                    compFullVal = sparseToFull(compVal, compFullVal, compUels, symType, mrows, symDim);
+                  }
 
-		setAttrib(compFullVal, R_DimSymbol, dimVect);
-		break;
-	      }
-	    }
-	}
+                setAttrib(compFullVal, R_DimSymbol, dimVect);
+                break;
+              }
+            }
+        }
     }
   
   if(withList)
@@ -4083,22 +4083,22 @@ SEXP rgdx (SEXP args)
       PROTECT(compType = allocVector(STRSXP, 1) );
       alloc++;
       switch (symType)
-	{
-	case dt_set:
-	  SET_STRING_ELT( compType, 0, mkChar(types[0]) );
-	  break;
-	case dt_par:
-	  SET_STRING_ELT( compType, 0, mkChar(types[1]) );
-	  break;
-	case dt_var:
-	  SET_STRING_ELT( compType, 0, mkChar(types[2]) );
-	  break;
-	case dt_equ:
-	  SET_STRING_ELT( compType, 0, mkChar(types[3]) );
-	  break;
-	default:
-	  error("Unrecognized type of symbol found.");
-	}
+        {
+        case dt_set:
+          SET_STRING_ELT( compType, 0, mkChar(types[0]) );
+          break;
+        case dt_par:
+          SET_STRING_ELT( compType, 0, mkChar(types[1]) );
+          break;
+        case dt_var:
+          SET_STRING_ELT( compType, 0, mkChar(types[2]) );
+          break;
+        case dt_equ:
+          SET_STRING_ELT( compType, 0, mkChar(types[3]) );
+          break;
+        default:
+          error("Unrecognized type of symbol found.");
+        }
 
       /* Creating int vector for symbol Dim  */  
       PROTECT(compDim = allocVector(INTSXP, 1) );
@@ -4108,53 +4108,53 @@ SEXP rgdx (SEXP args)
       PROTECT(compForm = allocVector(STRSXP, 1) );
       alloc++;
       if(inputData->dForm == full)
-	{
-	  SET_STRING_ELT(compForm, 0, mkChar(forms[0]));
-	}
+        {
+          SET_STRING_ELT(compForm, 0, mkChar(forms[0]));
+        }
       else 
-	{
-	  SET_STRING_ELT(compForm, 0, mkChar(forms[1]));
-	}
+        {
+          SET_STRING_ELT(compForm, 0, mkChar(forms[1]));
+        }
 
 
       /* Create a string vector for symbol  field  */
       if(symType == dt_var || symType == dt_equ)
-	{
-	  outFields++;
-	  PROTECT(compField = allocVector(STRSXP, 1));
-	  alloc++;
-	  switch(inputData->dField)
-	    {
-	    case level:
-	      SET_STRING_ELT(compField, 0, mkChar( fields[0] ));
-	      break;
-	    case marginal:
-	      SET_STRING_ELT(compField, 0, mkChar( fields[1] ));
-	      break;
-	    case upper:
-	      SET_STRING_ELT(compField, 0, mkChar( fields[2] ));
-	      break;
-	    case lower:
-	      SET_STRING_ELT(compField, 0, mkChar( fields[3] ));
-	      break;
-	    case scale:
-	      SET_STRING_ELT(compField, 0, mkChar( fields[4] ));
-	      break;
-	    default:
-	      error("Unrecognized type of symbol found.");
-	    } 
-	}
+        {
+          outFields++;
+          PROTECT(compField = allocVector(STRSXP, 1));
+          alloc++;
+          switch(inputData->dField)
+            {
+            case level:
+              SET_STRING_ELT(compField, 0, mkChar( fields[0] ));
+              break;
+            case marginal:
+              SET_STRING_ELT(compField, 0, mkChar( fields[1] ));
+              break;
+            case upper:
+              SET_STRING_ELT(compField, 0, mkChar( fields[2] ));
+              break;
+            case lower:
+              SET_STRING_ELT(compField, 0, mkChar( fields[3] ));
+              break;
+            case scale:
+              SET_STRING_ELT(compField, 0, mkChar( fields[4] ));
+              break;
+            default:
+              error("Unrecognized type of symbol found.");
+            } 
+        }
       if(inputData->ts)
-	{
-	  outFields++;
-	  PROTECT(compTs = allocVector(STRSXP, 1));
-	  alloc++;
-	  SET_STRING_ELT(compTs, 0, mkChar(sText));
-	}
+        {
+          outFields++;
+          PROTECT(compTs = allocVector(STRSXP, 1));
+          alloc++;
+          SET_STRING_ELT(compTs, 0, mkChar(sText));
+        }
       if(inputData->te)
-	{
-	  outFields++;
-	} 
+        {
+          outFields++;
+        } 
     }
 
   PROTECT(OPListComp = allocVector(STRSXP, outFields));
@@ -4171,20 +4171,20 @@ SEXP rgdx (SEXP args)
   if(withList)
     {
       if(symType == dt_var || symType == dt_equ)
-	{
-	  nField++;
-	  SET_STRING_ELT(OPListComp, nField, mkChar("field"));
-	}
+        {
+          nField++;
+          SET_STRING_ELT(OPListComp, nField, mkChar("field"));
+        }
       if(inputData->ts)
-	{
-	  nField++;
-	  SET_STRING_ELT(OPListComp, nField, mkChar("ts"));
-	}
+        {
+          nField++;
+          SET_STRING_ELT(OPListComp, nField, mkChar("ts"));
+        }
       if(inputData->te)
-	{
-	  nField++;
-	  SET_STRING_ELT(OPListComp, nField, mkChar("te"));
-	}
+        {
+          nField++;
+          SET_STRING_ELT(OPListComp, nField, mkChar("te"));
+        }
     }
   
 
@@ -4197,39 +4197,39 @@ SEXP rgdx (SEXP args)
       SET_VECTOR_ELT(OPList, 1, compType);
       SET_VECTOR_ELT(OPList, 2, compDim);
       if(inputData->dForm == full)
-	{
-	  SET_VECTOR_ELT(OPList, 3, compFullVal);
-	}
+        {
+          SET_VECTOR_ELT(OPList, 3, compFullVal);
+        }
       else
-	{
-	  SET_VECTOR_ELT(OPList, 3, compVal);
-	}
+        {
+          SET_VECTOR_ELT(OPList, 3, compVal);
+        }
       SET_VECTOR_ELT(OPList, 4, compForm);
       if(inputData->withUel)
-	{
-	  SET_VECTOR_ELT(OPList, 5, inputData->filterUel);	  
-	}
+        {
+          SET_VECTOR_ELT(OPList, 5, inputData->filterUel);        
+        }
       else
-	{
-	  SET_VECTOR_ELT(OPList, 5, compUels);	  
-	}
+        {
+          SET_VECTOR_ELT(OPList, 5, compUels);    
+        }
 
       nField = 5;
       if(symType == dt_var || symType == dt_equ)
-	{
-	  nField++;
-	  SET_VECTOR_ELT(OPList, nField, compField);
-	}
+        {
+          nField++;
+          SET_VECTOR_ELT(OPList, nField, compField);
+        }
       if(inputData->ts)
-	{
-	  nField++;
-	  SET_VECTOR_ELT(OPList, nField, compTs);
-	}
+        {
+          nField++;
+          SET_VECTOR_ELT(OPList, nField, compTs);
+        }
       if(inputData->te)
-	{
-	  nField++;
-	  SET_VECTOR_ELT(OPList, nField, compTe);
-	}
+        {
+          nField++;
+          SET_VECTOR_ELT(OPList, nField, compTe);
+        }
     }
   else 
     {
@@ -4300,14 +4300,14 @@ SEXP wgdx (SEXP args)
       int n;
 
       if (0 == strcmp("?", gdxFileName)) 
-	{
-	  n = (int)strlen (ID);
-	  memcpy (strippedID, ID+1, n-2);
-	  strippedID[n-2] = '\0';
-	  warning("R-file source info: %s",
-		  strippedID );
-	  return R_NilValue;
-	} /* if audit run */
+        {
+          n = (int)strlen (ID);
+          memcpy (strippedID, ID+1, n-2);
+          strippedID[n-2] = '\0';
+          warning("R-file source info: %s",
+                  strippedID );
+          return R_NilValue;
+        } /* if audit run */
     } /* if one arg, of character type */
 
   symbolList = malloc((arglen-2)*sizeof(*symbolList));
@@ -4367,14 +4367,14 @@ SEXP gams (SEXP args)
       int n;
 
       if (0 == strcmp("?", input)) 
-	{
-	  n = (int)strlen (ID);
-	  memcpy (strippedID, ID+1, n-2);
-	  strippedID[n-2] = '\0';
-	  warning("R-file source info: %s",
-		  strippedID );
-	  return R_NilValue;
-	} /* if audit run */
+        {
+          n = (int)strlen (ID);
+          memcpy (strippedID, ID+1, n-2);
+          strippedID[n-2] = '\0';
+          warning("R-file source info: %s",
+                  strippedID );
+          return R_NilValue;
+        } /* if audit run */
     } /* if one arg, of character type */
   
   checkStringLength(input);
@@ -4401,18 +4401,18 @@ SEXP gams (SEXP args)
       writeData = 1;
       writeDataStr = getGlobalString("write_data");
       if (writeDataStr != NULL)
-	{
-	  if (0 == strncmp(writeDataStr,"n",1) || 0 == strncmp(writeDataStr,"N",1))
-	    {
-	      writeData = 0;
-	    }
+        {
+          if (0 == strncmp(writeDataStr,"n",1) || 0 == strncmp(writeDataStr,"N",1))
+            {
+              writeData = 0;
+            }
      
-	  else
-	    {
-	      warning("To change default behavior of 'write_data', please enter it as 'n' or 'N' \n" ); 
-	      Rprintf("You entered it as %s. \n", writeDataStr);
-	    }
-	}
+          else
+            {
+              warning("To change default behavior of 'write_data', please enter it as 'n' or 'N' \n" ); 
+              Rprintf("You entered it as %s. \n", writeDataStr);
+            }
+        }
     }
    
   if (1 == writeData)  
@@ -4420,9 +4420,9 @@ SEXP gams (SEXP args)
       argList = malloc((arglen-2)*sizeof(*argList));
       /* get the pointer of input argument and store it locally for better access  */
       for (i = 1; i < arglen-1; i++)
-	{      
-	  args = CDR(args); argList[i-1] = CAR(args);
-	}
+        {      
+          args = CDR(args); argList[i-1] = CAR(args);
+        }
       writeGdx(gmsFileName, arglen, argList, 1);
       /* free memory  */
       free(argList);
