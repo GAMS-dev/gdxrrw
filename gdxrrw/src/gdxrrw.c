@@ -1,13 +1,13 @@
 /* This gdxrrw.c file contains methods to import and export data
    between GAMS and R via GDX file. Methods that are exposed for 
    the users of R are:
-   1. x <- rgdx("gdxFileName", lst) 
+   1. x <- rgdx("gdxFileName", lst)
    2. wgdx("gdxFileName", lst1, lst2, ...)
    3. x <- gams("modelName", l1, l2,..., s1, s2, ...)
    4. gdxInfo("gdxFileName")
    All these methods are declared as External methods in R.
-   They are defined in gdxrrw.R file that can be loaded into R env 
-   by source("gdxrrw.R") command. 
+   They are defined in gdxrrw.R file that can be loaded into R env
+   by source("gdxrrw.R") command.
 */
 
 #include <R.h>
@@ -21,7 +21,7 @@
 #include "gdxcc.h"
 #include "gclgms.h"
 
-#if defined(_WIN32) 
+#if defined(_WIN32)
 #include <windows.h>
 static const char *formatMessage(int errNum);
 #else
@@ -140,7 +140,10 @@ getGlobalUEL(SEXP globalUEL,
 SEXP 
 getGamsSoln(char *gmsFileName);
 
-int isCompress();
+char *
+CHAR2ShortStr (const char *from, shortStringBuf_t to);
+
+int isCompress(void);
 
 char *
 getGlobalString(const char *globName);
@@ -157,7 +160,7 @@ createUelOut(SEXP val,
              dForm_t dForm);
 
 void
-checkForValidData(SEXP val, 
+checkForValidData(SEXP val,
                   SEXP uelOut, 
                   dType_t dType, 
                   dForm_t dForm);
@@ -168,7 +171,7 @@ char *val2str(gdxHandle_t Tptr,
               char *s);
 
 void 
-checkFileExtension (char *fileName); 
+checkFileExtension (shortStringBuf_t fileName);
 
 void 
 checkStringLength(const char *str);
@@ -651,7 +654,7 @@ getGamsSoln(char *gmsFileName)
   inputData = malloc(sizeof(*inputData));
 
   inputData->dForm = sparse;
-  inputData->compress = isCompress(); 
+  inputData->compress = isCompress();
   inputData->dField = level;
   inputData->withUel = 0;
   inputData->ts = 0;
@@ -1342,23 +1345,23 @@ getGamsSoln(char *gmsFileName)
 }
 
 /* this mehtod for global input "compress" */
-int isCompress()
+int isCompress(void)
 {
   SEXP gamso, tmp, lstName;
   Rboolean logical = NA_LOGICAL;
-  char *str;  
+  char *str;
   int i, infields;
   int compress = 0;
   int found = 0;
+  shortStringBuf_t fName;
 
   str = NULL;
   gamso = findVar( install("gamso"), R_GlobalEnv );
 
-  if (gamso == NULL || TYPEOF(gamso) == NILSXP  ||  TYPEOF(gamso) == SYMSXP) 
-    {
-      globalGams = 0;
-      return 0;      
-    }
+  if (gamso == NULL || TYPEOF(gamso) == NILSXP  ||  TYPEOF(gamso) == SYMSXP) {
+    globalGams = 0;
+    return 0;
+  }
 
   /*   if (TYPEOF(gamso) != VECSXP  && globalGams) 
        {
@@ -1368,68 +1371,50 @@ int isCompress()
        return 0;
        } */
 
-  else if(TYPEOF(gamso) == VECSXP && globalGams == 1)
-    {
-      lstName = getAttrib(gamso, R_NamesSymbol);  
-      i=0;
-      infields = length(gamso);
-      /* Checking if field data is for "name" */
-      for (i = 0; i < infields; i++)
-        {
-          if(strcmp("compress", CHAR(STRING_ELT(lstName, i))) == 0)
-            {
-              found = 1;
-              break;
-            }
-        }
-  
-      if(found == 1 && globalGams)
-        {
-          tmp = VECTOR_ELT(gamso, i);
-          if(TYPEOF(tmp) == STRSXP)
-            {
-              checkStringLength( CHAR(STRING_ELT(tmp, 0)));
-              str = changeToLower(CHAR(STRING_ELT(tmp, 0)));
-              if (str != NULL)      
-                {
-                  if(strcmp(str,"true") == 0)
-                    {
-                      compress = 1;
-                    }
-                  else if(strcmp(str,"false") == 0)
-                    {
-                      compress = 0;
-                    }
-                  else
-                    {
-                      /* else warning message */
-                      warning("To change default behavior of 'compress', please enter it as 'true' or 'false' \n" ); 
-                      Rprintf("You entered it as %s. \n", str);  
-                    }     
-                }
-            }
-          else if(TYPEOF(tmp) == LGLSXP)
-            {
-              logical = LOGICAL(tmp)[0];
-              if(logical == TRUE)
-                {
-                  compress = 1;
-                }
-              else
-                {
-                  compress = 0;
-                }
-            }
-          else
-            {
-              warning("To change default behavior of 'compress', please enter it as either string or as logical.\n");
-              Rprintf("You entered it as %d. \n", TYPEOF(tmp));
-              return 0;
-            }            
-        }
+  else if (TYPEOF(gamso) == VECSXP && globalGams == 1) {
+    lstName = getAttrib(gamso, R_NamesSymbol);  
+    i=0;
+    infields = length(gamso);
+    /* Checking if field data is for "name" */
+    for (i = 0; i < infields; i++) {
+      if (strcasecmp("compress", CHAR(STRING_ELT(lstName, i))) == 0) {
+        found = 1;
+        break;
+      }
     }
+  
+    if(found == 1 && globalGams) {
+      tmp = VECTOR_ELT(gamso, i);
+      if(TYPEOF(tmp) == STRSXP) {
+        str = CHAR2ShortStr (CHAR(STRING_ELT(tmp, 0)), fName);
+        if (NULL != str) {
+          if (strcasecmp(fName,"true") == 0)
+            compress = 1;
+          else if (strcmp(fName,"false") == 0)
+            compress = 0;
+          else {
+            /* else warning message */
+            warning ("To change default behavior of 'compress', please enter it as 'true' or 'false' \n" );
+            Rprintf ("You entered it as %s. \n", str);
+          }     
+        }
+      } /* TYPEOF=STRSXP */
+      else if(TYPEOF(tmp) == LGLSXP) {
+        logical = LOGICAL(tmp)[0];
+        if (logical == TRUE)
+          compress = 1;
+        else
+          compress = 0;
+      }
+      else {
+        warning ("To change default behavior of 'compress', please enter it as either a string or a logical.\n");
+        Rprintf ("You entered it with TYPEOF('compress') = %d.\n", TYPEOF(tmp));
+        return 0;
+      }
+    }
+  }
   return compress;
-}
+} /* isCompress */
 
 
 /* This method will read variable "gamso" from R workspace */
@@ -1745,29 +1730,43 @@ char *val2str(gdxHandle_t Tptr,
 }
 
 
+char *
+CHAR2ShortStr (const char *from, shortStringBuf_t to)
+{
+  size_t n;
+
+  if (NULL == from)
+    return NULL;
+  n = strlen(from);
+  if (n >= sizeof(shortStringBuf_t)) {
+    n = sizeof(shortStringBuf_t);
+    strncpy(to, from, n);
+    to[n-1] = '\0';
+  }
+  else
+    strcpy(to, from);
+  return to;
+} /* CHAR2ShortStr */
+
 /* This method checks the file extension of the gdx file.
  * If fileName does not have '.gdx' then we add it here
 */
-void 
-checkFileExtension (char *fileName) 
+void
+checkFileExtension (shortStringBuf_t fileName)
 {
   char *fileExt;
 
-  fileExt = strstr(fileName, ".");
-  if (NULL == fileExt) 
-  {
-    if (strlen(fileName) < GMS_SSSIZE-4)
-      {
-        fileName = strcat(fileName, ".gdx");
-      }
-    else 
-    {
+  fileExt = rindex (fileName, '.');
+  if (NULL == fileExt) {
+    if (strlen(fileName) < sizeof(shortStringBuf_t)-4) {
+      fileName = strcat(fileName, ".gdx");
+    }
+    else {
       Rprintf ("Input file name '%s' is too long\n", fileName);
       error ("Input file name is too long.");
     }
   }
-  else if (0 != strcmp(".gdx", fileExt))
-  {
+  else if (0 != strcasecmp(".gdx", fileExt)) {
     Rprintf ("Input file extension '%s' is not valid\n", fileExt);
     error ("Input file must be a GDX file.");
   }
@@ -3372,12 +3371,12 @@ writeGdx(char *gdxFileName,
 
 
 /* ---------------------------- rgdx -----------------------------------
- This is the main gateway function
- to be called from R console 
- First argument <- gdx file name
- Second argument <- list containing several compenents 
- that give information about symbol in gdx file 
------------------------------------------------------------------------*/
+ * This is the main gateway function
+ * to be called from R console
+ * First argument <- gdx file name
+ * Second argument <- list containing several compenents 
+ * that give information about symbol in gdx file 
+ * ------------------------------------------------------------------ */
 SEXP rgdx (SEXP args)
 {
   SEXP fileName, symbolList, UEList;
@@ -3399,7 +3398,8 @@ SEXP rgdx (SEXP args)
   shortStringBuf_t msgBuf;
   shortStringBuf_t uelName;
   char  *uelElementName; 
-  const char *gdxFileName;
+  shortStringBuf_t gdxFileName;
+  char *s;
   int symIdx, symDim, symType;
   int rc, errNum, ACount, mrows, ncols, nUEL, iUEL;
   int  k, kk, iRec, nRecs, index, totNumber, changeIdx, nonZero;
@@ -3463,7 +3463,7 @@ SEXP rgdx (SEXP args)
       error("Wrong Argument Type");
     }
   
-  gdxFileName = CHAR(STRING_ELT(fileName, 0));
+  s = CHAR2ShortStr (CHAR(STRING_ELT(fileName, 0)), gdxFileName);
   
   if (2 == arglen) {
     if (0 == strcmp("?", gdxFileName)) {
