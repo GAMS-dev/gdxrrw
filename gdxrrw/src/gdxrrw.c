@@ -2286,7 +2286,7 @@ checkWgdxList(SEXP structure,
         }
       if(strlen( CHAR(STRING_ELT(tmp, 0)) ) == 0)
         {
-          error("Input lsit component 'form' must be either 'full' or 'sparse'.");
+          error("Input list component 'form' must be either 'full' or 'sparse'.");
         }
       str = changeToLower( CHAR(STRING_ELT(tmp, 0)) );
       if ( 0 == strcmp("full", str) )
@@ -2977,8 +2977,9 @@ writeGdx(char *gdxFileName,
   struct wgdxStruct **data;
   gdxUelIndex_t uelIndices;
   gdxValues_t   vals;
-  shortStringBuf_t msgBuf; 
-  char *expText, *stringUelIndex;
+  shortStringBuf_t msgBuf;
+  char *expText;
+  char *stringUelIndex;
   int rc, errNum;
   int i, j, k, z, found;
   SEXP dimVect;
@@ -3066,308 +3067,251 @@ writeGdx(char *gdxFileName,
 
   i=0;
   /* write data in GDX file  */
-  for (i = 0; i < arglen-2; i++)
-    {
-      /* 
-         Looking for 'val'
-         This is the glitch that i am worried about
-      */
-      compName = getAttrib(symbolList[i], R_NamesSymbol);
-      for (j = 0; j < length(symbolList[i]); j++)
-        {
-          if(strcmp("val", CHAR(STRING_ELT(compName, j))) == 0)
-            {
-              found = 1;
-              break;
-            }
-        }
-  
-      if(found == 1)
-        {
-          valData = VECTOR_ELT(symbolList[i], j);
-        }
-      /* This is special check  */
-      if(fromGAMS == 0 
-         || ( fromGAMS == 1 
-              && (found == 0 || TYPEOF(valData) != STRSXP)))
-        {               
-          mainBuffer = VECTOR_ELT(uelIndex, i);          
-          if(fromGAMS)
-            {     
-              if (strcmp(inputTime,"exec") == 0) 
-                {
-                  fprintf(matdata,"execute_load 'matdata.gdx' %s;\n", data[i]->name);
-                }
-              else 
-                {
-                  fprintf(matdata,"$kill %s\n$load %s\n",  data[i]->name, data[i]->name);
-                }
-            }
-          /* creating value for set that does not have .val */      
-          if(data[i]->dType == set)
-            {
-              if(data[i]->withVal == 0 &&  data[i]->withUel == 1)
-                {
-                  nColumns = length(mainBuffer);
-                  PROTECT(dimVect = allocVector(REALSXP, nColumns));
-                  wAlloc++;
-                  totalElement = 1;
-                  dimVal = REAL(dimVect);
-                  ndimension = 0;
-
-                  for(ndimension = 0; ndimension < (int)nColumns; ndimension++) 
-                    {
-                      dimVal[ndimension] = length(VECTOR_ELT(mainBuffer, ndimension));
-                      totalElement = (totalElement * length(VECTOR_ELT(mainBuffer, ndimension)));
-                    }
-                  PROTECT(valData = allocVector(REALSXP, totalElement));
-                  wAlloc++;
-                  p = REAL(valData);
-                  for (index = 0; index < totalElement; index++)
-                    {
-                      p[index] = 1;
-                    }
-                  setAttrib(valData, R_DimSymbol, dimVect);
-                  index = 0;
-                  data[i]->dForm = full;
-                }
-            }
-          if(data[i]->withTs == 1)
-            {
-              /* Looking for 'ts'  */
-              j = 0;
-              found = 0;
-              for (j = 0; j < length(symbolList[i]); j++)
-                {
-                  if(strcmp("ts", CHAR(STRING_ELT(compName, j))) == 0)
-                    {
-                      found = 1;
-                      break;
-                    }
-                }
-  
-              if(found == 1)
-                {
-                  expText = CHAR(STRING_ELT( VECTOR_ELT(symbolList[i], j) , 0));
-                }
-            }
-          else
-            {
-              expText = "R data from GDXRRW";
-            }
-
-          if(data[i]->dForm == sparse)
-            {
-              dimVect = getAttrib(valData, R_DimSymbol);
-              nColumns = INTEGER(dimVect)[1];
-              nRows =INTEGER(dimVect)[0];
-
-              if(data[i]->dType == parameter)
-                {
-                  nColumns--;
-                  rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
-                                             nColumns, GMS_DT_PAR, 0);
-                }
-              else
-                {
-                  rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
-                                             nColumns, GMS_DT_SET, 0);
-                }
-              if (!rc) 
-                {
-                  error("Could not write data with gdxDataWriteMapStart");
-                }
-         
-              /* 
-                 TODO: This is furstrating. 
-                 Find a better way to deal with REAL and INTEGER
-                 I don't want to loop over whole data set and convert from int to double
-              */
-              if(TYPEOF(valData) == REALSXP)
-                {
-                  p = REAL(valData);
-                }
-              else if(TYPEOF(valData) == INTSXP)
-                {
-                  p = (double*)INTEGER(valData);
-                }
-              j = 0; k = 0;
-              for(j = 0; j < nRows; j++)
-                {
-                  for(k = 0; k < nColumns; k++)
-                    {
-                      subBuffer =  VECTOR_ELT(mainBuffer, k);             
-                      stringUelIndex = CHAR(STRING_ELT(subBuffer, p[nRows*k + j]-1 ));
-                      uelIndices[k] = atoi(stringUelIndex);
-                    }
-                  if(data[i]->dType == parameter)
-                    {
-                      vals[0] = p[nRows*(nColumns) + j];
-                      if (vals[0] != 0 && gdxMapValue (gdxHandle, vals[0], &z))  /* it's special */
-                        { 
-                          switch (z)
-                            {
-                            case sv_valpin:
-                              vals[0] =  NA_REAL;
-                              break;
-                            case sv_valmin:                           
-                              vals[0] = NA_REAL;
-                              break;
-                            case sv_valeps:
-                              vals[0] = 0;
-                              break;
-                            case sv_valund:
-                            case sv_valna:
-                              vals[0] = NA_REAL;
-                              break;
-                            default:                          
-                              error("Unrecognized map-value %d returned for %g", 
-                                    z, 
-                                    vals[0]);
-                            } /* end of switch/case */
-                        }                     
-                    }
-                  /* No need to write zero values */
-                  if((data[i]->dType == parameter && vals[0] != 0) 
-                     || data[i]->dType == set)
-                    {
-                      rc = gdxDataWriteMap(gdxHandle, uelIndices, vals);
-                      if (!rc) 
-                        {
-                          error("Could not write parameter MAP with gdxDataWriteMap");
-                        }
-                    }
-                }
-                                
-              if(!gdxDataWriteDone(gdxHandle))
-                {
-                  error("Could not end writing parameter with gdxDataWriteMapStart");
-                }
-            }
-          else
-            {
-              total_num_of_elements = length(valData);
-              dimVect = getAttrib(valData, R_DimSymbol);         
-              nColumns = length(mainBuffer);
-              subscript = malloc(nColumns*sizeof(*subscript));
-              if(data[i]->dType == parameter)
-                {         
-                  rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
-                                             nColumns, GMS_DT_PAR, 0);
-                }
-              else
-                {
-                  rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
-                                             nColumns, GMS_DT_SET, 0);
-                }
-              if (!rc) 
-                {
-                  error("Could not write data with gdxDataWriteMapStart");
-                }
-              for (index = 0; index < total_num_of_elements; index++)
-                {
-                  subindex = index;
-                  if(nColumns > 0)
-                    {
-                      for (d = nColumns-1; ; d--)             
-                        {
-                          subBuffer =  VECTOR_ELT(mainBuffer, d);
-                          for (total=1, inner=0; inner<d; inner++)
-                            {
-                              total *= INTEGER(dimVect)[inner];
-                            }
-                          subscript[d] = subindex / total;
-
-                          stringUelIndex = CHAR(STRING_ELT(subBuffer, subscript[d]));
-
-                          uelIndices[d] = atoi(stringUelIndex);
-
-                          subindex = subindex % total;
-                          if (d == 0) 
-                            {
-                              break;
-                            }
-                        }/* for loop over "d" */
-                    }
-
-                  if(TYPEOF(valData) == REALSXP)
-                    {
-                      p = REAL(valData);
-                    }
-                  else if(TYPEOF(valData) == INTSXP)
-                    {
-                      p = (double*)INTEGER(valData);
-                    }
-                  if(data[i]->dType == parameter)
-                    {
-                      vals[0] = p[index];
-                      if (vals[0] != 0 && gdxMapValue (gdxHandle, vals[0], &z))  /* it's special */
-                        { 
-                          switch (z)
-                            {
-                            case sv_valpin:
-                              vals[0] = NA_REAL;
-                              break;
-                            case sv_valmin:                           
-                              vals[0] = NA_REAL;
-                              break;
-                            case sv_valeps:
-                              vals[0] = 0;
-                              break;
-                            case sv_valund:
-                            case sv_valna:
-                              vals[0] = NA_REAL;
-                              break;
-                            default:                          
-                              error("Unrecognized map-value %d returned for %g", 
-                                    z, 
-                                    vals[0]);
-                            } /* end of switch/case */
-                        }
-                    }
-                  /* No need to write zero values */
-                  if((data[i]->dType == parameter && vals[0] != 0)
-                     || (data[i]->dType == set && p[index] == 1))
-                    {
-                      rc = gdxDataWriteMap(gdxHandle, uelIndices, vals);
-                      if (!rc) 
-                        {
-                          error("Could not write parameter MAP with gdxDataWriteMap");
-                        }
-                    }
-                  /*  } End of real data  */
-                } /* for loop over "index" */
-              if(!gdxDataWriteDone(gdxHandle))
-                {
-                  error("Could not end writing data with gdxDataWriteMapStart");
-                }             
-            } /* end of writing full data */
-        }
-    }    /* End of for(i) loop  */
-
-  if(fromGAMS)
-    {   
-      if (strcmp(inputTime,"exec") != 0) 
-        {
-          fprintf(matdata,"$gdxin\n"); 
-        }
-      fclose(matdata);
+  for (i = 0;  i < arglen-2;  i++) {
+    /* 
+     *  Looking for 'val'
+     *  This is the glitch that i am worried about
+     */
+    compName = getAttrib(symbolList[i], R_NamesSymbol);
+    for (j = 0; j < length(symbolList[i]); j++) {
+      if(strcmp("val", CHAR(STRING_ELT(compName, j))) == 0) {
+        found = 1;
+        break;
+      }
     }
+  
+    if(found == 1) {
+      valData = VECTOR_ELT(symbolList[i], j);
+    }
+    /* This is special check  */
+    if(fromGAMS == 0 
+       || ( fromGAMS == 1 
+            && (found == 0 || TYPEOF(valData) != STRSXP))) {               
+      mainBuffer = VECTOR_ELT(uelIndex, i);          
+      if (fromGAMS) {
+        if (strcmp(inputTime,"exec") == 0) {
+          fprintf(matdata,"execute_load 'matdata.gdx' %s;\n", data[i]->name);
+        }
+        else {
+          fprintf(matdata,"$kill %s\n$load %s\n",  data[i]->name, data[i]->name);
+        }
+      }
+      /* creating value for set that does not have .val */      
+      if(data[i]->dType == set) {
+        if(data[i]->withVal == 0 &&  data[i]->withUel == 1) {
+          nColumns = length(mainBuffer);
+          PROTECT(dimVect = allocVector(REALSXP, nColumns));
+          wAlloc++;
+          totalElement = 1;
+          dimVal = REAL(dimVect);
+          ndimension = 0;
+
+          for(ndimension = 0; ndimension < (int)nColumns; ndimension++) {
+            dimVal[ndimension] = length(VECTOR_ELT(mainBuffer, ndimension));
+            totalElement = (totalElement * length(VECTOR_ELT(mainBuffer, ndimension)));
+          }
+          PROTECT(valData = allocVector(REALSXP, totalElement));
+          wAlloc++;
+          p = REAL(valData);
+          for (index = 0; index < totalElement; index++) {
+            p[index] = 1;
+          }
+          setAttrib(valData, R_DimSymbol, dimVect);
+          index = 0;
+          data[i]->dForm = full;
+        }
+      }
+      if (data[i]->withTs == 1) {
+        /* Looking for 'ts'  */
+        j = 0;
+        found = 0;
+        for (j = 0; j < length(symbolList[i]); j++) {
+          if(strcmp("ts", CHAR(STRING_ELT(compName, j))) == 0) {
+            found = 1;
+            break;
+          }
+        }
+  
+        if(found == 1) {
+          expText = CHAR(STRING_ELT( VECTOR_ELT(symbolList[i], j) , 0));
+        }
+      }
+      else {
+        expText = "R data from GDXRRW";
+      }
+
+      if(data[i]->dForm == sparse) {
+        dimVect = getAttrib(valData, R_DimSymbol);
+        nColumns = INTEGER(dimVect)[1];
+        nRows =INTEGER(dimVect)[0];
+
+        if(data[i]->dType == parameter) {
+          nColumns--;
+          rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
+                                     nColumns, GMS_DT_PAR, 0);
+        }
+        else {
+          rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
+                                     nColumns, GMS_DT_SET, 0);
+        }
+        if (!rc) {
+          error("Could not write data with gdxDataWriteMapStart");
+        }
+         
+        /* 
+         * TODO: This is frustrating. 
+         * Find a better way to deal with REAL and INTEGER
+         * I don't want to loop over whole data set and convert from int to double
+         */
+        if(TYPEOF(valData) == REALSXP) {
+          p = REAL(valData);
+        }
+        else if(TYPEOF(valData) == INTSXP) {
+          p = (double*)INTEGER(valData);
+        }
+        for (k = 0, j = 0; j < nRows; j++) {
+          for(k = 0; k < nColumns; k++) {
+            subBuffer =  VECTOR_ELT(mainBuffer, k);             
+            stringUelIndex = CHAR(STRING_ELT(subBuffer, p[nRows*k + j]-1 ));
+            uelIndices[k] = atoi(stringUelIndex);
+          }
+          if(data[i]->dType == parameter) {
+            vals[0] = p[nRows*(nColumns) + j];
+            if (vals[0] != 0 && gdxMapValue (gdxHandle, vals[0], &z)) { /* it's special */
+              switch (z) {
+              case sv_valpin:
+                vals[0] =  NA_REAL;
+                break;
+              case sv_valmin:                           
+                vals[0] = NA_REAL;
+                break;
+              case sv_valeps:
+                vals[0] = 0;
+                break;
+              case sv_valund:
+              case sv_valna:
+                vals[0] = NA_REAL;
+                              break;
+              default:                          
+                error("Unrecognized map-value %d returned for %g", z, vals[0]);
+              } /* end of switch/case */
+            }
+          }
+          /* No need to write zero values */
+          if((data[i]->dType == parameter && vals[0] != 0) 
+             || data[i]->dType == set) {
+            rc = gdxDataWriteMap(gdxHandle, uelIndices, vals);
+            if (!rc) {
+              error("Could not write parameter MAP with gdxDataWriteMap");
+            }
+          }
+        }
+
+        if(!gdxDataWriteDone(gdxHandle)) {
+          error("Could not end writing parameter with gdxDataWriteMapStart");
+        }
+      }
+      else {
+        total_num_of_elements = length(valData);
+        dimVect = getAttrib(valData, R_DimSymbol);         
+        nColumns = length(mainBuffer);
+        subscript = malloc(nColumns*sizeof(*subscript));
+        if(data[i]->dType == parameter) {
+          rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
+                                     nColumns, GMS_DT_PAR, 0);
+        }
+        else {
+          rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
+                                     nColumns, GMS_DT_SET, 0);
+        }
+        if (!rc) {
+          error("Could not write data with gdxDataWriteMapStart");
+        }
+        for (index = 0; index < total_num_of_elements; index++) {
+          subindex = index;
+          if(nColumns > 0) {
+            for (d = nColumns-1; ; d--) {
+              subBuffer =  VECTOR_ELT(mainBuffer, d);
+              for (total=1, inner=0; inner<d; inner++) {
+                total *= INTEGER(dimVect)[inner];
+              }
+              subscript[d] = subindex / total;
+
+              stringUelIndex = CHAR(STRING_ELT(subBuffer, subscript[d]));
+
+              uelIndices[d] = atoi(stringUelIndex);
+
+              subindex = subindex % total;
+              if (d == 0) {
+                break;
+              }
+            } /* for loop over "d" */
+          }
+
+          if(TYPEOF(valData) == REALSXP) {
+            p = REAL(valData);
+          }
+          else if(TYPEOF(valData) == INTSXP) {
+            p = (double*)INTEGER(valData);
+          }
+          if(data[i]->dType == parameter) {
+            vals[0] = p[index];
+            if (vals[0] != 0 && gdxMapValue (gdxHandle, vals[0], &z)) { /* it's special */
+              switch (z) {
+              case sv_valpin:
+                vals[0] = NA_REAL;
+                break;
+              case sv_valmin:                           
+                vals[0] = NA_REAL;
+                break;
+              case sv_valeps:
+                vals[0] = 0;
+                break;
+              case sv_valund:
+              case sv_valna:
+                vals[0] = NA_REAL;
+                break;
+              default:                          
+                error("Unrecognized map-value %d returned for %g", z, vals[0]);
+              } /* end of switch/case */
+            }
+          }
+          /* No need to write zero values */
+          if((data[i]->dType == parameter && vals[0] != 0)
+             || (data[i]->dType == set && p[index] == 1)) {
+            rc = gdxDataWriteMap(gdxHandle, uelIndices, vals);
+            if (!rc) {
+              error("Could not write parameter MAP with gdxDataWriteMap");
+            }
+          }
+        } /* for loop over "index" */
+        if(!gdxDataWriteDone(gdxHandle)) {
+          error("Could not end writing data with gdxDataWriteMapStart");
+        }
+      } /* end of writing full data */
+    }
+  }    /* End of for(i) loop  */
+
+  if(fromGAMS) {   
+    if (strcmp(inputTime,"exec") != 0) {
+      fprintf(matdata,"$gdxin\n"); 
+    }
+    fclose(matdata);
+  }
   /* Close GDX file  */
   errNum = gdxClose (gdxHandle);
-  if (errNum != 0) 
-    {
-      getGDXMsg ();
-      error("GDXRRW:wgdx:GDXError",
-            "Could not gdxClose: %s",
-            lastErrMsg);
-    }
+  if (errNum != 0) {
+    getGDXMsg ();
+    error("GDXRRW:wgdx:GDXError",
+          "Could not gdxClose: %s",
+          lastErrMsg);
+  }
   (void) gdxFree (&gdxHandle);
   
   /* free memory  */
   free(data);
   UNPROTECT(wAlloc);
-}
+} /* writeGdx */
 
 
 /* ---------------------------- rgdx -----------------------------------
