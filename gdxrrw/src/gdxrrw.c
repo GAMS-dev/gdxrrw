@@ -654,7 +654,11 @@ getGamsSoln(char *gmsFileName)
   }
   fclose(fp);
 
+  /* this bunch just to shut up compiler warnings */
   loop = 0;
+  maxPossibleElements = 0;
+  OPList = NULL;
+
   if (astring != NULL && strcmp(astring, "") != 0) {
     array[0]=strtok(line," ");
     if (array[0]==NULL) {
@@ -934,7 +938,7 @@ getGamsSoln(char *gmsFileName)
             }
           }
         }
-        if(matched == maxPossibleElements) {
+        if (matched == maxPossibleElements) {
           break;
         }
       }
@@ -2689,6 +2693,9 @@ writeGdx(char *gdxFileName,
   int *subscript;
   const char *inputTime;
 
+  /* shut up compiler warnings */
+  valData = NULL;
+
   total = 1;
   wAlloc = 0;
   if(fromGAMS == 1)
@@ -2773,20 +2780,20 @@ writeGdx(char *gdxFileName,
      *  This is the glitch that i am worried about
      */
     compName = getAttrib(symbolList[i], R_NamesSymbol);
-    for (j = 0; j < length(symbolList[i]); j++) {
-      if(strcmp("val", CHAR(STRING_ELT(compName, j))) == 0) {
+    for (found = 0, j = 0; j < length(symbolList[i]); j++) {
+      if (strcmp("val", CHAR(STRING_ELT(compName, j))) == 0) {
         found = 1;
         break;
       }
     }
 
-    if(found == 1) {
+    if (1 == found) {
       valData = VECTOR_ELT(symbolList[i], j);
     }
     /* This is special check  */
-    if(fromGAMS == 0
-       || ( fromGAMS == 1
-            && (found == 0 || TYPEOF(valData) != STRSXP))) {
+    if (fromGAMS == 0
+        || (fromGAMS == 1
+             && (found == 0 || TYPEOF(valData) != STRSXP))) {
       mainBuffer = VECTOR_ELT(uelIndex, i);
       if (fromGAMS) {
         if (strcmp(inputTime,"exec") == 0) {
@@ -4151,6 +4158,7 @@ SEXP gdxInfo (SEXP args)
   Rprintf("$offtext \n");
 
   Rprintf("$onempty onembedded \n");
+  dn = NULL;
   for (i=1; i<=NrSy; i++) {
 
     gdxSymbolInfo(Tptr, i, sName, &ADim, &ATyp);
@@ -4176,7 +4184,7 @@ SEXP gdxInfo (SEXP args)
       Rprintf("Scalar");
     else {
       if (GMS_DT_VAR == ATyp)
-        printf("%s ",dn);
+        printf("%s ", dn);
       Rprintf("%s",gmsGdxTypeText[ATyp]);
     }
     if (GMS_DT_ALIAS == ATyp) {
