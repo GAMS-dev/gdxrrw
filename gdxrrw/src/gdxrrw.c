@@ -331,9 +331,8 @@ getGamsPath (char *dir)
 int
 callGams (const char *gamsFile)
 {
-  const char *errMsg;
   char *gamsExeName;
-  char *cmdLine, *gamsPath, *consoleType;
+  char *cmdLine, *gamsPath;
   int err, rc, showWindow = 0;
 #if defined(_WIN32)
   char gamsExeBaseName[] = "gams.exe";
@@ -341,26 +340,31 @@ callGams (const char *gamsFile)
   char gamsExeBaseName[] = "gams";
 #endif
   /* Following is to remove screen output due to compiler bug */
-  char *word, *jobString;
+  char *word;
+  shortStringBuf_t jobString;
   int loThere;
   char absGamsPath[512];
 
 #if defined(_WIN32)
-  showWindow = SW_SHOWMINNOACTIVE;
-  consoleType = getGlobalString("show");
-  if (consoleType != NULL) {
-    if (strcmp(consoleType,"invisible") == 0) {
-      showWindow = SW_HIDE;
+  {
+    char *consoleType;
+
+    showWindow = SW_SHOWMINNOACTIVE;
+    consoleType = getGlobalString("show");
+    if (consoleType != NULL) {
+      if (strcmp(consoleType,"invisible") == 0) {
+        showWindow = SW_HIDE;
+      }
+      else if (strcmp(consoleType,"normal") == 0) {
+        showWindow = SW_SHOWDEFAULT;
+      }
+      /* else warning message */
+      else {
+        warning("To change default behavior of 'show', please enter it as 'invisible' or 'normal' \n" ); 
+        Rprintf("You entered it as %s. \n", consoleType);
+      }
+      free(consoleType);
     }
-    else if (strcmp(consoleType,"normal") == 0) {
-      showWindow = SW_SHOWDEFAULT;
-    }
-    /* else warning message */
-    else {
-      warning("To change default behavior of 'show', please enter it as 'invisible' or 'normal' \n" ); 
-      Rprintf("You entered it as %s. \n", consoleType);
-    }
-    free(consoleType);
   }
 #endif /* windows */
 
@@ -379,26 +383,18 @@ callGams (const char *gamsFile)
     gamsExeName = gamsPath;
   }
 
-  if ((jobString = gamsFile) == NULL) {
+  if (gamsFile == NULL) {
     error("Error getting GAMS input file name");
     return 1;
   }
+  (void) CHAR2ShortStr (gamsFile, jobString);
 
-  if (specialCommand != NULL && specialCommand != " ") {
-    cmdLine = malloc((strlen(gamsExeName) + 1 + strlen(jobString) +1 +
-                      strlen(specialCommand) + 6) * sizeof(*cmdLine));
-    strcpy (cmdLine, gamsExeName);      
-    strcat (cmdLine, " ");
-    strcat (cmdLine, jobString);
-    strcat(cmdLine, " ");
-    strcat(cmdLine, specialCommand);
-  }
-  else {
-    cmdLine= malloc( (strlen(gamsExeName) + 1 + strlen(jobString) + 6) * sizeof(char));
-    strcpy (cmdLine, gamsExeName);    
-    strcat (cmdLine, " ");
-    strcat (cmdLine, jobString);    
-  }
+  cmdLine = malloc(strlen(gamsExeName) + 1 + strlen(jobString)
+                   + 1 + strlen(specialCommand) + 6);
+  strcpy (cmdLine, gamsExeName);      
+  strcat (cmdLine, " ");
+  strcat (cmdLine, jobString);
+  strcat (cmdLine, specialCommand); /* specialCmmand always starts with a blank */
 
   /* Check for "logoption" */
   loThere = 0;
@@ -417,10 +413,11 @@ callGams (const char *gamsFile)
   if (loThere == 0) {
     strcat (cmdLine, " lo=0");
   }
-  /* free(jobString);  */  
   err = GSExec (cmdLine, &rc, showWindow);
   if (err) {
 #if defined(_WIN32)
+    const char *errMsg;
+
     errMsg = formatMessage (err);
     if (NULL == gamsPath) {
       if (2 == err) {
@@ -4197,6 +4194,7 @@ SEXP gams (SEXP args)
     fclose(fp);
   }
 
+  /* specialCommand always starts with a blank */
   strcpy(specialCommand, " ");
   
   if (arglen > 2) {
