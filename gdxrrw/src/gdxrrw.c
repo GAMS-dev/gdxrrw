@@ -173,65 +173,65 @@ char *val2str(gdxHandle_t Tptr,
               double val,
               char *s);
 
-void 
+void
 checkFileExtension (shortStringBuf_t fileName);
 
-void 
+void
 checkStringLength(const char *str);
 
-char 
+char
 *changeToLower(const char *string);
 
-int 
-getNonZeroElements(gdxHandle_t gdxHandle, 
-                   int symIdx, 
+int
+getNonZeroElements(gdxHandle_t gdxHandle,
+                   int symIdx,
                    dField_t *dField);
 
-SEXP 
-compressData(SEXP data, 
-             SEXP globalUEL, 
+SEXP
+compressData(SEXP data,
+             SEXP globalUEL,
              SEXP uelOut,
-             int numberOfUel, 
-             int symbolDim, 
+             int numberOfUel,
+             int symbolDim,
              int nRec);
 
-SEXP 
-sparseToFull(SEXP compVal, 
+SEXP
+sparseToFull(SEXP compVal,
              SEXP compFullVal,
              SEXP compUels,
              int type,
              int nRec,
              int symbolDim);
 
-SEXP 
+SEXP
 createElementMatrix(SEXP compVal,
-                    SEXP textElement, 
-                    SEXP compTe, 
+                    SEXP textElement,
+                    SEXP compTe,
                     SEXP compUels,
                     int symbolDim,
                     int nRec);
 
-void 
+void
 checkForRepetition(SEXP bufferUel);
 
-SEXP 
-convertToOutput(SEXP bufferUel, 
+SEXP
+convertToOutput(SEXP bufferUel,
                 SEXP tmpUel);
 
-int 
+int
 checkIfExist(int k,
              SEXP filterUel,
              char *uelName);
 
 void
-registerInputUEL(SEXP uelOut, 
-                 int k, 
+registerInputUEL(SEXP uelOut,
+                 int k,
                  SEXP uelIndex);
 
-static void 
-writeGdx(char *fileName, 
+static void
+writeGdx(char *fileName,
          int arglen,
-         SEXP *argList, 
+         SEXP *argList,
          int fromGAMS);
 
 static void
@@ -302,20 +302,20 @@ getGamsPath (char *dir)
 
   *dir = '\0';            /* signals failure */
   if (8 == sizeof(p))
-    h = GetModuleHandle ("gams.mexw64"); 
+    h = GetModuleHandle ("gams.mexw64");
   else
     h = GetModuleHandle ("gams.mexw32");
   if (h)
     rc = GetModuleFileName (h, buf, sizeof(buf));
-  if (rc) {     
-    strncpy(dir, buf, strlen(buf) - 7); 
-    strcat(dir, ".exe");    
+  if (rc) {
+    strncpy(dir, buf, strlen(buf) - 7);
+    strcat(dir, ".exe");
     hFind = FindFirstFile(dir, &FindFileData);
     if (hFind == INVALID_HANDLE_VALUE) {
       *dir = '\0';            /* signals failure */
       return;
     }
-    else {      
+    else {
       FindClose(hFind);
     }
   }
@@ -360,7 +360,7 @@ callGams (const char *gamsFile)
       }
       /* else warning message */
       else {
-        warning("To change default behavior of 'show', please enter it as 'invisible' or 'normal' \n" ); 
+        warning("To change default behavior of 'show', please enter it as 'invisible' or 'normal' \n" );
         Rprintf("You entered it as %s. \n", consoleType);
       }
       free(consoleType);
@@ -391,7 +391,7 @@ callGams (const char *gamsFile)
 
   cmdLine = malloc(strlen(gamsExeName) + 1 + strlen(jobString)
                    + 1 + strlen(specialCommand) + 6);
-  strcpy (cmdLine, gamsExeName);      
+  strcpy (cmdLine, gamsExeName);
   strcat (cmdLine, " ");
   strcat (cmdLine, jobString);
   strcat (cmdLine, specialCommand); /* specialCmmand always starts with a blank */
@@ -402,7 +402,7 @@ callGams (const char *gamsFile)
   while (word != NULL) {
     if (1 == strspn(word,"lL")) {
       if (1 == strspn(&word[1],"oO")) {
-        if (strlen(word) == 2 || 1 == strspn(&word[2],"=") || 
+        if (strlen(word) == 2 || 1 == strspn(&word[2],"=") ||
             7 == strspn(&word[2],"goptinGOPTIN")) {
           loThere = 1;
         }
@@ -426,7 +426,7 @@ callGams (const char *gamsFile)
       }
     }
     else {
-      errorr("Could not run %s: %s: check gams.path", 
+      errorr("Could not run %s: %s: check gams.path",
              gamsPath, errMsg);
     }
 #else
@@ -450,8 +450,8 @@ callGams (const char *gamsFile)
   return: error code for starting the process
   rc: return code from the program
 */
-static int GSExec(char *command, 
-                  int *progrc, 
+static int GSExec(char *command,
+                  int *progrc,
                   int showWindow)
 {
 
@@ -471,8 +471,8 @@ static int GSExec(char *command,
                              &StartupInfo,&ProcessInformation)) {
     *progrc = 0;
     return GetLastError();
-  } 
-  else 
+  }
+  else
   {
     WaitForSingleObject(ProcessInformation.hProcess,INFINITE);
     GetExitCodeProcess(ProcessInformation.hProcess,&exitcode);
@@ -484,7 +484,7 @@ static int GSExec(char *command,
 #else
   /* non-Windows implementation */
   int rcode;
-  
+
   rcode = system ((char *) command);
   if (WIFEXITED(rcode)) {       /* shell completed successfully */
     *progrc = WEXITSTATUS(rcode);
@@ -521,10 +521,10 @@ getGlobalUEL(SEXP globalUEL,
     wUEL = 0;
     return R_NilValue;
   }
-    
-  /*  else if (TYPEOF(gamso) != VECSXP  && globalGams) 
+
+  /*  else if (TYPEOF(gamso) != VECSXP  && globalGams)
     {
-      warning("To change default behavior, please enter 'gamso' as list. \n" ); 
+      warning("To change default behavior, please enter 'gamso' as list. \n" );
       Rprintf("You entered it as %d. \n", TYPEOF(gamso) );
       globalGams = 0;
       return R_NilValue;
@@ -567,7 +567,7 @@ getGlobalUEL(SEXP globalUEL,
               bufferUel = allocVector(STRSXP, length(tmpUel));
               /* Convert to output  */
               bufferUel =  convertToOutput(bufferUel, tmpUel);
-              SET_VECTOR_ELT(globalUEL, j, bufferUel);                     
+              SET_VECTOR_ELT(globalUEL, j, bufferUel);
               wUEL = 1;
             }
           }
@@ -581,43 +581,43 @@ getGlobalUEL(SEXP globalUEL,
 
 SEXP
 getGamsSoln(char *gmsFileName)
-{  
+{
   SEXP  UEList;
   SEXP OPListComp, OPList, dimVect, textElement, elVect;
-  SEXP compName = R_NilValue, 
-    compType = R_NilValue, 
+  SEXP compName = R_NilValue,
+    compType = R_NilValue,
     compDim = R_NilValue,
     compVal = R_NilValue,
     compFullVal = R_NilValue,
     compForm = R_NilValue,
-    compUels = R_NilValue, 
-    compField = R_NilValue,  
-    compTs = R_NilValue,  
+    compUels = R_NilValue,
+    compField = R_NilValue,
+    compTs = R_NilValue,
     compTe = R_NilValue;
   struct rgdxStruct *inputData;
-  FILE *fp, *fin;   
+  FILE *fp, *fin;
   char sText[GMS_SSSIZE], msg[GMS_SSSIZE], stringEle[GMS_SSSIZE];
   char line[LINELEN], astring[LINELEN], *s, *array[50], *gdxFile;
   int loop, i, maxPossibleElements, z;
-  char  *symbolField, *symbol_Name, *uelElementName; 
+  char  *symbolField, *symbol_Name, *uelElementName;
   int rc, errNum, symIdx, symDim, symType, mrows, ncols, nRecs, iRec, changeIdx, index, k, kk, nonZero;
   shortStringBuf_t msgBuf, uelName;
-  char buf[3*sizeof(shortStringBuf_t)];  
-  int nUEL, iUEL, defaultIndex,  UELUserMapping, highestMappedUEL, ndimension;  
+  char buf[3*sizeof(shortStringBuf_t)];
+  int nUEL, iUEL, defaultIndex,  UELUserMapping, highestMappedUEL, ndimension;
   double  *p, *dimVal;
   gdxUelIndex_t uels;
   gdxValues_t values;
-  char *gForm, *field, *outputStyle; 
-  int outStyle, nField; 
+  char *gForm, *field, *outputStyle;
+  int outStyle, nField;
   char *types[] = {"set", "parameter", "variable", "equation"};
   char *forms[] = {"full", "sparse"};
   char *fields[] = {"l", "m", "up", "lo", "s"};
-  int a, b, matched, sparesIndex, symDimInt, totNumber, IDum, totalElement;  
+  int a, b, matched, sparesIndex, symDimInt, totNumber, IDum, totalElement;
   int *returnedIndex;
   int mwNElements =0;
   int uelProperty = 0;
-  int outFields = 6;  
-  /* Setting default values */ 
+  int outFields = 6;
+  /* Setting default values */
   inputData = malloc(sizeof(*inputData));
 
   inputData->dForm = sparse;
@@ -631,7 +631,7 @@ getGamsSoln(char *gmsFileName)
   if ((fp = fopen(gmsFileName,"r")) == NULL) {
     error("Cannot find/open %s file.\n",gmsFileName);
   }
-  /* read the file till $set matout */ 
+  /* read the file till $set matout */
   while (fgets(line,LINELEN,fp) != NULL) {
     /* throw away leading spaces */
     s = line;
@@ -662,14 +662,14 @@ getGamsSoln(char *gmsFileName)
       }
     }
   }
-  
+
   /* At least one element is there in GDX file  */
   if(loop - 3 > 0) {
     /* This is for global UEL  */
     wUEL = 0;
     inputData->filterUel = getGlobalUEL(inputData->filterUel, inputData->compress);
     if(wUEL == 0) {
-      inputData->withUel = 0;         
+      inputData->withUel = 0;
     }
     else {
       inputData->withUel = 1;
@@ -681,15 +681,15 @@ getGamsSoln(char *gmsFileName)
       }
       else if(strcmp(gForm,"sparse") == 0) {
         inputData->dForm = sparse;
-      }      
+      }
       else {
         /* else warning message */
-        warning("To change default behavior of 'form', please enter it as 'full' or 'sparse' \n" ); 
-        Rprintf("You entered it as %s. \n", gForm);  
+        warning("To change default behavior of 'form', please enter it as 'full' or 'sparse' \n" );
+        Rprintf("You entered it as %s. \n", gForm);
       }
-    }  
+    }
 
-    field = getGlobalString("field"); 
+    field = getGlobalString("field");
     if(field != NULL) {
       if(strcmp(field, "l") == 0) {
         inputData->dField = level;
@@ -708,12 +708,12 @@ getGamsSoln(char *gmsFileName)
       }
       else {
         /* else warning message */
-        warning(" To change default behavior of 'field', please enter it as 'l/m/lo/up/s'. \n" ); 
+        warning(" To change default behavior of 'field', please enter it as 'l/m/lo/up/s'. \n" );
         Rprintf("You entered it as %s. \n", field);
       }
     }
 
-    outStyle = 0;    
+    outStyle = 0;
     outputStyle = getGlobalString("output");
     if ((outputStyle != NULL) && ('\0' != *outputStyle)) {
       if( strcmp(outputStyle,"std") == 0) {
@@ -721,12 +721,12 @@ getGamsSoln(char *gmsFileName)
       }
       else {
         /* else warning message */
-        warning("To change default behavior of 'output', please enter it as 'std'. \n" ); 
-        Rprintf("You entered it as %s. \n", outputStyle);  
+        warning("To change default behavior of 'output', please enter it as 'std'. \n" );
+        Rprintf("You entered it as %s. \n", outputStyle);
       }
     }
 
-    /* -------------Start reading data from gdx file------------------- */   
+    /* -------------Start reading data from gdx file------------------- */
     gdxFile = array[2];
     fin = fopen (gdxFile,"r");
     if (fin==NULL) {
@@ -771,7 +771,7 @@ getGamsSoln(char *gmsFileName)
 
     /* Checking dimension of input uel and paramter in GDX file.
        If they are not equal then error.  */
-  
+
     if(inputData->withUel == 1 && length(inputData->filterUel) != symDim) {
       error("Dimension of UEL entered does not match with symbol in GDX");
     }
@@ -782,7 +782,7 @@ getGamsSoln(char *gmsFileName)
       for(defaultIndex = 0; defaultIndex < symDim; defaultIndex++) {
         SET_VECTOR_ELT(compUels, defaultIndex, UEList);
       }
-    } 
+    }
 
     /* Start reading data  */
     gdxDataReadRawStart (gdxHandle, 1, &nRecs);
@@ -795,13 +795,13 @@ getGamsSoln(char *gmsFileName)
       ncols = symDim;
     }
 
-    /* TODO: filter UEL 
+    /* TODO: filter UEL
        this is to check total number of elements that matches
-       in Input UEL. Then create a 2D double matrix for sparse format.      
+       in Input UEL. Then create a 2D double matrix for sparse format.
        compute total number of elements matched in Input UEL.
     */
-    mwNElements = 0; 
-  
+    mwNElements = 0;
+
     if (inputData->withUel == 1) {
       maxPossibleElements = 1;
       for(z = 0; z < symDim; z++) {
@@ -820,9 +820,9 @@ getGamsSoln(char *gmsFileName)
           /* uel element exists */
           if(uelProperty > 0) {
             b++;
-          }                             
+          }
           else {
-            break;                          
+            break;
           }
         }
         if(b == symDim) {
@@ -863,23 +863,23 @@ getGamsSoln(char *gmsFileName)
     if(inputData->withUel == 1) {
       matched = 0;
       gdxDataReadRawStart (gdxHandle, 1, &nRecs);
-            
+
       returnedIndex = malloc(symDim*sizeof(*returnedIndex));
       for (iRec = 0;  iRec < nRecs;  iRec++) {
         gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
         index = 0;
         totNumber = 1;
         b = 0;
-                  
+
         for (k = 0;  k < symDim;  k++) {
           uelProperty = 0;
           returnedIndex[k] = 0;
           uelElementName = CHAR( STRING_ELT(UEList, uels[k]-1)  );
           uelProperty = checkIfExist(k, inputData->filterUel, uelElementName);
           if(uelProperty > 0) {
-            returnedIndex[k] = uelProperty;            
+            returnedIndex[k] = uelProperty;
             b++;
-          } 
+          }
           else {
             break;
           }
@@ -888,16 +888,16 @@ getGamsSoln(char *gmsFileName)
           for(sparesIndex = 0; sparesIndex < symDim; sparesIndex++) {
             p[matched + sparesIndex*mwNElements] = returnedIndex[sparesIndex];
           }
-          index = matched + symDim*(int)mwNElements;                    
+          index = matched + symDim*(int)mwNElements;
           matched = matched +1;
 
           if (symType != dt_set) {
             if (gdxMapValue (gdxHandle, values[inputData->dField], &k)) { /* it's special */
               switch (k) {
-              case sv_valpin:                                                          
+              case sv_valpin:
                 p[index] = NA_REAL;
                 break;
-              case sv_valmin:                                                           
+              case sv_valmin:
                 p[index] = NA_REAL;
                 break;
               case sv_valeps:
@@ -911,9 +911,9 @@ getGamsSoln(char *gmsFileName)
                 p[index] = NA_REAL;
                 break;
               default:
-                sprintf(buf, 
+                sprintf(buf,
                         "Unrecognized map-value %d returned for %g",
-                        k, 
+                        k,
                         values[inputData->dField]);
                 error(buf);
               } /* end of switch/case */
@@ -934,7 +934,7 @@ getGamsSoln(char *gmsFileName)
       if(symType == dt_var || symType == dt_equ ) {
         gdxDataReadRawStart (gdxHandle, 1, &nRecs);
       }
-          
+
       for (iRec = 0;  iRec < nRecs;  iRec++) {
         gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
         if(symType == dt_set || values[inputData->dField] != 0) {
@@ -948,10 +948,10 @@ getGamsSoln(char *gmsFileName)
           if (symType != dt_set) {
             if (gdxMapValue (gdxHandle, values[inputData->dField], &k)) { /* it's special */
               switch (k) {
-              case sv_valpin:                  
+              case sv_valpin:
                 p[index] = NA_REAL;
                 break;
-              case sv_valmin:                 
+              case sv_valmin:
                 p[index] = -NA_REAL;
                 break;
               case sv_valeps:
@@ -965,9 +965,9 @@ getGamsSoln(char *gmsFileName)
                 p[index] = NA_REAL;
                 break;
               default:
-                sprintf(buf, 
+                sprintf(buf,
                         "Unrecognized map-value %d returned for %g",
-                        k, 
+                        k,
                         values[inputData->dField]);
                 error(buf);
               }
@@ -977,7 +977,7 @@ getGamsSoln(char *gmsFileName)
             }
           }
         } /* end of if(set || val != 0) */
-      } /* loop over GDX records */           
+      } /* loop over GDX records */
     }
 
     /* Converting data into its compressed form. */
@@ -986,7 +986,7 @@ getGamsSoln(char *gmsFileName)
       compVal = compressData(compVal, UEList, compUels, nUEL, symDim, mrows);
     }
 
-    /* Converting sparse data into full matrix */ 
+    /* Converting sparse data into full matrix */
     if(inputData->dForm == full) {
       switch (symDim) {
       case 0:
@@ -1001,7 +1001,7 @@ getGamsSoln(char *gmsFileName)
         break;
       case 1:
         PROTECT(dimVect = allocVector(REALSXP, 2));
-        gamsAlloc++;            
+        gamsAlloc++;
         dimVal = REAL(dimVect);
 
         if (inputData->withUel == 1) {
@@ -1024,8 +1024,8 @@ getGamsSoln(char *gmsFileName)
           PROTECT(dimVect = allocVector(REALSXP, symDim));
           gamsAlloc++;
           totalElement = 1;
-          dimVal = REAL(dimVect);     
-          ndimension = 0; 
+          dimVal = REAL(dimVect);
+          ndimension = 0;
           if(inputData->withUel == 1) {
             for(ndimension = 0; ndimension < symDim; ndimension++) {
               dimVal[ndimension] = length(VECTOR_ELT(inputData->filterUel, ndimension));
@@ -1034,7 +1034,7 @@ getGamsSoln(char *gmsFileName)
           }
           else {
             for (ndimension = 0; ndimension < symDim; ndimension++) {
-              dimVal[ndimension] = length(VECTOR_ELT(compUels, ndimension)); 
+              dimVal[ndimension] = length(VECTOR_ELT(compUels, ndimension));
               totalElement = (totalElement * length(VECTOR_ELT(compUels, ndimension)));
             }
           }
@@ -1051,16 +1051,16 @@ getGamsSoln(char *gmsFileName)
           break;
         }
       }
-    }   
+    }
     /* Create a 1-by-1 array of structs. */
     if (outStyle == 0) {
       /* List form  */
-          
+
       /* Creating string vector for symbol Name  */
       PROTECT(compName = allocVector(STRSXP, 1) );
       SET_STRING_ELT(compName, 0, mkChar(inputData->name));
-      gamsAlloc++;  
-      /* Creating string vector for symbol type  */  
+      gamsAlloc++;
+      /* Creating string vector for symbol type  */
       PROTECT(compType = allocVector(STRSXP, 1) );
       gamsAlloc++;
       switch (symType) {
@@ -1080,11 +1080,11 @@ getGamsSoln(char *gmsFileName)
         error("Unrecognized type of symbol found.");
       }
 
-      /* Creating int vector for symbol Dim  */  
+      /* Creating int vector for symbol Dim  */
       PROTECT(compDim = allocVector(INTSXP, 1) );
       INTEGER(compDim)[0] = symDim;
       gamsAlloc++;
-      /* Creating string vector for val data form */  
+      /* Creating string vector for val data form */
       PROTECT(compForm = allocVector(STRSXP, 1) );
       gamsAlloc++;
       if(inputData->dForm == full) {
@@ -1117,8 +1117,8 @@ getGamsSoln(char *gmsFileName)
           break;
         default:
           error("Unrecognized type of symbol found.");
-        } 
-      }     
+        }
+      }
 
       PROTECT(OPListComp = allocVector(STRSXP, outFields));
       gamsAlloc++;
@@ -1161,10 +1161,10 @@ getGamsSoln(char *gmsFileName)
       }
       SET_VECTOR_ELT(OPList, 4, compForm);
       if (inputData->withUel) {
-        SET_VECTOR_ELT(OPList, 5, inputData->filterUel);    
+        SET_VECTOR_ELT(OPList, 5, inputData->filterUel);
       }
       else {
-        SET_VECTOR_ELT(OPList, 5, compUels);        
+        SET_VECTOR_ELT(OPList, 5, compUels);
       }
 
       nField = 5;
@@ -1182,13 +1182,13 @@ getGamsSoln(char *gmsFileName)
       }
 
       /* Setting attribute name  */
-      setAttrib(OPList, R_NamesSymbol, OPListComp);   
+      setAttrib(OPList, R_NamesSymbol, OPListComp);
     }
     else {
       /* Only value */
       OPList = compVal;
     }
-            
+
     if (!gdxDataReadDone (gdxHandle)) {
       error ("Could not gdxDataReadDone");
     }
@@ -1196,7 +1196,7 @@ getGamsSoln(char *gmsFileName)
     if (errNum != 0) {
       error("Errors detected when closing gdx file");
     }
-    (void) gdxFree (&gdxHandle);  
+    (void) gdxFree (&gdxHandle);
   }
   free(inputData);
   return OPList;
@@ -1221,16 +1221,16 @@ int isCompress(void)
     return 0;
   }
 
-  /*   if (TYPEOF(gamso) != VECSXP  && globalGams) 
+  /*   if (TYPEOF(gamso) != VECSXP  && globalGams)
        {
-       warning("To change default behavior, please enter 'gamso' as list. \n" ); 
+       warning("To change default behavior, please enter 'gamso' as list. \n" );
        Rprintf("You entered it as %d. \n", TYPEOF(gamso) );
        globalGams = 0;
        return 0;
        } */
 
   else if (TYPEOF(gamso) == VECSXP && globalGams == 1) {
-    lstName = getAttrib(gamso, R_NamesSymbol);  
+    lstName = getAttrib(gamso, R_NamesSymbol);
     i=0;
     infields = length(gamso);
     /* Checking if field data is for "name" */
@@ -1240,7 +1240,7 @@ int isCompress(void)
         break;
       }
     }
-  
+
     if(found == 1 && globalGams) {
       tmp = VECTOR_ELT(gamso, i);
       if(TYPEOF(tmp) == STRSXP) {
@@ -1254,7 +1254,7 @@ int isCompress(void)
             /* else warning message */
             warning ("To change default behavior of 'compress', please enter it as 'true' or 'false' \n" );
             Rprintf ("You entered it as %s. \n", str);
-          }     
+          }
         }
       } /* TYPEOF=STRSXP */
       else if(TYPEOF(tmp) == LGLSXP) {
@@ -1280,28 +1280,28 @@ char *
 getGlobalString(const char *globName)
 {
   SEXP gamso, lstName, tmp;
-  char *str;  
+  char *str;
   int i, infields, found;
   found = 0;
 
   str = NULL;
   gamso = findVar( install("gamso"), R_GlobalEnv );
 
-  if (gamso == NULL || TYPEOF(gamso) == NILSXP  ||  TYPEOF(gamso) == SYMSXP) 
+  if (gamso == NULL || TYPEOF(gamso) == NILSXP  ||  TYPEOF(gamso) == SYMSXP)
     {
       globalGams = 0;
       return NULL;
-    }    
-  /*  else if (TYPEOF(gamso) != VECSXP  && globalGams == 1) 
+    }
+  /*  else if (TYPEOF(gamso) != VECSXP  && globalGams == 1)
     {
-      warning("To change default behavior, please enter 'gamso' as list. \n"); 
+      warning("To change default behavior, please enter 'gamso' as list. \n");
       Rprintf("You entered it as %d. \n", TYPEOF(gamso) );
       globalGams = 0;
       return NULL;
       }*/
-  else if(TYPEOF(gamso) == VECSXP && globalGams == 1 )   
+  else if(TYPEOF(gamso) == VECSXP && globalGams == 1 )
     {
-      lstName = getAttrib(gamso, R_NamesSymbol);  
+      lstName = getAttrib(gamso, R_NamesSymbol);
       i=0;
       infields = length(gamso);
       /* Checking if field data is for "name" */
@@ -1320,7 +1320,7 @@ getGlobalString(const char *globName)
           if(TYPEOF(tmp) == STRSXP)
             {
               checkStringLength( CHAR(STRING_ELT(tmp, 0)));
-              str = changeToLower(CHAR(STRING_ELT(tmp, 0)));      
+              str = changeToLower(CHAR(STRING_ELT(tmp, 0)));
             }
           else
             {
@@ -1329,7 +1329,7 @@ getGlobalString(const char *globName)
               return NULL;
             }
         }
-    } 
+    }
   return str;
 } /* getGlobalString */
 
@@ -1337,14 +1337,14 @@ getGlobalString(const char *globName)
 
 /* Delete single character from string  */
 char*
-delete_char(char *src, 
-            char c, 
+delete_char(char *src,
+            char c,
             int len)
 {
   char *dst;
   int i;
 
-  /* Do not remove NULL characters. */ 
+  /* Do not remove NULL characters. */
   if ( c == 0 )
     return NULL;
 
@@ -1362,14 +1362,14 @@ delete_char(char *src,
       *dst++ = *src;
   }
 
-  /*Ensure the string is null-terminated.*/ 
+  /*Ensure the string is null-terminated.*/
   *dst = 0;
   return src;
 } /* End of delete_Char  */
 
 void
-createUelOut(SEXP val, 
-             SEXP uelOut, 
+createUelOut(SEXP val,
+             SEXP uelOut,
              dType_t dType,
              dForm_t dForm)
 {
@@ -1377,13 +1377,13 @@ createUelOut(SEXP val,
   int i, j, k;
   double *P;
   int *intVal;
-  char buffer [256]; 
+  char buffer [256];
   int ncols, nrows, ndims;
   int max = 0;
-  
+
   dims = getAttrib(val, R_DimSymbol);
   if(dForm == sparse)
-    {     
+    {
       nrows = INTEGER(dims)[0];
       ncols = INTEGER(dims)[1];
       if(dType == parameter)
@@ -1393,12 +1393,12 @@ createUelOut(SEXP val,
 
       if(TYPEOF(val) == REALSXP)
         {
-          P = REAL(val);         
+          P = REAL(val);
           for(i = 0; i < ncols; i++)
             {
               for(j = 0; j < nrows; j++)
                 {
-                  if (P[j + i*nrows] > max) 
+                  if (P[j + i*nrows] > max)
                     {
                       max = (int) P[j + i*nrows];
                     }
@@ -1409,9 +1409,9 @@ createUelOut(SEXP val,
                   sprintf(buffer, "%d", k);
                   SET_STRING_ELT(bufferUel, k-1, mkChar(buffer));
                 }
-              SET_VECTOR_ELT(uelOut, i, duplicate(bufferUel)); 
-              max = 0;     
-            }   
+              SET_VECTOR_ELT(uelOut, i, duplicate(bufferUel));
+              max = 0;
+            }
         }
       else if(TYPEOF(val) == INTSXP)
         {
@@ -1421,7 +1421,7 @@ createUelOut(SEXP val,
             {
               for(j = 0; j < nrows; j++)
                 {
-                  if (intVal[j + i*nrows] > max) 
+                  if (intVal[j + i*nrows] > max)
                     {
                       max =  intVal[j + i*nrows];
                     }
@@ -1432,42 +1432,42 @@ createUelOut(SEXP val,
                   sprintf(buffer, "%d", k);
                   SET_STRING_ELT(bufferUel, k-1, mkChar(buffer));
                 }
-              SET_VECTOR_ELT(uelOut, i, duplicate(bufferUel)); 
-              max = 0;     
-            }     
+              SET_VECTOR_ELT(uelOut, i, duplicate(bufferUel));
+              max = 0;
+            }
         }
     }
   else
-    {     
+    {
       /*
-        Create default uel. 
-        Here there is no need to calcualte max as number 
-        of elements in each dimension is all what I need. 
-      */      
+        Create default uel.
+        Here there is no need to calcualte max as number
+        of elements in each dimension is all what I need.
+      */
       ndims = length(uelOut);
       for(i = 0; i < ndims; i++)
         {
           bufferUel = allocVector(STRSXP, INTEGER(dims)[i]);
-          
+
           for(k = 1; k <= INTEGER(dims)[i]; k++)
             {
               sprintf(buffer, "%d", k);
               SET_STRING_ELT(bufferUel, k-1, mkChar(buffer));
             }
           SET_VECTOR_ELT(uelOut, i, bufferUel);
-        } 
+        }
     }
 } /* createUelOut  */
 
 
 /* This method check the validity of input data with input uels and dims */
 void
-checkForValidData(SEXP val, 
-                  SEXP uelOut, 
-                  dType_t dType, 
+checkForValidData(SEXP val,
+                  SEXP uelOut,
+                  dType_t dType,
                   dForm_t dForm)
 {
-  SEXP dims;  
+  SEXP dims;
   int i, j;
   double *P;
   int *intVal;
@@ -1476,14 +1476,14 @@ checkForValidData(SEXP val,
   int max = 0;
 
   nuels = length(uelOut);
-  
+
   if(TYPEOF(val) == REALSXP)
     {
        P = REAL(val);
     }
- 
+
   else if(TYPEOF(val) == INTSXP)
-    {  
+    {
       P = (double*)INTEGER(val);
     }
   else
@@ -1500,7 +1500,7 @@ checkForValidData(SEXP val,
       if(dType == parameter)
         {
           ncols--;
-        }       
+        }
       if(nuels != ncols)
         {
           error("Number of columns in sparse data does not match with uels.");
@@ -1521,7 +1521,7 @@ checkForValidData(SEXP val,
                 {
                   error("Only finite numbers are allowed in index columns of sparse data");
                   } */
-              if (P[j + i*nrows] > max) 
+              if (P[j + i*nrows] > max)
                 {
                   max = (int) P[j + i*nrows];
                 }
@@ -1533,7 +1533,7 @@ checkForValidData(SEXP val,
           max = 0;
         }
     }
-  else 
+  else
     {
       /* get dimension of full matrix == number of columns in uels */
       ndims = length(dims);
@@ -1550,12 +1550,12 @@ checkForValidData(SEXP val,
       /* special check for scalar */
       if(nuels == 0 && ( INTEGER(dims)[0] != 1 || INTEGER(dims)[1] != 1))
         {
-          error("Scalar should have only one element.");                  
+          error("Scalar should have only one element.");
         }
-      /* number of elements in each dimension == number of elements in UEL 
+      /* number of elements in each dimension == number of elements in UEL
       for(i = 0; i < (int)nuels; i++)
         {
-          if( !( INTEGER(dims)[i] == 1 &&  (int)mxGetN(mxGetCell(uelOut, i )) == 0) 
+          if( !( INTEGER(dims)[i] == 1 &&  (int)mxGetN(mxGetCell(uelOut, i )) == 0)
               && INTEGER(dims)[i] > mxGetN(mxGetCell(uelOut, i )))
             {
               error("Number of element in full format data exceeds corresponding elements in UEL.");
@@ -1566,17 +1566,17 @@ checkForValidData(SEXP val,
 
 
 /* Only called from gdxInfo  */
-char *val2str(gdxHandle_t Tptr, 
-              double val, 
-              char *s) 
-{  
+char *val2str(gdxHandle_t Tptr,
+              double val,
+              char *s)
+{
   int sv;
 
-  if (gdxAcronymName(Tptr, val, s)) 
+  if (gdxAcronymName(Tptr, val, s))
     {
       return s;
-    } 
-  else 
+    }
+  else
     {
       gdxMapValue(Tptr, val, &sv);
       if (sv_normal != sv)
@@ -1653,14 +1653,14 @@ checkFileExtension (shortStringBuf_t fileName)
 } /* checkFileExtension */
 
 /* Every string input has to be in certain limit to be writen to GDX file */
-void 
+void
 checkStringLength(const char *str)
 {
   if( (int)strlen(str) == 0)
   {
     error("Cannot access empty field. Please try again" );
   }
-  else if ((int)strlen(str) >= sizeof(shortStringBuf_t)) 
+  else if ((int)strlen(str) >= sizeof(shortStringBuf_t))
   {
     error("The data entered is too long: len=%d exceeds limit=%d.",
           (int)strlen(str), (int)sizeof(shortStringBuf_t));
@@ -1669,7 +1669,7 @@ checkStringLength(const char *str)
 
 
 /* This method change input string to lower case */
-char 
+char
 *changeToLower(const char *string)
 {
   char *str;
@@ -1684,16 +1684,16 @@ char
     for(i=0; i < (int)strlen(str); i++){
       str[i] = tolower(str[i]);
     }
-  } 
+  }
   return str;
 }
 
 /* Return number of non - Zero elements of variable/equation */
-int 
-getNonZeroElements(gdxHandle_t gdxHandle, 
-                   int symIdx, 
+int
+getNonZeroElements(gdxHandle_t gdxHandle,
+                   int symIdx,
                    dField_t *dField)
-{  
+{
   int nRecs, changeIdx, i, nonZero;
   gdxUelIndex_t uels;
   gdxValues_t values;
@@ -1713,17 +1713,17 @@ getNonZeroElements(gdxHandle_t gdxHandle,
 
 /* This method compress the raw data(both value and uel) and remove redundant zeros from
    value matrix and re-index output matrix. And it also remove non present uel elements from UEL */
-SEXP 
-compressData(SEXP data, 
-             SEXP globalUEL, 
+SEXP
+compressData(SEXP data,
+             SEXP globalUEL,
              SEXP uelOut,
-             int numberOfUel, 
-             int symbolDim, 
+             int numberOfUel,
+             int symbolDim,
              int nRec)
 {
   int *mask, i, j, k, l, total, elements;
   double *col;
-  SEXP bufferUel;  
+  SEXP bufferUel;
 
   mask = malloc(numberOfUel*sizeof(*mask));
   col =  REAL(data);
@@ -1745,7 +1745,7 @@ compressData(SEXP data,
             }
         }
       /* step 3: create cellArray with size = total, fill in UEL if mask[] = 1 */
-      /* step 4: step through 1's at mask and create sum */      
+      /* step 4: step through 1's at mask and create sum */
       bufferUel = allocVector(STRSXP, total);
       elements = 0;
       for(l = 0; l < numberOfUel; l++)
@@ -1772,19 +1772,19 @@ compressData(SEXP data,
 
 
 /* This method converts sparse data into full data */
-SEXP 
-sparseToFull(SEXP compVal, 
+SEXP
+sparseToFull(SEXP compVal,
              SEXP compFullVal,
              SEXP compUels,
              int type,
              int nRec,
              int symbolDim)
 {
-  int i,j, iRec,  nCols;  
+  int i,j, iRec,  nCols;
   double *p, *pVal;
   int index = 0;
   int totNumber = 1;
- 
+
   /* Step 1: loop over full matrix and set every value as 0 */
   pVal = REAL(compFullVal);
   for(j = 0; j < length(compFullVal); j++)
@@ -1795,7 +1795,7 @@ sparseToFull(SEXP compVal,
   /* Step 2: loop over each row of sparse matrix and populate full matrix */
   p = REAL(compVal);
   nCols = symbolDim;
-  
+
   for(iRec = 0; iRec < nRec; iRec++)
     {
       index = 0;
@@ -1819,10 +1819,10 @@ sparseToFull(SEXP compVal,
 
 
 /* create text element Matrix from sparse data and element vector */
-SEXP 
+SEXP
 createElementMatrix(SEXP compVal,
-                    SEXP textElement, 
-                    SEXP compTe, 
+                    SEXP textElement,
+                    SEXP compTe,
                     SEXP compUels,
                     int symbolDim,
                     int nRec)
@@ -1860,11 +1860,11 @@ createElementMatrix(SEXP compVal,
 
 /* This method is to check repetition in Input UEL.
    It has to be a list of unique elements, without repetition */
-void 
+void
 checkForRepetition(SEXP bufferUel)
 {
   int i;
-  shortStringBuf_t *elements;  
+  shortStringBuf_t *elements;
   int nRec;
 
   /* Step 1: get all the string element and store in array*/
@@ -1873,7 +1873,7 @@ checkForRepetition(SEXP bufferUel)
   elements =  malloc(nRec * sizeof(*elements));
   for(i = 0; i < nRec; i++)
     {
-      strcpy(elements[i], CHAR(STRING_ELT(bufferUel, i)));     
+      strcpy(elements[i], CHAR(STRING_ELT(bufferUel, i)));
     }
   /* Step 2: Sort the array */
   qsort(elements, nRec, sizeof(*elements), (compareFunc_t)strcmp);
@@ -1882,12 +1882,12 @@ checkForRepetition(SEXP bufferUel)
   for(i = 0; i < nRec - 1; i++)
     {
 
-      if(0 == strcmp(elements[i], elements[i+1])) 
-        { 
-          Rprintf("Input UEL have repeated entry of '%s' \n",  
-                  elements[i]); 
-          error("Repetition in input UEL is not allowed."); 
-        } 
+      if(0 == strcmp(elements[i], elements[i+1]))
+        {
+          Rprintf("Input UEL have repeated entry of '%s' \n",
+                  elements[i]);
+          error("Repetition in input UEL is not allowed.");
+        }
     }
   free(*elements);
 }
@@ -1895,11 +1895,11 @@ checkForRepetition(SEXP bufferUel)
 
 
 /* This method convert input UEL cell into output cell array of strings */
-SEXP 
-convertToOutput(SEXP bufferUel, 
+SEXP
+convertToOutput(SEXP bufferUel,
                 SEXP tmpUel)
-{       
-  int  len; 
+{
+  int  len;
   char buffer [256];
   double *doubleData;
   int *intData;
@@ -1907,22 +1907,22 @@ convertToOutput(SEXP bufferUel,
 
   len = length(tmpUel);
   if(TYPEOF(tmpUel) == REALSXP )
-    {     
+    {
       doubleData = REAL(tmpUel);
-      for(w = 0; w < len; w++)  
+      for(w = 0; w < len; w++)
         {
           sprintf(buffer, "%g", doubleData[w]);
           SET_STRING_ELT(bufferUel, w, mkChar(buffer));
-        }      
+        }
     }
   else if( TYPEOF(tmpUel) == INTSXP )
     {
-      intData = INTEGER(tmpUel);      
-      for(w = 0; w < len; w++)  
+      intData = INTEGER(tmpUel);
+      for(w = 0; w < len; w++)
         {
           sprintf(buffer, "%i", intData[w]);
           SET_STRING_ELT(bufferUel, w, mkChar(buffer));
-        }      
+        }
     }
   else if(TYPEOF(tmpUel) == STRSXP)
     {
@@ -1931,9 +1931,9 @@ convertToOutput(SEXP bufferUel,
           SET_STRING_ELT(bufferUel, w, duplicate(STRING_ELT(tmpUel, w)));
         }
     }
-   
+
   checkForRepetition(bufferUel);
-   
+
   return bufferUel;
 } /* convertToOutput*/
 
@@ -1941,13 +1941,13 @@ convertToOutput(SEXP bufferUel,
 int checkIfExist(int k,
                  SEXP filterUel,
                  char *uelName)
-{  
+{
   SEXP tmpUel;
   int i, n;
   char *uelString;
   int element = 0;
 
-  /* TODO: uelString has to be const char *, 
+  /* TODO: uelString has to be const char *,
      that's why there is a warrning message at compilation  */
   tmpUel = VECTOR_ELT(filterUel, k);
   n = length(tmpUel);
@@ -1955,7 +1955,7 @@ int checkIfExist(int k,
   {
     uelString = CHAR(STRING_ELT(tmpUel, i));
     if(0 == strcmp(uelString, uelName))
-    {      
+    {
       element = i+1;
       break;
     }
@@ -1965,11 +1965,11 @@ int checkIfExist(int k,
 
 
 void
-registerInputUEL(SEXP uelOut, 
-                 int k, 
+registerInputUEL(SEXP uelOut,
+                 int k,
                  SEXP uelIndex)
-{  
-  int i, j, rc, gi; 
+{
+  int i, j, rc, gi;
   char bufChar[256];
   const  char *uelString;
   int nCols, nSubElements;
@@ -1986,12 +1986,12 @@ registerInputUEL(SEXP uelOut,
     nSubElements = length(dummy);
 
     subBuffer = allocVector(STRSXP, nSubElements);
-    
+
     for(j = 0; j < nSubElements; j++)
     {
       /* get string and register to gdx */
       uelString = CHAR(STRING_ELT(dummy, j));
-      /*   Rprintf("str at %d is %s\n", j, uelString); */ 
+      /*   Rprintf("str at %d is %s\n", j, uelString); */
 
       rc = gdxUELRegisterStr (gdxHandle, uelString, &gi);
       assert(rc);
@@ -2001,7 +2001,7 @@ registerInputUEL(SEXP uelOut,
       }
       sprintf(bufChar, "%d", gi);
       SET_STRING_ELT(subBuffer, j, mkChar(bufChar));
-    }       
+    }
 
     SET_VECTOR_ELT(mainBuffer, i, subBuffer);
   }
@@ -2013,7 +2013,7 @@ registerInputUEL(SEXP uelOut,
 
 /* This function validate input structure and set certain global variables */
 void
-checkWgdxList(SEXP structure, 
+checkWgdxList(SEXP structure,
               int k,
               SEXP uelIndex,
               struct  wgdxStruct **data,
@@ -2030,7 +2030,7 @@ checkWgdxList(SEXP structure,
 
   withDim = 0;
   infields = 0;
-    
+
   data[k] = (struct wgdxStruct *)malloc(sizeof(struct wgdxStruct));
 
   data[k]->dForm = sparse;
@@ -2049,7 +2049,7 @@ checkWgdxList(SEXP structure,
     {
      infields = length(structure);
     }
-  
+
   lstName = getAttrib(structure, R_NamesSymbol);
   if(lstName == R_NilValue)
     {
@@ -2078,10 +2078,10 @@ checkWgdxList(SEXP structure,
 
   /*
     TODO: I couldn't find a way to directly get component by name.
-    So I am looping through list of name to find desired name and then 
-    using that index to find value from main lsit 
+    So I am looping through list of name to find desired name and then
+    using that index to find value from main lsit
   */
-  
+
   i=0;
   /* Checking if field data is for "name" */
   for (i = 0; i < infields; i++)
@@ -2092,20 +2092,20 @@ checkWgdxList(SEXP structure,
           break;
         }
     }
-  
+
   if(found == 1)
     {
       tmp = VECTOR_ELT(structure, i);
       if(TYPEOF(tmp) == STRSXP)
         {
           checkStringLength( CHAR(STRING_ELT(tmp, 0)));
-          strcpy( data[k]->name, CHAR(STRING_ELT(tmp, 0)) ); 
+          strcpy( data[k]->name, CHAR(STRING_ELT(tmp, 0)) );
         }
       else
         {
-          Rprintf ("List compenent 'name' must be a string - found %d instead \n", 
+          Rprintf ("List compenent 'name' must be a string - found %d instead \n",
                    TYPEOF(tmp) );
-          error("Input list compenent 'name' must be string.\n");         
+          error("Input list compenent 'name' must be string.\n");
         }
     }
   else
@@ -2131,14 +2131,14 @@ checkWgdxList(SEXP structure,
       tmp = VECTOR_ELT(structure, i);
       if(TYPEOF(tmp) == STRSXP)
         {
-          checkStringLength( CHAR(STRING_ELT(tmp, 0)));   
+          checkStringLength( CHAR(STRING_ELT(tmp, 0)));
           data[k]->withTs = 1;
         }
       else
         {
-          Rprintf ("List compenent 'ts' must be a string - found %d instead \n", 
+          Rprintf ("List compenent 'ts' must be a string - found %d instead \n",
                    TYPEOF(tmp) );
-          error("Input list compenent 'ts' must be string.\n");   
+          error("Input list compenent 'ts' must be string.\n");
         }
     }
 
@@ -2153,15 +2153,15 @@ checkWgdxList(SEXP structure,
           break;
         }
     }
-  
+
   if(found == 1)
     {
       tmp = VECTOR_ELT(structure, i);
       if( TYPEOF(tmp) != STRSXP )
         {
-          Rprintf ("List compenent 'form' must be a string - found %d instead \n", 
+          Rprintf ("List compenent 'form' must be a string - found %d instead \n",
                    TYPEOF(tmp) );
-          error("Input list compenent 'form' must be string");      
+          error("Input list compenent 'form' must be string");
         }
       if(strlen( CHAR(STRING_ELT(tmp, 0)) ) == 0)
         {
@@ -2172,14 +2172,14 @@ checkWgdxList(SEXP structure,
         {
           data[k]->dForm = full;
         }
-      else if ( 0 == strcmp("sparse", str) ) 
+      else if ( 0 == strcmp("sparse", str) )
         {
           data[k]->dForm = sparse;
         }
-      else 
+      else
         {
           error("Input list compenent 'form' must be either 'full' or 'sparse'.");
-        }      
+        }
     }
 
   i=0;
@@ -2193,13 +2193,13 @@ checkWgdxList(SEXP structure,
           break;
         }
     }
-  
+
   if(found == 1)
     {
       tmp = VECTOR_ELT(structure, i);
       if( TYPEOF(tmp) != STRSXP )
         {
-          Rprintf ("List compenent 'type' must be a string - found %d instead \n", 
+          Rprintf ("List compenent 'type' must be a string - found %d instead \n",
                    TYPEOF(tmp) );
           error("Input list compenent 'type' must be string.\n");
         }
@@ -2213,15 +2213,15 @@ checkWgdxList(SEXP structure,
         {
           data[k]->dType = set;
         }
-      else if ( 0 == strcmp("parameter", str) ) 
+      else if ( 0 == strcmp("parameter", str) )
         {
           data[k]->dType = parameter;
         }
-      else 
+      else
         {
           Rprintf("type found = %s\n", str);
           error("Input list compenent 'type' must be either 'set' or 'parameter'.\n");
-        }      
+        }
     }
 
   i=0;
@@ -2238,12 +2238,12 @@ checkWgdxList(SEXP structure,
   if(found == 1)
     {
       tmp = VECTOR_ELT(structure, i);
-     
+
       if(TYPEOF(tmp) == INTSXP)
         {
           if(length(tmp) != 1)
             {
-              error("Input list component 'dim' must have only one element.\n");        
+              error("Input list component 'dim' must have only one element.\n");
             }
           /* for negative value  */
           if(INTEGER(tmp)[0] < 0)
@@ -2251,15 +2251,15 @@ checkWgdxList(SEXP structure,
               error("Negative value is not allowed as valid input for 'dim'.\n");
             }
           withDim = 1;
-          data[k]->dim = INTEGER(tmp)[0];         
-        } 
+          data[k]->dim = INTEGER(tmp)[0];
+        }
       else if(TYPEOF(tmp) == REALSXP )
         {
           if(length(tmp) != 1)
             {
-              error("Input list component 'dim' must have only one element.\n");        
+              error("Input list component 'dim' must have only one element.\n");
             }
-          /* For fractional value  */ 
+          /* For fractional value  */
           else if(REAL(tmp)[0] - floor(REAL(tmp)[0]) > 0)
             {
               error("Non-integer value is not allowed as valid input for 'dim'.\n");
@@ -2274,9 +2274,9 @@ checkWgdxList(SEXP structure,
         }
       else
         {
-          Rprintf ("List compenent 'dim' must be a numeric - found %d instead \n", 
+          Rprintf ("List compenent 'dim' must be a numeric - found %d instead \n",
                    TYPEOF(tmp));
-          error("Input list compenent 'dim' must be integer.\n");         
+          error("Input list compenent 'dim' must be integer.\n");
         }
     }
 
@@ -2297,7 +2297,7 @@ checkWgdxList(SEXP structure,
       tmp = VECTOR_ELT(structure, i);
       if(TYPEOF(tmp) != VECSXP)
         {
-          Rprintf ("List compenent 'uels' must be a un-named list - found %d instead \n", 
+          Rprintf ("List compenent 'uels' must be a un-named list - found %d instead \n",
                    TYPEOF(tmp));
           error("Input list compenent 'uels' must be unnamed list.\n");
         }
@@ -2326,13 +2326,13 @@ checkWgdxList(SEXP structure,
                   /* Convert to output  */
                   bufferUel = allocVector(STRSXP, length(tmpUel));
                   bufferUel =  convertToOutput(bufferUel, tmpUel);
-                  SET_VECTOR_ELT(uelOut, j, bufferUel);           
+                  SET_VECTOR_ELT(uelOut, j, bufferUel);
                 }
-              else 
+              else
                 {
                   error("Input uels must be either string vector of numeric vector.\n");
                 }
-            }     
+            }
           data[k]->withUel = 1;
         }
     }
@@ -2358,12 +2358,12 @@ checkWgdxList(SEXP structure,
           strcat(specialCommand,  data[k]->name);
           strcat(specialCommand, "=");
           strcat(specialCommand, CHAR(STRING_ELT(tmp, 0)));
-          strcat(specialCommand, " ");    
+          strcat(specialCommand, " ");
           return;
         }
-      dimension = getAttrib(tmp, R_DimSymbol);      
+      dimension = getAttrib(tmp, R_DimSymbol);
       if( TYPEOF(tmp) == REALSXP || TYPEOF(tmp) == INTSXP )
-        {                 
+        {
           if(data[k]->dForm == sparse)
             {
               if(length(dimension) != 2)
@@ -2373,25 +2373,25 @@ checkWgdxList(SEXP structure,
                 }
               /* getting data matrix */
               sz = INTEGER(dimension)[0];
-              if (sz > INT_MAX) 
+              if (sz > INT_MAX)
                 {
                   error("Input list component 'val' exceeds row limit of %d",
                         INT_MAX);
                 }
               sz = INTEGER(dimension)[1];
-              if (sz > INT_MAX) 
+              if (sz > INT_MAX)
                 {
-                  error("Input list component 'val' exceeds column limit of %d", 
+                  error("Input list component 'val' exceeds column limit of %d",
                         INT_MAX);
                 }
               nCoords = sz;
               if (parameter == data[k]->dType)
                 {
                   nCoords--;
-                }      
-              if (nCoords > GMS_MAX_INDEX_DIM) 
+                }
+              if (nCoords > GMS_MAX_INDEX_DIM)
                 {
-                  error("Input list compoment 'val' exceeds GDX dimension limit of %d.", 
+                  error("Input list compoment 'val' exceeds GDX dimension limit of %d.",
                         GMS_MAX_INDEX_DIM);
                 }
               data[k]->withVal = 1;
@@ -2401,7 +2401,7 @@ checkWgdxList(SEXP structure,
               /* This is for Full/Dense data  */
               if(length(dimension) > GMS_MAX_INDEX_DIM)
                 {
-                  error("Input list component 'val' exceeds GDX dimension limit of %d.", 
+                  error("Input list component 'val' exceeds GDX dimension limit of %d.",
                         GMS_MAX_INDEX_DIM);
                 }
               if(withDim == 1 && (data[k]->dim == 0 || data[k]->dim == 1)  && length(dimension) == 2)
@@ -2414,16 +2414,16 @@ checkWgdxList(SEXP structure,
                 }
               else
                 {
-                  nCoords =  length(dimension);  
+                  nCoords =  length(dimension);
                 }
               data[k]->withVal = 1;
             }
         }
       else
         {
-          Rprintf("List component 'val' must be a double matrix - found %d instead. \n", 
+          Rprintf("List component 'val' must be a double matrix - found %d instead. \n",
                   TYPEOF(tmp));
-          error("Input list component 'val' must be double matrix");      
+          error("Input list component 'val' must be double matrix");
         }
     }
   else if(data[k]->dType == parameter  || data[k]->withUel == 0 )
@@ -2432,7 +2432,7 @@ checkWgdxList(SEXP structure,
       Rprintf("data[%d]->withUel = %d\n",k, data[k]->withUel);
       error("'val' is required list component. Please enter it and try again.");
     }
-  
+
 
   if(data[k]->withUel == 0 && data[k]->withVal == 1)
     {
@@ -2450,13 +2450,13 @@ checkWgdxList(SEXP structure,
       wAlloc++;
       createUelOut(tmp, uelOut, data[k]->dType, data[k]->dForm);
     }
-  
+
   if (data[k]->withVal == 1)
     {
-      checkForValidData(tmp, uelOut, data[k]->dType, data[k]->dForm); 
+      checkForValidData(tmp, uelOut, data[k]->dType, data[k]->dForm);
     }
     registerInputUEL(uelOut, k, uelIndex);
-} /* checkWgdxList  */  
+} /* checkWgdxList  */
 
 
 /* This function check the input list for valid data */
@@ -2469,8 +2469,8 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
   const char *compName;
   const char *str;
   Rboolean compress = NA_LOGICAL;
-  
-  found = 0; 
+
+  found = 0;
   nField = 0;
 
   /* check maximum number of fields */
@@ -2521,20 +2521,20 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
           break;
         }
     }
-  
+
   if(found == 1)
     {
       tmp = VECTOR_ELT(lst, i);
       if(TYPEOF(tmp) == STRSXP)
         {
           checkStringLength( CHAR(STRING_ELT(tmp, 0)) );
-          strcpy( data->name, CHAR(STRING_ELT(tmp, 0)) ); 
+          strcpy( data->name, CHAR(STRING_ELT(tmp, 0)) );
         }
       else
         {
-          Rprintf ("List compenent 'name' must be a string - found %d instead \n", 
+          Rprintf ("List compenent 'name' must be a string - found %d instead \n",
                    TYPEOF(tmp) );
-          error("Input list compenent 'name' must be string.\n");         
+          error("Input list compenent 'name' must be string.\n");
         }
     }
   else
@@ -2559,9 +2559,9 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
       tmp = VECTOR_ELT(lst, i);
       if( TYPEOF(tmp) != STRSXP )
         {
-          Rprintf ("List compenent 'form' must be a string - found %d instead \n", 
+          Rprintf ("List compenent 'form' must be a string - found %d instead \n",
                    TYPEOF(tmp) );
-          error("Input list compenent 'form' must be string");      
+          error("Input list compenent 'form' must be string");
         }
       if(strlen( CHAR(STRING_ELT(tmp, 0)) ) == 0)
         {
@@ -2572,14 +2572,14 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
         {
           data->dForm = full;
         }
-      else if ( 0 == strcmp("sparse", str) ) 
+      else if ( 0 == strcmp("sparse", str) )
         {
           data->dForm = sparse;
         }
-      else 
+      else
         {
           error("Input list compenent 'form' must be either 'full' or 'sparse'.");
-        }      
+        }
     }
 
   /* Checking for 'compress'. Default it to 'false' */
@@ -2608,14 +2608,14 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
             {
               data->compress = 1;
             }
-          else if ( 0 == strcmp("false", str) ) 
+          else if ( 0 == strcmp("false", str) )
             {
               data->compress = 0;
             }
-          else 
+          else
             {
               error("Input list compenent 'form' must be either 'true' or 'false'.");
-            }              
+            }
         }
       else if( TYPEOF(tmp) == LGLSXP)
         {
@@ -2631,9 +2631,9 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
         }
       else
         {
-          Rprintf ("List compenent 'compress' must be either string or logical - found %d instead \n", 
+          Rprintf ("List compenent 'compress' must be either string or logical - found %d instead \n",
                    TYPEOF(tmp) );
-          error("Input list compenent 'compress' must be either string or logical"); 
+          error("Input list compenent 'compress' must be either string or logical");
         }
     }
 
@@ -2654,9 +2654,9 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
       tmp = VECTOR_ELT(lst, i);
       if( TYPEOF(tmp) != STRSXP )
         {
-          Rprintf ("List compenent 'field' must be a string - found %d instead \n", 
+          Rprintf ("List compenent 'field' must be a string - found %d instead \n",
                    TYPEOF(tmp) );
-          error("Input list compenent 'field' must be string");     
+          error("Input list compenent 'field' must be string");
         }
       if(strlen( CHAR(STRING_ELT(tmp, 0)) ) == 0)
         {
@@ -2668,26 +2668,26 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
         {
           data->dField = level;
         }
-      else if ( 0 == strcmp("m", str) ) 
+      else if ( 0 == strcmp("m", str) )
         {
           data->dField = marginal;
         }
-      else if ( 0 == strcmp("lo", str) ) 
+      else if ( 0 == strcmp("lo", str) )
         {
           data->dField = lower;
         }
-      else if ( 0 == strcmp("up", str) ) 
+      else if ( 0 == strcmp("up", str) )
         {
           data->dField = upper;
         }
-      else if ( 0 == strcmp("s", str) ) 
+      else if ( 0 == strcmp("s", str) )
         {
           data->dField = scale;
         }
-      else 
+      else
         {
           error("Input list component 'field' must be from 'l', 'm', 'lo', 'up' or 's'.");
-        }     
+        }
     }
 
   /* Checking for ts. Default it to 'false' */
@@ -2716,14 +2716,14 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
             {
               data->ts = 1;
             }
-          else if ( 0 == strcmp("false", str) ) 
+          else if ( 0 == strcmp("false", str) )
             {
               data->ts = 0;
             }
-          else 
+          else
             {
               error("Input list compenent 'ts' must be either 'true' or 'false'.");
-            }              
+            }
         }
       else if( TYPEOF(tmp) == LGLSXP)
         {
@@ -2734,9 +2734,9 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
         }
       else
         {
-          Rprintf ("List compenent 'ts' must be either string or logical - found %d instead \n", 
+          Rprintf ("List compenent 'ts' must be either string or logical - found %d instead \n",
                    TYPEOF(tmp) );
-          error("Input list compenent 'ts' must be either string or logical"); 
+          error("Input list compenent 'ts' must be either string or logical");
         }
     }
 
@@ -2766,14 +2766,14 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
             {
               data->te = 1;
             }
-          else if ( 0 == strcmp("false", str) ) 
+          else if ( 0 == strcmp("false", str) )
             {
               data->te = 0;
             }
-          else 
+          else
             {
               error("Input list component 'te' must be either 'true' or 'false'.");
-            }              
+            }
         }
       else if( TYPEOF(tmp) == LGLSXP)
         {
@@ -2784,13 +2784,13 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
           else
             {
               data->te = 0;
-            }          
+            }
         }
       else
         {
-          Rprintf ("List component 'te' must be either string or logical - found %d instead \n", 
+          Rprintf ("List component 'te' must be either string or logical - found %d instead \n",
                    TYPEOF(tmp) );
-          error("Input list component 'te' must be either string or logical"); 
+          error("Input list component 'te' must be either string or logical");
         }
     }
 
@@ -2814,7 +2814,7 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
           error("List component 'uels' must be a list.");
         }
       else
-        { 
+        {
           PROTECT(data->filterUel = allocVector(VECSXP, length(tmp)));
           alloc++;
           for(j = 0; j < length(tmp); j++)
@@ -2829,7 +2829,7 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
                   bufferUel = allocVector(STRSXP, length(tmpUel));
                   /* Convert to output  */
                   bufferUel =  convertToOutput(bufferUel, tmpUel);
-                  SET_VECTOR_ELT(data->filterUel, j, bufferUel);                       
+                  SET_VECTOR_ELT(data->filterUel, j, bufferUel);
                 }
             }
           data->withUel = 1;
@@ -2844,10 +2844,10 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
    argList = Argument list entered by user
    fromGAMS = 1 if this method is called from GAMS otherwise 0
 */
-static void 
-writeGdx(char *gdxFileName, 
+static void
+writeGdx(char *gdxFileName,
          int arglen,
-         SEXP *symbolList,      
+         SEXP *symbolList,
          int fromGAMS)
 {
   FILE *matdata;
@@ -2874,7 +2874,7 @@ writeGdx(char *gdxFileName,
     {
       /* Open files for interface data */
       inputTime = "compile";
-      inputTime = getGlobalString("input");  
+      inputTime = getGlobalString("input");
       if (NULL == inputTime)
         inputTime = "compile";
 
@@ -2887,27 +2887,27 @@ writeGdx(char *gdxFileName,
 
 
   rc = gdxGetReady (msgBuf, sizeof(msgBuf));
-  if (! rc) 
+  if (! rc)
     {
       Rprintf ("Error loading the GDX API\n");
       Rprintf ("%s\n", msgBuf);
-      error("Error loading the GDX API: %s", 
+      error("Error loading the GDX API: %s",
             msgBuf);
     }
   rc = gdxCreate (&gdxHandle, msgBuf, sizeof(msgBuf));
-  if (! rc) 
+  if (! rc)
     {
       Rprintf ("Error loading the GDX API\n");
       Rprintf ("%s\n", msgBuf);
       error("Error loading the GDX API: %s", msgBuf);
     }
-  
+
   if(fromGAMS == 1)
     {
       gdxFileName = "matdata.gdx";
     }
-  
-  rc = gdxOpenWrite (gdxHandle, gdxFileName, "GDXRRW:wgdx", &errNum);    
+
+  rc = gdxOpenWrite (gdxHandle, gdxFileName, "GDXRRW:wgdx", &errNum);
   if (errNum || 0 == rc)
     {
       error("Could not open gdx file with gdxOpenWrite: %s",
@@ -2926,14 +2926,14 @@ writeGdx(char *gdxFileName,
   data = (struct  wgdxStruct **)malloc( (arglen - 2) * sizeof(struct wgdxStruct *));
 
   for (i = 0; i < arglen-2; i++)
-    { 
+    {
       if(TYPEOF(symbolList[i]) != VECSXP)
         {
           error("Incorrect type of input argument entered. List expected\n");
         }
       else
         {
-          checkWgdxList(symbolList[i], i, uelIndex, data, fromGAMS);    
+          checkWgdxList(symbolList[i], i, uelIndex, data, fromGAMS);
         }
     }
 
@@ -2947,7 +2947,7 @@ writeGdx(char *gdxFileName,
   i=0;
   /* write data in GDX file  */
   for (i = 0;  i < arglen-2;  i++) {
-    /* 
+    /*
      *  Looking for 'val'
      *  This is the glitch that i am worried about
      */
@@ -2958,15 +2958,15 @@ writeGdx(char *gdxFileName,
         break;
       }
     }
-  
+
     if(found == 1) {
       valData = VECTOR_ELT(symbolList[i], j);
     }
     /* This is special check  */
-    if(fromGAMS == 0 
-       || ( fromGAMS == 1 
-            && (found == 0 || TYPEOF(valData) != STRSXP))) {               
-      mainBuffer = VECTOR_ELT(uelIndex, i);          
+    if(fromGAMS == 0
+       || ( fromGAMS == 1
+            && (found == 0 || TYPEOF(valData) != STRSXP))) {
+      mainBuffer = VECTOR_ELT(uelIndex, i);
       if (fromGAMS) {
         if (strcmp(inputTime,"exec") == 0) {
           fprintf(matdata,"execute_load 'matdata.gdx' %s;\n", data[i]->name);
@@ -2975,7 +2975,7 @@ writeGdx(char *gdxFileName,
           fprintf(matdata,"$kill %s\n$load %s\n",  data[i]->name, data[i]->name);
         }
       }
-      /* creating value for set that does not have .val */      
+      /* creating value for set that does not have .val */
       if(data[i]->dType == set) {
         if(data[i]->withVal == 0 &&  data[i]->withUel == 1) {
           nColumns = length(mainBuffer);
@@ -3011,7 +3011,7 @@ writeGdx(char *gdxFileName,
             break;
           }
         }
-  
+
         if (found == 1) {
           (void) CHAR2ShortStr (CHAR(STRING_ELT( VECTOR_ELT(symbolList[i], j), 0)), expText);
         }
@@ -3034,9 +3034,9 @@ writeGdx(char *gdxFileName,
         if (!rc) {
           error("Could not write data with gdxDataWriteMapStart");
         }
-         
-        /* 
-         * TODO: This is frustrating. 
+
+        /*
+         * TODO: This is frustrating.
          * Find a better way to deal with REAL and INTEGER
          * I don't want to loop over whole data set and convert from int to double
          */
@@ -3048,7 +3048,7 @@ writeGdx(char *gdxFileName,
         }
         for (k = 0, j = 0; j < nRows; j++) {
           for(k = 0; k < nColumns; k++) {
-            subBuffer =  VECTOR_ELT(mainBuffer, k);             
+            subBuffer =  VECTOR_ELT(mainBuffer, k);
             stringUelIndex = CHAR(STRING_ELT(subBuffer, p[nRows*k + j]-1 ));
             uelIndices[k] = atoi(stringUelIndex);
           }
@@ -3059,7 +3059,7 @@ writeGdx(char *gdxFileName,
               case sv_valpin:
                 vals[0] =  NA_REAL;
                 break;
-              case sv_valmin:                           
+              case sv_valmin:
                 vals[0] = NA_REAL;
                 break;
               case sv_valeps:
@@ -3069,13 +3069,13 @@ writeGdx(char *gdxFileName,
               case sv_valna:
                 vals[0] = NA_REAL;
                               break;
-              default:                          
+              default:
                 error("Unrecognized map-value %d returned for %g", z, vals[0]);
               } /* end of switch/case */
             }
           }
           /* No need to write zero values */
-          if((data[i]->dType == parameter && vals[0] != 0) 
+          if((data[i]->dType == parameter && vals[0] != 0)
              || data[i]->dType == set) {
             rc = gdxDataWriteMap(gdxHandle, uelIndices, vals);
             if (!rc) {
@@ -3090,7 +3090,7 @@ writeGdx(char *gdxFileName,
       }
       else {
         total_num_of_elements = length(valData);
-        dimVect = getAttrib(valData, R_DimSymbol);         
+        dimVect = getAttrib(valData, R_DimSymbol);
         nColumns = length(mainBuffer);
         subscript = malloc(nColumns*sizeof(*subscript));
         if(data[i]->dType == parameter) {
@@ -3138,7 +3138,7 @@ writeGdx(char *gdxFileName,
               case sv_valpin:
                 vals[0] = NA_REAL;
                 break;
-              case sv_valmin:                           
+              case sv_valmin:
                 vals[0] = NA_REAL;
                 break;
               case sv_valeps:
@@ -3148,7 +3148,7 @@ writeGdx(char *gdxFileName,
               case sv_valna:
                 vals[0] = NA_REAL;
                 break;
-              default:                          
+              default:
                 error("Unrecognized map-value %d returned for %g", z, vals[0]);
               } /* end of switch/case */
             }
@@ -3169,9 +3169,9 @@ writeGdx(char *gdxFileName,
     }
   }    /* End of for(i) loop  */
 
-  if(fromGAMS) {   
+  if(fromGAMS) {
     if (strcmp(inputTime,"exec") != 0) {
-      fprintf(matdata,"$gdxin\n"); 
+      fprintf(matdata,"$gdxin\n");
     }
     fclose(matdata);
   }
@@ -3184,7 +3184,7 @@ writeGdx(char *gdxFileName,
           lastErrMsg);
   }
   (void) gdxFree (&gdxHandle);
-  
+
   /* free memory  */
   free(data);
   UNPROTECT(wAlloc);
@@ -3195,21 +3195,21 @@ writeGdx(char *gdxFileName,
  * This is the main gateway function
  * to be called from R console
  * First argument <- gdx file name
- * Second argument <- list containing several compenents 
- * that give information about symbol in gdx file 
+ * Second argument <- list containing several compenents
+ * that give information about symbol in gdx file
  * ------------------------------------------------------------------ */
 SEXP rgdx (SEXP args)
 {
   SEXP fileName, symbolList, UEList;
-  SEXP compName = R_NilValue, 
-    compType = R_NilValue, 
+  SEXP compName = R_NilValue,
+    compType = R_NilValue,
     compDim = R_NilValue,
     compVal = R_NilValue,
     compFullVal = R_NilValue,
     compForm = R_NilValue,
-    compUels = R_NilValue, 
-    compField = R_NilValue,  
-    compTs = R_NilValue,  
+    compUels = R_NilValue,
+    compField = R_NilValue,
+    compTs = R_NilValue,
     compTe = R_NilValue;
   SEXP OPListComp, OPList, dimVect, textElement, elVect;
   FILE    *fin;
@@ -3218,13 +3218,13 @@ SEXP rgdx (SEXP args)
   gdxValues_t values;
   shortStringBuf_t msgBuf;
   shortStringBuf_t uelName;
-  char  *uelElementName; 
+  char  *uelElementName;
   shortStringBuf_t gdxFileName;
   char *s;
   int symIdx, symDim, symType;
   int rc, errNum, ACount, mrows, ncols, nUEL, iUEL;
   int  k, kk, iRec, nRecs, index, totNumber, changeIdx, nonZero;
-  int UELUserMapping, highestMappedUEL; 
+  int UELUserMapping, highestMappedUEL;
   int arglen,  maxPossibleElements, z, b, matched, sparesIndex;
   double  *p, *dimVal, *dimElVect;
   char buf[3*sizeof(shortStringBuf_t)];
@@ -3243,9 +3243,9 @@ SEXP rgdx (SEXP args)
   /* setting intial values  */
   nonZero = 0;
   alloc = 0;
-  
+
   /* Due to some reason length is always equal to actual length plus 1  */
-  arglen = length(args);  
+  arglen = length(args);
 
   /* ----------------- Check proper number of inputs and outputs ------------
    * Function should follow specification of
@@ -3271,21 +3271,21 @@ SEXP rgdx (SEXP args)
   else
     {
       withList = 0;
-    }  
+    }
 
   /* Checking that first argument is of type string
      and second argument is of type list
   */
-  if (TYPEOF(fileName) != STRSXP || (withList && TYPEOF(symbolList) != VECSXP) ) 
+  if (TYPEOF(fileName) != STRSXP || (withList && TYPEOF(symbolList) != VECSXP) )
     {
       Rprintf("Input must be according to this specification:\n");
       Rprintf("(gdxFileName, list)\n");
       Rprintf("Argument types are (string, list)\n");
       error("Wrong Argument Type");
     }
-  
+
   s = CHAR2ShortStr (CHAR(STRING_ELT(fileName, 0)), gdxFileName);
-  
+
   if (2 == arglen) {
     if (0 == strcmp("?", gdxFileName)) {
       int n = (int)strlen (ID);
@@ -3305,7 +3305,7 @@ SEXP rgdx (SEXP args)
   }
   fclose(fin);
   /*-------------------- Checking data for input list ------------*/
-  /* Setting default values */ 
+  /* Setting default values */
   inputData = malloc(sizeof(*inputData));
 
   inputData->dForm = sparse;
@@ -3317,7 +3317,7 @@ SEXP rgdx (SEXP args)
   inputData->withField = 0;
 
   if(withList)
-  {   
+  {
     checkRgdxList(symbolList, inputData);
     if(inputData->compress == 1 && inputData->withUel == 1)
       {
@@ -3336,19 +3336,19 @@ SEXP rgdx (SEXP args)
   }
   rc = gdxCreate (&gdxHandle, msgBuf, sizeof(msgBuf));
   rc = gdxOpenRead (gdxHandle, gdxFileName, &errNum);
-  if (errNum || 0 == rc) 
+  if (errNum || 0 == rc)
   {
     error("Could not gdx file with gdxOpenRead");
   }
-  
+
   /* read symbol name only if input list is present */
   if(withList)
     {
       /* start searching for symbol  */
       rc = gdxFindSymbol (gdxHandle, inputData->name, &symIdx);
-      if (! rc) 
+      if (! rc)
         {
-          sprintf (buf, "GDX file %s contains no symbol named '%s'\n", 
+          sprintf (buf, "GDX file %s contains no symbol named '%s'\n",
                    gdxFileName,
                    inputData->name );
           error (buf);
@@ -3356,11 +3356,11 @@ SEXP rgdx (SEXP args)
       gdxSymbolInfo (gdxHandle, symIdx, buf, &symDim, &symType);
       if(inputData->ts == 1)
         {
-          gdxSymbolInfoX(gdxHandle, symIdx, &ACount, &rc, sText);       
+          gdxSymbolInfoX(gdxHandle, symIdx, &ACount, &rc, sText);
         }
 
       /* checking that symbol is of type parameter/set/equaltion/variable */
-      if (!(symType == dt_par || symType == dt_set || symType == dt_var || symType == dt_equ)) 
+      if (!(symType == dt_par || symType == dt_set || symType == dt_var || symType == dt_equ))
         {
           sprintf(buf, "GDX symbol %s (index=%d, symDim=%d, symType=%d)"
                   " is not recognized as set, parameter, variable, or equation\n",
@@ -3369,20 +3369,20 @@ SEXP rgdx (SEXP args)
         }
       else if ((symType == dt_par || symType == dt_set) && inputData->withField == 1)
         {
-          error("Symbol '%s' is either set or parameter that can't have field.", 
+          error("Symbol '%s' is either set or parameter that can't have field.",
                 inputData->name);
         }
       if(inputData->te == 1 && symType != dt_set)
         {
-          error("Text elements only exist for set and symbol '%s' is not a set.", 
+          error("Text elements only exist for set and symbol '%s' is not a set.",
                 inputData->name);
         }
-    } 
+    }
   /* Get global UEL from GDX file */
   (void) gdxUMUelInfo (gdxHandle, &nUEL, &highestMappedUEL);
   PROTECT(UEList = allocVector(STRSXP, nUEL));
   alloc++;
-  for (iUEL = 1;  iUEL <= nUEL;  iUEL++) 
+  for (iUEL = 1;  iUEL <= nUEL;  iUEL++)
   {
     if (!gdxUMUelGet (gdxHandle, iUEL, uelName, &UELUserMapping))
     {
@@ -3409,7 +3409,7 @@ SEXP rgdx (SEXP args)
             {
               SET_VECTOR_ELT(compUels, defaultIndex, UEList);
             }
-        } 
+        }
 
       /* Start reading data  */
       gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
@@ -3419,18 +3419,18 @@ SEXP rgdx (SEXP args)
         {
           ncols = symDim+1;
         }
-      else 
+      else
         {
           ncols = symDim;
         }
-      
+
       /* TODO: filter UEL */
       /* this is to check total number of elements that matches
-         in Input UEL. Then create a 2D double matrix for sparse format.      
+         in Input UEL. Then create a 2D double matrix for sparse format.
          compute total number of elements matched in Input UEL.
       */
-      mwNElements = 0; 
-    
+      mwNElements = 0;
+
       if(inputData->withUel == 1)
         {
           maxPossibleElements = 1;
@@ -3438,26 +3438,26 @@ SEXP rgdx (SEXP args)
             {
               mwNElements = length(VECTOR_ELT(inputData->filterUel, z));
               maxPossibleElements = maxPossibleElements*mwNElements;
-            }      
+            }
           mwNElements = 0;
 
           for(iRec = 0;  iRec < nRecs;  iRec++)
-            {        
+            {
               gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
               b = 0;
               for(k = 0; k < symDim; k++)
-                {                              
+                {
                   uelProperty = 0;
                   uelElementName = CHAR( STRING_ELT(UEList, uels[k]-1)  );
                   uelProperty = checkIfExist(k, inputData->filterUel, uelElementName);
                   /* uel element exists */
                   if(uelProperty > 0)
                     {
-                      b++; 
-                    }                             
+                      b++;
+                    }
                   else
                     {
-                      break;                          
+                      break;
                     }
                 }
               if(b == symDim)
@@ -3473,17 +3473,17 @@ SEXP rgdx (SEXP args)
           k = 0;
         }
       /* Allocating memory for 2D sparse matrix */
-      if(inputData->withUel == 1) 
+      if(inputData->withUel == 1)
         {
           PROTECT(compVal = allocMatrix(REALSXP, mwNElements, ncols));
-          alloc++;    
+          alloc++;
           if(inputData->te && symType == dt_set)
             {
               PROTECT(textElement = allocVector(STRSXP, mwNElements));
               alloc++;
-            } 
+            }
         }
-      if(inputData->withUel == 0) 
+      if(inputData->withUel == 0)
         {
           /*  check for non zero elements for variable and equation  */
           if(symType == dt_var || symType == dt_equ )
@@ -3494,40 +3494,40 @@ SEXP rgdx (SEXP args)
           PROTECT(compVal = allocMatrix(REALSXP, mrows, ncols));
           alloc++;
           if(inputData->te && symType == dt_set)
-            {        
+            {
               PROTECT(textElement = allocVector(STRSXP, mrows));
               alloc++;
-            } 
+            }
         }
 
       p = REAL(compVal);
       /* TODO/TEST: filtered read */
       if(inputData->withUel == 1)
-        {         
+        {
           matched = 0;
           gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
           /* TODO/TEST: text elements with UEL  */
           if(inputData->te == 1)
             {
-              returnedIndex = malloc(symDim*sizeof(*returnedIndex));          
-              for (iRec = 0;  iRec < nRecs;  iRec++) 
+              returnedIndex = malloc(symDim*sizeof(*returnedIndex));
+              for (iRec = 0;  iRec < nRecs;  iRec++)
                 {
                   gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
                   index = 0;
                   totNumber = 1;
                   b = 0;
-                  for (k = 0;  k < symDim;  k++) 
+                  for (k = 0;  k < symDim;  k++)
                     {
                       uelProperty = 0;
                       returnedIndex[k] = 0;
                       uelElementName = CHAR( STRING_ELT(UEList, uels[k]-1)  );
-                      uelProperty = checkIfExist(k, inputData->filterUel, uelElementName);                    
+                      uelProperty = checkIfExist(k, inputData->filterUel, uelElementName);
                       if(uelProperty > 0)
                         {
-                          returnedIndex[k] = uelProperty;            
+                          returnedIndex[k] = uelProperty;
                           b++;
-                        } 
-                      else 
+                        }
+                      else
                         {
                           break;
                         }
@@ -3538,11 +3538,11 @@ SEXP rgdx (SEXP args)
                         {
                           p[matched + sparesIndex*mwNElements] = returnedIndex[sparesIndex];
                         }
-                      
+
                       index = matched + symDim*(int)mwNElements;
-                     
-                      if(values[GMS_VAL_LEVEL]) 
-                        { 
+
+                      if(values[GMS_VAL_LEVEL])
+                        {
                           elementIndex = (int) values[GMS_VAL_LEVEL];
                           gdxGetElemText(gdxHandle, elementIndex, msg, &IDum);
                           SET_STRING_ELT(textElement, matched, mkChar(msg));
@@ -3550,18 +3550,18 @@ SEXP rgdx (SEXP args)
                       else
                         {
                           strcpy(stringEle, "");
-                          for (kk = 0;  kk < symDim;  kk++) 
-                            {                                            
+                          for (kk = 0;  kk < symDim;  kk++)
+                            {
                               strcat(stringEle, CHAR(STRING_ELT(UEList, uels[kk]-1))  );
                               if(kk != symDim-1)
                                 {
                                   strcat(stringEle, ".");
-                                }              
+                                }
                             }
                           SET_STRING_ELT(textElement, matched, mkChar(stringEle));
                           kk = 0;
                         }
-                      matched = matched +1;  
+                      matched = matched +1;
                     }
                   if(matched == maxPossibleElements)
                     {
@@ -3573,14 +3573,14 @@ SEXP rgdx (SEXP args)
           else
             {
               returnedIndex = malloc(symDim*sizeof(*returnedIndex));
-              for (iRec = 0;  iRec < nRecs;  iRec++) 
+              for (iRec = 0;  iRec < nRecs;  iRec++)
                 {
                   gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
                   index = 0;
                   totNumber = 1;
                   b = 0;
-                  
-                  for (k = 0;  k < symDim;  k++) 
+
+                  for (k = 0;  k < symDim;  k++)
                     {
                       uelProperty = 0;
                       returnedIndex[k] = 0;
@@ -3588,10 +3588,10 @@ SEXP rgdx (SEXP args)
                       uelProperty = checkIfExist(k, inputData->filterUel, uelElementName);
                       if(uelProperty > 0)
                         {
-                          returnedIndex[k] = uelProperty;            
+                          returnedIndex[k] = uelProperty;
                           b++;
-                        } 
-                      else 
+                        }
+                      else
                         {
                           break;
                         }
@@ -3602,19 +3602,19 @@ SEXP rgdx (SEXP args)
                         {
                           p[matched + sparesIndex*mwNElements] = returnedIndex[sparesIndex];
                         }
-                      index = matched + symDim*(int)mwNElements;                        
+                      index = matched + symDim*(int)mwNElements;
                       matched = matched +1;
 
-                      if (symType != dt_set) 
+                      if (symType != dt_set)
                         {
                           if (gdxMapValue (gdxHandle, values[dField], &k)) /* it's special */
-                            { 
-                              switch (k) 
+                            {
+                              switch (k)
                                 {
-                                case sv_valpin:                                                          
+                                case sv_valpin:
                                   p[index] = NA_REAL;
                                   break;
-                                case sv_valmin:                                                           
+                                case sv_valmin:
                                   p[index] = NA_REAL;
                                   break;
                                 case sv_valeps:
@@ -3628,9 +3628,9 @@ SEXP rgdx (SEXP args)
                                   p[index] = NA_REAL;
                                   break;
                                 default:
-                                  sprintf(buf, 
+                                  sprintf(buf,
                                           "Unrecognized map-value %d returned for %g",
-                                          k, 
+                                          k,
                                           values[dField]);
                                   error(buf);
                                 } /* end of switch/case */
@@ -3650,7 +3650,7 @@ SEXP rgdx (SEXP args)
             } /* End of else of if(te)   */
         }/* End of with uels  */
       else
-        {         
+        {
           nonZero = 0;
           if(symType == dt_var || symType == dt_equ )
             {
@@ -3658,12 +3658,12 @@ SEXP rgdx (SEXP args)
             }
           /* text elements  */
           if(inputData->te == 1)
-            {         
-              for (iRec = 0;  iRec < nRecs;  iRec++) 
+            {
+              for (iRec = 0;  iRec < nRecs;  iRec++)
                 {
                   gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-                  if(values[GMS_VAL_LEVEL]) 
-                    {      
+                  if(values[GMS_VAL_LEVEL])
+                    {
                       elementIndex = (int) values[GMS_VAL_LEVEL];
                       gdxGetElemText(gdxHandle, elementIndex, msg, &IDum);
                       SET_STRING_ELT(textElement, nonZero, mkChar(msg));
@@ -3671,20 +3671,20 @@ SEXP rgdx (SEXP args)
                   else
                     {
                       strcpy(stringEle, "");
-                      for (kk = 0;  kk < symDim;  kk++) 
-                        {                                                
+                      for (kk = 0;  kk < symDim;  kk++)
+                        {
                           strcat(stringEle, CHAR(STRING_ELT(UEList, uels[kk]-1))  );
                           if(kk != symDim-1)
                             {
                               strcat(stringEle, ".");
-                            }              
+                            }
                         }
                       SET_STRING_ELT(textElement, nonZero, mkChar(stringEle));
                       kk = 0;
                     }
                   index = 0;
 
-                  for (kk = 0;  kk < symDim;  kk++) 
+                  for (kk = 0;  kk < symDim;  kk++)
                     {
                       p[nonZero+kk*mrows] = uels[kk];
                       index = nonZero+symDim*mrows;
@@ -3693,7 +3693,7 @@ SEXP rgdx (SEXP args)
                 }  /* loop over GDX records */
             }
           else
-            {      
+            {
               for (iRec = 0;  iRec < nRecs;  iRec++)
                 {
                   gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
@@ -3701,22 +3701,22 @@ SEXP rgdx (SEXP args)
                     {
                       index = 0;
                       /* For non zero */
-                      for (kk = 0;  kk < symDim;  kk++) 
+                      for (kk = 0;  kk < symDim;  kk++)
                         {
                           p[nonZero+kk*mrows] = uels[kk];
                           index = nonZero+symDim*mrows;
                         }
                       nonZero++;
-                      if (symType != dt_set) 
+                      if (symType != dt_set)
                         {
                           if (gdxMapValue (gdxHandle, values[inputData->dField], &k)) /* it's special */
-                            { 
-                              switch (k) 
+                            {
+                              switch (k)
                                 {
-                                case sv_valpin:                  
+                                case sv_valpin:
                                   p[index] = NA_REAL;
                                   break;
-                                case sv_valmin:                 
+                                case sv_valmin:
                                   p[index] = -NA_REAL;
                                   break;
                                 case sv_valeps:
@@ -3730,9 +3730,9 @@ SEXP rgdx (SEXP args)
                                   p[index] = NA_REAL;
                                   break;
                                 default:
-                                  sprintf(buf, 
+                                  sprintf(buf,
                                           "Unrecognized map-value %d returned for %g",
-                                          k, 
+                                          k,
                                           values[inputData->dField]);
                                   error(buf);
                                 }
@@ -3753,7 +3753,7 @@ SEXP rgdx (SEXP args)
           PROTECT(compUels = allocVector(VECSXP, symDim));
           compVal = compressData(compVal, UEList, compUels, nUEL, symDim, mrows);
         }
-      /* TODO/TEST: create full dimensional string matrix  */      
+      /* TODO/TEST: create full dimensional string matrix  */
       if(inputData->te == 1)
         {
           if(symDim == 1)
@@ -3769,7 +3769,7 @@ SEXP rgdx (SEXP args)
               alloc++;
 
               compTe = createElementMatrix(compVal, textElement, compTe, compUels, symDim, mrows);
-              setAttrib(compTe, R_DimSymbol, elVect); 
+              setAttrib(compTe, R_DimSymbol, elVect);
             }
           else
             {
@@ -3780,31 +3780,31 @@ SEXP rgdx (SEXP args)
               dimElVect = REAL(elVect);
               if(inputData->withUel)
                 {
-                  for(ndimension = 0; ndimension < symDim; ndimension++) 
+                  for(ndimension = 0; ndimension < symDim; ndimension++)
                     {
                       dimElVect[ndimension] = length(VECTOR_ELT(inputData->filterUel, ndimension));
                       totalElement = (totalElement * length(VECTOR_ELT(inputData->filterUel, ndimension)));
                     }
                   PROTECT(compTe = allocVector(STRSXP, totalElement));
-                  alloc++;            
+                  alloc++;
                   compTe = createElementMatrix(compVal, textElement, compTe, inputData->filterUel, symDim, mwNElements);
-                  setAttrib(compTe, R_DimSymbol, elVect); 
+                  setAttrib(compTe, R_DimSymbol, elVect);
                 }
               else
                 {
-                  for(ndimension = 0; ndimension < symDim; ndimension++) 
+                  for(ndimension = 0; ndimension < symDim; ndimension++)
                     {
                       dimElVect[ndimension] = length(VECTOR_ELT(compUels, ndimension));
                       totalElement = (totalElement * length(VECTOR_ELT(compUels, ndimension)));
                     }
                   PROTECT(compTe = allocVector(STRSXP, totalElement));
-                  alloc++;            
+                  alloc++;
                   compTe = createElementMatrix(compVal, textElement, compTe, compUels, symDim, mrows);
-                  setAttrib(compTe, R_DimSymbol, elVect); 
+                  setAttrib(compTe, R_DimSymbol, elVect);
                 }
             }
         }
-      
+
     /* Converting sparse data into full matrix */
       if(inputData->dForm == full)
         {
@@ -3827,7 +3827,7 @@ SEXP rgdx (SEXP args)
             case 1:
               {
                 PROTECT(dimVect = allocVector(REALSXP, 2));
-                alloc++;                
+                alloc++;
                 dimVal = REAL(dimVect);
 
                 if(inputData->withUel == 1)
@@ -3853,11 +3853,11 @@ SEXP rgdx (SEXP args)
                 PROTECT(dimVect = allocVector(REALSXP, symDim));
                 alloc++;
                 totalElement = 1;
-                dimVal = REAL(dimVect);     
-                ndimension = 0; 
+                dimVal = REAL(dimVect);
+                ndimension = 0;
                 if(inputData->withUel == 1)
                   {
-                    for(ndimension = 0; ndimension < symDim; ndimension++) 
+                    for(ndimension = 0; ndimension < symDim; ndimension++)
                       {
                         dimVal[ndimension] = length(VECTOR_ELT(inputData->filterUel, ndimension));
                         totalElement = (totalElement * length(VECTOR_ELT(inputData->filterUel, ndimension)));
@@ -3865,11 +3865,11 @@ SEXP rgdx (SEXP args)
                   }
                 else
                   {
-                    for(ndimension = 0; ndimension < symDim; ndimension++) 
+                    for(ndimension = 0; ndimension < symDim; ndimension++)
                       {
-                        dimVal[ndimension] = length(VECTOR_ELT(compUels, ndimension)); 
+                        dimVal[ndimension] = length(VECTOR_ELT(compUels, ndimension));
                         totalElement = (totalElement * length(VECTOR_ELT(compUels, ndimension)));
-                      }            
+                      }
                   }
                 PROTECT(compFullVal = allocVector(REALSXP, totalElement));
                 alloc++;
@@ -3888,14 +3888,14 @@ SEXP rgdx (SEXP args)
             }
         }
     }
-  
+
   if(withList)
     {
       /* Creating string vector for symbol Name  */
       PROTECT(compName = allocVector(STRSXP, 1) );
       SET_STRING_ELT(compName, 0, mkChar(inputData->name));
-      alloc++;  
-      /* Creating string vector for symbol type  */  
+      alloc++;
+      /* Creating string vector for symbol type  */
       PROTECT(compType = allocVector(STRSXP, 1) );
       alloc++;
       switch (symType)
@@ -3916,18 +3916,18 @@ SEXP rgdx (SEXP args)
           error("Unrecognized type of symbol found.");
         }
 
-      /* Creating int vector for symbol Dim  */  
+      /* Creating int vector for symbol Dim  */
       PROTECT(compDim = allocVector(INTSXP, 1) );
       INTEGER(compDim)[0] = symDim;
       alloc++;
-      /* Creating string vector for val data form */  
+      /* Creating string vector for val data form */
       PROTECT(compForm = allocVector(STRSXP, 1) );
       alloc++;
       if(inputData->dForm == full)
         {
           SET_STRING_ELT(compForm, 0, mkChar(forms[0]));
         }
-      else 
+      else
         {
           SET_STRING_ELT(compForm, 0, mkChar(forms[1]));
         }
@@ -3958,7 +3958,7 @@ SEXP rgdx (SEXP args)
               break;
             default:
               error("Unrecognized type of symbol found.");
-            } 
+            }
         }
       if(inputData->ts)
         {
@@ -3970,7 +3970,7 @@ SEXP rgdx (SEXP args)
       if(inputData->te)
         {
           outFields++;
-        } 
+        }
     }
 
   PROTECT(OPListComp = allocVector(STRSXP, outFields));
@@ -4002,7 +4002,7 @@ SEXP rgdx (SEXP args)
           SET_STRING_ELT(OPListComp, nField, mkChar("te"));
         }
     }
-  
+
 
   PROTECT(OPList = allocVector(VECSXP, outFields));
   alloc++;
@@ -4023,11 +4023,11 @@ SEXP rgdx (SEXP args)
       SET_VECTOR_ELT(OPList, 4, compForm);
       if(inputData->withUel)
         {
-          SET_VECTOR_ELT(OPList, 5, inputData->filterUel);        
+          SET_VECTOR_ELT(OPList, 5, inputData->filterUel);
         }
       else
         {
-          SET_VECTOR_ELT(OPList, 5, compUels);    
+          SET_VECTOR_ELT(OPList, 5, compUels);
         }
 
       nField = 5;
@@ -4047,7 +4047,7 @@ SEXP rgdx (SEXP args)
           SET_VECTOR_ELT(OPList, nField, compTe);
         }
     }
-  else 
+  else
     {
       /* entering null values other then UEL */
       SET_VECTOR_ELT(OPList, 0, R_NilValue);
@@ -4062,16 +4062,16 @@ SEXP rgdx (SEXP args)
   setAttrib(OPList, R_NamesSymbol, OPListComp);
   /* Releasing allocated memory  */
   free(inputData);
-  if (!gdxDataReadDone (gdxHandle)) 
+  if (!gdxDataReadDone (gdxHandle))
     {
       error ("Could not gdxDataReadDone");
     }
   errNum = gdxClose (gdxHandle);
-  if (errNum != 0) 
+  if (errNum != 0)
     {
       error("Errors detected when closing gdx file");
     }
-  (void) gdxFree (&gdxHandle);  
+  (void) gdxFree (&gdxHandle);
   UNPROTECT(alloc);
   return OPList;
 }/* End of rgdx  */
@@ -4088,19 +4088,19 @@ SEXP wgdx (SEXP args)
   SEXP fileName, *symbolList;
   char *gdxFileName;
   int arglen, i;
-  
+
   arglen = length(args);
-  if(arglen == 1)    
+  if(arglen == 1)
     {
       error("No input is entered. Please enter valid input\n");
     }
-  
+
   args = CDR(args); fileName = CAR(args);
 
   /* Checking that first argument is of type string
      and second argument is of type list
   */
-  if (TYPEOF(fileName) != STRSXP ) 
+  if (TYPEOF(fileName) != STRSXP )
     {
       Rprintf("The GDX filename (first argument) must be of type string.\n");
       error("Wrong Argument Type");
@@ -4122,13 +4122,13 @@ SEXP wgdx (SEXP args)
   symbolList = malloc((arglen-2)*sizeof(*symbolList));
   /* get the pointer of input argument and store it locally for better access  */
   for (i = 1; i < arglen-1; i++)
-    {      
+    {
       args = CDR(args); symbolList[i-1] = CAR(args);
-    } 
+    }
   /* check and write data to gdxfile  */
   writeGdx(gdxFileName, arglen, symbolList, 0);
   /* Free up memory  */
-  free(symbolList); 
+  free(symbolList);
   return R_NilValue;
 } /* End of wgdx  */
 
@@ -4136,8 +4136,8 @@ SEXP wgdx (SEXP args)
 
 /* GAMS method  */
 SEXP gams (SEXP args)
-{  
-  SEXP firstArg, 
+{
+  SEXP firstArg,
     *argList,
     result = R_NilValue;
   FILE *fp;
@@ -4147,15 +4147,15 @@ SEXP gams (SEXP args)
   shortStringBuf_t gmsFileName;
   int writeData, rc, n, i, arglen;
   int auditRun = 0;
-  
+
   gamsAlloc = 0;
-  globalGams = 1;  
+  globalGams = 1;
   arglen = length(args);
 
   if (arglen == 1) {
     error("No input is entered. Please enter valid input\n");
   }
-  
+
   args = CDR(args); firstArg = CAR(args);
 
   /* Checking that first argument is of type string
@@ -4177,7 +4177,7 @@ SEXP gams (SEXP args)
       return R_NilValue;
     } /* if audit run */
   } /* if one arg, of character type */
-  
+
   checkStringLength(inputPtr);
   (void) CHAR2ShortStr (inputPtr, input);
   p = strtok (input, " ");
@@ -4196,7 +4196,7 @@ SEXP gams (SEXP args)
 
   /* specialCommand always starts with a blank */
   strcpy(specialCommand, " ");
-  
+
   if (arglen > 2) {
     writeData = 1;
     writeDataStr = getGlobalString("write_data");
@@ -4205,7 +4205,7 @@ SEXP gams (SEXP args)
         writeData = 0;
       }
       else {
-        warning("To change default behavior of 'write_data', please enter it as 'n' or 'N' \n" ); 
+        warning("To change default behavior of 'write_data', please enter it as 'n' or 'N' \n" );
         Rprintf("You entered it as %s. \n", writeDataStr);
       }
     }
@@ -4224,8 +4224,8 @@ SEXP gams (SEXP args)
   rc = callGams(input);
   if (rc) {
     error("GAMS run failed.\n");
-  }  
-  /* read only first element from GDX file */  
+  }
+  /* read only first element from GDX file */
   result = getGamsSoln (gmsFileName);
   UNPROTECT(gamsAlloc);
   return result;
@@ -4241,7 +4241,7 @@ SEXP gdxInfo(SEXP args)
   int arglen;
   char *gdxFileName;
   int rc,i,j,NrSy,NrUel,ADim,ACount,AUser,AUser2,NRec,FDim,IDum, BadUels=0;
-  int ATyp, ATyp2;  
+  int ATyp, ATyp2;
   char
     msg[GMS_SSSIZE],
     FileVersion[GMS_SSSIZE], FileProducer[GMS_SSSIZE],
@@ -4256,12 +4256,12 @@ SEXP gdxInfo(SEXP args)
   int
     Keys[GMS_MAX_INDEX_DIM];
   char *dn, c;
-  
+
   GDXSTRINDEXPTRS_INIT(DomainIDs,DP);
 
 
   /* Due to some reason length is always equal to actual length plus 1  */
-  arglen = length(args);  
+  arglen = length(args);
 
   /* ----------------- Check proper number of inputs ------------
    * Function should follow specification of
@@ -4279,7 +4279,7 @@ SEXP gdxInfo(SEXP args)
 
   /* Checking that argument is of type string
   */
-  if (TYPEOF(fileName) != STRSXP) 
+  if (TYPEOF(fileName) != STRSXP)
     {
       Rprintf("Input argument must be string\n");
       error("Wrong Argument Type");
@@ -4288,10 +4288,10 @@ SEXP gdxInfo(SEXP args)
   gdxFileName = CHAR(STRING_ELT(fileName, 0));
 
   checkFileExtension (gdxFileName);
-  
+
   gdxCreate (&Tptr,msg,sizeof(msg));
   if (NULL==Tptr) {
-    Rprintf("Could not create GDX object: %s \n", msg); 
+    Rprintf("Could not create GDX object: %s \n", msg);
   }
 
   rc = gdxOpenRead(Tptr, gdxFileName, &i);
@@ -4428,6 +4428,6 @@ SEXP gdxInfo(SEXP args)
    Rprintf("**** %d reference(s) to unique elements without a string representation \n", BadUels);
 
  gdxFree(&Tptr);
- 
+
  return R_NilValue;
 } /* End of gdxInfo  */
