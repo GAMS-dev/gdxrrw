@@ -4131,21 +4131,19 @@ SEXP gams (SEXP args)
   globalGams = 1;  
   arglen = length(args);
 
-  if(arglen == 1)
-    {
-      error("No input is entered. Please enter valid input\n");
-    }
+  if (arglen == 1) {
+    error("No input is entered. Please enter valid input\n");
+  }
   
   args = CDR(args); firstArg = CAR(args);
 
   /* Checking that first argument is of type string
      and second argument is of type list
   */
-  if (TYPEOF(firstArg) != STRSXP ) 
-    {
-      Rprintf("The GAMS filename (first argument) must be of type string.\n");
-      error("Wrong Argument Type");
-    }
+  if (TYPEOF(firstArg) != STRSXP ) {
+    Rprintf("The GAMS filename (first argument) must be of type string.\n");
+    error("Wrong Argument Type");
+  }
 
   input = CHAR(STRING_ELT(firstArg, 0));
 
@@ -4162,63 +4160,52 @@ SEXP gams (SEXP args)
   checkStringLength(input);
   gmsFileName = strtok(input, " ");
   fileExt = strstr(gmsFileName, ".");
-  if(NULL == fileExt)
-    {
-      strcat(gmsFileName, ".gms");
-    }
+  if (NULL == fileExt) {
+    strcat(gmsFileName, ".gms");
+  }
   fp = fopen(gmsFileName,"r");
-  if (fp == NULL) 
-    {
-      error("Cannot find or open %s file. \n", gmsFileName);
-    }
-  else 
-    {
-      fclose(fp);
-    }
+  if (fp == NULL) {
+    error("Cannot find or open %s file. \n", gmsFileName);
+  }
+  else {
+    fclose(fp);
+  }
 
   strcpy(specialCommand, " ");
   
-  if (arglen > 2) 
-    {
-      writeData = 1;
-      writeDataStr = getGlobalString("write_data");
-      if (writeDataStr != NULL)
-        {
-          if (0 == strncmp(writeDataStr,"n",1) || 0 == strncmp(writeDataStr,"N",1))
-            {
-              writeData = 0;
-            }
-     
-          else
-            {
-              warning("To change default behavior of 'write_data', please enter it as 'n' or 'N' \n" ); 
-              Rprintf("You entered it as %s. \n", writeDataStr);
-            }
-        }
+  if (arglen > 2) {
+    writeData = 1;
+    writeDataStr = getGlobalString("write_data");
+    if (writeDataStr != NULL) {
+      if (0 == strncmp(writeDataStr,"n",1) || 0 == strncmp(writeDataStr,"N",1)) {
+        writeData = 0;
+      }
+      else {
+        warning("To change default behavior of 'write_data', please enter it as 'n' or 'N' \n" ); 
+        Rprintf("You entered it as %s. \n", writeDataStr);
+      }
     }
-   
-  if (1 == writeData)  
-    {
-      argList = malloc((arglen-2)*sizeof(*argList));
-      /* get the pointer of input argument and store it locally for better access  */
-      for (i = 1; i < arglen-1; i++)
-        {      
-          args = CDR(args); argList[i-1] = CAR(args);
-        }
-      writeGdx(gmsFileName, arglen, argList, 1);
-      /* free memory  */
-      free(argList);
+  }
+
+  if (1 == writeData) {
+    argList = malloc((arglen-2)*sizeof(*argList));
+    /* get the pointer of input argument and store it locally for better access  */
+    for (i = 1; i < arglen-1; i++) {
+      args = CDR(args); argList[i-1] = CAR(args);
     }
+    writeGdx(gmsFileName, arglen, argList, 1);
+    /* free memory  */
+    free(argList);
+  }
   rc = callGams(input);
-  if (rc) 
-    {
-      error("GAMS run failed.\n");
-    }  
+  if (rc) {
+    error("GAMS run failed.\n");
+  }  
   /* read only first element from GDX file */  
   result = getGamsSoln(gmsFileName); 
   UNPROTECT(gamsAlloc);
   return result;
-}
+} /* gams */
 
 
 /*  the gateway routine for gdxInfo.
