@@ -1,5 +1,5 @@
 /* This gdxrrw.c file contains methods to import and export data
-   between GAMS and R via GDX file. Methods that are exposed for 
+   between GAMS and R via GDX file. Methods that are exposed for
    the users of R are:
    1. x <- rgdx("gdxFileName", lst)
    2. wgdx("gdxFileName", lst1, lst2, ...)
@@ -39,13 +39,13 @@ typedef char shortStringBuf_t[GMS_SSSIZE];
 typedef int (*compareFunc_t) (const void *, const void *);
 
 /* Structure and Enum defination  */
-typedef enum dType 
+typedef enum dType
 {
   set = GMS_DT_SET,
   parameter = GMS_DT_PAR
 } dType_t;
 
-typedef enum dForm 
+typedef enum dForm
 {
   unKnown=0,
   full,
@@ -62,7 +62,7 @@ typedef enum dField
   max = GMS_VAL_MAX
 } dField_t;
 
-struct rgdxStruct 
+struct rgdxStruct
 {
   char name[1024];
   dForm_t dForm;
@@ -75,7 +75,7 @@ struct rgdxStruct
   SEXP filterUel;
 };
 
-struct wgdxStruct 
+struct wgdxStruct
 {
   char name[1024];
   dForm_t dForm;
@@ -104,8 +104,8 @@ static char ID[256] = "$Id$";
 static char strippedID[256];
 
 /* -------------------- Method declaration -----------------------*/
-static void 
-checkRgdxList(const SEXP lst, 
+static void
+checkRgdxList(const SEXP lst,
               struct rgdxStruct *data);
 
 static void
@@ -116,8 +116,8 @@ checkWgdxList(const SEXP lst,
               int fromGAMS);
 
 void
-registerInputUEL(SEXP uelOut, 
-                 int k, 
+registerInputUEL(SEXP uelOut,
+                 int k,
                  SEXP uelIndex);
 
 static void
@@ -129,15 +129,15 @@ getGamsPath (char *dir);
 int
 callGams(const char *gamsFile);
 
-static int 
-GSExec(char *command, 
-       int *progrc, 
+static int
+GSExec(char *command,
+       int *progrc,
        int showWindow);
 SEXP
 getGlobalUEL(SEXP globalUEL,
              int withCompress);
 
-SEXP 
+SEXP
 getGamsSoln(char *gmsFileName);
 
 char *
@@ -152,25 +152,25 @@ char *
 getGlobalString(const char *globName);
 
 char*
-delete_char(char *src, 
-            char c, 
+delete_char(char *src,
+            char c,
             int len);
 
 void
-createUelOut(SEXP val, 
-             SEXP uelOut, 
+createUelOut(SEXP val,
+             SEXP uelOut,
              dType_t dType,
              dForm_t dForm);
 
 void
 checkForValidData(SEXP val,
-                  SEXP uelOut, 
-                  dType_t dType, 
+                  SEXP uelOut,
+                  dType_t dType,
                   dForm_t dForm);
 
 
-char *val2str(gdxHandle_t Tptr, 
-              double val, 
+char *val2str(gdxHandle_t Tptr,
+              double val,
               char *s);
 
 void 
@@ -612,7 +612,7 @@ getGamsSoln(char *gmsFileName)
   char *types[] = {"set", "parameter", "variable", "equation"};
   char *forms[] = {"full", "sparse"};
   char *fields[] = {"l", "m", "up", "lo", "s"};
-  int a, b, matched, sparesIndex, symDimInt, totNumber, IDum, elementIndex, totalElement;  
+  int a, b, matched, sparesIndex, symDimInt, totNumber, IDum, totalElement;  
   int *returnedIndex;
   int mwNElements =0;
   int uelProperty = 0;
