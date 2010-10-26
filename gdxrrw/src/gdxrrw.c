@@ -166,8 +166,7 @@ cat2ShortStr (shortStringBuf_t dest, const char *src);
 
 int isCompress(void);
 
-char *
-getGlobalString(const char *globName);
+char *getGlobalString (const char *globName, shortStringBuf_t result);
 
 char *
 delete_char(char *src,
@@ -365,9 +364,10 @@ callGams (const char *gamsFile)
 #if defined(_WIN32)
   {
     char *consoleType;
+    shortStringBuf_t tbuf;
 
     showWindow = SW_SHOWMINNOACTIVE;
-    consoleType = getGlobalString("show");
+    consoleType = getGlobalString("show", tbuf);
     if (consoleType != NULL) {
       if (strcmp(consoleType,"invisible") == 0) {
         showWindow = SW_HIDE;
@@ -380,12 +380,11 @@ callGams (const char *gamsFile)
         warning("To change default behavior of 'show', please enter it as 'invisible' or 'normal' \n" );
         Rprintf("You entered it as %s. \n", consoleType);
       }
-      free(consoleType);
     }
   }
 #endif /* windows */
 
-  gamsPath = getGlobalString("path");
+  // gamsPath = getGlobalString("path");
   gamsPath = NULL;
   if (NULL == gamsPath) {
     getGamsPath (absGamsPath);
@@ -623,6 +622,7 @@ getGamsSoln(char *gmsFileName)
   double  *p, *dimVal;
   gdxUelIndex_t uels;
   gdxValues_t values;
+  shortStringBuf_t gsBuf;
   char *gForm, *field, *outputStyle;
   int outStyle, nField;
   char *types[] = {"set", "parameter", "variable", "equation"};
@@ -691,12 +691,12 @@ getGamsSoln(char *gmsFileName)
     else {
       inputData->withUel = 1;
     }
-    gForm = getGlobalString("form");
+    gForm = getGlobalString("form", gsBuf);
     if (gForm != NULL) {
-      if(strcmp(gForm,"full") == 0) {
+      if (strcmp(gForm,"full") == 0) {
         inputData->dForm = full;
       }
-      else if(strcmp(gForm,"sparse") == 0) {
+      else if (strcmp(gForm,"sparse") == 0) {
         inputData->dForm = sparse;
       }
       else {
@@ -706,21 +706,21 @@ getGamsSoln(char *gmsFileName)
       }
     }
 
-    field = getGlobalString("field");
-    if(field != NULL) {
-      if(strcmp(field, "l") == 0) {
+    field = getGlobalString("field", gsBuf);
+    if (field != NULL) {
+      if (strcmp(field, "l") == 0) {
         inputData->dField = level;
       }
-      else if(strcmp(field, "m") == 0) {
+      else if (strcmp(field, "m") == 0) {
         inputData->dField = marginal;
       }
-      else if(strcmp(field, "lo") == 0) {
+      else if (strcmp(field, "lo") == 0) {
         inputData->dField = lower;
       }
-      else if(strcmp(field, "up") == 0) {
+      else if (strcmp(field, "up") == 0) {
         inputData->dField = upper;
       }
-      else if(strcmp(field, "s") == 0) {
+      else if (strcmp(field, "s") == 0) {
         inputData->dField = scale;
       }
       else {
@@ -731,9 +731,9 @@ getGamsSoln(char *gmsFileName)
     }
 
     outStyle = 0;
-    outputStyle = getGlobalString("output");
+    outputStyle = getGlobalString("output", gsBuf);
     if ((outputStyle != NULL) && ('\0' != *outputStyle)) {
-      if( strcmp(outputStyle,"std") == 0) {
+      if (strcmp(outputStyle,"std") == 0) {
         outStyle = 1;
       }
       else {
@@ -1293,22 +1293,20 @@ int isCompress(void)
 
 
 /* This method will read variable "gamso" from R workspace */
-char *
-getGlobalString(const char *globName)
+char *getGlobalString (const char *globName, shortStringBuf_t result)
 {
   SEXP gamso, lstName, tmp;
   char *str;
   int i, infields, found;
-  found = 0;
 
   str = NULL;
-  gamso = findVar( install("gamso"), R_GlobalEnv );
+  gamso = findVar (install("gamso"), R_GlobalEnv);
 
-  if (gamso == NULL || TYPEOF(gamso) == NILSXP  ||  TYPEOF(gamso) == SYMSXP)
-    {
-      globalGams = 0;
-      return NULL;
-    }
+  if (gamso == NULL || TYPEOF(gamso) == NILSXP  ||  TYPEOF(gamso) == SYMSXP) {
+    globalGams = 0;
+    *result = '\0';
+    return NULL;
+  }
   /*  else if (TYPEOF(gamso) != VECSXP  && globalGams == 1)
     {
       warning("To change default behavior, please enter 'gamso' as list. \n");
@@ -1316,37 +1314,31 @@ getGlobalString(const char *globName)
       globalGams = 0;
       return NULL;
       }*/
-  else if(TYPEOF(gamso) == VECSXP && globalGams == 1 )
-    {
-      lstName = getAttrib(gamso, R_NamesSymbol);
-      i=0;
-      infields = length(gamso);
-      /* Checking if field data is for "name" */
-      for (i = 0; i < infields; i++)
-        {
-          if(strcmp(globName, CHAR(STRING_ELT(lstName, i))) == 0)
-            {
-              found = 1;
-              break;
-            }
-        }
-
-      if(found == 1 && globalGams == 1)
-        {
-          tmp = VECTOR_ELT(gamso, i);
-          if(TYPEOF(tmp) == STRSXP)
-            {
-              checkStringLength( CHAR(STRING_ELT(tmp, 0)));
-              str = changeToLower(CHAR(STRING_ELT(tmp, 0)));
-            }
-          else
-            {
-              warning("To change default behavior of %s, please enter it as string.\n", globName );
-              Rprintf("You entered it as %d. \n", TYPEOF(tmp));
-              return NULL;
-            }
-        }
+  else if (TYPEOF(gamso) == VECSXP && globalGams == 1) {
+    lstName = getAttrib (gamso, R_NamesSymbol);
+    i=0;
+    infields = length(gamso);
+    /* Checking if field data is for "name" */
+    for (found = 0, i = 0;  i < infields;  i++) {
+      if (strcmp(globName, CHAR(STRING_ELT(lstName, i))) == 0) {
+        found = 1;
+        break;
+      }
     }
+
+    if (found == 1 && globalGams == 1) {
+      tmp = VECTOR_ELT(gamso, i);
+      if (TYPEOF(tmp) == STRSXP) {
+        checkStringLength (CHAR(STRING_ELT(tmp, 0)));
+        str = CHAR2ShortStr (CHAR(STRING_ELT(tmp, 0)), result);
+      }
+      else {
+        warning("To change default behavior of %s, please enter it as string.\n", globName );
+        Rprintf("You entered it as %d. \n", TYPEOF(tmp));
+        return NULL;
+      }
+    }
+  }
   return str;
 } /* getGlobalString */
 
@@ -2047,6 +2039,7 @@ checkWgdxList(SEXP structure,
   SEXP dimension;
   int i, j, infields;
   int  nCoords, sz, withDim;
+  const char *tmpName;
   const char *compName;              /* pointers to field names */
   char *str;
   SEXP   uelOut, bufferUel;          /* allocating temporary storage place */
@@ -2066,7 +2059,7 @@ checkWgdxList(SEXP structure,
 
   /* check maximum number of fields */
   if (7 < length(structure) || length(structure) < 1) {
-    error("Incorrect number of compenents in input list argument.\n");
+    error("Incorrect number of components in input list argument.\n");
   }
   else {
     infields = length(structure);
@@ -2117,9 +2110,9 @@ checkWgdxList(SEXP structure,
       strcpy( data[k]->name, CHAR(STRING_ELT(tmp, 0)) );
     }
     else {
-      Rprintf ("List compenent 'name' must be a string - found %d instead \n",
+      Rprintf ("List component 'name' must be a string - found %d instead \n",
                TYPEOF(tmp) );
-      error("Input list compenent 'name' must be string.\n");
+      error("Input list component 'name' must be string.\n");
     }
   }
   else {
@@ -2142,9 +2135,9 @@ checkWgdxList(SEXP structure,
       data[k]->withTs = 1;
     }
     else {
-      Rprintf ("List compenent 'ts' must be a string - found %d instead \n",
+      Rprintf ("List component 'ts' must be a string - found %d instead \n",
                TYPEOF(tmp) );
-      error("Input list compenent 'ts' must be string.\n");
+      error("Input list component 'ts' must be string.\n");
     }
   }
 
@@ -2152,31 +2145,31 @@ checkWgdxList(SEXP structure,
   found = 0;
   /* Checking if field data is for "form" */
   for (i = 0; i < infields; i++) {
-    if(strcmp("form", CHAR(STRING_ELT(lstName, i))) == 0) {
+    if (strcmp("form", CHAR(STRING_ELT(lstName, i))) == 0) {
       found = 1;
       break;
     }
   }
 
-  if(found == 1) {
+  if (found == 1) {
     tmp = VECTOR_ELT(structure, i);
-    if( TYPEOF(tmp) != STRSXP ) {
-      Rprintf ("List compenent 'form' must be a string - found %d instead \n",
-               TYPEOF(tmp) );
-      error("Input list compenent 'form' must be string");
+    if (TYPEOF(tmp) != STRSXP) {
+      Rprintf ("List component 'form' must be a string - found %d instead \n",
+               TYPEOF(tmp));
+      error("Input list component 'form' must be string");
     }
-    if(strlen( CHAR(STRING_ELT(tmp, 0)) ) == 0) {
+    tmpName = CHAR(STRING_ELT(tmp, 0));
+    if (strlen(tmpName) == 0) {
       error("Input list component 'form' must be either 'full' or 'sparse'.");
     }
-    str = changeToLower( CHAR(STRING_ELT(tmp, 0)) );
-    if ( 0 == strcmp("full", str) ) {
+    if (strcasecmp("full", tmpName) == 0) {
       data[k]->dForm = full;
     }
-    else if ( 0 == strcmp("sparse", str) ) {
+    else if (strcasecmp("sparse", tmpName) == 0) {
       data[k]->dForm = sparse;
     }
     else {
-      error("Input list compenent 'form' must be either 'full' or 'sparse'.");
+      error("Input list component 'form' must be either 'full' or 'sparse'.");
     }
   }
 
@@ -2184,33 +2177,33 @@ checkWgdxList(SEXP structure,
   found = 0;
   /* Checking if field data is for "type" */
   for (i = 0; i < infields; i++) {
-    if(strcmp("type", CHAR(STRING_ELT(lstName, i))) == 0) {
+    if (strcmp("type", CHAR(STRING_ELT(lstName, i))) == 0) {
       found = 1;
       break;
     }
   }
 
-  if(found == 1) {
+  if (found == 1) {
     tmp = VECTOR_ELT(structure, i);
-    if( TYPEOF(tmp) != STRSXP ) {
-      Rprintf ("List compenent 'type' must be a string - found %d instead \n",
-               TYPEOF(tmp) );
-      error("Input list compenent 'type' must be string.\n");
+    if( TYPEOF(tmp) != STRSXP) {
+      Rprintf ("List component 'type' must be a string - found %d instead \n",
+               TYPEOF(tmp));
+      error("Input list component 'type' must be string.\n");
     }
-    if(strlen( CHAR(STRING_ELT(tmp, 0)) ) == 0) {
+    tmpName = CHAR(STRING_ELT(tmp, 0));
+    if (strlen(tmpName) == 0) {
       Rprintf("Before changing to lower");
       error("Input lsit component 'type' must be either 'set' or 'parameter'.\n");
     }
-    str = changeToLower( CHAR(STRING_ELT(tmp, 0)) );
-    if ( 0 == strcmp("set", str) ) {
+    if (0 == strcasecmp("set", tmpName) ) {
       data[k]->dType = set;
     }
-    else if ( 0 == strcmp("parameter", str) ) {
+    else if (0 == strcasecmp("parameter", tmpName) ) {
       data[k]->dType = parameter;
     }
     else {
-      Rprintf("type found = %s\n", str);
-      error("Input list compenent 'type' must be either 'set' or 'parameter'.\n");
+      Rprintf("type found = %s\n", tmpName);
+      error("Input list component 'type' must be either 'set' or 'parameter'.\n");
     }
   }
 
@@ -2253,9 +2246,9 @@ checkWgdxList(SEXP structure,
       data[k]->dim = (int) REAL(tmp)[0];
     }
     else {
-      Rprintf ("List compenent 'dim' must be a numeric - found %d instead \n",
+      Rprintf ("List component 'dim' must be a numeric - found %d instead \n",
                TYPEOF(tmp));
-      error("Input list compenent 'dim' must be integer.\n");
+      error("Input list component 'dim' must be integer.\n");
     }
   }
 
@@ -2272,9 +2265,9 @@ checkWgdxList(SEXP structure,
   if (found == 1) {
     tmp = VECTOR_ELT(structure, i);
     if(TYPEOF(tmp) != VECSXP) {
-      Rprintf ("List compenent 'uels' must be a un-named list - found %d instead \n",
+      Rprintf ("List component 'uels' must be a un-named list - found %d instead \n",
                TYPEOF(tmp));
-      error("Input list compenent 'uels' must be unnamed list.\n");
+      error("Input list component 'uels' must be unnamed list.\n");
     }
     else {
       if (length(tmp) == 0) {
@@ -2422,7 +2415,7 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
   /* check maximum number of fields */
   if(7  < length(lst) || length(lst) < 1)
     {
-      error("Incorrect number of compenents in input list argument.");
+      error("Incorrect number of components in input list argument.");
     }
   else
     {
@@ -2478,9 +2471,9 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
         }
       else
         {
-          Rprintf ("List compenent 'name' must be a string - found %d instead \n",
+          Rprintf ("List component 'name' must be a string - found %d instead \n",
                    TYPEOF(tmp) );
-          error("Input list compenent 'name' must be string.\n");
+          error("Input list component 'name' must be string.\n");
         }
     }
   else
@@ -2505,9 +2498,9 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
       tmp = VECTOR_ELT(lst, i);
       if( TYPEOF(tmp) != STRSXP )
         {
-          Rprintf ("List compenent 'form' must be a string - found %d instead \n",
+          Rprintf ("List component 'form' must be a string - found %d instead \n",
                    TYPEOF(tmp) );
-          error("Input list compenent 'form' must be string");
+          error("Input list component 'form' must be string");
         }
       if(strlen( CHAR(STRING_ELT(tmp, 0)) ) == 0)
         {
@@ -2524,7 +2517,7 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
         }
       else
         {
-          error("Input list compenent 'form' must be either 'full' or 'sparse'.");
+          error("Input list component 'form' must be either 'full' or 'sparse'.");
         }
     }
 
@@ -2560,7 +2553,7 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
             }
           else
             {
-              error("Input list compenent 'form' must be either 'true' or 'false'.");
+              error("Input list component 'form' must be either 'true' or 'false'.");
             }
         }
       else if( TYPEOF(tmp) == LGLSXP)
@@ -2577,9 +2570,9 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
         }
       else
         {
-          Rprintf ("List compenent 'compress' must be either string or logical - found %d instead \n",
+          Rprintf ("List component 'compress' must be either string or logical - found %d instead \n",
                    TYPEOF(tmp) );
-          error("Input list compenent 'compress' must be either string or logical");
+          error("Input list component 'compress' must be either string or logical");
         }
     }
 
@@ -2600,9 +2593,9 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
       tmp = VECTOR_ELT(lst, i);
       if( TYPEOF(tmp) != STRSXP )
         {
-          Rprintf ("List compenent 'field' must be a string - found %d instead \n",
+          Rprintf ("List component 'field' must be a string - found %d instead \n",
                    TYPEOF(tmp) );
-          error("Input list compenent 'field' must be string");
+          error("Input list component 'field' must be string");
         }
       if(strlen( CHAR(STRING_ELT(tmp, 0)) ) == 0)
         {
@@ -2668,7 +2661,7 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
             }
           else
             {
-              error("Input list compenent 'ts' must be either 'true' or 'false'.");
+              error("Input list component 'ts' must be either 'true' or 'false'.");
             }
         }
       else if( TYPEOF(tmp) == LGLSXP)
@@ -2680,9 +2673,9 @@ checkRgdxList(const SEXP lst, struct rgdxStruct *data)
         }
       else
         {
-          Rprintf ("List compenent 'ts' must be either string or logical - found %d instead \n",
+          Rprintf ("List component 'ts' must be either string or logical - found %d instead \n",
                    TYPEOF(tmp) );
-          error("Input list compenent 'ts' must be either string or logical");
+          error("Input list component 'ts' must be either string or logical");
         }
     }
 
@@ -2803,6 +2796,7 @@ writeGdx(char *gdxFileName,
   gdxValues_t   vals;
   shortStringBuf_t msgBuf;
   shortStringBuf_t expText;
+  shortStringBuf_t gsBuf;
   const char *stringUelIndex;
   int rc, errNum;
   int i, j, k, z, found;
@@ -2819,7 +2813,7 @@ writeGdx(char *gdxFileName,
     {
       /* Open files for interface data */
       inputTime = "compile";
-      inputTime = getGlobalString("input");
+      inputTime = getGlobalString("input", gsBuf);
       if (NULL == inputTime)
         inputTime = "compile";
 
@@ -3130,7 +3124,7 @@ writeGdx(char *gdxFileName,
   }
   (void) gdxFree (&gdxHandle);
 
-  /* free memory  */
+  /* free memory */
   free(data);
   UNPROTECT(wAlloc);
 } /* writeGdx */
@@ -3140,7 +3134,7 @@ writeGdx(char *gdxFileName,
  * This is the main gateway function
  * to be called from R console
  * First argument <- gdx file name
- * Second argument <- list containing several compenents
+ * Second argument <- list containing several components
  * that give information about symbol in gdx file
  * ------------------------------------------------------------------ */
 SEXP rgdx (SEXP args)
@@ -4090,6 +4084,7 @@ SEXP gams (SEXP args)
   char *writeDataStr, *fileExt, *p;
   shortStringBuf_t input;
   shortStringBuf_t gmsFileName;
+  shortStringBuf_t gsBuf;
   int writeData, rc, n, i, arglen;
   int auditRun = 0;
 
@@ -4144,7 +4139,7 @@ SEXP gams (SEXP args)
 
   if (arglen > 2) {
     writeData = 1;
-    writeDataStr = getGlobalString("write_data");
+    writeDataStr = getGlobalString("write_data", gsBuf);
     if (writeDataStr != NULL) {
       if (0 == strncmp(writeDataStr,"n",1) || 0 == strncmp(writeDataStr,"N",1)) {
         writeData = 0;
