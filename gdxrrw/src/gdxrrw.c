@@ -247,10 +247,6 @@ writeGdx(char *fileName,
          SEXP *argList,
          int fromGAMS);
 
-static void
-readGdx(char *fileName,
-        int fromGAMS);
-
 
 /*-------------------- Method exposed to R -----------------------*/
 
@@ -643,7 +639,7 @@ getGamsSoln(char *gmsFileName)
   inputData->withField = 0;
 
   if ((fp = fopen(gmsFileName,"r")) == NULL) {
-    error("Cannot find/open %s file.\n",gmsFileName);
+    error("Cannot find/open %s file.\n", gmsFileName);
   }
   /* read the file till $set matout */
   while (fgets(line,LINELEN,fp) != NULL) {
@@ -658,6 +654,7 @@ getGamsSoln(char *gmsFileName)
   }
   fclose(fp);
 
+  loop = 0;
   if (astring != NULL && strcmp(astring, "") != 0) {
     array[0]=strtok(line," ");
     if (array[0]==NULL) {
@@ -678,7 +675,7 @@ getGamsSoln(char *gmsFileName)
   }
 
   /* At least one element is there in GDX file  */
-  if(loop - 3 > 0) {
+  if (loop - 3 > 0) {
     /* This is for global UEL  */
     wUEL = 0;
     inputData->filterUel = getGlobalUEL(inputData->filterUel, inputData->compress);
@@ -1211,7 +1208,7 @@ getGamsSoln(char *gmsFileName)
       error("Errors detected when closing gdx file");
     }
     (void) gdxFree (&gdxHandle);
-  }
+  } /* end if loop - 3 > 0 */
   free(inputData);
   return OPList;
 } /* getGamsSoln */
@@ -1482,92 +1479,77 @@ checkForValidData(SEXP val,
 
   nuels = length(uelOut);
 
-  if(TYPEOF(val) == REALSXP)
-    {
-       P = REAL(val);
-    }
+  P = NULL;
+  if(TYPEOF(val) == REALSXP) {
+    P = REAL(val);
+  }
 
-  else if(TYPEOF(val) == INTSXP)
-    {
-      P = (double*)INTEGER(val);
-    }
-  else
-    {
-      error("val must me numeric. \n");
-    }
+  else if (TYPEOF(val) == INTSXP) {
+    P = (double*)INTEGER(val);
+  }
+  else {
+    error("val must me numeric. \n");
+  }
   dims = getAttrib(val, R_DimSymbol);
 
-  if(dForm == sparse)
-    {
-      nrows = INTEGER(dims)[0];
-      ncols = INTEGER(dims)[1];
+  if (dForm == sparse) {
+    nrows = INTEGER(dims)[0];
+    ncols = INTEGER(dims)[1];
 
-      if(dType == parameter)
-        {
-          ncols--;
-        }
-      if(nuels != ncols)
-        {
-          error("Number of columns in sparse data does not match with uels.");
-        }
-      for(i = 0; i < ncols; i++)
-        {
-          for(j = 0; j < nrows; j++)
-            {
-              if(P[j + i*nrows] - floor(P[j + i*nrows]) > 0)
-                {
-                  error("Non-integer coordinates are not allowed in index columns of sparse data");
-                }
-              if(P[j + i*nrows] < 1)
-                {
-                  error("Non-positive coordinates are not allowed in index columns of sparse data");
-                }
-              /* if(!mxIsFinite(P[j + i*nrows]))
-                {
-                  error("Only finite numbers are allowed in index columns of sparse data");
-                  } */
-              if (P[j + i*nrows] > max)
-                {
-                  max = (int) P[j + i*nrows];
-                }
-            }
-          if(max > (int)length(VECTOR_ELT(uelOut, i )))
-            {
-              error("Row index in sparse matrix exceeds number of elements in UEL for that column.");
-            }
-          max = 0;
-        }
+    if (dType == parameter) {
+      ncols--;
     }
-  else
-    {
-      /* get dimension of full matrix == number of columns in uels */
-      ndims = length(dims);
-      if(!((nuels == 0 || nuels == 1) && ndims ==2) && nuels != ndims)
-        {
-          error("Number of dimension in full data does not match with uels.");
+    if (nuels != ncols) {
+      error("Number of columns in sparse data does not match with uels.");
+    }
+    for (i = 0; i < ncols; i++) {
+      for (j = 0; j < nrows; j++) {
+        if (P[j + i*nrows] - floor(P[j + i*nrows]) > 0) {
+          error("Non-integer coordinates are not allowed in index columns of sparse data");
         }
+        if (P[j + i*nrows] < 1) {
+          error("Non-positive coordinates are not allowed in index columns of sparse data");
+        }
+        /* if(!mxIsFinite(P[j + i*nrows]))
+           {
+           error("Only finite numbers are allowed in index columns of sparse data");
+           } */
+        if (P[j + i*nrows] > max) {
+          max = (int) P[j + i*nrows];
+        }
+      }
+      if (max > (int)length(VECTOR_ELT(uelOut, i ))) {
+        error("Row index in sparse matrix exceeds number of elements in UEL for that column.");
+      }
+      max = 0;
+    }
+  }
+  else {
+    /* get dimension of full matrix == number of columns in uels */
+    ndims = length(dims);
+    if ( !((nuels == 0 || nuels == 1) && ndims ==2) && nuels != ndims) {
+      error("Number of dimension in full data does not match with uels.");
+    }
 
-      /* special check for vector */
-      if(nuels == 1 && INTEGER(dims)[1] != 1)
-        {
-          error("Vector should have only 1 dimensional column elements.");
-        }
-      /* special check for scalar */
-      if(nuels == 0 && ( INTEGER(dims)[0] != 1 || INTEGER(dims)[1] != 1))
-        {
-          error("Scalar should have only one element.");
-        }
-      /* number of elements in each dimension == number of elements in UEL
-      for(i = 0; i < (int)nuels; i++)
-        {
-          if( !( INTEGER(dims)[i] == 1 &&  (int)mxGetN(mxGetCell(uelOut, i )) == 0)
-              && INTEGER(dims)[i] > mxGetN(mxGetCell(uelOut, i )))
-            {
-              error("Number of element in full format data exceeds corresponding elements in UEL.");
-            }
-        } */
+    /* special check for vector */
+    if(nuels == 1 && INTEGER(dims)[1] != 1) {
+      error("Vector should have only 1 dimensional column elements.");
     }
-}/* checkForValidData */
+    /* special check for scalar */
+    if (nuels == 0 && ( INTEGER(dims)[0] != 1 || INTEGER(dims)[1] != 1)) {
+      error("Scalar should have only one element.");
+    }
+    /* number of elements in each dimension == number of elements in UEL
+       for(i = 0; i < (int)nuels; i++)
+       {
+       if( !( INTEGER(dims)[i] == 1 &&  (int)mxGetN(mxGetCell(uelOut, i )) == 0)
+       && INTEGER(dims)[i] > mxGetN(mxGetCell(uelOut, i )))
+       {
+       error("Number of element in full format data exceeds corresponding elements in UEL.");
+       }
+       } */
+  }
+} /* checkForValidData */
 
 
 /* Only called from gdxInfo  */
@@ -1577,19 +1559,17 @@ char *val2str(gdxHandle_t Tptr,
 {
   int sv;
 
-  if (gdxAcronymName(Tptr, val, s))
-    {
-      return s;
-    }
-  else
-    {
-      gdxMapValue(Tptr, val, &sv);
-      if (sv_normal != sv)
-        sprintf(s,"%s", gmsSVText[sv]);
-      else
-        sprintf(s,"%g", val);
-      return s;
-    }
+  if (gdxAcronymName(Tptr, val, s)) {
+    return s;
+  }
+  else {
+    gdxMapValue(Tptr, val, &sv);
+    if (sv_normal != sv)
+      sprintf(s,"%s", gmsSVText[sv]);
+    else
+      sprintf(s,"%g", val);
+    return s;
+  }
 }
 
 
@@ -3987,7 +3967,7 @@ SEXP gams (SEXP args)
   shortStringBuf_t input;
   shortStringBuf_t gmsFileName;
   shortStringBuf_t gsBuf;
-  int writeData, rc, n, i, arglen;
+  int writeData, rc, i, arglen;
 
   gamsAlloc = 0;
   globalGams = 1;
@@ -4076,11 +4056,11 @@ SEXP gams (SEXP args)
 /*  the gateway routine for gdxInfo.
     This is very similar to gdxdump that print everything on R command prompt.
 */
-SEXP gdxInfo(SEXP args)
+SEXP gdxInfo (SEXP args)
 {
   SEXP fileName;
   int arglen;
-  char *gdxFileName;
+  shortStringBuf_t gdxFileName;
   int rc,i,j,NrSy,NrUel,ADim,ACount,AUser,AUser2,NRec,FDim,IDum, BadUels=0;
   int ATyp, ATyp2;
   char
@@ -4101,32 +4081,30 @@ SEXP gdxInfo(SEXP args)
   GDXSTRINDEXPTRS_INIT(DomainIDs,DP);
 
 
-  /* Due to some reason length is always equal to actual length plus 1  */
+  /* Due to some reason length is always equal to actual length plus 1 */
   arglen = length(args);
 
   /* ----------------- Check proper number of inputs ------------
    * Function should follow specification of
    * rgdx ('gdxFileName')
    * -------------------------------------------------------------------------*/
-  if (arglen != 2)
-    {
-      Rprintf("%d entries are entered!\n", arglen-1);
-      Rprintf("Input must be according to this specification:\n");
-      Rprintf("(gdx_filename) \n");
-      error("Incorrect input argument specified.");
-    }
+  if (arglen != 2) {
+    Rprintf("%d entries are entered!\n", arglen-1);
+    Rprintf("Input must be according to this specification:\n");
+    Rprintf("(gdx_filename) \n");
+    error("Incorrect input argument specified.");
+  }
 
   args = CDR(args); fileName = CAR(args);
 
   /* Checking that argument is of type string
   */
-  if (TYPEOF(fileName) != STRSXP)
-    {
-      Rprintf("Input argument must be string\n");
-      error("Wrong Argument Type");
-    }
+  if (TYPEOF(fileName) != STRSXP) {
+    Rprintf("Input argument must be string\n");
+    error("Wrong Argument Type");
+  }
 
-  gdxFileName = CHAR(STRING_ELT(fileName, 0));
+  (void) CHAR2ShortStr (CHAR(STRING_ELT(fileName, 0)), gdxFileName);
 
   checkFileExtension (gdxFileName);
 
@@ -4138,8 +4116,7 @@ SEXP gdxInfo(SEXP args)
   rc = gdxOpenRead(Tptr, gdxFileName, &i);
   if (0==rc) {
     gdxErrorStr(Tptr,i,msg);
-    Rprintf("Could not read GDX file %s: %s (rc=%d) \n",gdxFileName,msg,rc);
-
+    Rprintf("Could not read GDX file %s: %s (rc=%d) \n", gdxFileName, msg, rc);
   }
 
   rc = gdxGetLastError(Tptr);
@@ -4155,120 +4132,139 @@ SEXP gdxInfo(SEXP args)
   Rprintf("*  Symbols        : %d \n",NrSy);
   Rprintf("*  Unique Elements: %d \n",NrUel);
 
- /* Acroynms */
- for (i=1; i<=gdxAcronymCount(Tptr); i++) {
-   gdxAcronymGetInfo(Tptr, i, sName, sText, &rc);
-   Rprintf("Acronym %s", sName);
-   if (strlen(sText)) printf(" '%s'", sText);
-   Rprintf("; \n");
- }
+  /* Acroynms */
+  for (i=1; i<=gdxAcronymCount(Tptr); i++) {
+    gdxAcronymGetInfo(Tptr, i, sName, sText, &rc);
+    Rprintf("Acronym %s", sName);
+    if (strlen(sText))
+      printf(" '%s'", sText);
+    Rprintf("; \n");
+  }
 
- /* Symbolinfo */
- Rprintf("$ontext \n");
- for (i=1; i<=NrSy; i++) {
-   gdxSymbolInfo(Tptr, i, sName, &ADim, &ATyp);
-   gdxSymbolInfoX(Tptr, i, &ACount, &rc, sText);
-   Rprintf("%-15s %3d %-12s %s \n", sName, ADim, gmsGdxTypeText[ATyp],sText);
- }
- Rprintf("$offtext \n");
+  /* Symbolinfo */
+  Rprintf("$ontext \n");
+  for (i=1; i<=NrSy; i++) {
+    gdxSymbolInfo(Tptr, i, sName, &ADim, &ATyp);
+    gdxSymbolInfoX(Tptr, i, &ACount, &rc, sText);
+    Rprintf("%-15s %3d %-12s %s \n", sName, ADim, gmsGdxTypeText[ATyp],sText);
+  }
+  Rprintf("$offtext \n");
 
- Rprintf("$onempty onembedded \n");
- for (i=1; i<=NrSy; i++) {
+  Rprintf("$onempty onembedded \n");
+  for (i=1; i<=NrSy; i++) {
 
-   gdxSymbolInfo(Tptr, i, sName, &ADim, &ATyp);
-   gdxSymbolInfoX(Tptr, i, &ACount, &AUser, sText);
+    gdxSymbolInfo(Tptr, i, sName, &ADim, &ATyp);
+    gdxSymbolInfoX(Tptr, i, &ACount, &AUser, sText);
 
-   if (GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp) Rprintf("$ontext \n");
+    if (GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp) Rprintf("$ontext \n");
 
-   if (GMS_DT_VAR == ATyp) {
-     if (AUser < 0 || AUser>=GMS_VARTYPE_MAX) AUser = GMS_VARTYPE_FREE;
-     memcpy(dv,gmsDefRecVar[AUser],GMS_VAL_MAX*sizeof(double));
-     dn = (char *) gmsVarTypeText[AUser];
-   } else if (GMS_DT_EQU == ATyp) {
-     if (AUser < 0 || AUser>=GMS_EQUTYPE_MAX) AUser = GMS_EQUTYPE_E;
-     memcpy(dv,gmsDefRecEqu[AUser],GMS_VAL_MAX*sizeof(double));
-   } else dv[GMS_VAL_LEVEL] = 0.0;
+    if (GMS_DT_VAR == ATyp) {
+      if (AUser < 0 || AUser>=GMS_VARTYPE_MAX)
+        AUser = GMS_VARTYPE_FREE;
+      memcpy(dv,gmsDefRecVar[AUser],GMS_VAL_MAX*sizeof(double));
+      dn = (char *) gmsVarTypeText[AUser];
+    }
+    else if (GMS_DT_EQU == ATyp) {
+      if (AUser < 0 || AUser>=GMS_EQUTYPE_MAX)
+        AUser = GMS_EQUTYPE_E;
+      memcpy(dv,gmsDefRecEqu[AUser],GMS_VAL_MAX*sizeof(double));
+    }
+    else
+      dv[GMS_VAL_LEVEL] = 0.0;
 
+    if (0 == ADim && GMS_DT_PAR == ATyp) /* Scalar */
+      Rprintf("Scalar");
+    else {
+      if (GMS_DT_VAR == ATyp)
+        printf("%s ",dn);
+      Rprintf("%s",gmsGdxTypeText[ATyp]);
+    }
+    if (GMS_DT_ALIAS == ATyp) {
+      gdxSymbolInfo(Tptr, AUser, sName2, &j, &ATyp2);
+      Rprintf(" (%s, %s);n", sName, sName2);
+    }
+    else {
+      Rprintf(" %s", sName);
+      if (ADim > 0) {
+        gdxSymbolGetDomain(Tptr, i, Keys);
+        Rprintf("("); for (j=0; j<ADim; j++) {
+          if (Keys[j]==0)
+            strcpy(sName,"*");
+          else
+            gdxSymbolInfo(Tptr, Keys[j], sName2, &AUser2, &ATyp2);
+          if (j < ADim-1)
+            Rprintf("%s,",sName);
+          else
+            Rprintf("%s)",sName);
+        }
+      }
+      if (strlen(sText)) Rprintf(" '%s'", sText);
+    }
+    if (0 == ACount) {
+      if (0 == ADim && GMS_DT_PAR == ATyp) /* Scalar */
+        Rprintf(" / 0.0 /;n");
+      else if (GMS_DT_ALIAS != ATyp)
+        Rprintf(" / /; \n");
+    }
+    else {
+      Rprintf("/ \n");
+      gdxDataReadRawStart (Tptr, i, &NRec);
+      while (gdxDataReadRaw(Tptr,Keys,Vals,&FDim)) {
+        if ((GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp) && 0 == memcmp(Vals,dv,GMS_VAL_MAX*sizeof(double))) /* all default records */
+          continue;
+        if (GMS_DT_PAR == ATyp && 0.0 == Vals[GMS_VAL_LEVEL])
+          continue;
+        for (j=1; j<=ADim; j++) {
+          if (1==gdxUMUelGet(Tptr, Keys[j-1], UelName, &IDum))
+            Rprintf("'%s'", UelName);
+          else {
+            Rprintf("L__",Keys[j-1]); BadUels++;
+          }
+          if (j < ADim)
+            printf (".");
+        }
+        if (GMS_DT_PAR == ATyp)
+          Rprintf(" %s \n", val2str(Tptr, Vals[GMS_VAL_LEVEL], msg));
+        else if (GMS_DT_SET == ATyp)
+          if (Vals[GMS_VAL_LEVEL]) {
+            j = (int) Vals[GMS_VAL_LEVEL];
+            gdxGetElemText(Tptr, j, msg, &IDum);
+            Rprintf(" '%s' \n", msg);
+          }
+          else
+            Rprintf(" \n");
+        else if (GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp) {
+          Rprintf(" .");
+          c='(';
+          for (j=GMS_VAL_LEVEL; j<GMS_VAL_MAX; j++) {
+            if (Vals[j] != dv[j]) {
+              if (GMS_VAL_SCALE == j && GMS_DT_VAR == ATyp &&
+                  AUser != GMS_VARTYPE_POSITIVE && AUser != GMS_VARTYPE_NEGATIVE && AUser != GMS_VARTYPE_FREE)
+                Rprintf("%c prior %s", c, val2str(Tptr, Vals[GMS_VAL_SCALE], msg));
+              else
+                Rprintf("%c %s %s", c, gmsValTypeText[j]+1, val2str(Tptr, Vals[j], msg));
+              if ('(' == c)
+                c = ',';
+            }
+          }
+          Rprintf(" ) \n");
+        }
+      }
+    }
+    Rprintf("/; \n");
+    j=1;
+    while (gdxSymbolGetComment(Tptr, i, j++, msg))
+      printf("* %s \n", msg);
+    if (GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp)
+      printf("$offtext \n");
+    Rprintf(" \n");
+  }
+  Rprintf("$offempty offembedded \n");
 
-   if (0 == ADim && GMS_DT_PAR == ATyp) /* Scalar */
-     Rprintf("Scalar");
-   else {
-     if (GMS_DT_VAR == ATyp) printf("%s ",dn);
-     Rprintf("%s",gmsGdxTypeText[ATyp]);
-   }
-   if (GMS_DT_ALIAS == ATyp) {
-     gdxSymbolInfo(Tptr, AUser, sName2, &j, &ATyp2);
-     Rprintf(" (%s, %s);n", sName, sName2);
-   } else {
-     Rprintf(" %s", sName);
-     if (ADim > 0) {
-       gdxSymbolGetDomain(Tptr, i, Keys);
-       Rprintf("("); for (j=0; j<ADim; j++) {
-         if (Keys[j]==0) strcpy(sName,"*");
-         else
-           gdxSymbolInfo(Tptr, Keys[j], sName2, &AUser2, &ATyp2);
-         if (j < ADim-1) Rprintf("%s,",sName);
-         else Rprintf("%s)",sName);
-       }
-     }
-     if (strlen(sText)) Rprintf(" '%s'", sText);
-   }
-   if (0 == ACount) {
-     if (0 == ADim && GMS_DT_PAR == ATyp) /* Scalar */
-       Rprintf(" / 0.0 /;n");
-     else if (GMS_DT_ALIAS != ATyp)
-       Rprintf(" / /; \n");
-   } else {
-     Rprintf("/ \n");
-     gdxDataReadRawStart (Tptr, i, &NRec);
-     while (gdxDataReadRaw(Tptr,Keys,Vals,&FDim)) {
-       if ((GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp) && 0 == memcmp(Vals,dv,GMS_VAL_MAX*sizeof(double))) /* all default records */
-         continue;
-       if (GMS_DT_PAR == ATyp && 0.0 == Vals[GMS_VAL_LEVEL])
-         continue;
-       for (j=1; j<=ADim; j++) {
-         if (1==gdxUMUelGet(Tptr, Keys[j-1], UelName, &IDum))
-           Rprintf("'%s'", UelName);
-         else {
-           Rprintf("L__",Keys[j-1]); BadUels++;
-         }
-         if (j < ADim) printf (".");
-       }
-       if (GMS_DT_PAR == ATyp)
-         Rprintf(" %s \n", val2str(Tptr, Vals[GMS_VAL_LEVEL], msg));
-       else if (GMS_DT_SET == ATyp)
-         if (Vals[GMS_VAL_LEVEL]) {
-           j = (int) Vals[GMS_VAL_LEVEL];
-           gdxGetElemText(Tptr, j, msg, &IDum);
-           Rprintf(" '%s' \n", msg);
-         } else  Rprintf(" \n");
-       else if (GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp) {
-         Rprintf(" ."); c='(';
-         for (j=GMS_VAL_LEVEL; j<GMS_VAL_MAX; j++) {
-           if (Vals[j] != dv[j]) {
-             if (GMS_VAL_SCALE == j && GMS_DT_VAR == ATyp &&
-                 AUser != GMS_VARTYPE_POSITIVE && AUser != GMS_VARTYPE_NEGATIVE && AUser != GMS_VARTYPE_FREE)
-               Rprintf("%c prior %s", c, val2str(Tptr, Vals[GMS_VAL_SCALE], msg));
-             else
-               Rprintf("%c %s %s", c, gmsValTypeText[j]+1, val2str(Tptr, Vals[j], msg));
-             if ( '(' == c) c = ',';
-           }
-         }
-         Rprintf(" ) \n");
-       }
-     }
-   }
-   Rprintf("/; \n");
-   j=1; while (gdxSymbolGetComment(Tptr, i, j++, msg)) printf("* %s \n", msg);
-   if (GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp) printf("$offtext \n");
-   Rprintf(" \n");
- }
- Rprintf("$offempty offembedded \n");
+  if (BadUels > 0)
+    Rprintf("**** %d reference(s) to unique elements without a string representation \n", BadUels);
 
- if (BadUels > 0)
-   Rprintf("**** %d reference(s) to unique elements without a string representation \n", BadUels);
+  gdxFree(&Tptr);
 
- gdxFree(&Tptr);
-
- return R_NilValue;
-} /* End of gdxInfo  */
+  return R_NilValue;
+} /* gdxInfo */
