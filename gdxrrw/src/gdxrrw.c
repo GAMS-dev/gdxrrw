@@ -151,7 +151,7 @@ int isCompress(void);
 char *
 getGlobalString(const char *globName);
 
-char*
+char *
 delete_char(char *src,
             char c,
             int len);
@@ -583,7 +583,7 @@ SEXP
 getGamsSoln(char *gmsFileName)
 {
   SEXP  UEList;
-  SEXP OPListComp, OPList, dimVect, textElement, elVect;
+  SEXP OPListComp, OPList, dimVect, textElement;
   SEXP compName = R_NilValue,
     compType = R_NilValue,
     compDim = R_NilValue,
@@ -596,11 +596,10 @@ getGamsSoln(char *gmsFileName)
     compTe = R_NilValue;
   struct rgdxStruct *inputData;
   FILE *fp, *fin;
-  char sText[GMS_SSSIZE], msg[GMS_SSSIZE], stringEle[GMS_SSSIZE];
   char line[LINELEN], astring[LINELEN], *s, *array[50], *gdxFile;
   int loop, i, maxPossibleElements, z;
-  char  *symbolField, *symbol_Name, *uelElementName;
-  int rc, errNum, symIdx, symDim, symType, mrows, ncols, nRecs, iRec, changeIdx, index, k, kk, nonZero;
+  char *uelElementName;
+  int rc, errNum, symDim, symType, mrows, ncols, nRecs, iRec, changeIdx, index, k, kk, nonZero;
   shortStringBuf_t msgBuf, uelName;
   char buf[3*sizeof(shortStringBuf_t)];
   int nUEL, iUEL, defaultIndex,  UELUserMapping, highestMappedUEL, ndimension;
@@ -612,7 +611,7 @@ getGamsSoln(char *gmsFileName)
   char *types[] = {"set", "parameter", "variable", "equation"};
   char *forms[] = {"full", "sparse"};
   char *fields[] = {"l", "m", "up", "lo", "s"};
-  int a, b, matched, sparesIndex, symDimInt, totNumber, IDum, totalElement;
+  int b, matched, sparesIndex, totNumber, totalElement;
   int *returnedIndex;
   int mwNElements =0;
   int uelProperty = 0;
@@ -1470,7 +1469,6 @@ checkForValidData(SEXP val,
   SEXP dims;
   int i, j;
   double *P;
-  int *intVal;
   int ndims;
   int ncols, nrows, nuels;
   int max = 0;
