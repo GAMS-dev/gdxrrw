@@ -143,6 +143,9 @@ getGamsSoln(char *gmsFileName);
 char *
 CHAR2ShortStr (const char *from, shortStringBuf_t to);
 
+void
+cat2ShortStr (shortStringBuf_t dest, const char *src);
+
 int isCompress(void);
 
 char *
@@ -1606,6 +1609,27 @@ CHAR2ShortStr (const char *from, shortStringBuf_t to)
   return to;
 } /* CHAR2ShortStr */
 
+
+void
+cat2ShortStr (shortStringBuf_t dest, const char *src)
+{
+  size_t n, nd, ns;
+
+  if ((NULL == src) || (NULL == dest))
+    return;
+  nd = strlen(dest);
+  ns = strlen(src);
+  n = nd + ns;
+  if (n >= sizeof(shortStringBuf_t)) {
+    n = sizeof(shortStringBuf_t);
+    strncpy(dest, src, n);
+    dest[n-1] = '\0';
+  }
+  else
+    strcpy(dest, src);
+  return;
+} /* cat2ShortStr */
+
 /* This method checks the file extension of the gdx file.
  * If fileName does not have '.gdx' then we add it here
 */
@@ -2991,12 +3015,9 @@ writeGdx(char *gdxFileName,
           }
         }
   
-        if(found == 1) {
-          expText = CHAR(STRING_ELT( VECTOR_ELT(symbolList[i], j) , 0));
+        if (found == 1) {
+          (void) CHAR2ShortStr (CHAR(STRING_ELT( VECTOR_ELT(symbolList[i], j), 0)), expText);
         }
-      }
-      else {
-        expText = "R data from GDXRRW";
       }
 
       if(data[i]->dForm == sparse) {
@@ -4123,7 +4144,10 @@ SEXP gams (SEXP args)
     *argList,
     result = R_NilValue;
   FILE *fp;
-  char *gmsFileName, *input, *writeDataStr, *fileExt, *p;
+  char *inputPtr;
+  char *writeDataStr, *fileExt, *p;
+  shortStringBuf_t input;
+  shortStringBuf_t gmsFileName;
   int writeData, rc, n, i, arglen;
   int auditRun = 0;
   
@@ -4145,10 +4169,10 @@ SEXP gams (SEXP args)
     error("Wrong Argument Type");
   }
 
-  input = CHAR(STRING_ELT(firstArg, 0));
+  inputPtr = CHAR(STRING_ELT(firstArg, 0));
 
   if (2 == arglen) {
-    if (0 == strcmp("?", input)) {
+    if (0 == strcmp("?", inputPtr)) {
       int n = (int)strlen (ID);
       memcpy (strippedID, ID+1, n-2);
       strippedID[n-2] = '\0';
@@ -4157,13 +4181,15 @@ SEXP gams (SEXP args)
     } /* if audit run */
   } /* if one arg, of character type */
   
-  checkStringLength(input);
-  gmsFileName = strtok(input, " ");
-  fileExt = strstr(gmsFileName, ".");
+  checkStringLength(inputPtr);
+  (void) CHAR2ShortStr (inputPtr, input);
+  p = strtok (input, " ");
+  (void) CHAR2ShortStr (inputPtr, gmsFileName);
+  fileExt = strstr (p, ".");
   if (NULL == fileExt) {
-    strcat(gmsFileName, ".gms");
+    cat2ShortStr (gmsFileName, ".gms");
   }
-  fp = fopen(gmsFileName,"r");
+  fp = fopen (gmsFileName,"r");
   if (fp == NULL) {
     error("Cannot find or open %s file. \n", gmsFileName);
   }
@@ -4193,7 +4219,7 @@ SEXP gams (SEXP args)
     for (i = 1; i < arglen-1; i++) {
       args = CDR(args); argList[i-1] = CAR(args);
     }
-    writeGdx(gmsFileName, arglen, argList, 1);
+    writeGdx (gmsFileName, arglen, argList, 1);
     /* free memory  */
     free(argList);
   }
@@ -4202,14 +4228,14 @@ SEXP gams (SEXP args)
     error("GAMS run failed.\n");
   }  
   /* read only first element from GDX file */  
-  result = getGamsSoln(gmsFileName); 
+  result = getGamsSoln (gmsFileName);
   UNPROTECT(gamsAlloc);
   return result;
 } /* gams */
 
 
 /*  the gateway routine for gdxInfo.
-    This is very similar to gdxdump that print everything on R command promt.    
+    This is very similar to gdxdump that print everything on R command prompt.
 */
 SEXP gdxInfo(SEXP args)
 {
