@@ -1,37 +1,20 @@
 \name{gdxInfo}
 \alias{gdxInfo}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-GDXINFO
-}
+\title{gdxInfo}
 \description{
-Display all the information of GDX file similarly to gdxdump
+Display all the information contained in a GDX file, along with some
+version & debugging info.  The display format is copied from gdxdump.
 }
-\usage{
-gdxInfo(gdxFile)
+\usage{gdxInfo(gdxFile)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{gdxFile}{
-%%     ~~Describe \code{gdxFile} here~~
-}
-}
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
-\value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+  \item{gdxFile}{the name of the GDX file.  If this argument is
+  omitted, what happens?}
 }
 \references{
 %% ~put references to the literature/web site here ~
 }
-\author{
-Rishabh Jain
-}
+\author{Rishabh Jain}
 \note{
 %%  ~~further notes~~
 }
@@ -54,5 +37,6 @@ function (gdxFile)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ data }
+\keyword{ optimize }
+\keyword{ interface }
