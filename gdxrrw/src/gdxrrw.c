@@ -4309,20 +4309,48 @@ SEXP gdxInfo (SEXP args)
 SEXP igdx (SEXP args)
 {
   SEXP result;
-  int rc;
+  int arglen;
+  int rc, gdxLoaded;
   char loadPath[GMS_SSSIZE];
+  SEXP pSysDir;
+  shortStringBuf_t sysDir, msgBuf;
 
-  rc = gdxLibraryLoaded();
+  arglen = length(args);
+
+  if (arglen < 1 || arglen > 2)  {
+    Rprintf ("usage: %s(<gamsSysDir>)\n", CHAR(STRING_ELT(CAR(args),0)));
+    error ("usage: igdx(<gamsSysDir>) - incorrect arg count");
+  }
+
+  gdxLoaded = gdxLibraryLoaded();
+
+  if (arglen > 1) {             /* we have gamsSysDir */
+    pSysDir = CADR(args);
+    if (TYPEOF(pSysDir) != STRSXP) {
+      Rprintf ("usage: %s(<gamsSysDir>)\n", CHAR(STRING_ELT(CAR(args),0)));
+      Rprintf ("  gamsSysDir argument must be a string\n");
+      error ("usage: igdx(<gamsSysDir>) - gamsSysDir must be a string");
+    }
+    (void) CHAR2ShortStr (CHAR(STRING_ELT(pSysDir, 0)), sysDir);
+
+    /* ---- load the GDX API ---- */
+    if (gdxLoaded) {
+      (void) gdxLibraryUnload ();
+    }
+    rc = gdxGetReadyD (sysDir, msgBuf, sizeof(msgBuf));
+    if (0 == rc) {
+      Rprintf ("Error loading the GDX API from directory %s\n", sysDir);
+      Rprintf ("%s\n", msgBuf);
+    }
+  }
+
+  gdxLoaded = gdxLibraryLoaded();
   PROTECT(result = allocVector(INTSXP, 1));
-  INTEGER(result)[0] = rc;
+  INTEGER(result)[0] = gdxLoaded;
   UNPROTECT(1);
-  if (rc) {
+  if (gdxLoaded) {
     Rprintf ("The GDX library has been loaded\n");
-#if 1
     gdxGetLoadPath (loadPath);
-#else
-    loadPath[0] = '\0';
-#endif
     Rprintf ("GDX library load path: %s\n",
              loadPath[0] ? loadPath : "unknown");
   }
