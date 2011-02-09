@@ -9,7 +9,7 @@ version & debugging info.  The display format is copied from gdxdump.
 }
 \arguments{
   \item{gdxFile}{the name of the GDX file.  If this argument is
-  omitted, what happens?}
+  omitted, we display only the version info for the GDX library used}
 }
 \references{
 %% ~put references to the literature/web site here ~
@@ -17,13 +17,15 @@ version & debugging info.  The display format is copied from gdxdump.
 \author{Original coding by Rishabh Jain.  Adopted and packaged by
 Steve Dirkse.  Maintainer: <R@gams.com>}
 \note{
-%%  ~~further notes~~
+  A common problem is failure to load the external GDX libraries that
+  are required to interface with GDX data.  Use \code{\link{igdx}} to
+  troubleshoot and solve this problem.
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+\code{\link{igdx}}, \code{\link{rgdx}}, \code{\link{wgdx}}
 }
 \examples{
 ##---- Should be DIRECTLY executable !! ----

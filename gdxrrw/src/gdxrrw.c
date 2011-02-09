@@ -39,6 +39,9 @@
 #include "gdxcc.h"
 #include "gclgms.h"
 
+typedef void (GDX_CALLCONV *gdxGetLoadPath_t) (char *s);
+GDX_FUNCPTR(gdxGetLoadPath);
+
 #if defined(_WIN32)
 #include <windows.h>
 static const char *formatMessage(int errNum);
@@ -255,6 +258,8 @@ writeGdx(char *fileName,
 SEXP rgdx (SEXP args);
 
 SEXP wgdx (SEXP args);
+
+SEXP igdx (SEXP args);
 
 SEXP gdxInfo (SEXP args);
 
@@ -4292,3 +4297,38 @@ SEXP gdxInfo (SEXP args)
 
   return R_NilValue;
 } /* gdxInfo */
+
+/* gateway routine for igdx
+ * With no args, print usage information and current state of GDX loading
+ * With one arg (the GAMS sysdir name) attempt to get the GDX
+ * interface loaded and ready.
+ * result:
+ *   TRUE   if we are ready for GDX, i.e. if the GDX library is loaded,
+ *   FALSE  otherwise
+ */
+SEXP igdx (SEXP args)
+{
+  SEXP result;
+  int rc;
+  char loadPath[GMS_SSSIZE];
+
+  rc = gdxLibraryLoaded();
+  PROTECT(result = allocVector(INTSXP, 1));
+  INTEGER(result)[0] = rc;
+  UNPROTECT(1);
+  if (rc) {
+    Rprintf ("The GDX library has been loaded\n");
+#if 1
+    gdxGetLoadPath (loadPath);
+#else
+    loadPath[0] = '\0';
+#endif
+    Rprintf ("GDX library load path: %s\n",
+             loadPath[0] ? loadPath : "unknown");
+  }
+  else {
+    Rprintf ("The GDX library has been not been loaded\n");
+  }
+  
+  return result;
+} /* igdx */

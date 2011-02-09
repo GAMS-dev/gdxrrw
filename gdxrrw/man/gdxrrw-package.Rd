@@ -19,11 +19,12 @@ Date: \tab 2010-06-22\cr
 License: \tab What license is it under?\cr
 LazyLoad: \tab yes\cr
 }
-It contains mainly four methods
-	1. rgdx('gdxfile', ...)
-	2. wgdx('gdxfile', ...)
-	3. gams('model', ...)
-	4. gdxInfo('gdxfile')
+It contains five methods
+	1. igdx(...)
+	2. rgdx('gdxfile', ...)
+	3. wgdx('gdxfile', ...)
+	4. gams('model', ...)
+	5. gdxInfo('gdxfile')
 }
 \author{Original coding by Rishabh Jain.  Adopted and packaged by
 Steve Dirkse.  Maintainer: <R@gams.com>}
