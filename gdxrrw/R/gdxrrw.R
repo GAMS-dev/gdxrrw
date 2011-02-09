@@ -34,7 +34,7 @@ gams <- function(gms, ...)
 		.External("gams", gms, ...)
 	}
 
-gdxInfo <- function(gdxFile)
+gdxInfo <- function(...)
 	{
-		.External("gdxInfo", gdxFile)
+		.External("gdxInfo", ...)
 	}

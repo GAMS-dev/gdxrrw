@@ -49,7 +49,7 @@ static const char *formatMessage(int errNum);
 #define LINELEN 1024
 #define MAX_STRING 128
 
-gdxHandle_t  gdxHandle = (gdxHandle_t) 0;
+gdxHandle_t gdxHandle = (gdxHandle_t) 0;
 
 typedef char shortStringBuf_t[GMS_SSSIZE];
 
@@ -117,6 +117,8 @@ static int globalGams;
 static int wUEL;
 
 static shortStringBuf_t lastErrMsg;
+
+static char mexPath[512];
 
 static char ID[256] = "$Id$";
 static char strippedID[256];
@@ -4060,8 +4062,8 @@ SEXP gams (SEXP args)
 } /* gams */
 
 
-/*  the gateway routine for gdxInfo.
-    This is very similar to gdxdump that print everything on R command prompt.
+/* the gateway routine for gdxInfo.
+ * This is very similar to gdxdump: it prints everything on R command prompt.
 */
 SEXP gdxInfo (SEXP args)
 {
@@ -4095,14 +4097,28 @@ SEXP gdxInfo (SEXP args)
    * Function should follow specification of
    * rgdx ('gdxFileName')
    * -------------------------------------------------------------------------*/
-  if (arglen != 2) {
+  if (arglen < 1 || arglen > 2) {
     Rprintf("%d entries are entered!\n", arglen-1);
     Rprintf("Input must be according to this specification:\n");
-    Rprintf("(gdx_filename) \n");
+    Rprintf("(gdx_filename)\n");
     error("Incorrect input argument specified.");
   }
 
-  args = CDR(args); fileName = CAR(args);
+  args = CDR(args);   fileName = CAR(args);
+
+  if (1 == arglen) {            /* no arguments: just load GDX and print the version info */
+    rc = gdxCreate (&gdxHandle, msg, sizeof(msg));
+    if (0 == rc) {
+      Rprintf ("Could not create GDX object: %s\n", msg);
+      error("Could not create GDX object");
+    }
+    mexPath[0] = '\0';
+    Rprintf ("* Library location: %s\n", *mexPath ? mexPath : "unknown");
+    gdxGetDLLVersion (gdxHandle, msg);
+    Rprintf ("*  Library version: %s\n", msg);
+    (void) gdxFree (&gdxHandle);
+    return R_NilValue;
+  }
 
   /* Checking that argument is of type string
   */
