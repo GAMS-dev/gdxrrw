@@ -1,0 +1,13 @@
+Some helpful commands:
+assume $rrw is the dir containing the package tree, i.e. the gdxrrw
+directory.
+
+cd $rrw
+R CMD INSTALL -l ~/R/x86_64-redhat-linux-gnu-library/2.11 gdxrrw
+R CMD REMOVE gdxrrw  {to remove, or undo an install}
+R CMD check gdxrrw
+R CMD build gdxrrw
+R CMD build gdxrrw --binary {what we want to avoid user compiling}
+
+> library(gdxrrw)
+
