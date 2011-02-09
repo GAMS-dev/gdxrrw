@@ -14,7 +14,8 @@ version & debugging info.  The display format is copied from gdxdump.
 \references{
 %% ~put references to the literature/web site here ~
 }
-\author{Rishabh Jain}
+\author{Original coding by Rishabh Jain.  Adopted and packaged by
+Steve Dirkse.  Maintainer: <R@gams.com>}
 \note{
 %%  ~~further notes~~
 }

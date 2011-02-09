@@ -3,12 +3,12 @@
 \alias{gdxrrw}
 \docType{package}
 \title{
-This package contain different methods that import/export data between GDX file and R
+This package contains different methods to transfer data between GDX file and R
 }
 \description{
-This package in interface between GAMS and R. It contain
-method to read and write data in the GDX file. Using this 
-pacakge the user can also run gams model with R.
+This package implements an interface between GAMS and R.  It
+  includes functions to transfer data between GDX and R and a function to
+  call gams from within R.
 }
 \details{
 \tabular{ll}{
@@ -19,23 +19,21 @@ Date: \tab 2010-06-22\cr
 License: \tab What license is it under?\cr
 LazyLoad: \tab yes\cr
 }
-It contain mainly four methods
+It contains mainly four methods
 	1. rgdx('gdxfile', ...)
 	2. wgdx('gdxfile', ...)
 	3. gams('model', ...)
 	4. gdxInfo('gdxfile')
 }
-\author{
-Rishabh Jain
-
-Maintainer: Who to complain to <rishabhjain99@gmail.com>
-}
+\author{Original coding by Rishabh Jain.  Adopted and packaged by
+Steve Dirkse.  Maintainer: <R@gams.com>}
 \references{
 Please read document at http://www.gams.com/~steve/gdxmrw.html
 }
-~~ Optionally other standard keywords, one per line, from file KEYWORDS in ~~
-~~ the R documentation directory ~~
 \keyword{ package }
+\keyword{ data }
+\keyword{ optimize }
+\keyword{ interface }
 \seealso{
 ~~ Optional links to other man pages, e.g. ~~
 ~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
