@@ -1459,22 +1459,21 @@ checkForValidData(SEXP val,
   SEXP dims;
   int i, j;
   double *P;
-  int ndims;
-  int ncols, nrows, nuels;
+  int nDimsData, nDimsUels;
+  int ncols, nrows;
   int max = 0;
 
-  nuels = length(uelOut);
+  nDimsUels = length(uelOut);
 
   P = NULL;
   if (TYPEOF(val) == REALSXP) {
     P = REAL(val);
   }
-
   else if (TYPEOF(val) == INTSXP) {
     P = (double*)INTEGER(val);
   }
   else {
-    error("val must me numeric.\n");
+    error(".val must be numeric.\n");
   }
   dims = getAttrib(val, R_DimSymbol);
 
@@ -1485,8 +1484,8 @@ checkForValidData(SEXP val,
     if (dType == parameter) {
       ncols--;
     }
-    if (nuels != ncols) {
-      error("Number of columns in sparse data does not match with uels.");
+    if (nDimsUels != ncols) {
+      error ("Number of columns in sparse data does not match with UEL dimension.");
     }
     for (i = 0; i < ncols; i++) {
       for (j = 0; j < nrows; j++) {
@@ -1511,21 +1510,12 @@ checkForValidData(SEXP val,
   }
   else {
     /* get dimension of full matrix == number of columns in uels */
-    ndims = length(dims);
-    if ( !((nuels == 0 || nuels == 1) && ndims ==2) && nuels != ndims) {
-      error("Number of dimension in full data does not match with uels.");
-    }
-
-    /* special check for vector */
-    if (nuels == 1 && INTEGER(dims)[1] != 1) {
-      error("Vector should have only 1 dimensional column elements.");
-    }
-    /* special check for scalar */
-    if (nuels == 0 && ( INTEGER(dims)[0] != 1 || INTEGER(dims)[1] != 1)) {
-      error("Scalar should have only one element.");
+    nDimsData = length(dims);
+    if (nDimsUels != nDimsData) {
+      error ("Number of dimension in full data does not match number of dimensions in uels.");
     }
     /* number of elements in each dimension == number of elements in UEL
-       for (i = 0; i < (int)nuels; i++) {
+       for (i = 0;  i < nDimsUels;  i++) {
        if ( !( INTEGER(dims)[i] == 1 &&  (int)mxGetN(mxGetCell(uelOut, i )) == 0)
        && INTEGER(dims)[i] > mxGetN(mxGetCell(uelOut, i ))) {
        error("Number of element in full format data exceeds corresponding elements in UEL.");
@@ -2074,7 +2064,6 @@ checkWgdxList(SEXP structure,
     }
   }
 
-  i=0;
   found = 0;
   /* Checking if field data is for "type" */
   for (i = 0; i < infields; i++) {
@@ -2108,7 +2097,6 @@ checkWgdxList(SEXP structure,
     }
   }
 
-  i=0;
   found = 0;
  /* Checking for dimension .dim */
   for (i = 0; i < infields; i++) {
@@ -2153,7 +2141,6 @@ checkWgdxList(SEXP structure,
     }
   }
 
-  i=0;
   found = 0;
   /* Checking for dimension .uels */
   for (i = 0; i < infields; i++) {
@@ -2199,7 +2186,6 @@ checkWgdxList(SEXP structure,
     }
   }
 
-  i=0;
   found = 0;
   /* Checking for dimension .val */
   for (i = 0; i < infields; i++) {
@@ -2208,6 +2194,7 @@ checkWgdxList(SEXP structure,
       break;
     }
   }
+
   if (found == 1) {
     tmp = VECTOR_ELT(structure, i);
     if (fromGAMS == 1 && TYPEOF(tmp) == STRSXP) {
