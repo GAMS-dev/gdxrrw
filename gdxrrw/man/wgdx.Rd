@@ -1,61 +1,33 @@
 \name{wgdx}
 \alias{wgdx}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-Wgdx
-}
+\title{Write R data to GDX}
 \description{
-Write GDX file. 
+  Create a GDX file containing the GAMS data described in the
+  structures \dots.  Note that each structure describes a separate
+  data element - i.e. a set or parameter - all of which are written to
+  a single file.
 }
-\usage{
-wgdx(gdxFile, ...)
-}
-%- maybe also 'usage' for other objects documented here.
+\usage{wgdx(gdxFileNam, ...)}
 \arguments{
-  \item{gdxFile}{
-%%     ~~Describe \code{gdxFile} here~~
+  \item{gdxFile}{the name of the GDX file}
+  \item{\dots}{zero or more structures describing the sets and
+  parameters to write}
 }
-  \item{\dots}{
-%%     ~~Describe \code{\dots} here~~
-}
-}
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
-\value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
-\references{
-%% ~put references to the literature/web site here ~
-}
-\author{
-Rishabh Jain
-}
+\details{}
+\author{Original coding by Rishabh Jain.  Adopted and packaged by
+Steve Dirkse.  Maintainer: \email{R@gams.com}}
 \note{
-%%  ~~further notes~~
+  A common problem is failure to load the external GDX libraries that
+  are required to interface with GDX data.  Use \code{\link{igdx}} to
+  troubleshoot and solve this problem.
 }
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+ \code{\link{igdx}}, \code{\link{rgdx}}, \code{\link{gdxInfo}}
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-function (gdxFile, ...) 
-{
-    .External("wgdx", gdxFile, ...)
-  }
+  data('wgdx1');
+  wgdx('wgdx1.gdx',sc);
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ data }
+\keyword{ optimize }
+\keyword{ interface }

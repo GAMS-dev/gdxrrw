@@ -9,5 +9,9 @@ R CMD check gdxrrw
 R CMD build gdxrrw
 R CMD build gdxrrw --binary {what we want to avoid user compiling}
 
-> library(gdxrrw)
-
+> .First <- function() { library(gdxrrw) ; igdx("/home/steve/leg_alpha/gmstest")}
+> library(gdxrrw)  but this can go in .First as above
+> l2 <- list(name='f');
+> o <- rgdx('trnsport.gdx',l2);
+> o$uels <- NULL
+> wgdx('ttt',o)
