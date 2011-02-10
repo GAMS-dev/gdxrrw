@@ -190,9 +190,8 @@ checkForValidData(SEXP val,
                   dForm_t dForm);
 
 
-char *val2str(gdxHandle_t Tptr,
-              double val,
-              char *s);
+char *
+val2str (gdxHandle_t h, double val, char *s);
 
 void
 checkFileExtension (shortStringBuf_t fileName);
@@ -203,9 +202,7 @@ checkStringLength(const char *str);
 void downCase (char *string);
 
 int
-getNonZeroElements(gdxHandle_t gdxHandle,
-                   int symIdx,
-                   dField_t *dField);
+getNonZeroElements (gdxHandle_t h, int symIdx, dField_t *dField);
 
 SEXP
 compressData(SEXP data,
@@ -377,8 +374,8 @@ callGams (const char *gamsFile)
       }
       /* else warning message */
       else {
-        warning("To change default behavior of 'show', please enter it as 'invisible' or 'normal' \n" );
-        Rprintf("You entered it as %s. \n", consoleType);
+        warning("To change default behavior of 'show', please enter it as 'invisible' or 'normal'\n" );
+        Rprintf("You entered it as %s.\n", consoleType);
       }
     }
   }
@@ -539,8 +536,8 @@ getGlobalUEL(SEXP globalUEL,
 
   /*  else if (TYPEOF(gamso) != VECSXP  && globalGams)
     {
-      warning("To change default behavior, please enter 'gamso' as list. \n" );
-      Rprintf("You entered it as %d. \n", TYPEOF(gamso) );
+      warning("To change default behavior, please enter 'gamso' as list.\n" );
+      Rprintf("You entered it as %d.\n", TYPEOF(gamso) );
       globalGams = 0;
       return R_NilValue;
       } */
@@ -567,7 +564,7 @@ getGlobalUEL(SEXP globalUEL,
           error("Compression is not allowed with Input UEL.");
         }
         if (TYPEOF(tmp) != VECSXP) {
-          Rprintf ("List component 'uels'  must be a list - found %d instead. \n",TYPEOF(tmp));
+          Rprintf ("List component 'uels'  must be a list - found %d instead.\n",TYPEOF(tmp));
           error("Input list component 'uels' must be a list.");
         }
         else {
@@ -705,8 +702,8 @@ getGamsSoln(char *gmsFileName)
       }
       else {
         /* else warning message */
-        warning("To change default behavior of 'form', please enter it as 'full' or 'sparse' \n" );
-        Rprintf("You entered it as %s. \n", gForm);
+        warning("To change default behavior of 'form', please enter it as 'full' or 'sparse'\n" );
+        Rprintf("You entered it as %s.\n", gForm);
       }
     }
 
@@ -729,8 +726,8 @@ getGamsSoln(char *gmsFileName)
       }
       else {
         /* else warning message */
-        warning(" To change default behavior of 'field', please enter it as 'l/m/lo/up/s'. \n" );
-        Rprintf("You entered it as %s. \n", field);
+        warning(" To change default behavior of 'field', please enter it as 'l/m/lo/up/s'.\n" );
+        Rprintf("You entered it as %s.\n", field);
       }
     }
 
@@ -742,8 +739,8 @@ getGamsSoln(char *gmsFileName)
       }
       else {
         /* else warning message */
-        warning("To change default behavior of 'output', please enter it as 'std'. \n" );
-        Rprintf("You entered it as %s. \n", outputStyle);
+        warning("To change default behavior of 'output', please enter it as 'std'.\n" );
+        Rprintf("You entered it as %s.\n", outputStyle);
       }
     }
 
@@ -776,7 +773,7 @@ getGamsSoln(char *gmsFileName)
       Rprintf("GDX symbol %s (index=1, symDim=%d, symType=%d)"
               " is not recognized as set, parameter, variable, or equation\n",
               inputData->name, symDim, symType);
-      error("Invalid symbol. Please check listing file. \n");
+      error("Invalid symbol. Please check listing file.\n");
     }
 
     /* Get global UEL from GDX file */
@@ -868,7 +865,7 @@ getGamsSoln(char *gmsFileName)
     if (inputData->withUel == 0) {
       /* check for non zero elements for variable and equation */
       if (symType == dt_var || symType == dt_equ ) {
-        mrows = getNonZeroElements(gdxHandle, 1, &inputData->dField);
+        mrows = getNonZeroElements (gdxHandle, 1, &inputData->dField);
       }
       /* Creat 2D sparse R array */
       PROTECT(compVal = allocMatrix(REALSXP, mrows, ncols));
@@ -1242,8 +1239,8 @@ int isCompress(void)
 
   /*   if (TYPEOF(gamso) != VECSXP  && globalGams)
        {
-       warning("To change default behavior, please enter 'gamso' as list. \n" );
-       Rprintf("You entered it as %d. \n", TYPEOF(gamso) );
+       warning("To change default behavior, please enter 'gamso' as list.\n" );
+       Rprintf("You entered it as %d.\n", TYPEOF(gamso) );
        globalGams = 0;
        return 0;
        } */
@@ -1271,8 +1268,8 @@ int isCompress(void)
             compress = 0;
           else {
             /* else warning message */
-            warning ("To change default behavior of 'compress', please enter it as 'true' or 'false' \n" );
-            Rprintf ("You entered it as %s. \n", str);
+            warning ("To change default behavior of 'compress', please enter it as 'true' or 'false'\n" );
+            Rprintf ("You entered it as %s.\n", str);
           }
         }
       } /* TYPEOF=STRSXP */
@@ -1311,8 +1308,8 @@ char *getGlobalString (const char *globName, shortStringBuf_t result)
   }
   /*  else if (TYPEOF(gamso) != VECSXP  && globalGams == 1)
     {
-      warning("To change default behavior, please enter 'gamso' as list. \n");
-      Rprintf("You entered it as %d. \n", TYPEOF(gamso) );
+      warning("To change default behavior, please enter 'gamso' as list.\n");
+      Rprintf("You entered it as %d.\n", TYPEOF(gamso) );
       globalGams = 0;
       return NULL;
       }*/
@@ -1336,7 +1333,7 @@ char *getGlobalString (const char *globName, shortStringBuf_t result)
       }
       else {
         warning("To change default behavior of %s, please enter it as string.\n", globName );
-        Rprintf("You entered it as %d. \n", TYPEOF(tmp));
+        Rprintf("You entered it as %d.\n", TYPEOF(tmp));
         return NULL;
       }
     }
@@ -1480,7 +1477,7 @@ checkForValidData(SEXP val,
     P = (double*)INTEGER(val);
   }
   else {
-    error("val must me numeric. \n");
+    error("val must me numeric.\n");
   }
   dims = getAttrib(val, R_DimSymbol);
 
@@ -1542,24 +1539,23 @@ checkForValidData(SEXP val,
 
 
 /* Only called from gdxInfo */
-char *val2str(gdxHandle_t Tptr,
-              double val,
-              char *s)
+char *
+val2str (gdxHandle_t h, double val, char *s)
 {
   int sv;
 
-  if (gdxAcronymName(Tptr, val, s)) {
+  if (gdxAcronymName(h, val, s)) {
     return s;
   }
   else {
-    gdxMapValue(Tptr, val, &sv);
+    gdxMapValue(h, val, &sv);
     if (sv_normal != sv)
       sprintf(s,"%s", gmsSVText[sv]);
     else
       sprintf(s,"%g", val);
     return s;
   }
-}
+} /* val2str */
 
 
 char *
@@ -1655,18 +1651,16 @@ void downCase (char *s)
 
 /* Return number of non - Zero elements of variable/equation */
 int
-getNonZeroElements(gdxHandle_t gdxHandle,
-                   int symIdx,
-                   dField_t *dField)
+getNonZeroElements (gdxHandle_t h, int symIdx, dField_t *dField)
 {
   int nRecs, changeIdx, i, nonZero;
   gdxUelIndex_t uels;
   gdxValues_t values;
 
   nonZero = 0;
-  gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
+  gdxDataReadRawStart (h, symIdx, &nRecs);
   for (i = 0; i < nRecs; i++) {
-    gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+    gdxDataReadRaw (h, uels, values, &changeIdx);
     if (values[dField[0]] != 0) {
       nonZero++;
     }
@@ -1828,7 +1822,7 @@ checkForRepetition(SEXP bufferUel)
   i = 0;
   for (i = 0; i < nRec - 1; i++) {
     if (0 == strcmp(elements[i], elements[i+1])) {
-      Rprintf("Input UEL have repeated entry of '%s' \n",
+      Rprintf("Input UEL have repeated entry of '%s'\n",
               elements[i]);
       error("Repetition in input UEL is not allowed.");
     }
@@ -1927,7 +1921,7 @@ registerInputUEL(SEXP uelOut,
       rc = gdxUELRegisterStr (gdxHandle, uelString, &gi);
       assert(rc);
       if (rc != 1) {
-        error ("could not register: %s \n", uelString);
+        error ("could not register: %s\n", uelString);
       }
       sprintf(bufChar, "%d", gi);
       SET_STRING_ELT(subBuffer, j, mkChar(bufChar));
@@ -1979,7 +1973,7 @@ checkWgdxList(SEXP structure,
   lstName = getAttrib(structure, R_NamesSymbol);
   if (lstName == R_NilValue) {
     Rprintf("Input list must be named\n");
-    Rprintf("Valid names are: 'name', 'type', 'form', 'val', 'uels', 'dim', 'ts'. \n");
+    Rprintf("Valid names are: 'name', 'type', 'form', 'val', 'uels', 'dim', 'ts'.\n");
     error("Please try again with named input  list.\n");
   }
   for (i=0;  i < infields;  i++) {
@@ -1992,8 +1986,8 @@ checkWgdxList(SEXP structure,
           || (0 == strcmp("form", compName ))
           || (0 == strcmp("val", compName ))
           || (0 == strcmp("ts", compName ))) ) {
-      Rprintf ("Input lsit components must be according to this specification: \n");
-      Rprintf ("'name', 'type', 'val', 'dim', 'uels', 'form', 'ts'. \n");
+      Rprintf ("Input lsit components must be according to this specification:\n");
+      Rprintf ("'name', 'type', 'val', 'dim', 'uels', 'form', 'ts'.\n");
       error("Incorrect type of input list component '%s' specified.",
             compName);
     }
@@ -2020,7 +2014,7 @@ checkWgdxList(SEXP structure,
       strcpy( data[k]->name, CHAR(STRING_ELT(tmp, 0)) );
     }
     else {
-      Rprintf ("List component 'name' must be a string - found %d instead \n",
+      Rprintf ("List component 'name' must be a string - found %d instead\n",
                TYPEOF(tmp) );
       error("Input list component 'name' must be string.\n");
     }
@@ -2045,7 +2039,7 @@ checkWgdxList(SEXP structure,
       data[k]->withTs = 1;
     }
     else {
-      Rprintf ("List component 'ts' must be a string - found %d instead \n",
+      Rprintf ("List component 'ts' must be a string - found %d instead\n",
                TYPEOF(tmp) );
       error("Input list component 'ts' must be string.\n");
     }
@@ -2064,7 +2058,7 @@ checkWgdxList(SEXP structure,
   if (found == 1) {
     tmp = VECTOR_ELT(structure, i);
     if (TYPEOF(tmp) != STRSXP) {
-      Rprintf ("List component 'form' must be a string - found %d instead \n",
+      Rprintf ("List component 'form' must be a string - found %d instead\n",
                TYPEOF(tmp));
       error("Input list component 'form' must be string");
     }
@@ -2096,7 +2090,7 @@ checkWgdxList(SEXP structure,
   if (found == 1) {
     tmp = VECTOR_ELT(structure, i);
     if ( TYPEOF(tmp) != STRSXP) {
-      Rprintf ("List component 'type' must be a string - found %d instead \n",
+      Rprintf ("List component 'type' must be a string - found %d instead\n",
                TYPEOF(tmp));
       error("Input list component 'type' must be string.\n");
     }
@@ -2156,7 +2150,7 @@ checkWgdxList(SEXP structure,
       data[k]->dim = (int) REAL(tmp)[0];
     }
     else {
-      Rprintf ("List component 'dim' must be a numeric - found %d instead \n",
+      Rprintf ("List component 'dim' must be a numeric - found %d instead\n",
                TYPEOF(tmp));
       error("Input list component 'dim' must be integer.\n");
     }
@@ -2175,7 +2169,7 @@ checkWgdxList(SEXP structure,
   if (found == 1) {
     tmp = VECTOR_ELT(structure, i);
     if (TYPEOF(tmp) != VECSXP) {
-      Rprintf ("List component 'uels' must be a un-named list - found %d instead \n",
+      Rprintf ("List component 'uels' must be a un-named list - found %d instead\n",
                TYPEOF(tmp));
       error("Input list component 'uels' must be unnamed list.\n");
     }
@@ -2275,7 +2269,7 @@ checkWgdxList(SEXP structure,
       }
     }
     else {
-      Rprintf("List component 'val' must be a double matrix - found %d instead. \n",
+      Rprintf("List component 'val' must be a double matrix - found %d instead.\n",
               TYPEOF(tmp));
       error("Input list component 'val' must be double matrix");
     }
@@ -2334,7 +2328,7 @@ checkRgdxList (const SEXP lst, struct rgdxStruct *data)
 
   if (lstName == R_NilValue) {
     Rprintf("Input list must be named\n");
-    Rprintf("Valid names are: 'name', 'form', 'uels', 'compress', 'dim', 'field', 'ts', 'te'. \n");
+    Rprintf("Valid names are: 'name', 'form', 'uels', 'compress', 'dim', 'field', 'ts', 'te'.\n");
     error("Please try again with named input list.\n");
   }
   for (i=0; i < nField; i++) {
@@ -2348,8 +2342,8 @@ checkRgdxList (const SEXP lst, struct rgdxStruct *data)
            || (0 == strcmp("field", compName ))
            || (0 == strcmp("te", compName ))
            || (0 == strcmp("ts", compName ))) ) {
-      Rprintf ("Input lsit components must be according to this specification: \n");
-      Rprintf ("'name', 'type', 'val', 'dim', 'uels', 'form', 'ts'. \n");
+      Rprintf ("Input lsit components must be according to this specification:\n");
+      Rprintf ("'name', 'type', 'val', 'dim', 'uels', 'form', 'ts'.\n");
       error("Incorrect type of input list component '%s' specified.",
             compName);
     }
@@ -2371,7 +2365,7 @@ checkRgdxList (const SEXP lst, struct rgdxStruct *data)
       strcpy( data->name, CHAR(STRING_ELT(tmp, 0)) );
     }
     else {
-      Rprintf ("List component 'name' must be a string - found %d instead \n",
+      Rprintf ("List component 'name' must be a string - found %d instead\n",
                TYPEOF(tmp) );
       error("Input list component 'name' must be string.\n");
     }
@@ -2392,7 +2386,7 @@ checkRgdxList (const SEXP lst, struct rgdxStruct *data)
   if (found == 1) {
     tmp = VECTOR_ELT(lst, i);
     if (TYPEOF(tmp) != STRSXP ) {
-      Rprintf ("List component 'form' must be a string - found %d instead \n",
+      Rprintf ("List component 'form' must be a string - found %d instead\n",
                TYPEOF(tmp) );
       error("Input list component 'form' must be string");
     }
@@ -2448,7 +2442,7 @@ checkRgdxList (const SEXP lst, struct rgdxStruct *data)
       }
     }
     else {
-      Rprintf ("List component 'compress' must be either string or logical - found %d instead \n",
+      Rprintf ("List component 'compress' must be either string or logical - found %d instead\n",
                TYPEOF(tmp) );
       error("Input list component 'compress' must be either string or logical");
     }
@@ -2467,7 +2461,7 @@ checkRgdxList (const SEXP lst, struct rgdxStruct *data)
   if (found == 1) {
     tmp = VECTOR_ELT(lst, i);
     if (TYPEOF(tmp) != STRSXP ) {
-      Rprintf ("List component 'field' must be a string - found %d instead \n",
+      Rprintf ("List component 'field' must be a string - found %d instead\n",
                TYPEOF(tmp) );
       error("Input list component 'field' must be string");
     }
@@ -2529,7 +2523,7 @@ checkRgdxList (const SEXP lst, struct rgdxStruct *data)
       }
     }
     else {
-      Rprintf ("List component 'ts' must be either string or logical - found %d instead \n",
+      Rprintf ("List component 'ts' must be either string or logical - found %d instead\n",
                TYPEOF(tmp) );
       error("Input list component 'ts' must be either string or logical");
     }
@@ -2571,7 +2565,7 @@ checkRgdxList (const SEXP lst, struct rgdxStruct *data)
       }
     }
     else {
-      Rprintf ("List component 'te' must be either string or logical - found %d instead \n",
+      Rprintf ("List component 'te' must be either string or logical - found %d instead\n",
                TYPEOF(tmp) );
       error("Input list component 'te' must be either string or logical");
     }
@@ -3024,7 +3018,7 @@ SEXP rgdx (SEXP args)
   if (arglen > 3 || arglen < 2) {
     Rprintf("%d entries are entered!\n", arglen-1);
     Rprintf("Input must be according to this specification:\n");
-    Rprintf("(gdx_filename, struct) \n");
+    Rprintf("(gdx_filename, struct)\n");
     error("Incorrect input argument specified.");
   }
 
@@ -3831,7 +3825,7 @@ SEXP gams (SEXP args)
   }
   fp = fopen (gmsFileName,"r");
   if (fp == NULL) {
-    error("Cannot find or open %s file. \n", gmsFileName);
+    error("Cannot find or open %s file.\n", gmsFileName);
   }
   else {
     fclose(fp);
@@ -3848,8 +3842,8 @@ SEXP gams (SEXP args)
         writeData = 0;
       }
       else {
-        warning("To change default behavior of 'write_data', please enter it as 'n' or 'N' \n" );
-        Rprintf("You entered it as %s. \n", writeDataStr);
+        warning("To change default behavior of 'write_data', please enter it as 'n' or 'N'\n" );
+        Rprintf("You entered it as %s.\n", writeDataStr);
       }
     }
   }
@@ -3890,7 +3884,6 @@ SEXP gdxInfo (SEXP args)
     FileVersion[GMS_SSSIZE], FileProducer[GMS_SSSIZE],
     sName[GMS_SSSIZE], sName2[GMS_SSSIZE], sText[GMS_SSSIZE], UelName[GMS_SSSIZE];
 
-  gdxHandle_t Tptr=NULL;
   char DomainIDs[GMS_MAX_INDEX_DIM][GMS_SSSIZE];
   char *DP[GMS_MAX_INDEX_DIM];
   double
@@ -3943,164 +3936,170 @@ SEXP gdxInfo (SEXP args)
 
   checkFileExtension (gdxFileName);
 
-  gdxCreate (&Tptr,msg,sizeof(msg));
-  if (NULL==Tptr) {
-    Rprintf("Could not create GDX object: %s \n", msg);
+  rc = gdxCreate (&gdxHandle, msg, sizeof(msg));
+  if (0 == rc) {
+    Rprintf ("Error loading the GDX API\n");
+    Rprintf ("%s\n", msg);
+    error("Error loading the GDX API: %s", msg);
   }
 
-  rc = gdxOpenRead(Tptr, gdxFileName, &i);
-  if (0==rc) {
-    gdxErrorStr(Tptr,i,msg);
-    Rprintf("Could not read GDX file %s: %s (rc=%d) \n", gdxFileName, msg, rc);
+  rc = gdxOpenRead (gdxHandle, gdxFileName, &i);
+  if (0 == rc) {
+    gdxErrorStr (gdxHandle, i, msg);
+    Rprintf("Could not read GDX file %s: %s (rc=%d)\n", gdxFileName, msg, rc);
   }
 
-  rc = gdxGetLastError(Tptr);
+  rc = gdxGetLastError (gdxHandle);
   if (rc) {
-    gdxErrorStr(Tptr,rc,msg);
-    Rprintf("Problems processing GDX file %s: %s (rc=%d) \n", gdxFileName, msg, rc);
+    gdxErrorStr (gdxHandle, rc, msg);
+    Rprintf ("Problems processing GDX file %s: %s (rc=%d)\n",
+             gdxFileName, msg, rc);
   }
 
-  gdxFileVersion(Tptr, FileVersion, FileProducer);
-  gdxSystemInfo(Tptr,&NrSy,&NrUel);
-  Rprintf("*  File version   : %s \n",FileVersion);
-  Rprintf("*  Producer       : %s \n",FileProducer);
-  Rprintf("*  Symbols        : %d \n",NrSy);
-  Rprintf("*  Unique Elements: %d \n",NrUel);
+  gdxFileVersion (gdxHandle, FileVersion, FileProducer);
+  gdxSystemInfo (gdxHandle, &NrSy, &NrUel);
+  Rprintf("*  File version   : %s\n", FileVersion);
+  Rprintf("*  Producer       : %s\n", FileProducer);
+  Rprintf("*  Symbols        : %d\n", NrSy);
+  Rprintf("*  Unique Elements: %d\n", NrUel);
 
   /* Acroynms */
-  for (i=1; i<=gdxAcronymCount(Tptr); i++) {
-    gdxAcronymGetInfo(Tptr, i, sName, sText, &rc);
+  for (i = 1;  i <= gdxAcronymCount (gdxHandle);  i++) {
+    gdxAcronymGetInfo (gdxHandle, i, sName, sText, &rc);
     Rprintf("Acronym %s", sName);
     if (strlen(sText))
-      printf(" '%s'", sText);
-    Rprintf("; \n");
+      Rprintf(" '%s'", sText);
+    Rprintf(";\n");
   }
 
   /* Symbolinfo */
-  Rprintf("$ontext \n");
-  for (i=1; i<=NrSy; i++) {
-    gdxSymbolInfo(Tptr, i, sName, &ADim, &ATyp);
-    gdxSymbolInfoX(Tptr, i, &ACount, &rc, sText);
-    Rprintf("%-15s %3d %-12s %s \n", sName, ADim, gmsGdxTypeText[ATyp],sText);
+  Rprintf ("$ontext\n");
+  for (i = 1;  i <= NrSy;  i++) {
+    gdxSymbolInfo (gdxHandle, i, sName, &ADim, &ATyp);
+    gdxSymbolInfoX (gdxHandle, i, &ACount, &rc, sText);
+    Rprintf ("%-15s %3d %-12s %s\n", sName, ADim, gmsGdxTypeText[ATyp], sText);
   }
-  Rprintf("$offtext \n");
+  Rprintf ("$offtext\n");
 
-  Rprintf("$onempty onembedded \n");
+  Rprintf ("$onempty onembedded\n");
   dn = NULL;
-  for (i=1; i<=NrSy; i++) {
+  for (i = 1;  i <= NrSy;  i++) {
+    gdxSymbolInfo (gdxHandle, i, sName, &ADim, &ATyp);
+    gdxSymbolInfoX (gdxHandle, i, &ACount, &AUser, sText);
 
-    gdxSymbolInfo(Tptr, i, sName, &ADim, &ATyp);
-    gdxSymbolInfoX(Tptr, i, &ACount, &AUser, sText);
-
-    if (GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp) Rprintf("$ontext \n");
+    if (GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp)
+      Rprintf ("$ontext\n");
 
     if (GMS_DT_VAR == ATyp) {
       if (AUser < 0 || AUser>=GMS_VARTYPE_MAX)
         AUser = GMS_VARTYPE_FREE;
-      memcpy(dv,gmsDefRecVar[AUser],GMS_VAL_MAX*sizeof(double));
+      memcpy (dv, gmsDefRecVar[AUser], GMS_VAL_MAX*sizeof(double));
       dn = (char *) gmsVarTypeText[AUser];
     }
     else if (GMS_DT_EQU == ATyp) {
       if (AUser < 0 || AUser>=GMS_EQUTYPE_MAX)
         AUser = GMS_EQUTYPE_E;
-      memcpy(dv,gmsDefRecEqu[AUser],GMS_VAL_MAX*sizeof(double));
+      memcpy (dv, gmsDefRecEqu[AUser], GMS_VAL_MAX*sizeof(double));
     }
     else
       dv[GMS_VAL_LEVEL] = 0.0;
 
     if (0 == ADim && GMS_DT_PAR == ATyp) /* Scalar */
-      Rprintf("Scalar");
+      Rprintf ("Scalar");
     else {
       if (GMS_DT_VAR == ATyp)
-        printf("%s ", dn);
-      Rprintf("%s",gmsGdxTypeText[ATyp]);
+        Rprintf ("%s ", dn);
+      Rprintf ("%s", gmsGdxTypeText[ATyp]);
     }
     if (GMS_DT_ALIAS == ATyp) {
-      gdxSymbolInfo(Tptr, AUser, sName2, &j, &ATyp2);
-      Rprintf(" (%s, %s);n", sName, sName2);
+      gdxSymbolInfo (gdxHandle, AUser, sName2, &j, &ATyp2);
+      Rprintf (" (%s, %s);\n", sName, sName2);
     }
     else {
       Rprintf(" %s", sName);
       if (ADim > 0) {
-        gdxSymbolGetDomain(Tptr, i, Keys);
-        Rprintf("("); for (j=0; j<ADim; j++) {
+        gdxSymbolGetDomain (gdxHandle, i, Keys);
+        Rprintf ("(");
+        for (j = 0;  j < ADim;  j++) {
           if (Keys[j]==0)
-            strcpy(sName,"*");
+            strcpy (sName,"*");
           else
-            gdxSymbolInfo(Tptr, Keys[j], sName2, &AUser2, &ATyp2);
+            gdxSymbolInfo (gdxHandle, Keys[j], sName2, &AUser2, &ATyp2);
           if (j < ADim-1)
-            Rprintf("%s,",sName);
+            Rprintf ("%s,", sName);
           else
-            Rprintf("%s)",sName);
+            Rprintf ("%s)", sName);
         }
       }
-      if (strlen(sText)) Rprintf(" '%s'", sText);
+      if (strlen(sText))
+        Rprintf(" '%s'", sText);
     }
     if (0 == ACount) {
       if (0 == ADim && GMS_DT_PAR == ATyp) /* Scalar */
-        Rprintf(" / 0.0 /;n");
+        Rprintf (" / 0.0 /;\n");
       else if (GMS_DT_ALIAS != ATyp)
-        Rprintf(" / /; \n");
+        Rprintf (" / /;\n");
     }
     else {
-      Rprintf("/ \n");
-      gdxDataReadRawStart (Tptr, i, &NRec);
-      while (gdxDataReadRaw(Tptr,Keys,Vals,&FDim)) {
+      Rprintf ("/\n");
+      gdxDataReadRawStart (gdxHandle, i, &NRec);
+      while (gdxDataReadRaw (gdxHandle, Keys, Vals, &FDim)) {
         if ((GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp) && 0 == memcmp(Vals,dv,GMS_VAL_MAX*sizeof(double))) /* all default records */
           continue;
         if (GMS_DT_PAR == ATyp && 0.0 == Vals[GMS_VAL_LEVEL])
           continue;
-        for (j=1; j<=ADim; j++) {
-          if (1==gdxUMUelGet(Tptr, Keys[j-1], UelName, &IDum))
-            Rprintf("'%s'", UelName);
+        for (j = 1;  j <= ADim;  j++) {
+          if (1 == gdxUMUelGet (gdxHandle, Keys[j-1], UelName, &IDum))
+            Rprintf ("'%s'", UelName);
           else {
-            Rprintf("L__",Keys[j-1]); BadUels++;
+            Rprintf ("L__", Keys[j-1]);
+            BadUels++;
           }
           if (j < ADim)
-            printf (".");
+            Rprintf (".");
         }
         if (GMS_DT_PAR == ATyp)
-          Rprintf(" %s \n", val2str(Tptr, Vals[GMS_VAL_LEVEL], msg));
+          Rprintf(" %s\n", val2str(gdxHandle, Vals[GMS_VAL_LEVEL], msg));
         else if (GMS_DT_SET == ATyp)
           if (Vals[GMS_VAL_LEVEL]) {
             j = (int) Vals[GMS_VAL_LEVEL];
-            gdxGetElemText(Tptr, j, msg, &IDum);
-            Rprintf(" '%s' \n", msg);
+            gdxGetElemText (gdxHandle, j, msg, &IDum);
+            Rprintf (" '%s'\n", msg);
           }
           else
-            Rprintf(" \n");
+            Rprintf ("\n");
         else if (GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp) {
-          Rprintf(" .");
-          c='(';
-          for (j=GMS_VAL_LEVEL; j<GMS_VAL_MAX; j++) {
+          Rprintf (" .");
+          c = '(';
+          for (j = GMS_VAL_LEVEL; j < GMS_VAL_MAX;  j++) {
             if (Vals[j] != dv[j]) {
               if (GMS_VAL_SCALE == j && GMS_DT_VAR == ATyp &&
                   AUser != GMS_VARTYPE_POSITIVE && AUser != GMS_VARTYPE_NEGATIVE && AUser != GMS_VARTYPE_FREE)
-                Rprintf("%c prior %s", c, val2str(Tptr, Vals[GMS_VAL_SCALE], msg));
+                Rprintf ("%c prior %s", c, val2str (gdxHandle, Vals[GMS_VAL_SCALE], msg));
               else
-                Rprintf("%c %s %s", c, gmsValTypeText[j]+1, val2str(Tptr, Vals[j], msg));
+                Rprintf ("%c %s %s", c, gmsValTypeText[j]+1, val2str(gdxHandle, Vals[j], msg));
               if ('(' == c)
                 c = ',';
             }
           }
-          Rprintf(" ) \n");
+          Rprintf (" )\n");
         }
       }
     }
-    Rprintf("/; \n");
-    j=1;
-    while (gdxSymbolGetComment(Tptr, i, j++, msg))
-      printf("* %s \n", msg);
+    Rprintf ("/;\n");
+    j = 1;
+    while (gdxSymbolGetComment (gdxHandle, i, j++, msg))
+      Rprintf ("* %s\n", msg);
     if (GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp)
-      printf("$offtext \n");
-    Rprintf(" \n");
+      Rprintf ("$offtext\n");
+    Rprintf("\n");
   }
-  Rprintf("$offempty offembedded \n");
+  Rprintf ("$offempty offembedded\n");
 
   if (BadUels > 0)
-    Rprintf("**** %d reference(s) to unique elements without a string representation \n", BadUels);
+    Rprintf("**** %d reference(s) to unique elements without a string representation\n", BadUels);
 
-  gdxFree(&Tptr);
+  gdxFree (&gdxHandle);
 
   return R_NilValue;
 } /* gdxInfo */
