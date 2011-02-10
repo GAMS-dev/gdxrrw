@@ -43,10 +43,10 @@ typedef void (GDX_CALLCONV *gdxGetLoadPath_t) (char *s);
 GDX_FUNCPTR(gdxGetLoadPath);
 
 #if defined(_WIN32)
-#include <windows.h>
+# include <windows.h>
 static const char *formatMessage(int errNum);
 #else
-#include <sys/wait.h>
+# include <sys/wait.h>
 #endif
 
 #define LINELEN 1024
@@ -249,6 +249,8 @@ writeGdx(char *fileName,
          SEXP *argList,
          int fromGAMS);
 
+static void
+loadGDX (void);
 
 /*-------------------- Method exposed to R -----------------------*/
 
@@ -753,18 +755,13 @@ getGamsSoln(char *gmsFileName)
     }
     fclose(fin);
 
-    /* ---- load the GDX API ---- */
-    rc = gdxGetReady (msgBuf, sizeof(msgBuf));
-    if (! rc) {
-      Rprintf ("Error loading the GDX API\n");
-      Rprintf ("%s\n", msgBuf);
-      sprintf (buf, "Error loading the GDX API: %s", msgBuf);
-      error (buf);
-    }
+    loadGDX();
     rc = gdxCreate (&gdxHandle, msgBuf, sizeof(msgBuf));
+    if (0 == rc)
+      error ("Error creating GDX object: %s", msgBuf);
     rc = gdxOpenRead (gdxHandle, gdxFile, &errNum);
     if (errNum || 0 == rc) {
-      error("Could not gdx file with gdxOpenRead");
+      error ("Could not open gdx file with gdxOpenRead");
     }
 
     gdxSymbolInfo (gdxHandle, 1, inputData->name, &symDim, &symType);
@@ -2656,19 +2653,10 @@ writeGdx(char *gdxFileName,
     }
   }
 
-  rc = gdxGetReady (msgBuf, sizeof(msgBuf));
-  if (! rc) {
-    Rprintf ("Error loading the GDX API\n");
-    Rprintf ("%s\n", msgBuf);
-    error("Error loading the GDX API: %s",
-          msgBuf);
-  }
+  loadGDX();
   rc = gdxCreate (&gdxHandle, msgBuf, sizeof(msgBuf));
-  if (! rc) {
-    Rprintf ("Error loading the GDX API\n");
-    Rprintf ("%s\n", msgBuf);
-    error("Error loading the GDX API: %s", msgBuf);
-  }
+  if (0 == rc)
+    error ("Error creating GDX object: %s", msgBuf);
 
   if (fromGAMS == 1) {
     gdxFileName = "matdata.gdx";
@@ -2953,6 +2941,33 @@ writeGdx(char *gdxFileName,
   UNPROTECT(wAlloc);
 } /* writeGdx */
 
+static void
+loadGDX (void)
+{
+  shortStringBuf_t msg;
+  int rc;
+
+  if (gdxLibraryLoaded())
+    return;                     /* all done already */
+  rc = gdxGetReady (msg, sizeof(msg));
+  if (0 == rc) {
+    Rprintf ("Error loading the GDX API\n");
+    Rprintf ("%s\n", msg);
+    Rprintf ("Hint: try calling igdx() with the name of the GAMS system directory\n");
+    Rprintf ("      before calling this routine.\n");
+#if defined(_WIN32)
+    Rprintf ("      You can also add the GAMS system directory to the PATH.\n");
+#elif defined(__APPLE__)
+    Rprintf ("      You can also add the GAMS system directory to the PATH\n");
+    Rprintf ("      and to DYLD_LIBRARY_PATH.\n");
+#else
+    Rprintf ("      You can also add the GAMS system directory to the PATH\n");
+    Rprintf ("      and to LD_LIBRARY_PATH.\n");
+#endif
+    error ("Error loading the GDX API: %s", msg);
+  }
+  return;
+} /* loadGDX */
 
 /* ---------------------------- rgdx -----------------------------------
  * This is the main gateway function
@@ -3082,15 +3097,10 @@ SEXP rgdx (SEXP args)
     }
   }
 
-  /* ---- load the GDX API ---- */
-  rc = gdxGetReady (msgBuf, sizeof(msgBuf));
-  if (! rc) {
-    Rprintf ("Error loading the GDX API\n");
-    Rprintf ("%s\n", msgBuf);
-    sprintf (buf, "Error loading the GDX API: %s", msgBuf);
-    error (buf);
-  }
+  loadGDX();
   rc = gdxCreate (&gdxHandle, msgBuf, sizeof(msgBuf));
+  if (0 == rc)
+    error ("Error creating GDX object: %s", msgBuf);
   rc = gdxOpenRead (gdxHandle, gdxFileName, &errNum);
   if (errNum || 0 == rc) {
     error("Could not gdx file with gdxOpenRead");
@@ -3874,6 +3884,7 @@ SEXP gams (SEXP args)
 */
 SEXP gdxInfo (SEXP args)
 {
+  const char *funcName = "gdxInfo";
   SEXP fileName;
   int arglen;
   shortStringBuf_t gdxFileName;
@@ -3895,29 +3906,24 @@ SEXP gdxInfo (SEXP args)
 
   GDXSTRINDEXPTRS_INIT(DomainIDs,DP);
 
-
-  /* Due to some reason length is always equal to actual length plus 1 */
+  /* first arg is function name - ignore it */
   arglen = length(args);
 
   /* ----------------- Check proper number of inputs ------------
    * Function should follow specification of
    * rgdx ('gdxFileName')
-   * -------------------------------------------------------------------------*/
+   * -----------------------------------------------------------------------*/
   if (arglen < 1 || arglen > 2) {
-    Rprintf("%d entries are entered!\n", arglen-1);
-    Rprintf("Input must be according to this specification:\n");
-    Rprintf("(gdx_filename)\n");
-    error("Incorrect input argument specified.");
+    Rprintf ("usage: %s(<gdxFileName>)\n", funcName);
+    error ("usage: gdxInfo(<gdxFileName>) - incorrect arg count");
   }
 
-  args = CDR(args);   fileName = CAR(args);
-
-  if (1 == arglen) {            /* no arguments: just load GDX and print the version info */
+  loadGDX();
+  if (1 == arglen) {
+    /* no arguments: just load GDX and print the version info */
     rc = gdxCreate (&gdxHandle, msg, sizeof(msg));
-    if (0 == rc) {
-      Rprintf ("Could not create GDX object: %s\n", msg);
-      error("Could not create GDX object");
-    }
+    if (0 == rc)
+      error ("Error creating GDX object: %s", msg);
     mexPath[0] = '\0';
     Rprintf ("* Library location: %s\n", *mexPath ? mexPath : "unknown");
     gdxGetDLLVersion (gdxHandle, msg);
@@ -3926,27 +3932,26 @@ SEXP gdxInfo (SEXP args)
     return R_NilValue;
   }
 
+  fileName = CADR(args);
   /* Checking that argument is of type string */
   if (TYPEOF(fileName) != STRSXP) {
-    Rprintf("Input argument must be string\n");
-    error("Wrong Argument Type");
+    Rprintf ("usage: %s(<gdxFileName>)\n", funcName);
+    Rprintf ("  gdxFileName argument must be a string\n");
+    error ("usage: gdxInfo(<gdxFileName>) - gdxFileName must be a string");
   }
 
   (void) CHAR2ShortStr (CHAR(STRING_ELT(fileName, 0)), gdxFileName);
 
   checkFileExtension (gdxFileName);
 
+  loadGDX();
   rc = gdxCreate (&gdxHandle, msg, sizeof(msg));
-  if (0 == rc) {
-    Rprintf ("Error loading the GDX API\n");
-    Rprintf ("%s\n", msg);
-    error("Error loading the GDX API: %s", msg);
-  }
-
+  if (0 == rc)
+    error ("Error creating GDX object: %s", msg);
   rc = gdxOpenRead (gdxHandle, gdxFileName, &i);
   if (0 == rc) {
     gdxErrorStr (gdxHandle, i, msg);
-    Rprintf("Could not read GDX file %s: %s (rc=%d)\n", gdxFileName, msg, rc);
+    error ("Could not read GDX file %s: %s (rc=%d)\n", gdxFileName, msg, rc);
   }
 
   rc = gdxGetLastError (gdxHandle);
