@@ -1,20 +1,19 @@
 \name{igdx}
 \alias{igdx}
-\title{igdx}
+\title{Initialize the External GDX Libraries}
 \description{
   Initialize (i.e. load) the external GDX libraries that are required
   to interface with GDX data, and report on the status of the
   initialization.
 }
-\usage{igdx(gamsSysDir)
-}
+\usage{igdx(gamsSysDir)}
 \arguments{
   \item{gamsSysDir}{a directory containing the external GDX libraries,
   typically the GAMS system directory.  If this argument is omitted,
   no loading is done but we still report on the initialization
   status.}
 }
-\author{Steve Dirkse.  Maintainer: <R@gams.com>}
+\author{Steve Dirkse.  Maintainer: \email{R@gams.com}}
 \note{
   The directory containing the external GDX libraries is also where we
   look for the gams executable, so calling \code{igdx} prior to
