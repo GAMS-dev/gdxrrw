@@ -1983,7 +1983,7 @@ checkWgdxList(SEXP structure,
           || (0 == strcmp("form", compName ))
           || (0 == strcmp("val", compName ))
           || (0 == strcmp("ts", compName ))) ) {
-      Rprintf ("Input lsit components must be according to this specification:\n");
+      Rprintf ("Input list components must be according to this specification:\n");
       Rprintf ("'name', 'type', 'val', 'dim', 'uels', 'form', 'ts'.\n");
       error("Incorrect type of input list component '%s' specified.",
             compName);
@@ -2094,7 +2094,7 @@ checkWgdxList(SEXP structure,
     tmpName = CHAR(STRING_ELT(tmp, 0));
     if (strlen(tmpName) == 0) {
       Rprintf("Before changing to lower");
-      error("Input lsit component 'type' must be either 'set' or 'parameter'.\n");
+      error("Input list component 'type' must be either 'set' or 'parameter'.\n");
     }
     if (0 == strcasecmp("set", tmpName) ) {
       data[k]->dType = set;
@@ -2339,7 +2339,7 @@ checkRgdxList (const SEXP lst, struct rgdxStruct *data)
            || (0 == strcmp("field", compName ))
            || (0 == strcmp("te", compName ))
            || (0 == strcmp("ts", compName ))) ) {
-      Rprintf ("Input lsit components must be according to this specification:\n");
+      Rprintf ("Input list components must be according to this specification:\n");
       Rprintf ("'name', 'type', 'val', 'dim', 'uels', 'form', 'ts'.\n");
       error("Incorrect type of input list component '%s' specified.",
             compName);
@@ -2389,7 +2389,7 @@ checkRgdxList (const SEXP lst, struct rgdxStruct *data)
     }
     tmpName = CHAR(STRING_ELT(tmp, 0));
     if (strlen(tmpName) == 0) {
-      error("Input lsit component 'form' must be either 'full' or 'sparse'.");
+      error("Input list component 'form' must be either 'full' or 'sparse'.");
     }
     if (0 == strcasecmp("full", tmpName)) {
       data->dForm = full;
@@ -2417,7 +2417,7 @@ checkRgdxList (const SEXP lst, struct rgdxStruct *data)
     if (TYPEOF(tmp) == STRSXP) {
       tmpName = CHAR(STRING_ELT(tmp, 0));
       if (strlen(tmpName) == 0) {
-        error("Input lsit component 'compress' must be either 'true' or 'false'.");
+        error("Input list component 'compress' must be either 'true' or 'false'.");
       }
       if (0 == strcasecmp("true", tmpName)) {
         data->compress = 1;
@@ -2502,7 +2502,7 @@ checkRgdxList (const SEXP lst, struct rgdxStruct *data)
     if (TYPEOF(tmp) == STRSXP ) {
       tmpName = CHAR(STRING_ELT(tmp, 0));
       if (strlen(tmpName) == 0) {
-        error("Input lsit component 'ts' must be either 'true' or 'false'.");
+        error("Input list component 'ts' must be either 'true' or 'false'.");
       }
       if (0 == strcasecmp("true", tmpName)) {
         data->ts = 1;
@@ -2541,7 +2541,7 @@ checkRgdxList (const SEXP lst, struct rgdxStruct *data)
     if (TYPEOF(tmp) == STRSXP ) {
       tmpName = CHAR(STRING_ELT(tmp, 0));
       if (strlen(tmpName) == 0) {
-        error("Input lsit component 'te' must be either 'true' or 'false'.");
+        error("Input list component 'te' must be either 'true' or 'false'.");
       }
       if (0 == strcasecmp("true", tmpName)) {
         data->te = 1;
