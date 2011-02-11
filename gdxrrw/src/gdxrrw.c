@@ -1457,23 +1457,26 @@ checkForValidData(SEXP val,
                   dForm_t dForm)
 {
   SEXP dims;
-  int i, j;
-  double *P;
+  int i, j, k;
+  double *pd;
+  int *pi;
+  double dt;
   int nDimsData, nDimsUels;
   int ncols, nrows;
-  int max = 0;
+  int max;
 
   nDimsUels = length(uelOut);
 
-  P = NULL;
+  pd = NULL;
+  pi = NULL;
   if (TYPEOF(val) == REALSXP) {
-    P = REAL(val);
+    pd = REAL(val);
   }
   else if (TYPEOF(val) == INTSXP) {
-    P = (double*)INTEGER(val);
+    pi = INTEGER(val);
   }
   else {
-    error(".val must be numeric.\n");
+    error (".val must be numeric.\n");
   }
   dims = getAttrib(val, R_DimSymbol);
 
@@ -1487,27 +1490,40 @@ checkForValidData(SEXP val,
     if (nDimsUels != ncols) {
       error ("Number of columns in sparse data does not match with UEL dimension.");
     }
-    for (i = 0; i < ncols; i++) {
-      for (j = 0; j < nrows; j++) {
-        if (P[j + i*nrows] - floor(P[j + i*nrows]) > 0) {
-          error("Non-integer coordinates are not allowed in index columns of sparse data");
+    /* the matrix of vals is stored column-major */
+    for (j = 0;  j < ncols;  j++) {
+      for (max = 0, i = 0;  i < nrows;  i++) {
+        if (pd) {
+          dt = pd[i + j*nrows];
+          if (dt < 1) {
+            error ("Non-positive coordinates are not allowed in index columns of sparse data");
+          }
+          if (dt > INT_MAX) {
+            error ("Coordinates > INT_MAX are not allowed in index columns of sparse data");
+          }
+          k = (int) dt;
+          if (dt != k) {
+            error ("Non-integer coordinates are not allowed in index columns of sparse data");
+          }
         }
-        if (P[j + i*nrows] < 1) {
-          error("Non-positive coordinates are not allowed in index columns of sparse data");
+        else {
+          k = pi[i + j*nrows];
+          if (k < 1) {
+            error ("Non-positive coordinates are not allowed in index columns of sparse data");
+          }
         }
         /* if (!mxIsFinite(P[j + i*nrows])) {
            error("Only finite numbers are allowed in index columns of sparse data");
            } */
-        if (P[j + i*nrows] > max) {
-          max = (int) P[j + i*nrows];
+        if (k > max) {
+          max = k;
         }
       }
-      if (max > (int)length(VECTOR_ELT(uelOut, i ))) {
-        error("Row index in sparse matrix exceeds number of elements in UEL for that column.");
+      if (max > (int)length(VECTOR_ELT(uelOut, j))) {
+        error ("Row index in sparse matrix exceeds number of elements in UEL for that column.");
       }
-      max = 0;
-    }
-  }
+    } /* end loop over cols */
+  }   /* end sparse */
   else {
     /* get dimension of full matrix == number of columns in uels */
     nDimsData = length(dims);
@@ -2312,22 +2328,23 @@ checkRgdxList (const SEXP lst, struct rgdxStruct *data)
 
   if (lstName == R_NilValue) {
     Rprintf("Input list must be named\n");
-    Rprintf("Valid names are: 'name', 'form', 'uels', 'compress', 'dim', 'field', 'ts', 'te'.\n");
+    Rprintf("Valid names are: 'name', 'dim', 'uels', 'form', 'compress', 'field', 'te', 'ts'.\n");
     error("Please try again with named input list.\n");
   }
   for (i=0; i < nField; i++) {
     compName = CHAR(STRING_ELT(lstName, i));
     /* Checking for valid field name */
     if ( !((0 == strcmp("name", compName ))
-           || (0 == strcmp("uels", compName ))
-           || (0 == strcmp("compress", compName ))
            || (0 == strcmp("dim", compName ))
+           || (0 == strcmp("uels", compName ))
            || (0 == strcmp("form", compName ))
+           || (0 == strcmp("compress", compName ))
            || (0 == strcmp("field", compName ))
            || (0 == strcmp("te", compName ))
-           || (0 == strcmp("ts", compName ))) ) {
+           || (0 == strcmp("ts", compName ))
+           ) ) {
       Rprintf ("Input list components must be according to this specification:\n");
-      Rprintf ("'name', 'type', 'val', 'dim', 'uels', 'form', 'ts'.\n");
+      Rprintf ("'name', 'dim', 'uels', 'form', 'compress', 'field', 'te', 'ts'.\n");
       error("Incorrect type of input list component '%s' specified.",
             compName);
     }
@@ -2588,7 +2605,7 @@ checkRgdxList (const SEXP lst, struct rgdxStruct *data)
       data->withUel = 1;
     }
   }
-}
+} /* checkRgdxList */
 
 
 /* This method is intended to be used by both wgdx and gams call
@@ -2614,10 +2631,12 @@ writeGdx(char *gdxFileName,
   const char *stringUelIndex;
   int rc, errNum;
   int i, j, k, z, found;
+  int idx;
   SEXP dimVect;
   int totalElement, total,  nColumns, nRows, ndimension, index, total_num_of_elements;
   int d, subindex, inner;
-  double *dimVal, *p;
+  double *dimVal, *pd, dt;
+  int *pi;
   int *subscript;
   const char *inputTime;
 
@@ -2729,9 +2748,9 @@ writeGdx(char *gdxFileName,
           }
           PROTECT(valData = allocVector(REALSXP, totalElement));
           wAlloc++;
-          p = REAL(valData);
+          pd = REAL(valData);
           for (index = 0; index < totalElement; index++) {
-            p[index] = 1;
+            pd[index] = 1;
           }
           setAttrib(valData, R_DimSymbol, dimVect);
           index = 0;
@@ -2758,7 +2777,7 @@ writeGdx(char *gdxFileName,
       if (data[i]->dForm == sparse) {
         dimVect = getAttrib(valData, R_DimSymbol);
         nColumns = INTEGER(dimVect)[1];
-        nRows =INTEGER(dimVect)[0];
+        nRows = INTEGER(dimVect)[0];
 
         if (data[i]->dType == parameter) {
           nColumns--;
@@ -2773,29 +2792,37 @@ writeGdx(char *gdxFileName,
           error("Could not write data with gdxDataWriteMapStart");
         }
 
-        /*
-         * TODO: This is frustrating.
-         * Find a better way to deal with REAL and INTEGER
-         * I don't want to loop over whole data set and convert from int to double
-         */
+        pd = NULL;
+        pi = NULL;
         if (TYPEOF(valData) == REALSXP) {
-          p = REAL(valData);
+          pd = REAL(valData);
         }
         else if (TYPEOF(valData) == INTSXP) {
-          p = (double *) INTEGER(valData);
+          pi = INTEGER(valData);
         }
-        for (k = 0, j = 0; j < nRows; j++) {
+        for (j = 0; j < nRows; j++) {
           for (k = 0; k < nColumns; k++) {
-            subBuffer =  VECTOR_ELT(mainBuffer, k);
-            stringUelIndex = CHAR(STRING_ELT(subBuffer, p[nRows*k + j]-1));
+            subBuffer = VECTOR_ELT(mainBuffer, k);
+            if (pd) {
+              idx = (int) pd[k*nRows + j];
+            }
+            else {
+              idx = pi[k*nRows + j];
+            }
+            stringUelIndex = CHAR(STRING_ELT(subBuffer, idx-1));
             uelIndices[k] = atoi(stringUelIndex);
           }
           if (data[i]->dType == parameter) {
-            vals[0] = p[nRows*(nColumns) + j];
+            if (pd) {
+              vals[0] = pd[nColumns*nRows + j];
+            }
+            else {
+              vals[0] = pi[nColumns*nRows + j];
+            }
             if (vals[0] != 0 && gdxMapValue (gdxHandle, vals[0], &z)) { /* it's special */
               switch (z) {
               case sv_valpin:
-                vals[0] =  NA_REAL;
+                vals[0] = NA_REAL;
                 break;
               case sv_valmin:
                 vals[0] = NA_REAL;
@@ -2806,16 +2833,16 @@ writeGdx(char *gdxFileName,
               case sv_valund:
               case sv_valna:
                 vals[0] = NA_REAL;
-                              break;
+                break;
               default:
-                error("Unrecognized map-value %d returned for %g", z, vals[0]);
+                error ("Unrecognized map-value %d returned for %g", z, vals[0]);
               } /* end of switch/case */
             }
           }
           /* No need to write zero values */
           if ((data[i]->dType == parameter && vals[0] != 0)
              || data[i]->dType == set) {
-            rc = gdxDataWriteMap(gdxHandle, uelIndices, vals);
+            rc = gdxDataWriteMap (gdxHandle, uelIndices, vals);
             if (!rc) {
               error("Could not write parameter MAP with gdxDataWriteMap");
             }
@@ -2823,9 +2850,9 @@ writeGdx(char *gdxFileName,
         }
 
         if (!gdxDataWriteDone(gdxHandle)) {
-          error("Could not end writing parameter with gdxDataWriteMapStart");
+          error ("Could not end writing parameter with gdxDataWriteMapStart");
         }
-      }
+      } /* if sparse */
       else {
         total_num_of_elements = length(valData);
         dimVect = getAttrib(valData, R_DimSymbol);
@@ -2842,11 +2869,22 @@ writeGdx(char *gdxFileName,
         if (!rc) {
           error("Could not write data with gdxDataWriteMapStart");
         }
+        pd = NULL;
+        pi = NULL;
+        if (TYPEOF(valData) == REALSXP) {
+          pd = REAL(valData);
+        }
+        else if (TYPEOF(valData) == INTSXP) {
+          pi = INTEGER(valData);
+        }
+        else {
+          error ("internal error: unrecognized valData type");
+        }
         for (index = 0; index < total_num_of_elements; index++) {
           subindex = index;
           if (nColumns > 0) {
             for (d = nColumns-1; ; d--) {
-              subBuffer =  VECTOR_ELT(mainBuffer, d);
+              subBuffer = VECTOR_ELT(mainBuffer, d);
               for (total=1, inner=0; inner<d; inner++) {
                 total *= INTEGER(dimVect)[inner];
               }
@@ -2863,14 +2901,14 @@ writeGdx(char *gdxFileName,
             } /* for loop over "d" */
           }
 
-          if (TYPEOF(valData) == REALSXP) {
-            p = REAL(valData);
+          if (pd) {
+            dt = pd[index];
           }
-          else if (TYPEOF(valData) == INTSXP) {
-            p = (double*)INTEGER(valData);
+          else {
+            dt = pi[index];
           }
           if (data[i]->dType == parameter) {
-            vals[0] = p[index];
+            vals[0] = dt;
             if (vals[0] != 0 && gdxMapValue (gdxHandle, vals[0], &z)) { /* it's special */
               switch (z) {
               case sv_valpin:
@@ -2893,7 +2931,7 @@ writeGdx(char *gdxFileName,
           }
           /* No need to write zero values */
           if ((data[i]->dType == parameter && vals[0] != 0)
-             || (data[i]->dType == set && p[index] == 1)) {
+             || (data[i]->dType == set && 0 != dt)) {
             rc = gdxDataWriteMap(gdxHandle, uelIndices, vals);
             if (!rc) {
               error("Could not write parameter MAP with gdxDataWriteMap");
