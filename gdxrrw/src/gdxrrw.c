@@ -1936,7 +1936,7 @@ registerInputUEL(SEXP uelOut,
 } /* registerInputUEL */
 
 
-/* This function validate input structure and set certain global variables */
+/* This function validates input structure and sets certain global variables */
 void
 checkWgdxList(SEXP structure,
               int k,
@@ -1947,6 +1947,7 @@ checkWgdxList(SEXP structure,
   SEXP lstName, tmp, tmpUel;
   SEXP dimension;
   int i, j, infields;
+  int listLen;
   int  nCoords, sz, withDim;
   const char *tmpName;
   const char *compName;              /* pointers to field names */
@@ -1969,28 +1970,26 @@ checkWgdxList(SEXP structure,
   if (7 < length(structure) || length(structure) < 1) {
     error("Incorrect number of components in input list argument.\n");
   }
-  else {
-    infields = length(structure);
-  }
 
+  listLen = infields = length(structure);
   lstName = getAttrib(structure, R_NamesSymbol);
   if (lstName == R_NilValue) {
     Rprintf("Input list must be named\n");
-    Rprintf("Valid names are: 'name', 'type', 'form', 'val', 'uels', 'dim', 'ts'.\n");
-    error("Please try again with named input  list.\n");
+    Rprintf("Valid names are: 'name', 'type', 'val', 'uels', 'form', 'dim', 'ts'.\n");
+    error("Please try again with a named input list.\n");
   }
-  for (i=0;  i < infields;  i++) {
+  for (i=0;  i < listLen;  i++) {
     compName = CHAR(STRING_ELT(lstName, i));
     /* Checking for valid field name */
     if ( !((0 == strcmp("name", compName ))
-          || (0 == strcmp("uels", compName ))
-          || (0 == strcmp("dim", compName ))
           || (0 == strcmp("type", compName ))
-          || (0 == strcmp("form", compName ))
           || (0 == strcmp("val", compName ))
+          || (0 == strcmp("uels", compName ))
+          || (0 == strcmp("form", compName ))
+          || (0 == strcmp("dim", compName ))
           || (0 == strcmp("ts", compName ))) ) {
       Rprintf ("Input list components must be according to this specification:\n");
-      Rprintf ("'name', 'type', 'val', 'dim', 'uels', 'form', 'ts'.\n");
+      Rprintf ("'name', 'type', 'val', 'uels', 'form', 'dim', 'ts'.\n");
       error("Incorrect type of input list component '%s' specified.",
             compName);
     }
