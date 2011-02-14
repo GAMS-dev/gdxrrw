@@ -132,7 +132,7 @@ checkRgdxList (const SEXP lst, struct rgdxStruct *data);
 
 static void
 checkWgdxList(const SEXP lst,
-              int i,
+              int k,
               SEXP uelIndex,
               struct wgdxStruct **data,
               int fromGAMS);
@@ -1944,14 +1944,22 @@ checkWgdxList(SEXP structure,
               struct  wgdxStruct **data,
               int fromGAMS)
 {
-  SEXP lstName, tmp, tmpUel;
+  SEXP lstName, tmpUel;
   SEXP dimension;
+  SEXP nameExp = NULL;
+  SEXP typeExp = NULL;
+  SEXP valExp = NULL;
+  SEXP uelsExp = NULL;
+  SEXP formExp = NULL;
+  SEXP dimExp = NULL;
+  SEXP tsExp = NULL;
   int i, j, infields;
   int listLen;
-  int  nCoords, sz, withDim;
+  int dimUels;
+  int nCoords, sz, withDim;
   const char *tmpName;
   const char *compName;              /* pointers to field names */
-  SEXP   uelOut, bufferUel;          /* allocating temporary storage place */
+  SEXP uelOut, bufferUel;            /* allocating temporary storage place */
   int found = 0;
 
   withDim = 0;
@@ -1978,96 +1986,70 @@ checkWgdxList(SEXP structure,
     Rprintf("Valid names are: 'name', 'type', 'val', 'uels', 'form', 'dim', 'ts'.\n");
     error("Please try again with a named input list.\n");
   }
-  for (i=0;  i < listLen;  i++) {
+
+  /* first, check that all names are recognized, reject o/w
+   * in the process, store the symbol for direct access later
+   */
+  for (i = 0; i < listLen; i++) {
     compName = CHAR(STRING_ELT(lstName, i));
-    /* Checking for valid field name */
-    if ( !((0 == strcmp("name", compName ))
-          || (0 == strcmp("type", compName ))
-          || (0 == strcmp("val", compName ))
-          || (0 == strcmp("uels", compName ))
-          || (0 == strcmp("form", compName ))
-          || (0 == strcmp("dim", compName ))
-          || (0 == strcmp("ts", compName ))) ) {
+    if (0 == strcmp("name", compName)) {
+      nameExp = VECTOR_ELT(structure, i);
+    }
+    else if (0 == strcmp("type", compName)) {
+      typeExp = VECTOR_ELT(structure, i);
+    }
+    else if (0 == strcmp("val", compName)) {
+      valExp = VECTOR_ELT(structure, i);
+    }
+    else if (0 == strcmp("uels", compName)) {
+      uelsExp = VECTOR_ELT(structure, i);
+    }
+    else if (0 == strcmp("form", compName)) {
+      formExp = VECTOR_ELT(structure, i);
+    }
+    else if (0 == strcmp("dim", compName)) {
+      dimExp = VECTOR_ELT(structure, i);
+    }
+    else if (0 == strcmp("ts", compName)) {
+      tsExp = VECTOR_ELT(structure, i);
+    }
+    else {
       Rprintf ("Input list components must be according to this specification:\n");
       Rprintf ("'name', 'type', 'val', 'uels', 'form', 'dim', 'ts'.\n");
-      error("Incorrect type of input list component '%s' specified.",
-            compName);
+      error ("Incorrect type of input list component '%s' specified.",
+             compName);
     }
   }
 
-  /*
-   * TODO: I couldn't find a way to directly get component by name.
-   * So I am looping through list of name to find desired name and then
-   * using that index to find value from main list
-   */
-  i=0;
-  /* Checking if field data is for "name" */
-  for (i = 0; i < infields; i++) {
-    if (strcmp("name", CHAR(STRING_ELT(lstName, i))) == 0) {
-      found = 1;
-      break;
-    }
+  /* now process the fields provided */
+  if (NULL == nameExp)
+    error ("Required list component 'name' is missing. Please try again.\n");
+  if (STRSXP != TYPEOF(nameExp)) {
+    Rprintf ("List component 'name' must be a string - found %d instead\n",
+             TYPEOF(nameExp));
+    error ("Input list component 'name' must be string.\n");
   }
+  tmpName = CHAR(STRING_ELT(nameExp, 0));
+  checkStringLength (tmpName);
+  strcpy (data[k]->name, tmpName);
 
-  if (found == 1) {
-    tmp = VECTOR_ELT(structure, i);
-    if (TYPEOF(tmp) == STRSXP) {
-      checkStringLength( CHAR(STRING_ELT(tmp, 0)));
-      strcpy( data[k]->name, CHAR(STRING_ELT(tmp, 0)) );
-    }
-    else {
-      Rprintf ("List component 'name' must be a string - found %d instead\n",
-               TYPEOF(tmp) );
-      error("Input list component 'name' must be string.\n");
-    }
-  }
-  else {
-    error("Required list component 'name' is missing. Please try again.\n" );
-  }
-
-  i=0;
-  found = 0;
-  /* Checking if field data is for "ts" */
-  for (i = 0; i < infields; i++) {
-    if (strcmp("ts", CHAR(STRING_ELT(lstName, i))) == 0) {
-      found = 1;
-      break;
-    }
-  }
-  if (found == 1) {
-    tmp = VECTOR_ELT(structure, i);
-    if (TYPEOF(tmp) == STRSXP) {
-      checkStringLength( CHAR(STRING_ELT(tmp, 0)));
-      data[k]->withTs = 1;
-    }
-    else {
+  if (tsExp) {
+    if (STRSXP != TYPEOF(tsExp)) {
       Rprintf ("List component 'ts' must be a string - found %d instead\n",
-               TYPEOF(tmp) );
-      error("Input list component 'ts' must be string.\n");
+               TYPEOF(tsExp));
+      error ("Input list component 'ts' must be string.\n");
     }
+    checkStringLength (CHAR(STRING_ELT(tsExp, 0)));
+    data[k]->withTs = 1;
   }
 
-  i=0;
-  found = 0;
-  /* Checking if field data is for "form" */
-  for (i = 0; i < infields; i++) {
-    if (strcmp("form", CHAR(STRING_ELT(lstName, i))) == 0) {
-      found = 1;
-      break;
-    }
-  }
-
-  if (found == 1) {
-    tmp = VECTOR_ELT(structure, i);
-    if (TYPEOF(tmp) != STRSXP) {
+  if (formExp) {
+    if (STRSXP != TYPEOF(formExp)) {
       Rprintf ("List component 'form' must be a string - found %d instead\n",
-               TYPEOF(tmp));
-      error("Input list component 'form' must be string");
+               TYPEOF(formExp));
+      error ("Input list component 'form' must be string");
     }
-    tmpName = CHAR(STRING_ELT(tmp, 0));
-    if (strlen(tmpName) == 0) {
-      error("Input list component 'form' must be either 'full' or 'sparse'.");
-    }
+    tmpName = CHAR(STRING_ELT(formExp, 0));
     if (strcasecmp("full", tmpName) == 0) {
       data[k]->dForm = full;
     }
@@ -2077,29 +2059,15 @@ checkWgdxList(SEXP structure,
     else {
       error("Input list component 'form' must be either 'full' or 'sparse'.");
     }
-  }
+  } /* formExp */
 
-  found = 0;
-  /* Checking if field data is for "type" */
-  for (i = 0; i < infields; i++) {
-    if (strcmp("type", CHAR(STRING_ELT(lstName, i))) == 0) {
-      found = 1;
-      break;
-    }
-  }
-
-  if (found == 1) {
-    tmp = VECTOR_ELT(structure, i);
-    if ( TYPEOF(tmp) != STRSXP) {
+  if (typeExp) {                /* optional */
+    if (STRSXP != TYPEOF(typeExp)) {
       Rprintf ("List component 'type' must be a string - found %d instead\n",
-               TYPEOF(tmp));
-      error("Input list component 'type' must be string.\n");
+               TYPEOF(typeExp));
+      error ("Input list component 'type' must be string.\n");
     }
-    tmpName = CHAR(STRING_ELT(tmp, 0));
-    if (strlen(tmpName) == 0) {
-      Rprintf("Before changing to lower");
-      error("Input list component 'type' must be either 'set' or 'parameter'.\n");
-    }
+    tmpName = CHAR(STRING_ELT(typeExp, 0));
     if (0 == strcasecmp("set", tmpName) ) {
       data[k]->dType = set;
     }
@@ -2107,197 +2075,179 @@ checkWgdxList(SEXP structure,
       data[k]->dType = parameter;
     }
     else {
-      Rprintf("type found = %s\n", tmpName);
-      error("Input list component 'type' must be either 'set' or 'parameter'.\n");
+      Rprintf ("type found = %s\n", tmpName);
+      error ("Input list component 'type' must be either 'set' or 'parameter'.\n");
     }
   }
 
-  found = 0;
- /* Checking for dimension .dim */
-  for (i = 0; i < infields; i++) {
-    if (strcmp("dim", CHAR(STRING_ELT(lstName, i))) == 0) {
-      found = 1;
-      break;
-    }
-  }
-  if (found == 1) {
-    tmp = VECTOR_ELT(structure, i);
-
-    if (TYPEOF(tmp) == INTSXP) {
-      if (length(tmp) != 1) {
-        error("Input list component 'dim' must have only one element.\n");
+  if (dimExp) {                 /* optional */
+    if (INTSXP == TYPEOF(dimExp)) {
+      if (length(dimExp) != 1) {
+        error ("Optional input list component 'dim' must have only one element.\n");
       }
-      /* for negative value */
-      if (INTEGER(tmp)[0] < 0) {
+      if (INTEGER(dimExp)[0] < 0) {
         error("Negative value is not allowed as valid input for 'dim'.\n");
       }
       withDim = 1;
-      data[k]->dim = INTEGER(tmp)[0];
+      data[k]->dim = INTEGER(dimExp)[0];
     }
-    else if (TYPEOF(tmp) == REALSXP ) {
-      if (length(tmp) != 1) {
-        error("Input list component 'dim' must have only one element.\n");
+    else if (REALSXP == TYPEOF(dimExp)) {
+      if (length(dimExp) != 1) {
+        error ("Optional input list component 'dim' must have only one element.\n");
       }
-      /* For fractional value */
-      else if (REAL(tmp)[0] - floor(REAL(tmp)[0]) > 0) {
+      if (REAL(dimExp)[0] < 0) {
+        error("Negative value is not allowed as valid input for 'dim'.\n");
+      }
+      withDim = 1;
+      data[k]->dim = (int) REAL(dimExp)[0];
+      if (REAL(dimExp)[0] != data[k]->dim) {
         error("Non-integer value is not allowed as valid input for 'dim'.\n");
       }
-      /* for Negeative value */
-      else if (REAL(tmp)[0] < 0) {
-        error("Negative value is not allowed as valid input for 'dim'.\n");
-      }
-      withDim = 1;
-      data[k]->dim = (int) REAL(tmp)[0];
     }
     else {
-      Rprintf ("List component 'dim' must be a numeric - found %d instead\n",
-               TYPEOF(tmp));
-      error("Input list component 'dim' must be integer.\n");
+      Rprintf ("List component 'dim' must be numeric - found %d instead\n",
+               TYPEOF(dimExp));
+      error ("Optional input list component 'dim' must be numeric.\n");
     }
-  }
+  } /* dimExp */
 
-  found = 0;
-  /* Checking for dimension .uels */
-  for (i = 0; i < infields; i++) {
-    if (strcmp("uels", CHAR(STRING_ELT(lstName, i))) == 0) {
-      found = 1;
-      break;
+  dimUels = -1;
+  if (uelsExp) {                /* optional */
+    if (VECSXP != TYPEOF(uelsExp)) {
+      Rprintf ("List component 'uels' must be an un-named list - found %d instead\n",
+               TYPEOF(uelsExp));
+      error ("Input list component 'uels' must be unnamed list.\n");
     }
-  }
-
-  if (found == 1) {
-    tmp = VECTOR_ELT(structure, i);
-    if (TYPEOF(tmp) != VECSXP) {
-      Rprintf ("List component 'uels' must be a un-named list - found %d instead\n",
-               TYPEOF(tmp));
-      error("Input list component 'uels' must be unnamed list.\n");
+    dimUels = length(uelsExp);
+    if (0 == dimUels) {
+      error ("Empty input list component 'uels' is not allowed.\n");
     }
-    else {
-      if (length(tmp) == 0) {
-        error("Empty input list component 'uels' is not allowed.\n");
+    if (withDim && data[k]->dim != dimUels) {
+      error ("Inconsistent dimension found: 'dim'= doesn't match '.uels' dimension=%d.\n",
+             data[k]->dim, dimUels);
+    }
+    PROTECT(uelOut = allocVector(VECSXP, dimUels));
+    wAlloc++;
+    for (j = 0;  j < dimUels;  j++) {
+      tmpUel = VECTOR_ELT(uelsExp, j);
+      if (tmpUel == R_NilValue) {
+        error ("Empty input field in .uels not allowed\n");
       }
-      PROTECT(uelOut = allocVector(VECSXP, length(tmp)));
-      wAlloc++;
-      for (j = 0; j < length(tmp); j++) {
-        tmpUel = VECTOR_ELT(tmp, j);
-        if (tmpUel == R_NilValue) {
-          error("Empty Input  field (uels) not allowed");
-        }
-        if (TYPEOF(tmpUel) == STRSXP ) {
-          /*  checkStringLength( CHAR(STRING_ELT(tmp, 0)) ); */
-          SET_VECTOR_ELT(uelOut, j, tmpUel);
-        }
-        else if (TYPEOF(tmpUel) == REALSXP || TYPEOF(tmpUel) == INTSXP) {
-          /* Convert to output */
-          bufferUel = allocVector(STRSXP, length(tmpUel));
-          bufferUel =  convertToOutput(bufferUel, tmpUel);
-          SET_VECTOR_ELT(uelOut, j, bufferUel);
-        }
-        else {
-          error("Input uels must be either string vector of numeric vector.\n");
-        }
+      if (TYPEOF(tmpUel) == STRSXP) {
+        /*  checkStringLength( CHAR(STRING_ELT(tmp, 0)) ); */
+        SET_VECTOR_ELT (uelOut, j, tmpUel);
       }
-      data[k]->withUel = 1;
+      else if (TYPEOF(tmpUel) == REALSXP || TYPEOF(tmpUel) == INTSXP) {
+        /* Convert to output */
+        bufferUel = allocVector(STRSXP, length(tmpUel));
+        bufferUel =  convertToOutput (bufferUel, tmpUel);
+        SET_VECTOR_ELT (uelOut, j, bufferUel);
+      }
+      else {
+        error ("Input uels must be either string vectors or numeric vectors.\n");
+      }
+    }
+    data[k]->withUel = 1;
+  } /* uelsExp */
+
+  if (NULL == valExp) {         /* .val field missing */
+    if (parameter == data[k]->dType) {
+      error ("Missing 'val' is a required list component for parameters.");
+    }
+    if (set == data[k]->dType && 0 == data[k]->withUel) {
+      error ("Missing 'val' is a required list component for sets with no UELs.");
     }
   }
-
-  found = 0;
-  /* Checking for dimension .val */
-  for (i = 0; i < infields; i++) {
-    if (strcmp("val", CHAR(STRING_ELT(lstName, i))) == 0) {
-      found = 1;
-      break;
-    }
-  }
-
-  if (found == 1) {
-    tmp = VECTOR_ELT(structure, i);
-    if (fromGAMS == 1 && TYPEOF(tmp) == STRSXP) {
-      checkStringLength(CHAR(STRING_ELT(tmp, 0)));
+  else {
+    if (fromGAMS == 1 && TYPEOF(valExp) == STRSXP) {
+      tmpName = CHAR(STRING_ELT(valExp, 0));
+      checkStringLength(tmpName);
       strcat(specialCommand, "--");
       strcat(specialCommand,  data[k]->name);
       strcat(specialCommand, "=");
-      strcat(specialCommand, CHAR(STRING_ELT(tmp, 0)));
+      strcat(specialCommand, tmpName);
       strcat(specialCommand, " ");
       return;
     }
-    dimension = getAttrib(tmp, R_DimSymbol);
-    if (TYPEOF(tmp) == REALSXP || TYPEOF(tmp) == INTSXP ) {
+    dimension = getAttrib(valExp, R_DimSymbol);
+    if (TYPEOF(valExp) == REALSXP || TYPEOF(valExp) == INTSXP ) {
       if (data[k]->dForm == sparse) {
         if (length(dimension) != 2) {
-          Rprintf("You have entered %d dimensional matrix.\n", length(dimension));
-          error("Only 2 dimensional val is allowed as valid input in sparse format.");
+          Rprintf("You have entered a %d dimensional matrix.\n", length(dimension));
+          error ("Only 2-dimensional '.val' is allowed as valid input in sparse format.");
         }
         /* getting data matrix */
         sz = INTEGER(dimension)[0];
         if (sz > INT_MAX) {
-          error("Input list component 'val' exceeds row limit of %d",
-                INT_MAX);
+          error ("Input list component 'val' exceeds row limit of %d",
+                 INT_MAX);
         }
         sz = INTEGER(dimension)[1];
         if (sz > INT_MAX) {
-          error("Input list component 'val' exceeds column limit of %d",
-                INT_MAX);
+          error ("Input list component 'val' exceeds column limit of %d",
+                 INT_MAX);
         }
         nCoords = sz;
         if (parameter == data[k]->dType) {
           nCoords--;
         }
         if (nCoords > GMS_MAX_INDEX_DIM) {
-          error("Input list compoment 'val' exceeds GDX dimension limit of %d.",
-                GMS_MAX_INDEX_DIM);
+          error ("Input list compoment 'val' exceeds GDX dimension limit of %d.",
+                 GMS_MAX_INDEX_DIM);
+        }
+        if (withDim) {
+          if (data[k]->dim != nCoords) {
+            error ("Inconsistent dimensions found: '.dim' = %d doesn't match"
+                   " dimension=%d implied by '.val'\n", data[k]->dim, nCoords);
+          }
+        }
+        else if (dimUels > 0) {
+          if (dimUels != nCoords) {
+            error ("Inconsistent dimensions implied by '.uels' (%d) and"
+                   " '.val' (%d)\n", dimUels, nCoords);
+          }
         }
         data[k]->withVal = 1;
-      }
+      } /* if sparse */
       else {
         /* This is for Full/Dense data */
         if (length(dimension) > GMS_MAX_INDEX_DIM) {
-          error("Input list component 'val' exceeds GDX dimension limit of %d.",
-                GMS_MAX_INDEX_DIM);
+          error ("Input list component 'val' exceeds GDX dimension limit of %d.",
+                 GMS_MAX_INDEX_DIM);
         }
-        if (withDim == 1 && (data[k]->dim == 0 || data[k]->dim == 1)  && length(dimension) == 2) {
-          nCoords = data[k]->dim;
+        if (withDim) {
+          if (data[k]->dim != nCoords) {
+            error ("Inconsistent dimensions found: '.dim' = %d doesn't match"
+                   " '.val' dimension %d.\n", data[k]->dim, length(dimension));
+          }
         }
-        else if (withDim == 1 &&  data[k]->dim !=  length(dimension)) {
-          error("Inconsistent dimension found. Value entered for 'dim' doesn't matches with 'val'.\n");
-        }
-        else {
-          nCoords =  length(dimension);
+        else if (dimUels > 0) {
+          if (dimUels != nCoords) {
+            error ("Inconsistent dimensions implied by '.uels' (%d) and"
+                   " '.val' (%d)\n", dimUels, nCoords);
+          }
         }
         data[k]->withVal = 1;
       }
     }
     else {
-      Rprintf("List component 'val' must be a double matrix - found %d instead.\n",
-              TYPEOF(tmp));
-      error("Input list component 'val' must be double matrix");
+      Rprintf("List component 'val' must be a numeric matrix - found %d instead.\n",
+              TYPEOF(valExp));
+      error ("Input list component 'val' must be a numeric matrix");
     }
-  }
-  else if (data[k]->dType == parameter  || data[k]->withUel == 0 ) {
-    Rprintf("data[%d]->dType = %d\n",k,  data[k]->dType);
-    Rprintf("data[%d]->withUel = %d\n",k, data[k]->withUel);
-    error("'val' is required list component. Please enter it and try again.");
-  }
+  } /* valExp not NULL */
 
 
   if (data[k]->withUel == 0 && data[k]->withVal == 1) {
-    /* special check for scalar */
-    if (withDim == 1 && data[k]->dim == 0 && length(tmp) != 1) {
-      error("Scalar should have only one element.");
-    }
-    /* special check for vector */
-    if (withDim == 1 && data[k]->dim == 1 && INTEGER(dimension)[1] != 1) {
-      error("Vector should have only 1 dimensional column elements.");
-    }
     PROTECT(uelOut = allocVector(VECSXP, nCoords));
     wAlloc++;
-    createUelOut(tmp, uelOut, data[k]->dType, data[k]->dForm);
+    createUelOut (valExp, uelOut, data[k]->dType, data[k]->dForm);
   }
 
   if (data[k]->withVal == 1) {
-    checkForValidData(tmp, uelOut, data[k]->dType, data[k]->dForm);
+    checkForValidData (valExp, uelOut, data[k]->dType, data[k]->dForm);
   }
-  registerInputUEL(uelOut, k, uelIndex);
+  registerInputUEL (uelOut, k, uelIndex);
 } /* checkWgdxList */
 
 
