@@ -2118,7 +2118,7 @@ checkWgdxList(SEXP structure,
       error ("Empty input list component 'uels' is not allowed.\n");
     }
     if (withDim && inData->dim != dimUels) {
-      error ("Inconsistent dimension found: 'dim'= doesn't match '.uels' dimension=%d.\n",
+      error ("Inconsistent dimension found: 'dim'=%d  doesn't match '.uels' dimension=%d.\n",
              inData->dim, dimUels);
     }
     PROTECT(uelOut = allocVector(VECSXP, dimUels));
