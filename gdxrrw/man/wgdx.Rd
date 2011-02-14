@@ -25,8 +25,8 @@ Steve Dirkse.  Maintainer: \email{R@gams.com}}
  \code{\link{igdx}}, \code{\link{rgdx}}, \code{\link{gdxInfo}}
 }
 \examples{
-  data('wgdx1');
-  wgdx('wgdx1.gdx',sc);
+  data(wgdx1);
+  wgdx('wgdx1.gdx',sf,si,sj,sa,sb,sd);
 }
 \keyword{ data }
 \keyword{ optimize }
