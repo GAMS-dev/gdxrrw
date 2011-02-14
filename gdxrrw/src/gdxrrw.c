@@ -2206,14 +2206,15 @@ checkWgdxList(SEXP structure,
       } /* if sparse */
       else {
         /* This is for Full/Dense data */
-        if (length(dimension) > GMS_MAX_INDEX_DIM) {
+        nCoords = length(dimension);
+        if (nCoords > GMS_MAX_INDEX_DIM) {
           error ("Input list component 'val' exceeds GDX dimension limit of %d.",
                  GMS_MAX_INDEX_DIM);
         }
         if (withDim) {
           if (inData->dim != nCoords) {
             error ("Inconsistent dimensions found: '.dim' = %d doesn't match"
-                   " '.val' dimension %d.\n", inData->dim, length(dimension));
+                   " '.val' dimension %d.\n", inData->dim, nCoords);
           }
         }
         else if (dimUels > 0) {
@@ -2795,7 +2796,7 @@ writeGdx(char *gdxFileName,
           error ("Could not end writing parameter with gdxDataWriteMapStart");
         }
       } /* if sparse */
-      else {
+      else {                    /* form = full */
         total_num_of_elements = length(valData);
         dimVect = getAttrib(valData, R_DimSymbol);
         nColumns = length(mainBuffer);
@@ -2869,6 +2870,13 @@ writeGdx(char *gdxFileName,
               default:
                 error("Unrecognized map-value %d returned for %g", z, vals[0]);
               } /* end of switch/case */
+            }
+          }
+          else if (set == data[i]->dType) {
+            /* could do the check in checkForValidData but
+             * that uses an additional pass through the full matrix */
+            if (0 != dt && 1 != dt) {
+              error ("Only zero-one values are allowed when specifying sets with form=full\n");
             }
           }
           /* No need to write zero values */
