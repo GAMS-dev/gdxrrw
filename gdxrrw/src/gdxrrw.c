@@ -106,6 +106,7 @@ struct wgdxStruct
   int withUel;
   int dim;
 };
+typedef struct wgdxStruct wgdxStruct_t;
 
 static int alloc;
 
@@ -134,7 +135,7 @@ static void
 checkWgdxList(const SEXP lst,
               int k,
               SEXP uelIndex,
-              struct wgdxStruct **data,
+              wgdxStruct_t **wgdxRecPtr,
               int fromGAMS);
 
 void
@@ -237,11 +238,6 @@ convertToOutput(SEXP bufferUel,
 
 int
 checkIfExist (int k, SEXP filterUel, const char *uelName);
-
-void
-registerInputUEL(SEXP uelOut,
-                 int k,
-                 SEXP uelIndex);
 
 static void
 writeGdx(char *fileName,
@@ -1941,7 +1937,7 @@ void
 checkWgdxList(SEXP structure,
               int k,
               SEXP uelIndex,
-              struct  wgdxStruct **data,
+              wgdxStruct_t **wgdxRecPtr,
               int fromGAMS)
 {
   SEXP lstName, tmpUel;
@@ -1953,33 +1949,32 @@ checkWgdxList(SEXP structure,
   SEXP formExp = NULL;
   SEXP dimExp = NULL;
   SEXP tsExp = NULL;
-  int i, j, infields;
+  int i, j;
   int listLen;
   int dimUels;
   int nCoords, sz, withDim;
   const char *tmpName;
   const char *compName;              /* pointers to field names */
   SEXP uelOut, bufferUel;            /* allocating temporary storage place */
-  int found = 0;
+  wgdxStruct_t *inData;
 
   withDim = 0;
-  infields = 0;
 
-  data[k] = (struct wgdxStruct *)malloc(sizeof(struct wgdxStruct));
-
-  data[k]->dForm = sparse;
-  data[k]->dType = set;
-  data[k]->withTs = 0;
-  data[k]->withVal = 0;
-  data[k]->withUel = 0;
-  data[k]->dim = 0;
+  inData = (wgdxStruct_t *) malloc(sizeof(*inData));
+  *wgdxRecPtr = inData;
+  inData->dForm = sparse;
+  inData->dType = set;
+  inData->withTs = 0;
+  inData->withVal = 0;
+  inData->withUel = 0;
+  inData->dim = 0;
 
   /* check maximum number of fields */
   if (7 < length(structure) || length(structure) < 1) {
     error("Incorrect number of components in input list argument.\n");
   }
 
-  listLen = infields = length(structure);
+  listLen = length(structure);
   lstName = getAttrib(structure, R_NamesSymbol);
   if (lstName == R_NilValue) {
     Rprintf("Input list must be named\n");
@@ -2031,7 +2026,7 @@ checkWgdxList(SEXP structure,
   }
   tmpName = CHAR(STRING_ELT(nameExp, 0));
   checkStringLength (tmpName);
-  strcpy (data[k]->name, tmpName);
+  strcpy (inData->name, tmpName);
 
   if (tsExp) {
     if (STRSXP != TYPEOF(tsExp)) {
@@ -2040,7 +2035,7 @@ checkWgdxList(SEXP structure,
       error ("Input list component 'ts' must be string.\n");
     }
     checkStringLength (CHAR(STRING_ELT(tsExp, 0)));
-    data[k]->withTs = 1;
+    inData->withTs = 1;
   }
 
   if (formExp) {
@@ -2051,10 +2046,10 @@ checkWgdxList(SEXP structure,
     }
     tmpName = CHAR(STRING_ELT(formExp, 0));
     if (strcasecmp("full", tmpName) == 0) {
-      data[k]->dForm = full;
+      inData->dForm = full;
     }
     else if (strcasecmp("sparse", tmpName) == 0) {
-      data[k]->dForm = sparse;
+      inData->dForm = sparse;
     }
     else {
       error("Input list component 'form' must be either 'full' or 'sparse'.");
@@ -2069,10 +2064,10 @@ checkWgdxList(SEXP structure,
     }
     tmpName = CHAR(STRING_ELT(typeExp, 0));
     if (0 == strcasecmp("set", tmpName) ) {
-      data[k]->dType = set;
+      inData->dType = set;
     }
     else if (0 == strcasecmp("parameter", tmpName) ) {
-      data[k]->dType = parameter;
+      inData->dType = parameter;
     }
     else {
       Rprintf ("type found = %s\n", tmpName);
@@ -2089,7 +2084,7 @@ checkWgdxList(SEXP structure,
         error("Negative value is not allowed as valid input for 'dim'.\n");
       }
       withDim = 1;
-      data[k]->dim = INTEGER(dimExp)[0];
+      inData->dim = INTEGER(dimExp)[0];
     }
     else if (REALSXP == TYPEOF(dimExp)) {
       if (length(dimExp) != 1) {
@@ -2099,8 +2094,8 @@ checkWgdxList(SEXP structure,
         error("Negative value is not allowed as valid input for 'dim'.\n");
       }
       withDim = 1;
-      data[k]->dim = (int) REAL(dimExp)[0];
-      if (REAL(dimExp)[0] != data[k]->dim) {
+      inData->dim = (int) REAL(dimExp)[0];
+      if (REAL(dimExp)[0] != inData->dim) {
         error("Non-integer value is not allowed as valid input for 'dim'.\n");
       }
     }
@@ -2122,9 +2117,9 @@ checkWgdxList(SEXP structure,
     if (0 == dimUels) {
       error ("Empty input list component 'uels' is not allowed.\n");
     }
-    if (withDim && data[k]->dim != dimUels) {
+    if (withDim && inData->dim != dimUels) {
       error ("Inconsistent dimension found: 'dim'= doesn't match '.uels' dimension=%d.\n",
-             data[k]->dim, dimUels);
+             inData->dim, dimUels);
     }
     PROTECT(uelOut = allocVector(VECSXP, dimUels));
     wAlloc++;
@@ -2147,14 +2142,14 @@ checkWgdxList(SEXP structure,
         error ("Input uels must be either string vectors or numeric vectors.\n");
       }
     }
-    data[k]->withUel = 1;
+    inData->withUel = 1;
   } /* uelsExp */
 
   if (NULL == valExp) {         /* .val field missing */
-    if (parameter == data[k]->dType) {
+    if (parameter == inData->dType) {
       error ("Missing 'val' is a required list component for parameters.");
     }
-    if (set == data[k]->dType && 0 == data[k]->withUel) {
+    if (set == inData->dType && 0 == inData->withUel) {
       error ("Missing 'val' is a required list component for sets with no UELs.");
     }
   }
@@ -2163,7 +2158,7 @@ checkWgdxList(SEXP structure,
       tmpName = CHAR(STRING_ELT(valExp, 0));
       checkStringLength(tmpName);
       strcat(specialCommand, "--");
-      strcat(specialCommand,  data[k]->name);
+      strcat(specialCommand,  inData->name);
       strcat(specialCommand, "=");
       strcat(specialCommand, tmpName);
       strcat(specialCommand, " ");
@@ -2171,7 +2166,7 @@ checkWgdxList(SEXP structure,
     }
     dimension = getAttrib(valExp, R_DimSymbol);
     if (TYPEOF(valExp) == REALSXP || TYPEOF(valExp) == INTSXP ) {
-      if (data[k]->dForm == sparse) {
+      if (inData->dForm == sparse) {
         if (length(dimension) != 2) {
           Rprintf("You have entered a %d dimensional matrix.\n", length(dimension));
           error ("Only 2-dimensional '.val' is allowed as valid input in sparse format.");
@@ -2188,7 +2183,7 @@ checkWgdxList(SEXP structure,
                  INT_MAX);
         }
         nCoords = sz;
-        if (parameter == data[k]->dType) {
+        if (parameter == inData->dType) {
           nCoords--;
         }
         if (nCoords > GMS_MAX_INDEX_DIM) {
@@ -2196,9 +2191,9 @@ checkWgdxList(SEXP structure,
                  GMS_MAX_INDEX_DIM);
         }
         if (withDim) {
-          if (data[k]->dim != nCoords) {
+          if (inData->dim != nCoords) {
             error ("Inconsistent dimensions found: '.dim' = %d doesn't match"
-                   " dimension=%d implied by '.val'\n", data[k]->dim, nCoords);
+                   " dimension=%d implied by '.val'\n", inData->dim, nCoords);
           }
         }
         else if (dimUels > 0) {
@@ -2207,7 +2202,7 @@ checkWgdxList(SEXP structure,
                    " '.val' (%d)\n", dimUels, nCoords);
           }
         }
-        data[k]->withVal = 1;
+        inData->withVal = 1;
       } /* if sparse */
       else {
         /* This is for Full/Dense data */
@@ -2216,9 +2211,9 @@ checkWgdxList(SEXP structure,
                  GMS_MAX_INDEX_DIM);
         }
         if (withDim) {
-          if (data[k]->dim != nCoords) {
+          if (inData->dim != nCoords) {
             error ("Inconsistent dimensions found: '.dim' = %d doesn't match"
-                   " '.val' dimension %d.\n", data[k]->dim, length(dimension));
+                   " '.val' dimension %d.\n", inData->dim, length(dimension));
           }
         }
         else if (dimUels > 0) {
@@ -2227,7 +2222,7 @@ checkWgdxList(SEXP structure,
                    " '.val' (%d)\n", dimUels, nCoords);
           }
         }
-        data[k]->withVal = 1;
+        inData->withVal = 1;
       }
     }
     else {
@@ -2238,14 +2233,14 @@ checkWgdxList(SEXP structure,
   } /* valExp not NULL */
 
 
-  if (data[k]->withUel == 0 && data[k]->withVal == 1) {
+  if (inData->withUel == 0 && inData->withVal == 1) {
     PROTECT(uelOut = allocVector(VECSXP, nCoords));
     wAlloc++;
-    createUelOut (valExp, uelOut, data[k]->dType, data[k]->dForm);
+    createUelOut (valExp, uelOut, inData->dType, inData->dForm);
   }
 
-  if (data[k]->withVal == 1) {
-    checkForValidData (valExp, uelOut, data[k]->dType, data[k]->dForm);
+  if (inData->withVal == 1) {
+    checkForValidData (valExp, uelOut, inData->dType, inData->dForm);
   }
   registerInputUEL (uelOut, k, uelIndex);
 } /* checkWgdxList */
@@ -2571,7 +2566,7 @@ writeGdx(char *gdxFileName,
   FILE *matdata;
   SEXP uelIndex, compName, valData;
   SEXP mainBuffer, subBuffer;
-  struct wgdxStruct **data;
+  wgdxStruct_t **data;
   gdxUelIndex_t uelIndices;
   gdxValues_t   vals;
   shortStringBuf_t msgBuf;
@@ -2629,17 +2624,15 @@ writeGdx(char *gdxFileName,
   PROTECT(uelIndex = allocVector(VECSXP, arglen-2));
   wAlloc++;
 
-  /* ---- load the GDX API ---- */
-  /* check input list(s) for data validation */
-  i = 0;
-  data = (struct  wgdxStruct **)malloc( (arglen - 2) * sizeof(struct wgdxStruct *));
+  data = (wgdxStruct_t **) malloc ((arglen - 2) * sizeof(data[0]));
 
+  /* check input list(s) for data validation */
   for (i = 0; i < arglen-2; i++) {
     if (TYPEOF(symbolList[i]) != VECSXP) {
       error("Incorrect type of input argument entered. List expected\n");
     }
     else {
-      checkWgdxList (symbolList[i], i, uelIndex, data, fromGAMS);
+      checkWgdxList (symbolList[i], i, uelIndex, data+i, fromGAMS);
     }
   }
 
