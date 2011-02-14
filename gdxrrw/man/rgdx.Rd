@@ -42,8 +42,18 @@ Steve Dirkse.  Maintainer: \email{R@gams.com}}
 \examples{
   data(trnsport);
   wgdx('rgdx1',sf,si,sj,sa,sb,sd);
-  symInfo <- list(name='f')
-#  of = rgdx('rgdx1',symInfo)
+  symInfo <- list(name='f');
+  of = rgdx('rgdx1',symInfo);
+  symInfo <- list(name='i');
+  oi = rgdx('rgdx1',symInfo);
+  symInfo <- list(name='j');
+  oj = rgdx('rgdx1',symInfo);
+  symInfo <- list(name='a');
+  oa = rgdx('rgdx1',symInfo);
+  symInfo <- list(name='b');
+  ob = rgdx('rgdx1',symInfo);
+  symInfo <- list(name='d');
+  od = rgdx('rgdx1',symInfo);
 }
 \keyword{ data }
 \keyword{ optimize }
