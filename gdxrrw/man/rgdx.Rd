@@ -6,7 +6,7 @@
   it as a list.  Note that GDX files contain multiple symbols (e.g. sets,
   parameters).  Each symbol is read with a separate call.
 }
-\usage{rgdx(gdxFileName, symInfo)}
+\usage{rgdx(gdxFile, symInfo)}
 \arguments{
   \item{gdxFile}{the name of the GDX file to read}
   \item{symInfo}{the name of the symbol to read, and (optionally)
