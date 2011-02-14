@@ -1,64 +1,50 @@
 \name{rgdx}
 \alias{rgdx}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-Read GDX
-}
+\title{Read data from GDX into R}
 \description{
-This function is to read symbol information from GDX file and store it in
-R list format. It take up to two input arguments. First argument will be the
-GDX file name in String format and second optional argument will be the 
-list input to customize output list. 
+  Read one data item (also called a symbol) from GDX into R, returning
+  it as a list.  Note that GDX files contain multiple symbols (e.g. sets,
+  parameters).  Each symbol is read with a separate call.
 }
-\usage{
-rgdx(gdxFile, ...)
-}
-%- maybe also 'usage' for other objects documented here.
+\usage{rgdx(gdxFileName, symInfo)}
 \arguments{
-  \item{gdxFile}{
-Name of GDX file from which data need to be read.
+  \item{gdxFile}{the name of the GDX file to read}
+  \item{symInfo}{the name of the symbol to read, and (optionally)
+  information about how much information to return and in what
+  format.  This argument must be a list}
 }
-  \item{\dots}{
-List argument.
-}
-}
-\details{
-This is some extra detail about rgdx. Please read document. 
-}
+\details{}
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+  By default, the return value is a list with components describing
+  the data item or symbol returned.
+
+  \item{name}{symbol name}
+  \item{type}{symbol's data type: \code{set}, \code{parameter},
+  \code{variable} or \code{equation}}
+  \item{dim}{symbol dimension}
+  \item{val}{array containing the symbol data}
+  \item{form}{form of the data in \code{val}, i.e. \code{full} or \code{sparse}}
+  \item{uels}{vector of UEL lists, one list per symbol dimension}
+
+  The output format can be adjusted via a global option.  Documentation
+  for this is in progress.
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
-\author{
-Rishabh Jain
-}
+\author{Original coding by Rishabh Jain.  Adopted and packaged by
+Steve Dirkse.  Maintainer: \email{R@gams.com}}
 \note{
-%%  ~~further notes~~
+  A common problem is failure to load the external GDX libraries that
+  are required to interface with GDX data.  Use \code{\link{igdx}} to
+  troubleshoot and solve this problem.
 }
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+ \code{\link{igdx}}, \code{\link{wgdx}}, \code{\link{gdxInfo}}
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-function (gdxFile, ...) 
-{
-    .External("rgdx", gdxFile, ...)
-  }
+  data(trnsport);
+  wgdx('rgdx1',sf,si,sj,sa,sb,sd);
+  symInfo <- list(name='f')
+#  of = rgdx('rgdx1',symInfo)
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ data }
+\keyword{ optimize }
+\keyword{ interface }

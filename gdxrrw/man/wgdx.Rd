@@ -7,7 +7,7 @@
   data element - i.e. a set or parameter - all of which are written to
   a single file.
 }
-\usage{wgdx(gdxFileNam, ...)}
+\usage{wgdx(gdxFile, ...)}
 \arguments{
   \item{gdxFile}{the name of the GDX file}
   \item{\dots}{zero or more structures describing the sets and
@@ -25,7 +25,7 @@ Steve Dirkse.  Maintainer: \email{R@gams.com}}
  \code{\link{igdx}}, \code{\link{rgdx}}, \code{\link{gdxInfo}}
 }
 \examples{
-  data(wgdx1);
+  data(trnsport);
   wgdx('wgdx1.gdx',sf,si,sj,sa,sb,sd);
 }
 \keyword{ data }
