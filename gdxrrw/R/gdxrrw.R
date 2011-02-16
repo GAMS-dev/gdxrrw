@@ -34,12 +34,12 @@ gams <- function(gms, ...)
   .External("gams", gms, ..., PACKAGE="gdxrrw")
 }
 
-gdxInfo <- function(...)
+gdxInfo <- function(gdxName = NULL)
 {
-  .External("gdxInfo", ..., PACKAGE="gdxrrw")
+  .External("gdxInfo", gdxName, PACKAGE="gdxrrw");
 }
 
-igdx <- function(...) 
+igdx <- function(...)
 {
-  .External("igdx", ..., PACKAGE="gdxrrw")
+  .External("igdx", ..., PACKAGE="gdxrrw");
 }

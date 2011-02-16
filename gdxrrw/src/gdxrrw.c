@@ -3886,16 +3886,16 @@ SEXP gdxInfo (SEXP args)
 
   /* ----------------- Check proper number of inputs ------------
    * Function should follow specification of
-   * rgdx ('gdxFileName')
+   * gdxInfo ('gdxName')
    * -----------------------------------------------------------------------*/
-  if (arglen < 1 || arglen > 2) {
-    Rprintf ("usage: %s(<gdxFileName>)\n", funcName);
-    error ("usage: gdxInfo(<gdxFileName>) - incorrect arg count");
+  if (2 != arglen) {
+    error ("usage: %s(gdxName=NULL) - incorrect arg count", funcName);
   }
+  fileName = CADR(args);
 
   loadGDX();
-  if (1 == arglen) {
-    /* no arguments: just load GDX and print the version info */
+  if (TYPEOF(fileName) == NILSXP) {
+    /* no argument: just load GDX and print the version info */
     rc = gdxCreate (&gdxHandle, msg, sizeof(msg));
     if (0 == rc)
       error ("Error creating GDX object: %s", msg);
@@ -3907,19 +3907,15 @@ SEXP gdxInfo (SEXP args)
     return R_NilValue;
   }
 
-  fileName = CADR(args);
   /* Checking that argument is of type string */
   if (TYPEOF(fileName) != STRSXP) {
-    Rprintf ("usage: %s(<gdxFileName>)\n", funcName);
-    Rprintf ("  gdxFileName argument must be a string\n");
-    error ("usage: gdxInfo(<gdxFileName>) - gdxFileName must be a string");
+    error ("usage: %s(gdxName=NULL) - gdxName must be a string", funcName);
   }
 
   (void) CHAR2ShortStr (CHAR(STRING_ELT(fileName, 0)), gdxFileName);
 
   checkFileExtension (gdxFileName);
 
-  loadGDX();
   rc = gdxCreate (&gdxHandle, msg, sizeof(msg));
   if (0 == rc)
     error ("Error creating GDX object: %s", msg);

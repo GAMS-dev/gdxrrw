@@ -5,9 +5,11 @@
 Display all the information contained in a GDX file, along with some
 version & debugging info.  The display format is copied from gdxdump.
 }
-\usage{gdxInfo(gdxFile)}
+\usage{
+  gdxInfo(gdxName = NULL)
+}
 \arguments{
-  \item{gdxFile}{the name of the GDX file.  If this argument is
+  \item{gdxName}{the name of the GDX file.  If this argument is
   omitted, we display only the version info for the GDX library used}
 }
 \author{Original coding by Rishabh Jain.  Adopted and packaged by

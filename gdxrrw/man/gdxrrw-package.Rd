@@ -27,18 +27,10 @@ It contains five methods
 	5. gdxInfo('gdxfile')
 }
 \author{Original coding by Rishabh Jain.  Adopted and packaged by
-Steve Dirkse.  Maintainer: <R@gams.com>}
-\references{
-Please read document at http://www.gams.com/~steve/gdxmrw.html
-}
+Steve Dirkse.  Maintainer: \email{R@gams.com}}
 \keyword{ package }
 \keyword{ data }
 \keyword{ optimize }
 \keyword{ interface }
-\seealso{
-~~ Optional links to other man pages, e.g. ~~
-~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
-}
 \examples{
-
 }
