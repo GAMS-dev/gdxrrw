@@ -2953,7 +2953,8 @@ loadGDX (void)
  * ------------------------------------------------------------------ */
 SEXP rgdx (SEXP args)
 {
-  SEXP fileName, symbolList, UEList;
+  const char *funcName = "rgdx";
+  SEXP fileName, requestList, UEList;
   SEXP compName = R_NilValue,
     compType = R_NilValue,
     compDim = R_NilValue,
@@ -2997,45 +2998,33 @@ SEXP rgdx (SEXP args)
   nonZero = 0;
   alloc = 0;
 
-  /* Due to some reason length is always equal to actual length plus 1 */
+  /* first arg is function name - ignore it */
   arglen = length(args);
 
   /* ----------------- Check proper number of inputs and outputs ------------
    * Function should follow specification of
-   * rgdx ('gdxFileName', structure)
-   * There are 2 inputs
-  * -------------------------------------------------------------------------*/
-  if (arglen > 3 || arglen < 2) {
-    Rprintf("%d entries are entered!\n", arglen-1);
-    Rprintf("Input must be according to this specification:\n");
-    Rprintf("(gdx_filename, struct)\n");
-    error("Incorrect input argument specified.");
+   * rgdx ('gdxFileName', requestList = NULL)
+   * ------------------------------------------------------------------------ */
+  if (3 != arglen) {
+    error ("usage: %s(gdxName, requestList = NULL) - incorrect arg count", funcName);
   }
-
-  args = CDR(args); fileName = CAR(args);
-  args = CDR(args); symbolList = CAR(args);
-
-  /* get the number of input arguments to decide output presentation */
-  if (arglen == 3) {
-    withList = 1;
+  fileName = CADR(args);
+  requestList = CADDR(args);
+  if (TYPEOF(fileName) != STRSXP) {
+    error ("usage: %s(gdxName, requestList = NULL) - gdxName must be a string", funcName);
   }
-  else {
+  if (TYPEOF(requestList) == NILSXP)
     withList = 0;
-  }
-
-  /* Checking that first argument is of type string
-   * and second argument is of type list
-   */
-  if (TYPEOF(fileName) != STRSXP || (withList && TYPEOF(symbolList) != VECSXP)) {
-    Rprintf("Input must be according to this specification:\n");
-    Rprintf("(gdxFileName, list)\n");
-    Rprintf("Argument types are (string, list)\n");
-    error("Wrong Argument Type");
+  else {
+    withList = 1;
+    if (TYPEOF(requestList) != VECSXP) {
+      error ("usage: %s(gdxName, requestList) - requestList must be a list", funcName);
+    }
   }
 
   s = CHAR2ShortStr (CHAR(STRING_ELT(fileName, 0)), gdxFileName);
 
-  if (2 == arglen) {
+  if (! withList) {
     if (0 == strcmp("?", gdxFileName)) {
       int n = (int)strlen (ID);
       memcpy (strippedID, ID+1, n-2);
@@ -3049,8 +3038,7 @@ SEXP rgdx (SEXP args)
   checkFileExtension (gdxFileName);
   fin = fopen (gdxFileName, "r");
   if (fin==NULL) {
-    sprintf (buf, "File '%s' not found!\n", gdxFileName );
-    error(buf);
+    error ("GDX file '%s' not found\n", gdxFileName);
   }
   fclose(fin);
   /*-------------------- Checking data for input list ------------*/
@@ -3066,7 +3054,7 @@ SEXP rgdx (SEXP args)
   inputData->withField = 0;
 
   if (withList) {
-    checkRgdxList(symbolList, inputData);
+    checkRgdxList (requestList, inputData);
     if (inputData->compress == 1 && inputData->withUel == 1) {
       error("Compression is not allowed with input UEL\n");
     }
@@ -3909,7 +3897,7 @@ SEXP gdxInfo (SEXP args)
 
   /* Checking that argument is of type string */
   if (TYPEOF(fileName) != STRSXP) {
-    error ("usage: %s(gdxName=NULL) - gdxName must be a string", funcName);
+    error ("usage: %s(gdxName) - gdxName must be a string", funcName);
   }
 
   (void) CHAR2ShortStr (CHAR(STRING_ELT(fileName, 0)), gdxFileName);
@@ -4090,6 +4078,7 @@ SEXP gdxInfo (SEXP args)
  */
 SEXP igdx (SEXP args)
 {
+  const char *funcName = "igdx";
   SEXP result;
   int arglen;
   int rc, gdxLoaded;
@@ -4098,20 +4087,16 @@ SEXP igdx (SEXP args)
   shortStringBuf_t sysDir, msgBuf;
 
   arglen = length(args);
-
-  if (arglen < 1 || arglen > 2) {
-    Rprintf ("usage: %s(<gamsSysDir>)\n", CHAR(STRING_ELT(CAR(args),0)));
-    error ("usage: igdx(<gamsSysDir>) - incorrect arg count");
+  if (2 != arglen) {
+    error ("usage: %s(gamsSysDir=NULL) - incorrect arg count", funcName);
   }
+  pSysDir = CADR(args);
 
   gdxLoaded = gdxLibraryLoaded();
 
-  if (arglen > 1) {             /* we have gamsSysDir */
-    pSysDir = CADR(args);
+  if (TYPEOF(pSysDir) != NILSXP) { /* we should have gamsSysDir */
     if (TYPEOF(pSysDir) != STRSXP) {
-      Rprintf ("usage: %s(<gamsSysDir>)\n", CHAR(STRING_ELT(CAR(args),0)));
-      Rprintf ("  gamsSysDir argument must be a string\n");
-      error ("usage: igdx(<gamsSysDir>) - gamsSysDir must be a string");
+      error ("usage: %s(gamsSysDir) - gamsSysDir must be a string", funcName);
     }
     (void) CHAR2ShortStr (CHAR(STRING_ELT(pSysDir, 0)), sysDir);
 

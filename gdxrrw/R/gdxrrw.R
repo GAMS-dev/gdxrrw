@@ -19,14 +19,14 @@
 
 ##dyn.load("gdxrrw.so")
 
-rgdx <- function(gdxFile, ...)
+rgdx <- function(gdxName, requestList = NULL)
 {
-  .External("rgdx", gdxFile, ..., PACKAGE="gdxrrw")
+  .External("rgdx", gdxName, requestList, PACKAGE="gdxrrw");
 }
 
-wgdx <- function(gdxFile, ...)
+wgdx <- function(gdxName, ...)
 {
-  .External("wgdx", gdxFile, ..., PACKAGE="gdxrrw")
+  .External("wgdx", gdxName, ..., PACKAGE="gdxrrw")
 }
 
 gams <- function(gms, ...)
@@ -39,7 +39,7 @@ gdxInfo <- function(gdxName = NULL)
   .External("gdxInfo", gdxName, PACKAGE="gdxrrw");
 }
 
-igdx <- function(...)
+igdx <- function(gamsSysDir = NULL)
 {
-  .External("igdx", ..., PACKAGE="gdxrrw");
+  .External("igdx", gamsSysDir, PACKAGE="gdxrrw");
 }

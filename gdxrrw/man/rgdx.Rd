@@ -6,12 +6,13 @@
   it as a list.  Note that GDX files contain multiple symbols (e.g. sets,
   parameters).  Each symbol is read with a separate call.
 }
-\usage{rgdx(gdxFile, symInfo)}
+\usage{rgdx(gdxName, requestList = NULL)}
 \arguments{
-  \item{gdxFile}{the name of the GDX file to read}
-  \item{symInfo}{the name of the symbol to read, and (optionally)
+  \item{gdxName}{the name of the GDX file to read}
+  \item{requestList}{the name of the symbol to read, and (optionally)
   information about how much information to return and in what
-  format.  This argument must be a list}
+  format.  This argument must be a list.  If omitted, the universe of
+  UELs contained in the GDX file is returned}
 }
 \details{}
 \value{
@@ -42,18 +43,19 @@ Steve Dirkse.  Maintainer: \email{R@gams.com}}
 \examples{
   data(trnsport);
   wgdx('rgdx1',sf,si,sj,sa,sb,sd);
-  symInfo <- list(name='f');
-  of = rgdx('rgdx1',symInfo);
-  symInfo <- list(name='i');
-  oi = rgdx('rgdx1',symInfo);
-  symInfo <- list(name='j');
-  oj = rgdx('rgdx1',symInfo);
-  symInfo <- list(name='a');
-  oa = rgdx('rgdx1',symInfo);
-  symInfo <- list(name='b');
-  ob = rgdx('rgdx1',symInfo);
-  symInfo <- list(name='d');
-  od = rgdx('rgdx1',symInfo);
+  ou = rgdx('rgdx1');
+  req <- list(name='f');
+  of = rgdx('rgdx1',req);
+  req <- list(name='i');
+  oi = rgdx('rgdx1',req);
+  req <- list(name='j');
+  oj = rgdx('rgdx1',req);
+  req <- list(name='a');
+  oa = rgdx('rgdx1',req);
+  req <- list(name='b');
+  ob = rgdx('rgdx1',req);
+  req <- list(name='d');
+  od = rgdx('rgdx1',req);
 }
 \keyword{ data }
 \keyword{ optimize }

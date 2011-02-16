@@ -3,14 +3,14 @@
 \title{Write R data to GDX}
 \description{
   Create a GDX file containing the GAMS data described in the
-  structures \dots.  Note that each structure describes a separate
+  lists \dots.  Note that each list describes a separate
   data element - i.e. a set or parameter - all of which are written to
   a single file.
 }
-\usage{wgdx(gdxFile, ...)}
+\usage{wgdx(gdxName, ...)}
 \arguments{
-  \item{gdxFile}{the name of the GDX file}
-  \item{\dots}{zero or more structures describing the sets and
+  \item{gdxName}{the name of the GDX file to write}
+  \item{\dots}{zero or more lists describing the sets and
   parameters to write}
 }
 \details{}
