@@ -9,10 +9,15 @@ R CMD check gdxrrw
 R CMD build gdxrrw
 R CMD build gdxrrw --binary {what we want to avoid user compiling}
 
-or on Windows
+or on Windows, we are trying
 
 R CMD INSTALL -l C:\R\2.12 gdxrrw
+R CMD REMOVE  -l C:\R\2.12 gdxrrw  {to remove, or undo an install}
+R CMD build gdxrrw --binary {what we want to avoid user compiling}
 
+-- these didn't work so well
+R CMD INSTALL -l C:\R\2.12 --no-multiarch gdxrrw
+R --arch=x64 CMD INSTALL -l C:\R\2.12 gdxrrw
 
 
 > .First <- function() { library(gdxrrw) ; igdx("/home/steve/leg_alpha/gmstest")}
