@@ -1604,7 +1604,7 @@ checkFileExtension (shortStringBuf_t fileName)
 {
   char *fileExt;
 
-  fileExt = rindex (fileName, '.');
+  fileExt = strrchr (fileName, '.');
   if (NULL == fileExt) {
     if (strlen(fileName) < sizeof(shortStringBuf_t)-4) {
       fileName = strcat(fileName, ".gdx");
