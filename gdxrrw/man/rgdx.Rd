@@ -41,7 +41,10 @@ Steve Dirkse.  Maintainer: \email{R@gams.com}}
  \code{\link{igdx}}, \code{\link{wgdx}}, \code{\link{gdxInfo}}
 }
 \examples{
+  # run R-script trnsport.r from the data subdirectory of the gdxrrw library
+  # to load up some data for writing to a GDX file
   data(trnsport);
+
   wgdx('rgdx1',sf,si,sj,sa,sb,sd);
   ou = rgdx('rgdx1');
   req <- list(name='f');
