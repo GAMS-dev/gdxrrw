@@ -128,7 +128,7 @@ tryCatch({
     for (kj in dim(a$val)[2] ) {
       if (a$val[ki,kj] != av[ki,kj]) {
         stop ("Bad data in a$val, row ", ki, " col ", kj);
-      }	
+      }
     }
   }
 
@@ -157,7 +157,7 @@ tryCatch({
     for (kj in dim(b$val)[2] ) {
       if (b$val[ki,kj] != bv[ki,kj]) {
         stop ("Bad data in b$val, row ", ki, " col ", kj);
-      }	
+      }
     }
   }
 
@@ -191,7 +191,7 @@ tryCatch({
     for (kj in dim(c$val)[2] ) {
       if (c$val[ki,kj] != cv[ki,kj]) {
         stop ("Bad data in c$val, row ", ki, " col ", kj);
-      }	
+      }
     }
   }
 
@@ -225,7 +225,7 @@ tryCatch({
     for (kj in dim(d$val)[2] ) {
       if (d$val[ki,kj] != dv[ki,kj]) {
         stop ("Bad data in d$val, row ", ki, " col ", kj);
-      }	
+      }
     }
   }
 
@@ -259,7 +259,7 @@ tryCatch({
     for (kj in dim(x$val)[2] ) {
       if (x$val[ki,kj] != xlv[ki,kj]) {
         stop ("Bad data in x$val, row ", ki, " col ", kj);
-      }	
+      }
     }
   }
 
