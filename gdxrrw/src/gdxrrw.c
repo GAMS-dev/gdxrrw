@@ -203,7 +203,7 @@ checkStringLength(const char *str);
 void downCase (char *string);
 
 int
-getNonZeroElements (gdxHandle_t h, int symIdx, dField_t *dField);
+getNonZeroElements (gdxHandle_t h, int symIdx, dField_t dField);
 
 SEXP
 compressData(SEXP data,
@@ -858,7 +858,7 @@ getGamsSoln(char *gmsFileName)
     if (inputData->withUel == 0) {
       /* check for non zero elements for variable and equation */
       if (symType == dt_var || symType == dt_equ ) {
-        mrows = getNonZeroElements (gdxHandle, 1, &inputData->dField);
+        mrows = getNonZeroElements (gdxHandle, 1, inputData->dField);
       }
       /* Creat 2D sparse R array */
       PROTECT(compVal = allocMatrix(REALSXP, mrows, ncols));
@@ -1650,7 +1650,7 @@ void downCase (char *s)
 
 /* Return number of non - Zero elements of variable/equation */
 int
-getNonZeroElements (gdxHandle_t h, int symIdx, dField_t *dField)
+getNonZeroElements (gdxHandle_t h, int symIdx, dField_t dField)
 {
   int nRecs, changeIdx, i, nonZero;
   gdxUelIndex_t uels;
@@ -1660,7 +1660,7 @@ getNonZeroElements (gdxHandle_t h, int symIdx, dField_t *dField)
   gdxDataReadRawStart (h, symIdx, &nRecs);
   for (i = 0; i < nRecs; i++) {
     gdxDataReadRaw (h, uels, values, &changeIdx);
-    if (values[dField[0]] != 0) {
+    if (values[dField] != 0) {
       nonZero++;
     }
   }
@@ -2983,7 +2983,6 @@ SEXP rgdx (SEXP args)
   double  *p, *dimVal, *dimElVect;
   char buf[3*sizeof(shortStringBuf_t)];
   char sText[GMS_SSSIZE], msg[GMS_SSSIZE], stringEle[GMS_SSSIZE];
-  dField_t dField;
   char *types[] = {"set", "parameter", "variable", "equation"};
   char *forms[] = {"full", "sparse"};
   char *fields[] = {"l", "m", "up", "lo", "s"};
@@ -3190,7 +3189,7 @@ SEXP rgdx (SEXP args)
     if (inputData->withUel == 0) {
       /*  check for non zero elements for variable and equation */
       if (symType == dt_var || symType == dt_equ ) {
-        mrows = getNonZeroElements(gdxHandle, symIdx, &inputData->dField);
+        mrows = getNonZeroElements(gdxHandle, symIdx, inputData->dField);
       }
       /* Creat 2D sparse R array */
       PROTECT(compVal = allocMatrix(REALSXP, mrows, ncols));
@@ -3287,7 +3286,7 @@ SEXP rgdx (SEXP args)
             matched = matched +1;
 
             if (symType != dt_set) {
-              if (gdxMapValue (gdxHandle, values[dField], &k)) /* it's special */ {
+              if (gdxMapValue (gdxHandle, values[inputData->dField], &k)) /* it's special */ {
                 switch (k) {
                 case sv_valpin:
                   p[index] = NA_REAL;
@@ -3299,7 +3298,7 @@ SEXP rgdx (SEXP args)
                   p[index] = 0;
                   break;
                 case sv_normal:
-                  p[index] = values[dField];
+                  p[index] = values[inputData->dField];
                   break;
                 case sv_valund:
                 case sv_valna:
@@ -3309,12 +3308,12 @@ SEXP rgdx (SEXP args)
                   sprintf(buf,
                           "Unrecognized map-value %d returned for %g",
                           k,
-                          values[dField]);
+                          values[inputData->dField]);
                   error(buf);
                 } /* end of switch/case */
               }
               else {
-                p[index] = values[dField];
+                p[index] = values[inputData->dField];
               }
             }
           }
@@ -3383,7 +3382,7 @@ SEXP rgdx (SEXP args)
                   p[index] = 0;
                   break;
                 case sv_normal:
-                  p[index] = values[dField];
+                  p[index] = values[inputData->dField];
                   break;
                 case sv_valund:
                 case sv_valna:
