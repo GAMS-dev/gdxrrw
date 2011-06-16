@@ -2564,7 +2564,7 @@ writeGdx(char *gdxFileName,
          SEXP *symbolList,
          int fromGAMS)
 {
-  FILE *matdata;
+  FILE *matdata = NULL;
   SEXP uelIndex, compName, valData;
   SEXP mainBuffer, subBuffer;
   wgdxStruct_t **data;
@@ -2590,9 +2590,9 @@ writeGdx(char *gdxFileName,
 
   total = 1;
   wAlloc = 0;
+  inputTime = "compile";
   if (fromGAMS == 1) {
     /* Open files for interface data */
-    inputTime = "compile";
     inputTime = getGlobalString("input", gsBuf);
     if (NULL == inputTime)
       inputTime = "compile";
@@ -2996,6 +2996,7 @@ SEXP rgdx (SEXP args)
   /* setting intial values */
   nonZero = 0;
   alloc = 0;
+  maxPossibleElements = 0; /* this just to shut up compiler warnings */
 
   /* first arg is function name - ignore it */
   arglen = length(args);
@@ -3177,6 +3178,7 @@ SEXP rgdx (SEXP args)
       iRec = 0;
       k = 0;
     }
+    textElement = R_NilValue;
     /* Allocating memory for 2D sparse matrix */
     if (inputData->withUel == 1) {
       PROTECT(compVal = allocMatrix(REALSXP, mwNElements, ncols));
@@ -3757,6 +3759,7 @@ SEXP gams (SEXP args)
   shortStringBuf_t gsBuf;
   int writeData, rc, i, arglen;
 
+  writeData = 1;
   gamsAlloc = 0;
   globalGams = 1;
   arglen = length(args);
@@ -3807,7 +3810,6 @@ SEXP gams (SEXP args)
   strcpy(specialCommand, " ");
 
   if (arglen > 2) {
-    writeData = 1;
     writeDataStr = getGlobalString("write_data", gsBuf);
     if (writeDataStr != NULL) {
       if (0 == strncmp(writeDataStr,"n",1) || 0 == strncmp(writeDataStr,"N",1)) {
