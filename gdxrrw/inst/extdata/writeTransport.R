@@ -1,51 +1,47 @@
-### Test wgdx
+### Example showing one way to write the data (sets and parameters)
+### for the transport model
 
 tryCatch({
 
-  fn <- "output.gdx"
+  fn <- "mytransport.gdx"
+  if (file_test ('-f', fn) == TRUE) {
+    file.remove (fn)
+  }
 
-  print ("Test wgdx using the transport data as the output target");
-  # wgdx('?');
+  print ("Example showing how to reproduce the transport data using wgdx")
 
-  # this is the universe for this GDX file
-  uu <- list(c("seattle", "san-diego", "new-york", "chicago", "topeka"))
+  # set i: supply nodes
+  si <- list(c("seattle", "san-diego"))
 
-  iv <- matrix(c(1:2), c(2,1));
-  ilst <- list (name='i', type='set', dim=1, form='sparse', ts='canning plants', val=iv, uels=c(uu));
+  # set j: demand nodes
+  sj <- list(c("new-york", "chicago", "topeka"))
 
-  jv <- matrix(c(3:5), c(3,1));
-  jlst <- list (name='j', type='set', dim=1, form='sparse', ts='markets', val=jv, uels=c(uu));
+  ilst <- list (name='i', type='set', ts='canning plants', uels=c(si))
 
-  av <- matrix(c(1:2,350,600), c(2,2));
-  alst <- list (name='a', type='parameter', dim=1, form='sparse',
-                ts='capacity of plant i in cases', val=av, uels=c(uu));
+  jlst <- list (name='j', type='set', ts='markets', uels=c(sj))
 
-  bv <- matrix(c(3, 325,
-                 4, 300,
-                 5, 275),  c(3,1), byrow=TRUE);
-  blst <- list (name='b', type='parameter', dim=1, form='sparse',
-                ts='demand at market j in cases', val=bv, uels=c(uu));
+  av <- as.array(c(350,600))
+  alst <- list (name='a', type='parameter', form='full',
+                ts='capacity of plant i in cases', val=av, uels=c(si))
+
+  bv <- as.array(c(325, 300, 275))
+  blst <- list (name='b', type='parameter', form='full',
+                ts='demand at market j in cases', val=bv, uels=c(sj))
 
   f <- 90
-  fv <- matrix(c(90),c(1,1))
-  dv <- matrix(c(1, 3, 2.5,
-                 1, 4, 1.7,
-                 1, 5, 1.8,
-                 2, 3, 2.5,
-                 2, 4, 1.8,
-                 2, 5, 1.4),  c(6,3), byrow=TRUE);
-  cv <- dv
-  cv[,3] <- dv[,3] * f / 1000
+  d <- matrix(c(2.5, 1.7, 1.8,
+                2.5, 1.8, 1.4),  c(2,3), byrow=TRUE)
+  c <- d * f / 1000
 
-  clst <- list (name='c', type='parameter', dim=2, form='sparse',
-                ts='transport cost in thousands of dollars per case', val=cv, uels=c(uu,uu));
-  dlst <- list (name='d', type='parameter', dim=2, form='sparse',
-                ts='distance in thousands of miles', val=dv, uels=c(uu,uu));
+  clst <- list (name='c', type='parameter', form='full',
+                ts='transport cost in thousands of dollars per case', val=c, uels=c(si,sj))
+  dlst <- list (name='d', type='parameter', form='full',
+                ts='distance in thousands of miles', val=d, uels=c(si,sj))
 
-  flst <- list (name='f', type='parameter', dim=0, form='sparse',
-                ts='freight in dollars per case per thousand miles', val=fv);
+  flst <- list (name='f', type='parameter', form='full',
+                ts='freight in dollars per case per thousand miles', val=f)
 
-  wgdx (fn, ilst, jlst, alst, blst, clst, dlst, flst);
+  wgdx (fn, ilst, jlst, alst, blst, clst, dlst, flst)
 
   if (file_test ('-f', fn) == TRUE) {
     print (paste("File", fn, "was created"))
@@ -61,4 +57,4 @@ tryCatch({
 }
 
 , error = function(ex) {print(ex)}
-);
+)
