@@ -3029,7 +3029,7 @@ SEXP rgdx (SEXP args)
       int n = (int)strlen (ID);
       memcpy (strippedID, ID+1, n-2);
       strippedID[n-2] = '\0';
-      warning("R-file source info: %s", strippedID);
+      Rprintf ("R-file source info: %s\n", strippedID);
       return R_NilValue;
     } /* if audit run */
   } /* if one arg, of character type */
@@ -3726,7 +3726,7 @@ SEXP wgdx (SEXP args)
       int n = (int)strlen (ID);
       memcpy (strippedID, ID+1, n-2);
       strippedID[n-2] = '\0';
-      warning("R-file source info: %s", strippedID);
+      Rprintf ("R-file source info: %s\n", strippedID);
       return R_NilValue;
     } /* if audit run */
   } /* if one arg, of character type */
