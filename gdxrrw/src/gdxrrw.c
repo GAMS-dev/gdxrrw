@@ -2375,7 +2375,7 @@ checkRgdxList (const SEXP lst, struct rgdxStruct *data)
         data->compress = 0;
       }
       else {
-        error("Input list component 'form' must be either 'true' or 'false'.");
+        error("Input list component 'compress' must be either 'true' or 'false'.");
       }
     }
     else if (TYPEOF(tmp) == LGLSXP) {
