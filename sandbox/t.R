@@ -67,10 +67,13 @@ conflst <- list(name='confint', type='parameter', form='full',
              ts='confidence intervals',
              val=confint, uels=c(confs,p,bnds))
 
+covlst <- list(name='covar', type='parameter', form='full',
+             ts='variance-covariance matrix',
+             val=vcov(res), uels=c(p,p))
+
 wgdx (fnSol, estlst, selst, tlst, plst, dflst, sigmalst, r2lst,
-      residualslst, fittedlst, conflst)
+      residualslst, fittedlst, conflst, covlst)
 # still to do:
-#  covar: ???
 #  resvar
 #  rss
 
@@ -86,7 +89,7 @@ if (0 != rc) {
   print ("tight gdxdiff call succeeded")
 }
 
-rc <- system (paste("gdxdiff ls.gdx",fnSol,"releps=1e-5 eps=1e-30 id=tval,pval,confint"))
+rc <- system (paste("gdxdiff ls.gdx",fnSol,"releps=1e-5 eps=1e-30 id=tval,pval,confint,covar"))
 if (0 != rc) {
   stop(paste("Bad return from loose gdxdiff: wanted 0, got",rc))
 } else {
