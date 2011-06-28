@@ -1,5 +1,6 @@
 fnIn <- "ls01.gdx"
 fnSol <- "lsSolu.gdx"
+# options(list("digits"=10))
 
 lst <- list(name='p',form='full',compress=TRUE)
 data <- rgdx(fnIn,lst)
@@ -14,8 +15,10 @@ d <- data.frame(y=data$val[,1],x=data$val[,2])
 f <- y ~ x
 res <- lm(f, data = d)
 est <- as.array(coef(res))
-se <- as.array(summary(res)$coefficients[,'Std. Error'])
+smry <- summary(res)
+se <- as.array(smry$coefficients[,'Std. Error'])
 df <- res$df.residual
+residuals <- res$residuals
 
 estlst <- list(name='estimate', type='parameter', form='full',
                ts='Estimated coefficients', val=est, uels=p)
@@ -26,26 +29,34 @@ selst <- list(name='se', type='parameter', form='full',
 
 tlst <- list(name='tval', type='parameter', form='full',
              ts='t values',
-             val=as.array(summary(res)$coefficients[,'t value']), uels=p)
+             val=as.array(smry$coefficients[,'t value']), uels=p)
 
 plst <- list(name='pval', type='parameter', form='full',
             ts='p values',
-            val=as.array(summary(res)$coefficients[,'Pr(>|t|)']), uels=p)
+            val=as.array(smry$coefficients[,'Pr(>|t|)']), uels=p)
 
 dflst <- list(name='df', type='parameter', form='full', dim=0,
               ts='Degrees of freedom', val=df)
 
 sigmalst <- list(name='sigma', type='parameter', form='full', dim=0,
                  ts='Standard error',
-                 val=summary(res)$sigma)
+                 val=smry$sigma)
 
 r2lst <- list(name='r2', type='parameter', form='full', dim=0,
               ts='R Squared',
-              val=summary(res)$r.squared)
+              val=smry$r.squared)
+
+resvarlst <- list(name='resvar', type='parameter', form='full', dim=0,
+                  ts='Residual variance',
+                  val=(smry$sigma)^2)
+
+rsslst <- list(name='rss', type='parameter', form='full', dim=0,
+               ts='Residual sum of squares',
+               val=sum(residuals^2))
 
 residualslst <- list(name='resid', type='parameter', form='full',
                 ts='residuals',
-                val=as.array(res$residuals), uels=i)
+                val=as.array(residuals), uels=i)
 
 fittedlst <- list(name='fitted', type='parameter', form='full',
              ts='fitted values for dependent variable',
@@ -72,17 +83,14 @@ covlst <- list(name='covar', type='parameter', form='full',
              val=vcov(res), uels=c(p,p))
 
 wgdx (fnSol, estlst, selst, tlst, plst, dflst, sigmalst, r2lst,
-      residualslst, fittedlst, conflst, covlst)
-# still to do:
-#  resvar
-#  rss
+      resvarlst, rsslst, residualslst, fittedlst, conflst, covlst)
 
 if (file_test ('-f', fnSol) == TRUE) {
   print (paste("File", fnSol, "was created"))
 } else {
   stop (paste("FAIL: File", fnSol, "is not readable"))
 }
-rc <- system (paste("gdxdiff ls.gdx",fnSol,"releps=5e-12 eps=1e-30 id=estimate,se,df,sigma,r2,resid,fitted"))
+rc <- system (paste("gdxdiff ls.gdx",fnSol,"releps=5e-12 eps=1e-30 id=estimate,se,df,sigma,r2,resid,fitted,resvar,rss"))
 if (0 != rc) {
   stop(paste("Bad return from tight gdxdiff: wanted 0, got",rc))
 } else {
