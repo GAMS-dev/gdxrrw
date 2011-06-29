@@ -3,7 +3,7 @@
 
 tryCatch({
 
-  fn <- "tw1.gdx"
+  fn <- "tws1.gdx"
 
   print ("Test wgdx with form='sparse' and a full universe,")
   print ("using the transport data as the output target");
