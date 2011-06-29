@@ -1,5 +1,4 @@
 ### Test rgdx
-# e <- simpleError ("rgdx test error");
 
 tryCatch({
   print ("Test rgdx using the transport data as input");
