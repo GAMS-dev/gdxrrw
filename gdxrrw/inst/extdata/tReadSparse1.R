@@ -1,7 +1,10 @@
 ### Test rgdx
+# We read the transport data using defaults: form=sparse and a full universe
+# This test does near-exhaustive checks on the returned structure
 
 tryCatch({
-  print ("Test rgdx using the transport data as input");
+  print ("Test rgdx with defaults (form='sparse' and no filter)");
+  print ("using the transport data as input");
   rgdx('?');
 
   u <- rgdx('trnsport');
@@ -289,7 +292,8 @@ tryCatch({
 
 
   print ("Successfully completed tests");
+  return (TRUE)
 }
-, error = function(ex) {print(ex)}
-#, finally = print ("All done with readTransport.R test" )
- );
+
+, error = function(ex) { print(ex) ; return (FALSE) }
+)

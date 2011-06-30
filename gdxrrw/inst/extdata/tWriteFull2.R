@@ -1,5 +1,5 @@
 ### Test wgdx
-# We write all the transport data using dense writes and universe
+# We write all the transport data using full writes and universe
 # subsets, with or without values
 
 tryCatch({
@@ -7,8 +7,8 @@ tryCatch({
   fn <- "twd2.gdx"
 
   print ("Test wgdx with form='full' and universe subsets,")
-  print ("using the transport data as the output target");
-  wgdx('?');
+  print ("using the transport data as the output target")
+  wgdx('?')
 
   # set i: supply nodes
   si <- list(c("seattle", "san-diego"))
@@ -16,18 +16,18 @@ tryCatch({
   # set j: demand nodes
   sj <- list(c("new-york", "chicago", "topeka"))
 
-  iv <- as.array(c(1,1));
-  ilst <- list (name='i', type='set', dim=1, form='full', ts='canning plants', val=iv, uels=c(si));
+  iv <- as.array(c(1,1))
+  ilst <- list (name='i', type='set', dim=1, form='full', ts='canning plants', val=iv, uels=c(si))
 
-  jlst <- list (name='j', type='set', form='full', ts='markets', uels=c(sj));
+  jlst <- list (name='j', type='set', form='full', ts='markets', uels=c(sj))
 
-  av <- as.array(c(350,600));
+  av <- as.array(c(350,600))
   alst <- list (name='a', type='parameter', dim=1, form='full',
-                ts='capacity of plant i in cases', val=av, uels=c(si));
+                ts='capacity of plant i in cases', val=av, uels=c(si))
 
-  bv <- as.array(c(325,300,275));
+  bv <- as.array(c(325,300,275))
   blst <- list (name='b', type='parameter', form='full',
-                ts='demand at market j in cases', val=bv, uels=c(sj));
+                ts='demand at market j in cases', val=bv, uels=c(sj))
 
   f <- 90
   d <- matrix(c(2.5, 1.7, 1.8,
@@ -35,14 +35,14 @@ tryCatch({
   c <- d * f / 1000
 
   clst <- list (name='c', type='parameter', dim=2, form='full',
-                ts='transport cost in thousands of dollars per case', val=c, uels=c(si,sj));
+                ts='transport cost in thousands of dollars per case', val=c, uels=c(si,sj))
   dlst <- list (name='d', type='parameter', form='full',
-                ts='distance in thousands of miles', val=d, uels=c(si,sj));
+                ts='distance in thousands of miles', val=d, uels=c(si,sj))
 
   flst <- list (name='f', type='parameter', form='full',
-                ts='freight in dollars per case per thousand miles', val=f);
+                ts='freight in dollars per case per thousand miles', val=f)
 
-  wgdx (fn, ilst, jlst, alst, blst, clst, dlst, flst);
+  wgdx (fn, ilst, jlst, alst, blst, clst, dlst, flst)
 
   if (file_test ('-f', fn) == TRUE) {
     print (paste("File", fn, "was created"))
@@ -55,7 +55,8 @@ tryCatch({
   } else {
     print ("gdxdiff call succeeded")
   }
+  return (TRUE)
 }
 
-, error = function(ex) {print(ex)}
-);
+, error = function(ex) { print(ex) ; return (FALSE) }
+)

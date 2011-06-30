@@ -3,10 +3,10 @@
 
 # compare the set s to the universe, return TRUE if the same, FALSE o/w
 chkUni <- function(uni,s) {
-  if (! is.vector(s))   return (FALSE);
+  if (! is.vector(s))     return (FALSE);
   if (! is.vector(uni))   return (FALSE);
   n <- length(uni)    
-  if (n != length(s))   return (FALSE);
+  if (n != length(s))     return (FALSE);
   for (k in c(1:n)) {
     if (uni[k] != s[k]) {
       print ("chkUni: UEL with index ", k, " is wrong");
@@ -51,8 +51,33 @@ tryCatch({
   }
   print ("Done reading set i");
 
+  lst <- list(name='j',form='full')
+  j <- rgdx('trnsport',lst)
+  if (j$name != 'j')
+    stop ("Expected j$name to be 'j', got ", j$name)
+  if (j$type != "set")
+    stop ("Expected j$type to be 'set', got ", j$type)
+  if (j$dim != 1)
+    stop ("Expected j$dim to be 1, got ", j$dim)
+  if (j$form != "full")
+    stop ("Expected j$form to be 'full', got ", j$form)
+  if (length(j$uels) != j$dim)
+    stop ("Expected length of j$uels to be equal j$dim, got ", length(j$uels))
+  for (d in dim(j$uels)) {
+    if (! chkUni(u$uels,j$uels[[d]])) {
+      stop ("Expected universe in dim ", d, " of j$uels");
+    }
+  }
+  jv <- matrix(c(0,0,1,1,1), c(5,1));
+  dd <- jv == j$val
+  if (! prod(dd)) {
+    stop ("Bad data in j$val: ", dd);
+  }
+  print ("Done reading set j");
+
   print ("Successfully completed tests");
+  return (TRUE)
 }
 
-, error = function(ex) {print(ex)}
+, error = function(ex) { print(ex) ; return (FALSE) }
 )
