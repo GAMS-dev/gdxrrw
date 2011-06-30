@@ -3719,7 +3719,6 @@ SEXP wgdx (SEXP args)
   }
 
   (void) CHAR2ShortStr (CHAR(STRING_ELT(fileName, 0)), gdxFileName);
-  checkFileExtension (gdxFileName);
 
   if (2 == arglen) {
     if (0 == strcmp("?", gdxFileName)) {
@@ -3730,6 +3729,8 @@ SEXP wgdx (SEXP args)
       return R_NilValue;
     } /* if audit run */
   } /* if one arg, of character type */
+
+  checkFileExtension (gdxFileName);
 
   symbolList = malloc((arglen-2)*sizeof(*symbolList));
   /* get the pointer of input argument and store it locally for better access */
