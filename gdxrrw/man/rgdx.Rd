@@ -35,6 +35,7 @@
   \item{form}{form of the data in \code{val}, i.e. \code{full} or \code{sparse}}
   \item{uels}{vector of UEL lists, one list per symbol dimension}
 
+
   The functions \code{rgdx.param} and \code{rgdx.set} are
   special-purpose wrappers that read parameters and sets,
   respectively, and return them as data frames.
@@ -53,24 +54,32 @@ Steve Dirkse.  Maintainer: \email{R@gams.com}}
  \code{\link{igdx}}, \code{\link{wgdx}}, \code{\link{gdxInfo}}
 }
 \examples{
-  # run R-script trnsport.r from the data subdirectory of the gdxrrw library
+  # run R-script trnsport.r from the data subdirectory of the gdxrrw package
   # to load up some data for writing to a GDX file
-  data(trnsport);
+  data(trnsport)
 
-  wgdx('rgdx1',sf,si,sj,sa,sb,sd);
-  ou = rgdx('rgdx1');
-  req <- list(name='f');
-  of = rgdx('rgdx1',req);
-  req <- list(name='i');
-  oi = rgdx('rgdx1',req);
-  req <- list(name='j');
-  oj = rgdx('rgdx1',req);
-  req <- list(name='a');
-  oa = rgdx('rgdx1',req);
-  req <- list(name='b');
-  ob = rgdx('rgdx1',req);
-  req <- list(name='d');
-  od = rgdx('rgdx1',req);
+  wgdx('rgdx1',sf,si,sj,sa,sb,sd)
+  ou = rgdx('rgdx1')
+  req <- list(name='f')
+  of = rgdx('rgdx1',req)
+  req <- list(name='i')
+  oi = rgdx('rgdx1',req)
+  req <- list(name='j')
+  oj = rgdx('rgdx1',req)
+  req <- list(name='a')
+  oa = rgdx('rgdx1',req)
+  req <- list(name='b')
+  ob = rgdx('rgdx1',req)
+  req <- list(name='d')
+  od = rgdx('rgdx1',req)
+
+  \dontrun{
+    # complete tests and examples can be run in the
+    # inst/extdata directory of the gdxrrw package
+    # check .libPaths for a hint on where packages are installed
+    setwd("C:/R/2.12/gdxrrw/inst/extdata")
+    source("tAll.R")
+  }
 }
 \keyword{ data }
 \keyword{ optimize }

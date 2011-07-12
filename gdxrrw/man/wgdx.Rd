@@ -27,6 +27,14 @@ Steve Dirkse.  Maintainer: \email{R@gams.com}}
 \examples{
   data(trnsport);
   wgdx('wgdx1.gdx',sf,si,sj,sa,sb,sd);
+
+  \dontrun{
+    # complete tests and examples can be run in the
+    # inst/extdata directory of the gdxrrw package
+    # check .libPaths for a hint on where packages are installed
+    setwd("C:/R/2.12/gdxrrw/inst/extdata")
+    source("tAll.R")
+  }
 }
 \keyword{ data }
 \keyword{ optimize }
