@@ -1,15 +1,13 @@
-$TITLE Test LS (Least Squares) utility - lower difficulty (LS01,SEQ=394)
-
 $ontext
 
-Run the LS solver on the Norris test problem (Level of Difficulty:
-Lower) from NIST and verify that the results are those certified to
-be correct.  The problem and results were both taken from the NIST Web
-site:
+In this example we take data for a least-squares model, export it to
+R, construct a linear least-squares model, and bring the results back
+to GAMS.
+
+The problem data and results were both originally taken from the NIST
+Web site:
 
   http://www.itl.nist.gov/div898/strd/lls/data/Norris.shtml
-
-Contributor: Erwin Kalvelagen and Steve Dirkse, July 2008.
 
 $offtext
 
@@ -85,7 +83,7 @@ set p  'coefficients' /
 /;
 
 parameter  x(p) 'estimated coefficients';
-execute_unload 'ls01', i, p, data;
+execute_unload 'norris', i, p, data;
 
 $exit
 

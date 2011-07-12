@@ -1,7 +1,18 @@
-fnIn <- "ls01.gdx"
-fnSol <- "lsSolu.gdx"
+# In this example we show how a GAMS user can use R to solve a simple
+# least-squares model and retrieve the results.
+# For a test problem we use the data from the GAMS test model ls01,
+# originally taken from the Norris test problem on the NIST web site.
+# Here we also test that the results are the same as those given by
+# the GAMS LS solver and posted on the NIST site.
+
 # options(list("digits"=10))
 
+fnIn <- "ls01.gdx"
+fnSol <- "lsSolu.gdx"
+
+if (! file_test ('-f', fnIn)) {
+  stop (paste("FAIL: File", fnIn, "does not exist"))
+}
 lst <- list(name='p',form='full',compress=TRUE)
 data <- rgdx(fnIn,lst)
 p <- data$uels
