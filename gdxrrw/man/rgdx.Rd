@@ -1,18 +1,26 @@
 \name{rgdx}
 \alias{rgdx}
+\alias{rgdx.param}
+\alias{rgdx.set}
 \title{Read data from GDX into R}
 \description{
   Read one data item (also called a symbol) from GDX into R, returning
   it as a list.  Note that GDX files contain multiple symbols (e.g. sets,
   parameters).  Each symbol is read with a separate call.
 }
-\usage{rgdx(gdxName, requestList = NULL)}
+\usage{
+  rgdx(gdxName, requestList = NULL)  # generic form
+  rgdx.param(gdxName, parName)  # return a parameter in a data frame
+  rgdx.set(gdxName, setName)  # return a set in a data frame
+}
 \arguments{
   \item{gdxName}{the name of the GDX file to read}
   \item{requestList}{the name of the symbol to read, and (optionally)
   information about how much information to return and in what
   format.  This argument must be a list.  If omitted, the universe of
   UELs contained in the GDX file is returned}
+  \item{parName}{the name of the parameter to read}
+  \item{setName}{the name of the set to read}
 }
 \details{}
 \value{
@@ -26,6 +34,10 @@
   \item{val}{array containing the symbol data}
   \item{form}{form of the data in \code{val}, i.e. \code{full} or \code{sparse}}
   \item{uels}{vector of UEL lists, one list per symbol dimension}
+
+  The functions \code{rgdx.param} and \code{rgdx.set} are
+  special-purpose wrappers that read parameters and sets,
+  respectively, and return them as data frames.
 
   The output format can be adjusted via a global option.  Documentation
   for this is in progress.

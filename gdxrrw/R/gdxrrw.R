@@ -63,8 +63,8 @@ rgdx.set <- function(gdxName, setName)
 {
   request <- list(name=setName)
   readset <- rgdx(gdxName, request)
-  if (readpar$type != "set") {
-    stop ("Expected to read a set: symbol ", parName, " is a ", readpar$type)
+  if (readset$type != "set") {
+    stop ("Expected to read a set: symbol ", setName, " is a ", readset$type)
   }
   dimset <- readset$dim
   lengthval <- length(readset$val[,1])
