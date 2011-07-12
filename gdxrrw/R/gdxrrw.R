@@ -11,14 +11,6 @@
 ## End(Not run)
 
 
-##if(is.loaded("gdxrrw.so"))
-##	{
-##		dyn.unload("gdxrrw.so")
-##	}
-
-
-##dyn.load("gdxrrw.so")
-
 rgdx <- function(gdxName, requestList = NULL)
 {
   .External("rgdx", gdxName, requestList, PACKAGE="gdxrrw");
@@ -42,4 +34,46 @@ gdxInfo <- function(gdxName = NULL)
 igdx <- function(gamsSysDir = NULL)
 {
   .External("igdx", gamsSysDir, PACKAGE="gdxrrw");
+}
+
+rgdx.param <- function(gdxName, parName)
+{
+  request <- list(name=parName)
+  readpar <- rgdx(gdxName, request)
+  if (readpar$type != "parameter") {
+    stop ("Expected to read a parameter: symbol ", parName, " is a ", readpar$type)
+  }
+  dimpar <- readpar$dim
+  if (dimpar < 1) {
+    stop ("Symbol ", parName, " is a scalar: data frame output not possible")
+  }
+  lengthval <- length(readpar$val[,1])
+  X1 <- matrix(NA,nrow=lengthval,ncol=dimpar)
+  readpardf <- data.frame(X1)
+  for (i in c(1:lengthval)) {
+    readpardf[i,dimpar+1] <- readpar$val[i,dimpar+1]
+    for (j in c(1:dimpar)) {
+      readpardf[i,j] <- readpar$uels[[j]][readpar$val[i,j]]
+    }
+  }
+  return(readpardf)
+}
+
+rgdx.set <- function(gdxName, setName)
+{
+  request <- list(name=setName)
+  readset <- rgdx(gdxName, request)
+  if (readpar$type != "set") {
+    stop ("Expected to read a set: symbol ", parName, " is a ", readpar$type)
+  }
+  dimset <- readset$dim
+  lengthval <- length(readset$val[,1])
+  X1 <- matrix(NA,nrow=lengthval,ncol=dimset)
+  readsetdf <- data.frame(X1)
+  for (i in c(1:lengthval)) {
+    for (j in c(1:dimset)) {
+      readsetdf[i,j] <- readset$uels[[j]][readset$val[i,j]]
+    }
+  }
+  return(readsetdf)
 }
