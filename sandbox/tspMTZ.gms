@@ -121,4 +121,4 @@ scalars modelstat, solvestat;
 
 modelstat = DSE.modelstat;
 solvestat = DSE.solvestat;
-execute_unload 'eurosol', modelstat, solvestat, cities, tour;
+execute_unload 'eurosol', modelstat, solvestat, ii, tour;

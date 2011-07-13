@@ -1,6 +1,6 @@
 fnData <- "eurodist.gdx"
 fnSol <- "eurosol.gdx"
-# suppressWarnings(file.remove(fnData,fnSol))
+suppressWarnings(file.remove(fnData,fnSol))
 
 if (! require(stats))  stop ("stats package is not available")
 n <- attr(eurodist,"Size")
@@ -13,8 +13,8 @@ dlst <- list(name='dist', type='parameter', dim=2, form='full',
              ts='distance', val=dd, uels=c(uu,uu))
 
 wgdx (fnData, clst, dlst)
-print ("Calling GAMS now - this may take some time.  Be patient.");
-flush.console;
+print ("Calling GAMS now - this may take some time.  Be patient.")
+flush.console()
 rc <- system (paste("gams tspMTZ.gms"))
 # rc <- 0
 if (0 != rc) {
