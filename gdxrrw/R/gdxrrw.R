@@ -36,30 +36,7 @@ igdx <- function(gamsSysDir = NULL)
   .External("igdx", gamsSysDir, PACKAGE="gdxrrw");
 }
 
-rgdx.param <- function(gdxName, parName)
-{
-  request <- list(name=parName)
-  readpar <- rgdx(gdxName, request)
-  if (readpar$type != "parameter") {
-    stop ("Expected to read a parameter: symbol ", parName, " is a ", readpar$type)
-  }
-  dimpar <- readpar$dim
-  if (dimpar < 1) {
-    stop ("Symbol ", parName, " is a scalar: data frame output not possible")
-  }
-  lengthval <- length(readpar$val[,1])
-  X1 <- matrix(NA,nrow=lengthval,ncol=dimpar)
-  readpardf <- data.frame(X1)
-  for (i in c(1:lengthval)) {
-    readpardf[i,dimpar+1] <- readpar$val[i,dimpar+1]
-    for (j in c(1:dimpar)) {
-      readpardf[i,j] <- readpar$uels[[j]][readpar$val[i,j]]
-    }
-  }
-  return(readpardf)
-} # rgdx.param
-
-rgdx.pp <- function(gdxName, symName)
+rgdx.param <- function(gdxName, symName, names=NULL)
 {
   sym <- rgdx(gdxName, list(name=symName))
   if (sym$type != "parameter") {
@@ -69,16 +46,57 @@ rgdx.pp <- function(gdxName, symName)
   if (symDim < 1) {
     stop ("Symbol ", symName, " is a scalar: data frame output not possible")
   }
-#  nrows <- dim(sym$val)[1]
-  flist <- list()
-  for (d in c(1:symDim)) {
-    fname <- paste("factor",d,sep="-")
-    nUels <- length(sym$uels[[d]])
-    flist[[fname]] <- factor(sym$val[,d], seq(to=nUels), labels=sym$uels[[d]])
+
+  fnames <- list()
+  if (is.null(names)) {
+    if (1 == symDim) {
+      fnames <- list("i","val")
+    } else if (2 == symDim) {
+      fnames <- list("i","j","val")
+    } else if (3 == symDim) {
+      fnames <- list("i","j","k","val")
+    } else {
+      for (d in c(1:symDim)) {
+        fnames[[d]] <- paste("i",d,sep="")
+      }
+      fnames[[symDim+1]] <- "val"
+    }
+  } else {
+    # process the user-provided names
+    if (is.list(names)) {
+      namlen <- length(names)
+      d2 <- 1
+      for (d in c(1:symDim)) {
+        fnames[[d]] <- as.character(names[[d2]])
+        d2 <- d2+1
+        if (d2 > namlen) d2 <- 1
+      }
+      # consider 2 cases: names provided just for the index cols,
+      # or for the data column too
+      if (namlen <= symDim) {
+        fnames[[symDim+1]] <- "val"
+      }
+      else {
+        fnames[[symDim+1]] <- as.character(names[[d2]])
+      }
+    } else {
+      for (d in c(1:symDim)) {
+        fnames[[d]] <- paste(as.character(names),d,sep=".")
+      }
+      fnames[[symDim+1]] <- "val"
+    }
+    fnames <- make.names(fnames,unique=TRUE)
   }
-  symDF <- data.frame(flist,sym$val[,symDim+1])
+
+  dflist <- list()
+  for (d in c(1:symDim)) {
+    nUels <- length(sym$uels[[d]])
+    dflist[[fnames[[d]]]] <- factor(sym$val[,d], seq(to=nUels), labels=sym$uels[[d]])
+  }
+  dflist[[fnames[[symDim+1]]]] <- sym$val[,symDim+1]
+  symDF <- data.frame(dflist)
   return(symDF)
-} # rgdx.pp
+} # rgdx.param
 
 rgdx.scalar <- function(gdxName, symName)
 {
