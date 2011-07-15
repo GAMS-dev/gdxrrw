@@ -59,6 +59,27 @@ rgdx.param <- function(gdxName, parName)
   return(readpardf)
 } # rgdx.param
 
+rgdx.pp <- function(gdxName, symName)
+{
+  sym <- rgdx(gdxName, list(name=symName))
+  if (sym$type != "parameter") {
+    stop ("Expected to read a parameter: symbol ", symName, " is a ", sym$type)
+  }
+  symDim <- sym$dim
+  if (symDim < 1) {
+    stop ("Symbol ", symName, " is a scalar: data frame output not possible")
+  }
+#  nrows <- dim(sym$val)[1]
+  flist <- list()
+  for (d in c(1:symDim)) {
+    fname <- paste("factor",d,sep="-")
+    nUels <- length(sym$uels[[d]])
+    flist[[fname]] <- factor(sym$val[,d], seq(to=nUels), labels=sym$uels[[d]])
+  }
+  symDF <- data.frame(flist,sym$val[,symDim+1])
+  return(symDF)
+} # rgdx.pp
+
 rgdx.scalar <- function(gdxName, symName)
 {
   request <- list(name=symName)
