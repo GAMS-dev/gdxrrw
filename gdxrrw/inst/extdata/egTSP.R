@@ -15,8 +15,7 @@ dlst <- list(name='c', type='parameter', dim=2, form='full',
 wgdx (fnData, clst, dlst)
 print ("Calling GAMS now - this may take some time.  Be patient.")
 flush.console()
-rc <- system (paste("gams tspMTZ.gms --infile=",fnData,"--outfile=",fnSol))
-# rc <- system (paste("gams tspMTZ.gms --infile=",fnData))
+rc <- system (paste("gams tspDSE.gms --infile=",fnData,"--outfile=",fnSol))
 if (0 != rc) {
   stop(paste("Bad return from gams: wanted 0, got",rc))
 } else {
