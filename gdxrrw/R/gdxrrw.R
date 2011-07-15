@@ -57,7 +57,22 @@ rgdx.param <- function(gdxName, parName)
     }
   }
   return(readpardf)
-}
+} # rgdx.param
+
+rgdx.scalar <- function(gdxName, symName)
+{
+  request <- list(name=symName)
+  readsym <- rgdx(gdxName, request)
+  if (readsym$type != "parameter") {
+    stop ("Expected to read a scalar: symbol ", symName, " is a ", readsym$type)
+  }
+  dimsym <- readsym$dim
+  if (dimsym > 0) {
+    stop ("Parameter ", symName, " has dimension ", dimsym, ": scalar output not possible")
+  }
+  c <- readsym$val[1,1]
+  return(c)
+} # rgdx.scalar
 
 rgdx.set <- function(gdxName, setName)
 {
@@ -76,4 +91,4 @@ rgdx.set <- function(gdxName, setName)
     }
   }
   return(readsetdf)
-}
+} # rgdx.set
