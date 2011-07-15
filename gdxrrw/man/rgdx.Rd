@@ -1,6 +1,7 @@
 \name{rgdx}
 \alias{rgdx}
 \alias{rgdx.param}
+\alias{rgdx.scalar}
 \alias{rgdx.set}
 \title{Read data from GDX into R}
 \description{
@@ -10,8 +11,9 @@
 }
 \usage{
   rgdx(gdxName, requestList = NULL)  # generic form
-  rgdx.param(gdxName, parName)  # return a parameter in a data frame
-  rgdx.set(gdxName, setName)  # return a set in a data frame
+  rgdx.param(gdxName, symName, names=NULL)  # return a parameter in a data frame
+  rgdx.set(gdxName, symName, names=NULL)    # return a set in a data frame
+  rgdx.scalar(gdxName, symName)             # return a scalar
 }
 \arguments{
   \item{gdxName}{the name of the GDX file to read}
@@ -19,8 +21,8 @@
   information about how much information to return and in what
   format.  This argument must be a list.  If omitted, the universe of
   UELs contained in the GDX file is returned}
-  \item{parName}{the name of the parameter to read}
-  \item{setName}{the name of the set to read}
+  \item{symName}{the name of the GDX symbol to read}
+  \item{names}{the column names to use in the data frame returned}
 }
 \details{}
 \value{
@@ -39,6 +41,9 @@
   The functions \code{rgdx.param} and \code{rgdx.set} are
   special-purpose wrappers that read parameters and sets,
   respectively, and return them as data frames.
+
+  The function \code{rgdx.scalar} returns a scalar (i.e. a
+  0-dimensional parameter) as a double.
 
   The output format can be adjusted via a global option.  Documentation
   for this is in progress.

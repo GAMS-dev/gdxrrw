@@ -36,6 +36,8 @@ igdx <- function(gamsSysDir = NULL)
   .External("igdx", gamsSysDir, PACKAGE="gdxrrw");
 }
 
+# todo: specify one index as a column header or crosstab
+# rgdx.param <- function(gdxName, symName, names=NULL, crosstab=NULL)
 rgdx.param <- function(gdxName, symName, names=NULL)
 {
   sym <- rgdx(gdxName, list(name=symName))
@@ -113,21 +115,52 @@ rgdx.scalar <- function(gdxName, symName)
   return(c)
 } # rgdx.scalar
 
-rgdx.set <- function(gdxName, setName)
+# todo: specify one index as a column header or crosstab
+# rgdx.param <- function(gdxName, symName, names=NULL, crosstab=NULL)
+rgdx.set <- function(gdxName, symName, names=NULL)
 {
-  request <- list(name=setName)
-  readset <- rgdx(gdxName, request)
-  if (readset$type != "set") {
-    stop ("Expected to read a set: symbol ", setName, " is a ", readset$type)
+  sym <- rgdx(gdxName, list(name=symName))
+  if (sym$type != "set") {
+    stop ("Expected to read a set: symbol ", symName, " is a ", sym$type)
   }
-  dimset <- readset$dim
-  lengthval <- length(readset$val[,1])
-  X1 <- matrix(NA,nrow=lengthval,ncol=dimset)
-  readsetdf <- data.frame(X1)
-  for (i in c(1:lengthval)) {
-    for (j in c(1:dimset)) {
-      readsetdf[i,j] <- readset$uels[[j]][readset$val[i,j]]
+  symDim <- sym$dim
+
+  fnames <- list()
+  if (is.null(names)) {
+    if (1 == symDim) {
+      fnames <- list("i")
+    } else if (2 == symDim) {
+      fnames <- list("i","j")
+    } else if (3 == symDim) {
+      fnames <- list("i","j","k")
+    } else {
+      for (d in c(1:symDim)) {
+        fnames[[d]] <- paste("i",d,sep="")
+      }
     }
+  } else {
+    # process the user-provided names
+    if (is.list(names)) {
+      namlen <- length(names)
+      d2 <- 1
+      for (d in c(1:symDim)) {
+        fnames[[d]] <- as.character(names[[d2]])
+        d2 <- d2+1
+        if (d2 > namlen) d2 <- 1
+      }
+    } else {
+      for (d in c(1:symDim)) {
+        fnames[[d]] <- paste(as.character(names),d,sep=".")
+      }
+    }
+    fnames <- make.names(fnames,unique=TRUE)
   }
-  return(readsetdf)
+
+  dflist <- list()
+  for (d in c(1:symDim)) {
+    nUels <- length(sym$uels[[d]])
+    dflist[[fnames[[d]]]] <- factor(sym$val[,d], seq(to=nUels), labels=sym$uels[[d]])
+  }
+  symDF <- data.frame(dflist)
+  return(symDF)
 } # rgdx.set
