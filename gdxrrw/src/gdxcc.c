@@ -14,13 +14,10 @@
 # include <windows.h>
   static char winErr[] = "Windows error";
   typedef HINSTANCE soHandle_t;
-#elif defined(CIA_HP7)
-# include <unistd.h>
-# include <dl.h>
-  typedef shl_t soHandle_t;
 #else
 # include <unistd.h>
 # include <dlfcn.h>
+# include <sys/utsname.h>
   typedef void *soHandle_t;
 #endif
 
@@ -104,58 +101,61 @@ int  GDX_CALLCONV d_gdxClose (gdxHandle_t pgdx)
 int  GDX_CALLCONV d_gdxDataErrorCount (gdxHandle_t pgdx)
 { int d_s[]={3}; printAndReturn(gdxDataErrorCount,0,int ) }
 
-int  GDX_CALLCONV d_gdxDataErrorRecord (gdxHandle_t pgdx, int Rn, int *AElements, double *AVals)
+int  GDX_CALLCONV d_gdxDataErrorRecord (gdxHandle_t pgdx, int Rn, int AElements[], double AVals[])
 { int d_s[]={3,3,52,54}; printAndReturn(gdxDataErrorRecord,3,int ) }
 
 int  GDX_CALLCONV d_gdxDataReadDone (gdxHandle_t pgdx)
 { int d_s[]={3}; printAndReturn(gdxDataReadDone,0,int ) }
 
-int  GDX_CALLCONV d_gdxDataReadFilteredStart (gdxHandle_t pgdx, int SyNr, const int *ADomainNrs, int *NrRecs)
+int  GDX_CALLCONV d_gdxDataReadFilteredStart (gdxHandle_t pgdx, int SyNr, const int ADomainNrs[], int *NrRecs)
 { int d_s[]={3,3,51,4}; printAndReturn(gdxDataReadFilteredStart,3,int ) }
 
-int  GDX_CALLCONV d_gdxDataReadMap (gdxHandle_t pgdx, int Rn, int *AElements, double *AVals, int *AFDim)
+int  GDX_CALLCONV d_gdxDataReadMap (gdxHandle_t pgdx, int Rn, int AElements[], double AVals[], int *AFDim)
 { int d_s[]={3,3,52,54,4}; printAndReturn(gdxDataReadMap,4,int ) }
 
 int  GDX_CALLCONV d_gdxDataReadMapStart (gdxHandle_t pgdx, int SyNr, int *NrRecs)
 { int d_s[]={3,3,4}; printAndReturn(gdxDataReadMapStart,2,int ) }
 
-int  GDX_CALLCONV d_gdxDataReadRaw (gdxHandle_t pgdx, int *AElements, double *AVals, int *AFDim)
+int  GDX_CALLCONV d_gdxDataReadRaw (gdxHandle_t pgdx, int AElements[], double AVals[], int *AFDim)
 { int d_s[]={3,52,54,4}; printAndReturn(gdxDataReadRaw,3,int ) }
+
+int  GDX_CALLCONV d_gdxDataReadRawFast (gdxHandle_t pgdx, int SyNr, TDataStoreProc_t DP, int *NrRecs)
+{ int d_s[]={3,3,59,4}; printAndReturn(gdxDataReadRawFast,3,int ) }
 
 int  GDX_CALLCONV d_gdxDataReadRawStart (gdxHandle_t pgdx, int SyNr, int *NrRecs)
 { int d_s[]={3,3,4}; printAndReturn(gdxDataReadRawStart,2,int ) }
 
-int  GDX_CALLCONV d_gdxDataReadSlice (gdxHandle_t pgdx, const char **AFiltElements, int *ADim, TDataStoreProc_t DP)
+int  GDX_CALLCONV d_gdxDataReadSlice (gdxHandle_t pgdx, const char *AFiltElements[], int *ADim, TDataStoreProc_t DP)
 { int d_s[]={3,55,4,59}; printAndReturn(gdxDataReadSlice,3,int ) }
 
-int  GDX_CALLCONV d_gdxDataReadSliceStart (gdxHandle_t pgdx, int ASyNr, int *ANrElems)
+int  GDX_CALLCONV d_gdxDataReadSliceStart (gdxHandle_t pgdx, int ASyNr, int ANrElems[])
 { int d_s[]={3,3,52}; printAndReturn(gdxDataReadSliceStart,2,int ) }
 
-int  GDX_CALLCONV d_gdxDataReadStr (gdxHandle_t pgdx, char **AStrElements, double *AVals, int *AFDim)
+int  GDX_CALLCONV d_gdxDataReadStr (gdxHandle_t pgdx, char *AStrElements[], double AVals[], int *AFDim)
 { int d_s[]={3,56,54,4}; printAndReturn(gdxDataReadStr,3,int ) }
 
 int  GDX_CALLCONV d_gdxDataReadStrStart (gdxHandle_t pgdx, int SyNr, int *NrRecs)
 { int d_s[]={3,3,4}; printAndReturn(gdxDataReadStrStart,2,int ) }
 
-int  GDX_CALLCONV d_gdxDataSliceUELS (gdxHandle_t pgdx, const int *AIndx, char **AUELs)
+int  GDX_CALLCONV d_gdxDataSliceUELS (gdxHandle_t pgdx, const int AIndx[], char *AUELs[])
 { int d_s[]={3,51,56}; printAndReturn(gdxDataSliceUELS,2,int ) }
 
 int  GDX_CALLCONV d_gdxDataWriteDone (gdxHandle_t pgdx)
 { int d_s[]={3}; printAndReturn(gdxDataWriteDone,0,int ) }
 
-int  GDX_CALLCONV d_gdxDataWriteMap (gdxHandle_t pgdx, const int *AElements, const double *AVals)
+int  GDX_CALLCONV d_gdxDataWriteMap (gdxHandle_t pgdx, const int AElements[], const double AVals[])
 { int d_s[]={3,51,53}; printAndReturn(gdxDataWriteMap,2,int ) }
 
 int  GDX_CALLCONV d_gdxDataWriteMapStart (gdxHandle_t pgdx, const char *AName, const char *AText, int ADim, int AType, int AUserInfo)
 { int d_s[]={3,11,11,3,3,3}; printAndReturn(gdxDataWriteMapStart,5,int ) }
 
-int  GDX_CALLCONV d_gdxDataWriteRaw (gdxHandle_t pgdx, const int *AElements, const double *AVals)
+int  GDX_CALLCONV d_gdxDataWriteRaw (gdxHandle_t pgdx, const int AElements[], const double AVals[])
 { int d_s[]={3,51,53}; printAndReturn(gdxDataWriteRaw,2,int ) }
 
 int  GDX_CALLCONV d_gdxDataWriteRawStart (gdxHandle_t pgdx, const char *AName, const char *AText, int ADim, int AType, int AUserInfo)
 { int d_s[]={3,11,11,3,3,3}; printAndReturn(gdxDataWriteRawStart,5,int ) }
 
-int  GDX_CALLCONV d_gdxDataWriteStr (gdxHandle_t pgdx, const char **AStrElements, const double *AVals)
+int  GDX_CALLCONV d_gdxDataWriteStr (gdxHandle_t pgdx, const char *AStrElements[], const double AVals[])
 { int d_s[]={3,55,53}; printAndReturn(gdxDataWriteStr,2,int ) }
 
 int  GDX_CALLCONV d_gdxDataWriteStrStart (gdxHandle_t pgdx, const char *AName, const char *AText, int ADim, int AType, int AUserInfo)
@@ -197,7 +197,7 @@ int  GDX_CALLCONV d_gdxGetElemText (gdxHandle_t pgdx, int N, char *s, int *Node)
 int  GDX_CALLCONV d_gdxGetLastError (gdxHandle_t pgdx)
 { int d_s[]={3}; printAndReturn(gdxGetLastError,0,int ) }
 
-int  GDX_CALLCONV d_gdxGetSpecialValues (gdxHandle_t pgdx, double *AVals)
+int  GDX_CALLCONV d_gdxGetSpecialValues (gdxHandle_t pgdx, double AVals[])
 { int d_s[]={3,58}; printAndReturn(gdxGetSpecialValues,1,int ) }
 
 int  GDX_CALLCONV d_gdxGetUEL (gdxHandle_t pgdx, int UelNr, char *s)
@@ -205,6 +205,9 @@ int  GDX_CALLCONV d_gdxGetUEL (gdxHandle_t pgdx, int UelNr, char *s)
 
 int  GDX_CALLCONV d_gdxMapValue (gdxHandle_t pgdx, double D, int *sv)
 { int d_s[]={3,13,4}; printAndReturn(gdxMapValue,2,int ) }
+
+int  GDX_CALLCONV d_gdxOpenAppend (gdxHandle_t pgdx, const char *Afn, const char *AProducer, int *ErrNr)
+{ int d_s[]={3,11,11,4}; printAndReturn(gdxOpenAppend,3,int ) }
 
 int  GDX_CALLCONV d_gdxOpenRead (gdxHandle_t pgdx, const char *Afn, int *ErrNr)
 { int d_s[]={3,11,4}; printAndReturn(gdxOpenRead,2,int ) }
@@ -221,10 +224,10 @@ int  GDX_CALLCONV d_gdxResetSpecialValues (gdxHandle_t pgdx)
 int  GDX_CALLCONV d_gdxSetHasText (gdxHandle_t pgdx, int N)
 { int d_s[]={3,3}; printAndReturn(gdxSetHasText,1,int ) }
 
-int  GDX_CALLCONV d_gdxSetReadSpecialValues (gdxHandle_t pgdx, const double *AVals)
+int  GDX_CALLCONV d_gdxSetReadSpecialValues (gdxHandle_t pgdx, const double AVals[])
 { int d_s[]={3,57}; printAndReturn(gdxSetReadSpecialValues,1,int ) }
 
-int  GDX_CALLCONV d_gdxSetSpecialValues (gdxHandle_t pgdx, const double *AVals)
+int  GDX_CALLCONV d_gdxSetSpecialValues (gdxHandle_t pgdx, const double AVals[])
 { int d_s[]={3,57}; printAndReturn(gdxSetSpecialValues,1,int ) }
 
 int  GDX_CALLCONV d_gdxSetTextNodeNr (gdxHandle_t pgdx, int N, int Node)
@@ -233,7 +236,7 @@ int  GDX_CALLCONV d_gdxSetTextNodeNr (gdxHandle_t pgdx, int N, int Node)
 int  GDX_CALLCONV d_gdxSetTraceLevel (gdxHandle_t pgdx, int N, const char *s)
 { int d_s[]={3,3,11}; printAndReturn(gdxSetTraceLevel,2,int ) }
 
-int  GDX_CALLCONV d_gdxSymbIndxMaxLength (gdxHandle_t pgdx, int SyNr, int *DimInfo)
+int  GDX_CALLCONV d_gdxSymbIndxMaxLength (gdxHandle_t pgdx, int SyNr, int DimInfo[])
 { int d_s[]={3,3,52}; printAndReturn(gdxSymbIndxMaxLength,2,int ) }
 
 int  GDX_CALLCONV d_gdxSymbMaxLength (gdxHandle_t pgdx)
@@ -245,7 +248,7 @@ int  GDX_CALLCONV d_gdxSymbolAddComment (gdxHandle_t pgdx, int SyNr, const char 
 int  GDX_CALLCONV d_gdxSymbolGetComment (gdxHandle_t pgdx, int SyNr, int N, char *s)
 { int d_s[]={3,3,3,12}; printAndReturn(gdxSymbolGetComment,3,int ) }
 
-int  GDX_CALLCONV d_gdxSymbolGetDomain (gdxHandle_t pgdx, int SyNr, int *DomainIDs)
+int  GDX_CALLCONV d_gdxSymbolGetDomain (gdxHandle_t pgdx, int SyNr, int DomainIDs[])
 { int d_s[]={3,3,52}; printAndReturn(gdxSymbolGetDomain,2,int ) }
 
 int  GDX_CALLCONV d_gdxSymbolInfo (gdxHandle_t pgdx, int SyNr, char *AName, int *ADim, int *ATyp)
@@ -254,7 +257,7 @@ int  GDX_CALLCONV d_gdxSymbolInfo (gdxHandle_t pgdx, int SyNr, char *AName, int 
 int  GDX_CALLCONV d_gdxSymbolInfoX (gdxHandle_t pgdx, int SyNr, int *ACount, int *AUserInfo, char *AExplTxt)
 { int d_s[]={3,3,4,4,12}; printAndReturn(gdxSymbolInfoX,4,int ) }
 
-int  GDX_CALLCONV d_gdxSymbolSetDomain (gdxHandle_t pgdx, const char **DomainIDs)
+int  GDX_CALLCONV d_gdxSymbolSetDomain (gdxHandle_t pgdx, const char *DomainIDs[])
 { int d_s[]={3,55}; printAndReturn(gdxSymbolSetDomain,1,int ) }
 
 int  GDX_CALLCONV d_gdxSystemInfo (gdxHandle_t pgdx, int *NrSy, int *NrUel)
@@ -350,23 +353,11 @@ static soHandle_t
 loadLib (const char *libName, char **errMsg)
 {
   soHandle_t h;
-#if defined(CIA_HP7)
-  int flag = 0;
-#endif
 
 #if defined(_WIN32)
   h = LoadLibrary (libName);
   if (NULL == h) {
     *errMsg = winErr;
-  }
-  else {
-    *errMsg = NULL;
-  }
-#elif defined(CIA_HP7)
-  flag = BIND_IMMEDIATE | BIND_VERBOSE | DYNAMIC_PATH;
-  h = shl_load (libName, flag, 0L);
-  if (NULL == h) {
-    *errMsg = strerror(errno);
   }
   else {
     *errMsg = NULL;
@@ -393,8 +384,6 @@ unLoadLib (soHandle_t hh)
 #if defined(_WIN32)
   rc = FreeLibrary (hh);
   return ! rc;
-#elif defined(CIA_HP7)
-  rc = shl_unload (hh);
 #else
   rc = dlclose (hh);
 #endif
@@ -412,9 +401,6 @@ loadSym (soHandle_t h, const char *sym, char **errMsg)
   char ucbuf[257];
   size_t symLen;
   int trip;
-#if defined(CIA_HP7)
-  int rc;
-#endif
 
   /* search in this order:
    *  1. lower
@@ -447,17 +433,8 @@ loadSym (soHandle_t h, const char *sym, char **errMsg)
       tripSym = sym;
     } /* end switch */
 #if defined(_WIN32)
-    s = GetProcAddress (h, tripSym);
+    s = (void *)GetProcAddress (h, tripSym);
     if (NULL != s) {
-      return s;
-    }
-#elif defined(CIA_HP7)
-    rc = shl_findsym (&h, tripSym, TYPE_UNDEFINED, &s);
-    if (rc) {                     /* failure */
-      *errMsg = strerror(errno);
-    }
-    else {                        /* success */
-      *errMsg = NULL;
       return s;
     }
 #else
@@ -474,25 +451,59 @@ loadSym (soHandle_t h, const char *sym, char **errMsg)
 } /* loadSym */
 
 /* TNAME = type name, ENAME = exported name */
-#define LOADIT(TNAME,ENAME) symName = ENAME; TNAME = (TNAME##_t) loadSym (h, symName, &errMsg); if (NULL == TNAME) goto symMissing
-#define LOADIT_ERR_OK(TNAME,ENAME) symName = ENAME; TNAME = (TNAME##_t) loadSym (h, symName, &errMsg)
+#define LOADIT(TNAME,ENAME) symName = ENAME; TNAME = (TNAME##_t) (intptr_t) loadSym (h, symName, &errMsg); if (NULL == TNAME) goto symMissing
+#define LOADIT_ERR_OK(TNAME,ENAME) symName = ENAME; TNAME = (TNAME##_t) (intptr_t) loadSym (h, symName, &errMsg)
 
-#define BASENAME "libgdxdclib"
-#if defined(CIA_DEX) || defined(CIA_LEX) || defined(CIA_WEX) || defined(CIA_SOX)
-# define SUFFIX "64"
-#else
-# define SUFFIX "64"
+#if ! defined(GMS_DLL_BASENAME)
+# define GMS_DLL_BASENAME "gdxdclib"
 #endif
 #if defined(_WIN32)
-# undef BASENAME
-# define BASENAME "gdxdclib"
-# define EXTENSION ".dll"
-#elif defined(CIA_HP7)
-# define EXTENSION ".sl"
-#elif defined(CIA_DAR) || defined(CIA_DEX) || defined(CIA_DII)
-# define EXTENSION ".dylib"
-#else
-# define EXTENSION ".so"
+# if ! defined(GMS_DLL_PREFIX)
+#  define GMS_DLL_PREFIX ""
+# endif
+# if ! defined(GMS_DLL_EXTENSION)
+#  define GMS_DLL_EXTENSION ".dll"
+# endif
+# if ! defined(GMS_DLL_SUFFIX)
+#  if defined(_WIN64)
+#   define GMS_DLL_SUFFIX "64"
+#  else
+#   define GMS_DLL_SUFFIX ""
+#  endif
+# endif
+
+#else  /* start non-Windows */
+
+# if ! defined(GMS_DLL_PREFIX)
+#  define GMS_DLL_PREFIX "lib"
+# endif
+# if ! defined(GMS_DLL_EXTENSION)
+#  if defined(__APPLE__)
+#   define GMS_DLL_EXTENSION ".dylib"
+#  else
+#   define GMS_DLL_EXTENSION ".so"
+#  endif
+# endif
+# if ! defined(GMS_DLL_SUFFIX)
+#  if defined(__WORDSIZE)
+#   if 64 == __WORDSIZE
+#    define GMS_DLL_SUFFIX "64"
+#   else
+#    define GMS_DLL_SUFFIX ""
+#   endif
+#  elif defined(__SIZEOF_POINTER__)
+#   if 4 == __SIZEOF_POINTER__
+#    define GMS_DLL_SUFFIX ""
+#   elif 8 == __SIZEOF_POINTER__
+#    define GMS_DLL_SUFFIX "64"
+#   endif
+#  elif defined(__sparcv9)
+#   define GMS_DLL_SUFFIX "64"
+#  elif defined(__sparc)
+/*  check __sparc after __sparcv9, both are defined for 64-bit */
+#   define GMS_DLL_SUFFIX ""
+#  endif
+# endif /* ! defined(GMS_DLL_SUFFIX) */
 #endif
 
 /* XLibraryLoad: return 0 on success, ~0 on failure */
@@ -500,7 +511,7 @@ static int
 XLibraryLoad (const char *dllName, char *errBuf, int errBufSize)
 {
   char *errMsg;
-  char *symName;
+  const char *symName;
   int rc, elen, cl;
   char *ebuf;
 
@@ -565,6 +576,7 @@ XLibraryLoad (const char *dllName, char *errBuf, int errBufSize)
   {int s[]={3,3,52,54,4}; CheckAndLoad(gdxDataReadMap,4,""); }
   {int s[]={3,3,4}; CheckAndLoad(gdxDataReadMapStart,2,""); }
   {int s[]={3,52,54,4}; CheckAndLoad(gdxDataReadRaw,3,""); }
+  {int s[]={3,3,59,4}; CheckAndLoad(gdxDataReadRawFast,3,""); }
   {int s[]={3,3,4}; CheckAndLoad(gdxDataReadRawStart,2,""); }
   {int s[]={3,55,4,59}; CheckAndLoad(gdxDataReadSlice,3,"C"); }
   {int s[]={3,3,52}; CheckAndLoad(gdxDataReadSliceStart,2,""); }
@@ -593,6 +605,7 @@ XLibraryLoad (const char *dllName, char *errBuf, int errBufSize)
   {int s[]={3,58}; CheckAndLoad(gdxGetSpecialValues,1,""); }
   {int s[]={3,3,12}; CheckAndLoad(gdxGetUEL,2,"C"); }
   {int s[]={3,13,4}; CheckAndLoad(gdxMapValue,2,""); }
+  {int s[]={3,11,11,4}; CheckAndLoad(gdxOpenAppend,3,"C"); }
   {int s[]={3,11,4}; CheckAndLoad(gdxOpenRead,2,"C"); }
   {int s[]={3,11,11,4}; CheckAndLoad(gdxOpenWrite,3,"C"); }
   {int s[]={3,11,11,3,4}; CheckAndLoad(gdxOpenWriteEx,4,"C"); }
@@ -652,6 +665,41 @@ libloader(const char *dllPath, const char *dllName, char *msgBuf, int msgBufSize
 
   char dllNameBuf[512];
   int myrc = 0;
+  char gms_dll_suffix[4];
+
+#if ! defined(GMS_DLL_PREFIX)
+# error "GMS_DLL_PREFIX expected but not defined"
+#endif
+#if ! defined(GMS_DLL_BASENAME)
+# error "GMS_DLL_BASENAME expected but not defined"
+#endif
+#if ! defined(GMS_DLL_EXTENSION)
+# error "GMS_DLL_EXTENSION expected but not defined"
+#endif
+#if ! defined(GMS_DLL_SUFFIX)
+# if defined (_WIN32)
+#   error "GMS_DLL_SUFFIX expected but not defined"
+# else
+  struct utsname uts;
+
+  myrc = uname(&uts);
+  if (myrc)
+  {
+    strcpy(msgBuf,"Error, cannot define library name suffix");
+    return 0;
+  }
+  if (0==strcmp(uts.sysname,"AIX")) /* assume AIX is 64-bit */
+    strcpy (gms_dll_suffix, "64");
+  else
+  {
+    strcpy(msgBuf,"Error, cannot define library name suffix");
+    return 0;
+  }
+# endif
+#else
+  strcpy (gms_dll_suffix, GMS_DLL_SUFFIX);
+#endif
+
 
   if (NULL != msgBuf) msgBuf[0] = '\0';
 
@@ -675,7 +723,9 @@ libloader(const char *dllPath, const char *dllName, char *msgBuf, int msgBufSize
       dllNameBuf[sizeof(dllNameBuf)-1] = '\0';
     }
     else {
-      strncat(dllNameBuf, BASENAME SUFFIX EXTENSION, sizeof(dllNameBuf)-strlen(dllNameBuf));
+      strncat(dllNameBuf, GMS_DLL_PREFIX GMS_DLL_BASENAME, sizeof(dllNameBuf)-strlen(dllNameBuf));
+      strncat(dllNameBuf, gms_dll_suffix                 , sizeof(dllNameBuf)-strlen(dllNameBuf));
+      strncat(dllNameBuf, GMS_DLL_EXTENSION              , sizeof(dllNameBuf)-strlen(dllNameBuf));
     }
     isLoaded = ! XLibraryLoad (dllNameBuf, msgBuf, msgBufSize);
     if (isLoaded) {
