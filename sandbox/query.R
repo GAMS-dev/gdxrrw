@@ -10,4 +10,8 @@
 orig <- data.frame(f1=c("A","A","B","B"), f2=c("one","two","one","two"), val=c(1,2,11,12))
 want <- data.frame(f1=c("A","B"),one=c(1,11),two=c(2,12))
 
+ttt <- reshape(orig, v.names="val",idvar="f1",timevar="f2", direction="wide")
+names(ttt) <- c("f1","one","two")
+names(ttt) <- c("f1",levels(orig$f2))
+
 # 
