@@ -37,8 +37,8 @@ igdx <- function(gamsSysDir = NULL)
 }
 
 # todo: specify one index as a column header or crosstab
-# rgdx.param <- function(gdxName, symName, names=NULL, crosstab=NULL)
-rgdx.param <- function(gdxName, symName, names=NULL)
+rgdx.param <- function(gdxName, symName, names=NULL, crosstab=NULL)
+# rgdx.param <- function(gdxName, symName, names=NULL)
 {
   sym <- rgdx(gdxName, list(name=symName))
   if (sym$type != "parameter") {
@@ -65,7 +65,23 @@ rgdx.param <- function(gdxName, symName, names=NULL)
     }
   } else {
     # process the user-provided names
-    if (is.list(names)) {
+    if (is.vector(names)) {
+      namlen <- length(names)
+      d2 <- 1
+      for (d in c(1:symDim)) {
+        fnames[[d]] <- as.character(names[d2])
+        d2 <- d2+1
+        if (d2 > namlen) d2 <- 1
+      }
+      # consider 2 cases: names provided just for the index cols,
+      # or for the data column too
+      if (namlen <= symDim) {
+        fnames[[symDim+1]] <- "val"
+      }
+      else {
+        fnames[[symDim+1]] <- as.character(names[d2])
+      }
+    } else if (is.list(names)) {
       namlen <- length(names)
       d2 <- 1
       for (d in c(1:symDim)) {
@@ -90,6 +106,37 @@ rgdx.param <- function(gdxName, symName, names=NULL)
     fnames <- make.names(fnames,unique=TRUE)
   }
 
+  ct <- -1;
+  if (! is.null(crosstab)) {
+    if ((! is.vector(crosstab)) || (1 != length(crosstab))) {
+      stop ("crosstab argument must be an index position or name")
+    }
+    if (is.numeric(crosstab)) {
+      ct <- crosstab
+      if ((ct - round(ct)) != 0) {
+        stop ("crosstab argument ", crosstab, " is not a valid index")
+      }
+      if ((ct < 1) || (ct > symDim)) {
+        stop ("crosstab argument ", crosstab, " is not in range")
+      }
+      print (paste("crosstab looks good as integer:",ct))
+    } else if (is.character(crosstab)) {
+      ctc <- crosstab
+      for (d in c(1:symDim)) {
+        if (ctc == fnames[[d]]) {
+          ct <- d
+          break
+        }
+      }
+      if (ct < 0) {
+        stop ("crosstab argument ", ctc, " not found in list of names: ", fnames);
+      } else {
+        print (paste("crosstab input",ctc,"converted to integer",ct))
+      }
+    } else {
+      stop ("crosstab argument must be an index position or name")
+    }
+  }
   dflist <- list()
   for (d in c(1:symDim)) {
     nUels <- length(sym$uels[[d]])
@@ -116,7 +163,7 @@ rgdx.scalar <- function(gdxName, symName)
 } # rgdx.scalar
 
 # todo: specify one index as a column header or crosstab
-# rgdx.param <- function(gdxName, symName, names=NULL, crosstab=NULL)
+# rgdx.set <- function(gdxName, symName, names=NULL, crosstab=NULL)
 rgdx.set <- function(gdxName, symName, names=NULL)
 {
   sym <- rgdx(gdxName, list(name=symName))
