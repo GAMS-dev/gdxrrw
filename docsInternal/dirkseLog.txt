@@ -7,13 +7,13 @@ gg2 alpha ; gup ; gll  (to put a GAMS sysdir in the PATH)
 OR
 you can have one set via an R .First function
 cd $rrw
-R CMD INSTALL -l ~/R/x86_64-redhat-linux-gnu-library/2.11 gdxrrw
+R CMD INSTALL -l ~/R/x86_64-redhat-linux-gnu-library/2.13 gdxrrw
 R CMD REMOVE gdxrrw  {to remove, or undo an install}
 R CMD check gdxrrw
 R CMD build gdxrrw
 R CMD build gdxrrw --binary {what we want to avoid user compiling}
 # it works better to check the clean tarball, one we might distribute
-R CMD build gdxrrw && R CMD check gdxrrw_1.0.tar.gz ; echo "check rc = $?"
+R CMD build gdxrrw && R CMD check gdxrrw_0.0-1.tar.gz ; echo "check rc = $?"
 
 or on Windows, we are trying
 

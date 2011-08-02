@@ -30,9 +30,9 @@ Steve Dirkse.  Maintainer: \email{R@gams.com}}
 
   \dontrun{
     # complete tests and examples can be run in the
-    # inst/extdata directory of the gdxrrw package
+    # extdata directory of the gdxrrw package
     # check .libPaths for a hint on where packages are installed
-    setwd("C:/R/2.12/gdxrrw/inst/extdata")
+    setwd("C:/R/2.12/gdxrrw/extdata")
     source("tAll.R")
   }
 }
