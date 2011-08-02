@@ -437,7 +437,7 @@ callGams (const char *gamsFile)
       }
     }
     else {
-      errorr("Could not run %s: %s: check gams.path",
+      error("Could not run %s: %s: check gams.path",
              gamsPath, errMsg);
     }
 #else
