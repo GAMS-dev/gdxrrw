@@ -3,7 +3,7 @@ symName <- "dist"
 # df <- rgdx.pp("eurodist","dist")
 df <- rgdx.param(gdxName,symName)
 df3 <- rgdx.param(gdxName,symName,names=c("from","to","distance"))
-dfe <- rgdx.param(gdxName,symName,names=c("from","to","distance"),crosstab="to")
+# dfe <- rgdx.param(gdxName,symName,names=c("from","to","distance"),crosstab="to")
 
 n <- attr(eurodist,"Size")
 cities <- attr(eurodist,"Labels")

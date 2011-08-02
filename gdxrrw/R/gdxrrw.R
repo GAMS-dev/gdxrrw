@@ -144,7 +144,26 @@ rgdx.param <- function(gdxName, symName, names=NULL, crosstab=NULL)
   }
   dflist[[fnames[[symDim+1]]]] <- sym$val[,symDim+1]
   symDF <- data.frame(dflist)
-  return(symDF)
+  if (ct > 0) {
+    tv <- fnames[[ct]]
+    idv <- c()
+    d2 <- 1
+    for (d in c(1:symDim)) {
+      if (d != ct) {
+        idv <- c(idv,fnames[[d]])
+        d2 <- d2 + 1
+      }
+    }
+    symCT <- reshape(symDF, v.names=fnames[[symDim+1]], idvar=idv, timevar=tv,
+    	             direction="wide")
+    names(symCT) <- c(idv,levels(symDF[[ct]]))
+    rm(symDF)
+    rm(symCT)
+    stop("crosstab is not working yet: reshape only good for fully dense data");
+    # return(symCT)
+  } else {
+    return(symDF)
+  }
 } # rgdx.param
 
 rgdx.scalar <- function(gdxName, symName)
