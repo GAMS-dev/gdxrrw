@@ -187,7 +187,15 @@ rgdx.set <- function(gdxName, symName, names=NULL)
     }
   } else {
     # process the user-provided names
-    if (is.list(names)) {
+    if (is.vector(names)) {
+      namlen <- length(names)
+      d2 <- 1
+      for (d in c(1:symDim)) {
+        fnames[[d]] <- as.character(names[d2])
+        d2 <- d2+1
+        if (d2 > namlen) d2 <- 1
+      }
+    } else if (is.list(names)) {
       namlen <- length(names)
       d2 <- 1
       for (d in c(1:symDim)) {
