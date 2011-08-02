@@ -11,7 +11,7 @@
 }
 \usage{
   rgdx(gdxName, requestList = NULL)  # generic form
-  rgdx.param(gdxName, symName, names=NULL)  # return a parameter in a data frame
+  rgdx.param(gdxName, symName, names=NULL, crosstab=NULL) # return a parameter in a data frame
   rgdx.set(gdxName, symName, names=NULL)    # return a set in a data frame
   rgdx.scalar(gdxName, symName)             # return a scalar
 }
@@ -23,6 +23,7 @@
   UELs contained in the GDX file is returned}
   \item{symName}{the name of the GDX symbol to read}
   \item{names}{the column names to use in the data frame returned}
+  \item{crosstab}{a column name or index position to move from a row index to a column index, so that its values become column headings}
 }
 \details{}
 \value{
