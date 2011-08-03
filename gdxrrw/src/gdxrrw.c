@@ -124,6 +124,7 @@ static shortStringBuf_t lastErrMsg;
 
 static char mexPath[512];
 
+/* The version info below changes when this file is updated */
 static char ID[256] = "$Id$";
 static char strippedID[256];
 

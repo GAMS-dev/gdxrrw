@@ -433,7 +433,11 @@ loadSym (soHandle_t h, const char *sym, char **errMsg)
       tripSym = sym;
     } /* end switch */
 #if defined(_WIN32)
+#  if defined(HAVE_INTPTR_T)
+    s = (void *)(intptr_t)GetProcAddress (h, tripSym);
+#  else
     s = (void *)GetProcAddress (h, tripSym);
+#  endif
     if (NULL != s) {
       return s;
     }
@@ -451,8 +455,13 @@ loadSym (soHandle_t h, const char *sym, char **errMsg)
 } /* loadSym */
 
 /* TNAME = type name, ENAME = exported name */
-#define LOADIT(TNAME,ENAME) symName = ENAME; TNAME = (TNAME##_t) loadSym (h, symName, &errMsg); if (NULL == TNAME) goto symMissing
-#define LOADIT_ERR_OK(TNAME,ENAME) symName = ENAME; TNAME = (TNAME##_t) loadSym (h, symName, &errMsg)
+#if defined(HAVE_INTPTR_T)
+#  define LOADIT(TNAME,ENAME) symName = ENAME; TNAME = (TNAME##_t) (intptr_t) loadSym (h, symName, &errMsg); if (NULL == TNAME) goto symMissing
+#  define LOADIT_ERR_OK(TNAME,ENAME) symName = ENAME; TNAME = (TNAME##_t) (intptr_t) loadSym (h, symName, &errMsg)
+#else
+#  define LOADIT(TNAME,ENAME) symName = ENAME; TNAME = (TNAME##_t) loadSym (h, symName, &errMsg); if (NULL == TNAME) goto symMissing
+#  define LOADIT_ERR_OK(TNAME,ENAME) symName = ENAME; TNAME = (TNAME##_t) loadSym (h, symName, &errMsg)
+#endif
 
 #if ! defined(GMS_DLL_BASENAME)
 # define GMS_DLL_BASENAME "gdxdclib"
