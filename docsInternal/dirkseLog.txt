@@ -25,6 +25,11 @@ R CMD build gdxrrw --binary {what we want to avoid user compiling}
 R CMD INSTALL -l C:\R\2.12 --no-multiarch gdxrrw
 R --arch=x64 CMD INSTALL -l C:\R\2.12 gdxrrw
 
+On shanti (OS X) we tried
+R CMD INSTALL -l ~/Library/R/2.13/library gdxrrw
+R CMD build gdxrrw --binary
+R CMD build gdxrrw && R CMD check gdxrrw_0.0-1.tar.gz ; echo "check rc = $?"
+
 
 > .First <- function() { library(gdxrrw) ; igdx("/home/steve/leg_alpha/gmstest")}
 > library(gdxrrw)  but this can go in .First as above
