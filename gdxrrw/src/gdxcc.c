@@ -683,15 +683,20 @@ libloader(const char *dllPath, const char *dllName, char *msgBuf, int msgBufSize
   struct utsname uts;
 
   myrc = uname(&uts);
-  if (myrc)
-  {
+  if (myrc) {
     strcpy(msgBuf,"Error, cannot define library name suffix");
     return 0;
   }
-  if (0==strcmp(uts.sysname,"AIX")) /* assume AIX is 64-bit */
+  if (0 == strcmp(uts.sysname, "AIX")) /* assume AIX is 64-bit */
     strcpy (gms_dll_suffix, "64");
-  else
-  {
+  else if (0 == strcmp(uts.sysname, "Darwin")) {
+    /* keep Darwin test in here: fat binaries must check at run time */
+    if (8 == (int)sizeof(void *))
+      strcpy (gms_dll_suffix, "64");
+    else
+      strcpy (gms_dll_suffix, "");
+  }
+  else {
     strcpy(msgBuf,"Error, cannot define library name suffix");
     return 0;
   }
