@@ -3,9 +3,8 @@
 # previously stored in a GDX file and compare that to the eurodist data
 
 tryCatch({
-  gdxName <- "eurodist"
+  gdxName <- "euroDistTest"
   symName <- "dist"
-  # df <- rgdx.pp("eurodist","dist")
   df <- rgdx.param(gdxName,symName)
   df3 <- rgdx.param(gdxName,symName,names=c("from","to","distance"))
   # dfe <- rgdx.param(gdxName,symName,names=c("from","to","distance"),crosstab="to")
