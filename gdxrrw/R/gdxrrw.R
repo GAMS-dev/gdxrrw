@@ -13,7 +13,7 @@
 
 rgdx <- function(gdxName, requestList = NULL)
 {
-  .External("rgdx", gdxName, requestList, PACKAGE="gdxrrw");
+  .External("rgdx", gdxName, requestList, PACKAGE="gdxrrw")
 }
 
 wgdx <- function(gdxName, ...)
@@ -28,12 +28,12 @@ gams <- function(gms, ...)
 
 gdxInfo <- function(gdxName = NULL)
 {
-  .External("gdxInfo", gdxName, PACKAGE="gdxrrw");
+  .External("gdxInfo", gdxName, PACKAGE="gdxrrw")
 }
 
 igdx <- function(gamsSysDir = NULL)
 {
-  .External("igdx", gamsSysDir, PACKAGE="gdxrrw");
+  .External("igdx", gamsSysDir, PACKAGE="gdxrrw")
 }
 
 # todo: specify one index as a column header or crosstab
@@ -106,7 +106,7 @@ rgdx.param <- function(gdxName, symName, names=NULL, crosstab=NULL)
     fnames <- make.names(fnames,unique=TRUE)
   }
 
-  ct <- -1;
+  ct <- -1
   if (! is.null(crosstab)) {
     if ((! is.vector(crosstab)) || (1 != length(crosstab))) {
       stop ("crosstab argument must be an index position or name")
@@ -129,7 +129,7 @@ rgdx.param <- function(gdxName, symName, names=NULL, crosstab=NULL)
         }
       }
       if (ct < 0) {
-        stop ("crosstab argument ", ctc, " not found in list of names: ", fnames);
+        stop ("crosstab argument ", ctc, " not found in list of names: ", fnames)
       } else {
         print (paste("crosstab input",ctc,"converted to integer",ct))
       }
@@ -159,9 +159,10 @@ rgdx.param <- function(gdxName, symName, names=NULL, crosstab=NULL)
     names(symCT) <- c(idv,levels(symDF[[ct]]))
     rm(symDF)
     rm(symCT)
-    stop("crosstab is not working yet: reshape only good for fully dense data");
+    stop("crosstab is not working yet: reshape only good for fully dense data")
     # return(symCT)
   } else {
+    attr(symDF,"symName") <- symName
     return(symDF)
   }
 } # rgdx.param
@@ -178,6 +179,7 @@ rgdx.scalar <- function(gdxName, symName)
     stop ("Parameter ", symName, " has dimension ", dimsym, ": scalar output not possible")
   }
   c <- readsym$val[1,1]
+  attr(c,"symName") <- symName
   return(c)
 } # rgdx.scalar
 
@@ -235,6 +237,59 @@ rgdx.set <- function(gdxName, symName, names=NULL)
     nUels <- length(sym$uels[[d]])
     dflist[[fnames[[d]]]] <- factor(sym$val[,d], seq(to=nUels), labels=sym$uels[[d]])
   }
+  attr(symDF,"symName") <- symName
   symDF <- data.frame(dflist)
   return(symDF)
 } # rgdx.set
+
+# wgdx.df <- function(gdxName, df, df2=NULL, df3=NULL, df4=NULL)
+wgdx.df <- function(gdxName, df)
+{
+  if (! is.character(gdxName)) {
+    stop ("gdxName must GDX file name")
+  }
+  if (! is.data.frame(df)) {
+    stop ("df must be a data frame")
+  }
+  symName <- attr(df, "symName", exact=TRUE)
+  if (! is.character(symName)) {
+    stop ("df must be a data frame with a character symName attribute")
+  }
+  nr <- nrow(df)
+  nc <- ncol(df)
+  isSet <- TRUE
+  if (! is.factor(df[[1]])) {
+    stop ("df[[1]] must be a factor")
+  }
+  for (j in c(2:nc-1)) {
+    if (! is.factor(df[[j]])) {
+      stop ("df[[", j, "]] must be a factor")
+    }
+  }
+  if (is.factor(df[[nc]])) {
+    symType <- "set"
+    symDim <- nc
+  }
+  else if (is.numeric(df[[nc]])) {
+    symType <- "parameter"
+    isSet <- FALSE
+    symDim <- nc-1
+  }
+  lst <- list (name=symName, type=symType, dim=symDim, form="sparse")
+  symText <- attr(df, "ts", exact=TRUE)
+  if (is.character(symText)) {
+    lst$ts <- symText
+  }
+  v <- matrix(0, nrow=nr, ncol=nc)
+  uels <- c()
+  if (! isSet) {
+    v[,symDim+1] <- df[,symDim+1]
+  }
+  for (j in c(1:symDim)) {
+    v[,j] <- as.numeric(df[,j])
+    uels <- c(uels,list(levels(ddf[,2])))
+  }
+  lst$val <- v
+  lst$uels <- uels
+  wgdx (gdxName, lst)
+} # wgdx.df
