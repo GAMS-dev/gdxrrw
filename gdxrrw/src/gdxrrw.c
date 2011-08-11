@@ -623,7 +623,7 @@ getGamsSoln(char *gmsFileName)
   char *types[] = {"set", "parameter", "variable", "equation"};
   char *forms[] = {"full", "sparse"};
   char *fields[] = {"l", "m", "up", "lo", "s"};
-  int b, matched, sparesIndex, totNumber, totalElement;
+  int b, matched, sparesIndex, totalElement;
   int *returnedIndex;
   int mwNElements =0;
   int uelProperty = 0;
@@ -643,6 +643,7 @@ getGamsSoln(char *gmsFileName)
   if ((fp = fopen(gmsFileName,"r")) == NULL) {
     error("Cannot find/open %s file.\n", gmsFileName);
   }
+  astring[0] = '\0';
   /* read the file till $set matout */
   while (fgets(line,LINELEN,fp) != NULL) {
     /* throw away leading spaces */
@@ -659,7 +660,7 @@ getGamsSoln(char *gmsFileName)
   /* this bunch just to shut up compiler warnings */
   loop = 0;
   maxPossibleElements = 0;
-  OPList = NULL;
+  OPList = R_NilValue;
 
   if (astring != NULL && strcmp(astring, "") != 0) {
     array[0]=strtok(line," ");
@@ -880,7 +881,6 @@ getGamsSoln(char *gmsFileName)
       for (iRec = 0;  iRec < nRecs;  iRec++) {
         gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
         index = 0;
-        totNumber = 1;
         b = 0;
 
         for (k = 0;  k < symDim;  k++) {
@@ -1212,7 +1212,7 @@ getGamsSoln(char *gmsFileName)
   return OPList;
 } /* getGamsSoln */
 
-/* this mehtod for global input "compress" */
+/* this method for global input "compress" */
 int isCompress(void)
 {
   SEXP gamso, tmp, lstName;
@@ -2975,10 +2975,9 @@ SEXP rgdx (SEXP args)
   shortStringBuf_t uelName;
   const char *uelElementName;
   shortStringBuf_t gdxFileName;
-  char *s;
   int symIdx, symDim, symType;
   int rc, errNum, ACount, mrows, ncols, nUEL, iUEL;
-  int  k, kk, iRec, nRecs, index, totNumber, changeIdx, nonZero;
+  int  k, kk, iRec, nRecs, index, changeIdx, nonZero;
   int UELUserMapping, highestMappedUEL;
   int arglen,  maxPossibleElements, z, b, matched, sparesIndex;
   double  *p, *dimVal, *dimElVect;
@@ -3023,7 +3022,7 @@ SEXP rgdx (SEXP args)
     }
   }
 
-  s = CHAR2ShortStr (CHAR(STRING_ELT(fileName, 0)), gdxFileName);
+  (void) CHAR2ShortStr (CHAR(STRING_ELT(fileName, 0)), gdxFileName);
 
   if (! withList) {
     if (0 == strcmp("?", gdxFileName)) {
@@ -3214,7 +3213,6 @@ SEXP rgdx (SEXP args)
         for (iRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
           index = 0;
-          totNumber = 1;
           b = 0;
           for (k = 0;  k < symDim;  k++) {
             uelProperty = 0;
@@ -3265,7 +3263,6 @@ SEXP rgdx (SEXP args)
         for (iRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
           index = 0;
-          totNumber = 1;
           b = 0;
 
           for (k = 0;  k < symDim;  k++) {
