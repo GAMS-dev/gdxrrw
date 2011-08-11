@@ -5,14 +5,11 @@ if (! file_test ('-f', fnData)) {
   stop (paste("FAIL: File", fnData, "does not exist"))
 }
 lst <- list(name='p',form='full',compress=TRUE)
-data <- rgdx(fnData,lst)
-p <- data$uels
-lst <- list(name='i',form='full',compress=TRUE)
-data <- rgdx(fnData,lst)
-i <- data$uels
+out <- rgdx(fnData,lst)
+p <- out$uels
 lst <- list(name='data',form='full',compress=TRUE)
-data <- rgdx(fnData,lst)
-d <- data.frame(y=data$val[,1],x=data$val[,2])
+out <- rgdx(fnData,lst)
+d <- data.frame(y=out$val[,1],x=out$val[,2])
 
 f <- y ~ x
 res <- lm(f, data = d)
