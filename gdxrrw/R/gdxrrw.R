@@ -52,16 +52,16 @@ rgdx.param <- function(gdxName, symName, names=NULL, crosstab=NULL)
   fnames <- list()
   if (is.null(names)) {
     if (1 == symDim) {
-      fnames <- list("i","val")
+      fnames <- list("i","value")
     } else if (2 == symDim) {
-      fnames <- list("i","j","val")
+      fnames <- list("i","j","value")
     } else if (3 == symDim) {
-      fnames <- list("i","j","k","val")
+      fnames <- list("i","j","k","value")
     } else {
       for (d in c(1:symDim)) {
         fnames[[d]] <- paste("i",d,sep="")
       }
-      fnames[[symDim+1]] <- "val"
+      fnames[[symDim+1]] <- "value"
     }
   } else {
     # process the user-provided names
@@ -76,7 +76,7 @@ rgdx.param <- function(gdxName, symName, names=NULL, crosstab=NULL)
       # consider 2 cases: names provided just for the index cols,
       # or for the data column too
       if (namlen <= symDim) {
-        fnames[[symDim+1]] <- "val"
+        fnames[[symDim+1]] <- "value"
       }
       else {
         fnames[[symDim+1]] <- as.character(names[d2])
@@ -92,7 +92,7 @@ rgdx.param <- function(gdxName, symName, names=NULL, crosstab=NULL)
       # consider 2 cases: names provided just for the index cols,
       # or for the data column too
       if (namlen <= symDim) {
-        fnames[[symDim+1]] <- "val"
+        fnames[[symDim+1]] <- "value"
       }
       else {
         fnames[[symDim+1]] <- as.character(names[[d2]])
@@ -101,7 +101,7 @@ rgdx.param <- function(gdxName, symName, names=NULL, crosstab=NULL)
       for (d in c(1:symDim)) {
         fnames[[d]] <- paste(as.character(names),d,sep=".")
       }
-      fnames[[symDim+1]] <- "val"
+      fnames[[symDim+1]] <- "value"
     }
     fnames <- make.names(fnames,unique=TRUE)
   }
