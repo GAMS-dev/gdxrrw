@@ -37,10 +37,10 @@ igdx <- function(gamsSysDir = NULL)
 }
 
 # todo: specify one index as a column header or crosstab
-rgdx.param <- function(gdxName, symName, names=NULL, crosstab=NULL)
-# rgdx.param <- function(gdxName, symName, names=NULL)
+rgdx.param <- function(gdxName, symName, names=NULL, crosstab=NULL, compress=FALSE, ts=FALSE)
+# rgdx.param <- function(gdxName, symName, names=NULL, compress=FALSE)
 {
-  sym <- rgdx(gdxName, list(name=symName))
+  sym <- rgdx(gdxName, list(name=symName,compress=compress,ts=ts))
   if (sym$type != "parameter") {
     stop ("Expected to read a parameter: symbol ", symName, " is a ", sym$type)
   }
@@ -162,14 +162,17 @@ rgdx.param <- function(gdxName, symName, names=NULL, crosstab=NULL)
     stop("crosstab is not working yet: reshape only good for fully dense data")
     # return(symCT)
   } else {
-    attr(symDF,"symName") <- symName
+    attr(symDF,"symName") <- sym$name
+    if (ts) {
+      attr(symDF,"ts") <- sym$ts
+    }
     return(symDF)
   }
 } # rgdx.param
 
-rgdx.scalar <- function(gdxName, symName)
+rgdx.scalar <- function(gdxName, symName, ts=FALSE)
 {
-  request <- list(name=symName)
+  request <- list(name=symName,ts=ts)
   readsym <- rgdx(gdxName, request)
   if (readsym$type != "parameter") {
     stop ("Expected to read a scalar: symbol ", symName, " is a ", readsym$type)
@@ -179,15 +182,18 @@ rgdx.scalar <- function(gdxName, symName)
     stop ("Parameter ", symName, " has dimension ", dimsym, ": scalar output not possible")
   }
   c <- readsym$val[1,1]
-  attr(c,"symName") <- symName
+  attr(c,"symName") <- readsym$name
+  if (ts) {
+    attr(c,"ts") <- readsym$ts
+  }
   return(c)
 } # rgdx.scalar
 
 # todo: specify one index as a column header or crosstab
 # rgdx.set <- function(gdxName, symName, names=NULL, crosstab=NULL)
-rgdx.set <- function(gdxName, symName, names=NULL)
+rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE)
 {
-  sym <- rgdx(gdxName, list(name=symName))
+  sym <- rgdx(gdxName, list(name=symName,compress=compress,ts=ts))
   if (sym$type != "set") {
     stop ("Expected to read a set: symbol ", symName, " is a ", sym$type)
   }
@@ -237,7 +243,10 @@ rgdx.set <- function(gdxName, symName, names=NULL)
     nUels <- length(sym$uels[[d]])
     dflist[[fnames[[d]]]] <- factor(sym$val[,d], seq(to=nUels), labels=sym$uels[[d]])
   }
-  attr(symDF,"symName") <- symName
+  attr(symDF,"symName") <- sym$name
+  if (ts) {
+    attr(symDF,"ts") <- sym$ts
+  }
   symDF <- data.frame(dflist)
   return(symDF)
 } # rgdx.set
@@ -287,9 +296,32 @@ wgdx.df <- function(gdxName, df)
   }
   for (j in c(1:symDim)) {
     v[,j] <- as.numeric(df[,j])
-    uels <- c(uels,list(levels(ddf[,2])))
+    uels <- c(uels,list(levels(df[,2])))
   }
   lst$val <- v
   lst$uels <- uels
   wgdx (gdxName, lst)
 } # wgdx.df
+
+wgdx.scalar <- function(gdxName, s)
+{
+  if (! is.character(gdxName)) {
+    stop ("gdxName must GDX file name")
+  }
+  if (! is.numeric(s)) {
+    stop ("s must be a scalar")
+  }
+  if (! is.null(dim(s))) {
+    stop ("s must be a scalar")
+  }
+  symName <- attr(s, "symName", exact=TRUE)
+  if (! is.character(symName)) {
+    stop ("s must be a scalar with a character symName attribute")
+  }
+  lst <- list (name=symName, type="parameter", dim=0, form="full", val=as.numeric(s))
+  symText <- attr(s, "ts", exact=TRUE)
+  if (is.character(symText)) {
+    lst$ts <- symText
+  }
+  wgdx (gdxName, lst)
+}

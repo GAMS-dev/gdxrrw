@@ -10,10 +10,15 @@
   parameters).  Each symbol is read with a separate call.
 }
 \usage{
-  rgdx(gdxName, requestList = NULL)  # generic form
-  rgdx.param(gdxName, symName, names=NULL, crosstab=NULL) # return a parameter in a data frame
-  rgdx.set(gdxName, symName, names=NULL)    # return a set in a data frame
-  rgdx.scalar(gdxName, symName)             # return a scalar
+  # generic form - return a symbol as a list
+  rgdx(gdxName, requestList = NULL)
+
+  # return a set or parameter in a data frame
+  rgdx.set(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE)
+  rgdx.param(gdxName, symName, names=NULL, crosstab=NULL, compress=FALSE, ts=FALSE)
+
+  # return a scalar
+  rgdx.scalar(gdxName, symName, ts=FALSE)
 }
 \arguments{
   \item{gdxName}{the name of the GDX file to read}
@@ -24,6 +29,8 @@
   \item{symName}{the name of the GDX symbol to read}
   \item{names}{the column names to use in the data frame returned}
   \item{crosstab}{a column name or index position to move from a row index to a column index, so that its values become column headings}
+  \item{compress}{if TRUE, compress the factors in the data frame so they only include required levels.  For the default compress=FALSE, each factor includes levels for the entire universe of UELs in the GDX file}
+  \item{ts}{if TRUE, include the \code{.ts} field (i.e. the explanatory text) for the symbol in the return}
 }
 \details{}
 \value{

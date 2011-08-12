@@ -1,5 +1,7 @@
 \name{wgdx}
 \alias{wgdx}
+\alias{wgdx.df}
+\alias{wgdx.scalar}
 \title{Write R data to GDX}
 \description{
   Create a GDX file containing the GAMS data described in the
@@ -7,11 +9,22 @@
   data element - i.e. a set or parameter - all of which are written to
   a single file.
 }
-\usage{wgdx(gdxName, ...)}
+\usage{
+  # generic form - each arg is a list specifying a symbol to write
+  wgdx(gdxName, ...)
+
+  # write a data frame - inverse of \code{rgdx.param} and \code{rgdx.set}
+  wgdx.df(gdxName, df)
+
+  # write a scalar - inverse of \code{rgdx.scalar}
+  wgdx.scalar(gdxName, s)
+}
 \arguments{
   \item{gdxName}{the name of the GDX file to write}
   \item{\dots}{zero or more lists describing the sets and
   parameters to write}
+  \item{df}{data frame to write to GDX}
+  \item{s}{scalar to write to GDX}
 }
 \details{}
 \author{Original coding by Rishabh Jain.  Adopted and packaged by
@@ -20,6 +33,9 @@ Steve Dirkse.  Maintainer: \email{R@gams.com}}
   A common problem is failure to load the external GDX libraries that
   are required to interface with GDX data.  Use \code{\link{igdx}} to
   troubleshoot and solve this problem.
+
+  The routines \code{wgdx.df} and \code{wgdx.scalar} are experimental
+  and temporary.  Don't use them for production work.
 }
 \seealso{
  \code{\link{igdx}}, \code{\link{rgdx}}, \code{\link{gdxInfo}}
