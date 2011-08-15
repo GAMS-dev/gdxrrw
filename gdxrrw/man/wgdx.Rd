@@ -42,7 +42,7 @@ Steve Dirkse.  Maintainer: \email{R@gams.com}}
 }
 \examples{
   data(trnsport);
-  wgdx('wgdx1.gdx',sf,si,sj,sa,sb,sd);
+  wgdx("wgdx1.gdx",sf,si,sj,sa,sb,sd);
 
   \dontrun{
     # complete tests and examples can be run in the

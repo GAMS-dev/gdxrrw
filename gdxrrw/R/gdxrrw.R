@@ -189,11 +189,11 @@ rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE)
     nUels <- length(sym$uels[[d]])
     dflist[[fnames[[d]]]] <- factor(sym$val[,d], seq(to=nUels), labels=sym$uels[[d]])
   }
+  symDF <- data.frame(dflist)
   attr(symDF,"symName") <- sym$name
   if (ts) {
     attr(symDF,"ts") <- sym$ts
   }
-  symDF <- data.frame(dflist)
   return(symDF)
 } # rgdx.set
 

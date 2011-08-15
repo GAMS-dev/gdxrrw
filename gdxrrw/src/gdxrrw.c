@@ -124,6 +124,18 @@ static shortStringBuf_t lastErrMsg;
 
 static char mexPath[512];
 
+static const char *validSymListNames[] = {
+  "name"
+  ,"type"
+  ,"val"
+  ,"uels"
+  ,"form"
+  ,"dim"
+  ,"ts"
+};
+#define N_VALIDSYMLISTNAMES (sizeof(validSymListNames)/sizeof(*validSymListNames))
+static char validFieldMsg[256] = "";
+
 /* The version info below changes when this file is updated */
 static char ID[256] = "$Id$";
 static char strippedID[256];
@@ -133,11 +145,14 @@ static void
 checkRgdxList (const SEXP lst, struct rgdxStruct *data);
 
 static void
-checkWgdxList(const SEXP lst,
-              int k,
-              SEXP uelIndex,
-              wgdxStruct_t **wgdxRecPtr,
-              int fromGAMS);
+unpackArgs (SEXP *args, int argLen, SEXP **symList, int *symListSiz, int *symListLen);
+
+static void
+readWgdxList(const SEXP lst,
+             int iSym,
+             SEXP uelIndex,
+             wgdxStruct_t **wgdxRecPtr,
+             int fromGAMS);
 
 void
 registerInputUEL(SEXP uelOut,
@@ -242,8 +257,8 @@ checkIfExist (int k, SEXP filterUel, const char *uelName);
 
 static void
 writeGdx(char *fileName,
-         int arglen,
-         SEXP *argList,
+         int symListLen,
+         SEXP *symList,
          int fromGAMS);
 
 static void
@@ -1611,13 +1626,12 @@ checkFileExtension (shortStringBuf_t fileName)
       fileName = strcat(fileName, ".gdx");
     }
     else {
-      Rprintf ("Input file name '%s' is too long\n", fileName);
-      error ("Input file name is too long.");
+      error ("Input file name '%s' is too long\n", fileName);
     }
   }
   else if (0 != strcasecmp(".gdx", fileExt)) {
-    Rprintf ("Input file extension '%s' is not valid\n", fileExt);
-    error ("Input file must be a GDX file.");
+    error ("Input file extension '%s' is not valid: input must be a GDX file\n",
+           fileExt);
   }
   return;
 } /* checkFileExtension */
@@ -1891,6 +1905,159 @@ int checkIfExist (int k, SEXP filterUel, const char *uelName)
 } /* checkIfExist */
 
 
+/* checkSymList: checks if a is potentially a valid symList
+ * return:
+ *   0 if OK
+ *   1 if no names are found
+ *   2 if an unamed field is found
+ *   3 if an invalid field is found
+ *   4 if symbol is not a list
+ *   others possible but not yet used
+ */
+static int
+checkSymList (SEXP a, shortStringBuf_t msg)
+{
+  int i, k, n;
+  int found;
+  SEXP names;
+  const char *fieldName;
+  char buf[512];
+
+  if (TYPEOF(a) != VECSXP) {
+    (void) CHAR2ShortStr ("symbol is not a list", msg);
+    return 4;
+  }
+  *msg = '\0';
+  n = length(a);
+  names = getAttrib(a, R_NamesSymbol);
+  if (R_NilValue == names) {
+    (void) CHAR2ShortStr ("symbol has no names", msg);
+    return 1;
+  }
+  for (i = 0;  i < n;  i++) {
+    fieldName = CHAR(STRING_ELT(names, i));
+    if ('\0' == *fieldName) {
+      (void) CHAR2ShortStr ("found field with empty name", msg);
+      return 2;
+    }
+    found = 0;
+    for (k = 0;  k < N_VALIDSYMLISTNAMES;  k++) {
+      /* Rprintf ("Checking against possible field name %s\n", validSymListNames[k]); */
+      if (0 == strcmp(validSymListNames[k], fieldName)) {
+        found = 1;
+        break;
+      }
+    }
+    if (found)
+      continue;
+    sprintf (buf, "invalid field name '%.20s' encountered, %s", fieldName, validFieldMsg);
+    (void) CHAR2ShortStr (buf, msg);
+    /* Rprintf ("Error: found symList entry with name=%s\n", fieldName); */
+    return 3;
+  }
+  return 0;
+} /* checkSymList */
+
+
+void
+processListList (SEXP a, int argNum, SEXP *symList, int symListSiz, int *symListLen)
+{
+  int n, k;
+  int rc;
+  SEXP aaa;
+  shortStringBuf_t msg;
+
+  n = length(a);
+  for (k = 0;  k < n;  k++) {
+    /* Rprintf ("processListList: arg %d element %d\n", argNum, k+1); */
+    aaa = VECTOR_ELT(a, k);
+    rc = checkSymList (aaa, msg);
+    if (0 == rc) {
+      /* Rprintf ("processListList: argument %d element %d is a symList\n", argNum, k+1); */
+      if (*symListLen >= symListSiz)
+        error ("processListList: internal error processing symbol list\n");
+      symList[*symListLen] = aaa;
+      ++*symListLen;
+    }
+    else {
+      error ("processListList: argument %d element %d is not a valid symbol List: %s", argNum, k+1, msg);
+    }
+  }
+  return;
+} /* processListList */
+
+
+static void
+processArg (SEXP a, int argNum, SEXP *symList, int symListSiz, int *symListLen)
+{
+  SEXP lstName;
+  int rc;
+  shortStringBuf_t msg;
+
+  lstName = getAttrib (a, R_NamesSymbol);
+  if (R_NilValue == lstName) {
+    /* Rprintf ("processArg: found potential list of lists\n"); */
+    processListList (a, argNum, symList, symListSiz, symListLen);
+  }
+  else {
+    /* Rprintf ("processArg: found potential symbol list\n"); */
+    rc = checkSymList (a, msg);
+    if (0 == rc) {
+      /* Rprintf ("processArg: argument %d is a symList\n", argNum); */
+      if (*symListLen >= symListSiz)
+        error ("processArg: internal error processing symbol list\n");
+      symList[*symListLen] = a;
+      ++*symListLen;
+    }
+    else {
+      error ("processArg: argument %d has names but is not a valid symbol list: %s", argNum, msg);
+    }
+  }
+  return;
+} /* processArg */
+
+
+void
+unpackArgs (SEXP *args, int argLen, SEXP **symList, int *symListSiz, int *symListLen)
+{
+  int i;
+  SEXP t;
+  SEXP a;
+
+#if 0
+  error ("Hey what happens with Rprintf and error: arglen = %d\n"
+         "And does it work to have a multi-line error message?\n"
+         "That would be nice if it did.\n", argLen);
+#endif
+  *symListLen = *symListSiz = 0;
+  for (a = *args, i = 2;  i < argLen;  i++) {
+    a = CDR(a);
+    t = CAR(a);
+#if 0
+    Rprintf ("DEBUG: args = %p   len: %d\n", t, length(t));
+#endif
+    *symListSiz += length(t);
+  }
+#if 0
+  Rprintf ("Last arg processed\n");
+  a = CDR(a);
+  Rprintf ("DEBUG: args = %p\n", CAR(a));
+  Rprintf ("DEBUG: R_NilValue = %p\n", R_NilValue);
+#endif
+  
+  *symList = malloc (*symListSiz * sizeof(**symList));
+  memset (*symList, 0, *symListSiz * sizeof(**symList));
+
+  for (a = *args, i = 2;  i < argLen;  i++) {
+    a = CDR(a);
+    t = CAR(a);
+    processArg (t, i, *symList, *symListSiz, symListLen);
+  }
+
+  return;
+} /* unpackArgs */
+
+
 void
 registerInputUEL(SEXP uelOut,
                  int k,
@@ -1933,13 +2100,14 @@ registerInputUEL(SEXP uelOut,
 } /* registerInputUEL */
 
 
-/* This function validates input structure and sets certain global variables */
+/* This function validates the structure of the input lists,
+ * sets certain global variables, and constructs the universe of UELs */
 void
-checkWgdxList(SEXP structure,
-              int k,
-              SEXP uelIndex,
-              wgdxStruct_t **wgdxRecPtr,
-              int fromGAMS)
+readWgdxList(SEXP structure,
+             int iSym,
+             SEXP uelIndex,
+             wgdxStruct_t **wgdxRecPtr,
+             int fromGAMS)
 {
   SEXP lstName, tmpUel;
   SEXP dimension;
@@ -1978,9 +2146,7 @@ checkWgdxList(SEXP structure,
   listLen = length(structure);
   lstName = getAttrib(structure, R_NamesSymbol);
   if (lstName == R_NilValue) {
-    Rprintf("Input list must be named\n");
-    Rprintf("Valid names are: 'name', 'type', 'val', 'uels', 'form', 'dim', 'ts'.\n");
-    error("Please try again with a named input list.\n");
+    error ("Input symbol list has no field names, %s", validFieldMsg);
   }
 
   /* first, check that all names are recognized, reject o/w
@@ -2244,8 +2410,8 @@ checkWgdxList(SEXP structure,
   if (inData->withVal == 1) {
     checkForValidData (valExp, uelOut, inData->dType, inData->dForm);
   }
-  registerInputUEL (uelOut, k, uelIndex);
-} /* checkWgdxList */
+  registerInputUEL (uelOut, iSym, uelIndex);
+} /* readWgdxList */
 
 
 /* This function check the input list for valid data */
@@ -2512,9 +2678,8 @@ checkRgdxList (const SEXP lst, struct rgdxStruct *data)
       }
     }
     else {
-      Rprintf ("List component 'te' must be either string or logical - found %d instead\n",
-               TYPEOF(tmp) );
-      error("Input list component 'te' must be either string or logical");
+      error("Input list component 'te' must be either string or logical"
+            " - found %d instead\n", TYPEOF(tmp));
     }
   }
 
@@ -2554,15 +2719,29 @@ checkRgdxList (const SEXP lst, struct rgdxStruct *data)
 } /* checkRgdxList */
 
 
+static void
+msgInit (void) {
+  int i, k, n;
+
+  k = sprintf (validFieldMsg, "valid symbol list fields are ");
+  n = k;
+  for (i = 0;  i < N_VALIDSYMLISTNAMES-1;  i++) {
+    k = sprintf (validFieldMsg + n, "'%s', ", validSymListNames[i]);
+    n += k;
+  }
+  k = sprintf (validFieldMsg + n, "'%s'", validSymListNames[i]);
+} /* msgInit */
+
+
 /* This method is intended to be used by both wgdx and gams call
    fileName = name of GDX file to be writen
-   argList = Argument list entered by user
+   symList = vector of symList's entered by user
    fromGAMS = 1 if this method is called from GAMS otherwise 0
 */
 static void
 writeGdx(char *gdxFileName,
-         int arglen,
-         SEXP *symbolList,
+         int symListLen,
+         SEXP *symList,
          int fromGAMS)
 {
   FILE *matdata = NULL;
@@ -2577,6 +2756,7 @@ writeGdx(char *gdxFileName,
   const char *stringUelIndex;
   int rc, errNum;
   int i, j, k, z, found;
+  int iSym;
   int idx;
   SEXP dimVect;
   int totalElement, total,  nColumns, nRows, ndimension, index, total_num_of_elements;
@@ -2623,18 +2803,18 @@ writeGdx(char *gdxFileName,
   rc = gdxUELRegisterStrStart (gdxHandle);
   assert(rc);
 
-  PROTECT(uelIndex = allocVector(VECSXP, arglen-2));
+  PROTECT(uelIndex = allocVector(VECSXP, symListLen));
   wAlloc++;
 
-  data = (wgdxStruct_t **) malloc ((arglen - 2) * sizeof(data[0]));
+  data = (wgdxStruct_t **) malloc (symListLen * sizeof(data[0]));
 
-  /* check input list(s) for data validation */
-  for (i = 0; i < arglen-2; i++) {
-    if (TYPEOF(symbolList[i]) != VECSXP) {
-      error("Incorrect type of input argument entered. List expected\n");
+  /* check input list(s) for data validation and to create UEL list */
+  for (iSym = 0;  iSym < symListLen;  iSym++) {
+    if (TYPEOF(symList[iSym]) != VECSXP) {
+      error("Incorrect type of input encountered. List expected\n");
     }
     else {
-      checkWgdxList (symbolList[i], i, uelIndex, data+i, fromGAMS);
+      readWgdxList (symList[iSym], iSym, uelIndex, data+iSym, fromGAMS);
     }
   }
 
@@ -2647,13 +2827,13 @@ writeGdx(char *gdxFileName,
 
   i=0;
   /* write data in GDX file */
-  for (i = 0;  i < arglen-2;  i++) {
+  for (i = 0;  i < symListLen;  i++) {
     /*
      *  Looking for 'val'
      *  This is the glitch that i am worried about
      */
-    compName = getAttrib(symbolList[i], R_NamesSymbol);
-    for (found = 0, j = 0; j < length(symbolList[i]); j++) {
+    compName = getAttrib(symList[i], R_NamesSymbol);
+    for (found = 0, j = 0; j < length(symList[i]); j++) {
       if (strcmp("val", CHAR(STRING_ELT(compName, j))) == 0) {
         found = 1;
         break;
@@ -2661,7 +2841,7 @@ writeGdx(char *gdxFileName,
     }
 
     if (1 == found) {
-      valData = VECTOR_ELT(symbolList[i], j);
+      valData = VECTOR_ELT(symList[i], j);
     }
     /* This is special check */
     if (fromGAMS == 0
@@ -2706,7 +2886,7 @@ writeGdx(char *gdxFileName,
         /* Looking for 'ts' */
         j = 0;
         found = 0;
-        for (j = 0; j < length(symbolList[i]); j++) {
+        for (j = 0; j < length(symList[i]); j++) {
           if (strcmp("ts", CHAR(STRING_ELT(compName, j))) == 0) {
             found = 1;
             break;
@@ -2714,7 +2894,7 @@ writeGdx(char *gdxFileName,
         }
 
         if (found == 1) {
-          (void) CHAR2ShortStr (CHAR(STRING_ELT( VECTOR_ELT(symbolList[i], j), 0)), expText);
+          (void) CHAR2ShortStr (CHAR(STRING_ELT( VECTOR_ELT(symList[i], j), 0)), expText);
         }
       }
 
@@ -3697,9 +3877,10 @@ SEXP rgdx (SEXP args)
 
 SEXP wgdx (SEXP args)
 {
-  SEXP fileName, *symbolList;
+  SEXP fileName, *symList = NULL;
+  int symListSiz = 0, symListLen = 0;
   shortStringBuf_t gdxFileName;
-  int arglen, i;
+  int arglen;
 
   arglen = length(args);
   if (arglen == 1) {
@@ -3712,12 +3893,12 @@ SEXP wgdx (SEXP args)
    * and second argument is of type list
    */
   if (TYPEOF(fileName) != STRSXP ) {
-    Rprintf("The GDX filename (first argument) must be of type string.\n");
-    error("Wrong Argument Type");
+    error ("The GDX filename (first argument) must be of type string.\n");
   }
 
   (void) CHAR2ShortStr (CHAR(STRING_ELT(fileName, 0)), gdxFileName);
 
+  msgInit ();
   if (2 == arglen) {
     if (0 == strcmp("?", gdxFileName)) {
       int n = (int)strlen (ID);
@@ -3730,26 +3911,21 @@ SEXP wgdx (SEXP args)
 
   checkFileExtension (gdxFileName);
 
-  symbolList = malloc((arglen-2)*sizeof(*symbolList));
-  /* get the pointer of input argument and store it locally for better access */
-  for (i = 1; i < arglen-1; i++) {
-    args = CDR(args); symbolList[i-1] = CAR(args);
-  }
-  /* check and write data to gdxfile */
-  writeGdx (gdxFileName, arglen, symbolList, 0);
-  /* Free up memory */
-  free(symbolList);
-  return R_NilValue;
-} /* End of wgdx */
+  unpackArgs (&args, arglen, &symList, &symListSiz, &symListLen);
 
+  /* check and write data to gdxfile */
+  writeGdx (gdxFileName, symListLen, symList, 0);
+  free (symList);
+  return R_NilValue;
+} /* wgdx */
 
 
 /* GAMS method */
 SEXP gams (SEXP args)
 {
-  SEXP firstArg,
-    *argList,
-    result = R_NilValue;
+  SEXP firstArg;
+  SEXP *symList, result = R_NilValue;
+  int symListLen = 0;
   FILE *fp;
   const char *inputPtr;
   char *writeDataStr, *fileExt, *p;
@@ -3821,15 +3997,17 @@ SEXP gams (SEXP args)
     }
   }
 
+  msgInit ();
   if (1 == writeData) {
-    argList = malloc((arglen-2)*sizeof(*argList));
+    symListLen = arglen - 2;
+    symList = malloc (symListLen * sizeof(*symList));
     /* get the pointer of input argument and store it locally for better access */
-    for (i = 1; i < arglen-1; i++) {
-      args = CDR(args); argList[i-1] = CAR(args);
+    for (i = 0;  i < arglen-2;  i++) {
+      args = CDR(args); symList[i] = CAR(args);
     }
-    writeGdx (gmsFileName, arglen, argList, 1);
+    writeGdx (gmsFileName, symListLen, symList, 1);
     /* free memory */
-    free(argList);
+    free(symList);
   }
   rc = callGams(input);
   if (rc) {

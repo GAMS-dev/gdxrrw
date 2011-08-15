@@ -21,10 +21,10 @@ LazyLoad: \tab yes\cr
 }
 It contains five methods
 	1. igdx(...)
-	2. rgdx('gdxfile', ...)
-	3. wgdx('gdxfile', ...)
-	4. gams('model', ...)
-	5. gdxInfo('gdxfile')
+	2. rgdx("gdxfile", ...)
+	3. wgdx("gdxfile", ...)
+	4. gams("model", ...)
+	5. gdxInfo("gdxfile")
 }
 \author{Original coding by Rishabh Jain.  Adopted and packaged by
 Steve Dirkse.  Maintainer: \email{R@gams.com}}
