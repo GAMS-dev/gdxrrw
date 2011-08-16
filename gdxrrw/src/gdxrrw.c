@@ -2121,13 +2121,14 @@ readWgdxList(SEXP structure,
   int i, j;
   int listLen;
   int dimUels;
-  int nCoords, sz, withDim;
+  int nCoords = 0, sz, withDim;
   const char *tmpName;
   const char *compName;              /* pointers to field names */
   SEXP uelOut, bufferUel;            /* allocating temporary storage place */
   wgdxStruct_t *inData;
 
   withDim = 0;
+  uelOut = R_NilValue;
 
   inData = (wgdxStruct_t *) malloc(sizeof(*inData));
   *wgdxRecPtr = inData;
@@ -4037,16 +4038,12 @@ SEXP gdxInfo (SEXP args)
     FileVersion[GMS_SSSIZE], FileProducer[GMS_SSSIZE],
     sName[GMS_SSSIZE], sName2[GMS_SSSIZE], sText[GMS_SSSIZE], UelName[GMS_SSSIZE];
 
-  char DomainIDs[GMS_MAX_INDEX_DIM][GMS_SSSIZE];
-  char *DP[GMS_MAX_INDEX_DIM];
   double
     Vals[GMS_VAL_MAX],
     dv[GMS_VAL_MAX];
   int
     Keys[GMS_MAX_INDEX_DIM];
   char *dn, c;
-
-  GDXSTRINDEXPTRS_INIT(DomainIDs,DP);
 
   /* first arg is function name - ignore it */
   arglen = length(args);
