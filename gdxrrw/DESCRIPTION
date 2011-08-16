@@ -8,4 +8,5 @@ Maintainer: Steve Dirkse <R@gams.com>
 Description: An interface between GAMS and R.  It includes functions
   to transfer data between GDX and R and a function to
   call gams from within R.
+License: GNU GPL
 LazyLoad: yes

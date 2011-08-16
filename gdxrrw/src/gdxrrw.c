@@ -136,7 +136,7 @@ static const char *validSymListNames[] = {
 #define N_VALIDSYMLISTNAMES (sizeof(validSymListNames)/sizeof(*validSymListNames))
 static char validFieldMsg[256] = "";
 
-/* The version info below changes when this file is updated */
+/* The version info below changes when this file is updated  */
 static char ID[256] = "$Id$";
 static char strippedID[256];
 
