@@ -197,7 +197,6 @@ rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE)
   return(symDF)
 } # rgdx.set
 
-# wgdx.df <- function(gdxName, df, df2=NULL, df3=NULL, df4=NULL)
 wgdx.df <- function(gdxName, df)
 {
   if (! is.character(gdxName)) {
@@ -216,7 +215,7 @@ wgdx.df <- function(gdxName, df)
   if (! is.factor(df[[1]])) {
     stop ("df[[1]] must be a factor")
   }
-  for (j in c(2:nc-1)) {
+  for (j in 1 + seq_len(max(0,nc-2))) {
     if (! is.factor(df[[j]])) {
       stop ("df[[", j, "]] must be a factor")
     }
@@ -242,7 +241,7 @@ wgdx.df <- function(gdxName, df)
   }
   for (j in c(1:symDim)) {
     v[,j] <- as.numeric(df[,j])
-    uels <- c(uels,list(levels(df[,2])))
+    uels <- c(uels,list(levels(df[,j])))
   }
   lst$val <- v
   lst$uels <- uels
@@ -270,4 +269,67 @@ wgdx.scalar <- function(gdxName, s)
     lst$ts <- symText
   }
   wgdx (gdxName, lst)
-}
+} # wgdx.scalar
+
+# input list of symbols: contents are data frames, scalars, or symLists
+wgdx.lst <- function(gdxName, ilst)
+{
+  if (! is.character(gdxName)) {
+    stop ("gdxName must GDX file name")
+  }
+  if (! is.list(ilst)) {
+    stop ("ilst must be a list of inputs")
+  }
+  olst <- list()
+  inLen <- length(ilst)
+  for (i in c(1:inLen)) {
+    if (is.data.frame(ilst[[i]])) {
+      symName <- attr(ilst[[i]], "symName", exact=TRUE)
+      if (! is.character(symName)) {
+        stop ("error processing ilst[[",i,"]]: missing/bogus symName attribute")
+      }
+      nr <- nrow(ilst[[i]])
+      nc <- ncol(ilst[[i]])
+      isSet <- TRUE
+      if (! is.factor(ilst[[i]][[1]])) {
+        stop ("ilst[[",i,"]][[1]] must be a factor")
+      }
+      for (j in 1 + seq_len(max(0,nc-2))) {
+        if (! is.factor(ilst[[i]][[j]])) {
+          stop ("ilst[[",i,"]][[", j, "]] must be a factor")
+        }
+      }
+      if (is.factor(ilst[[i]][[nc]])) {
+        symType <- "set"
+        symDim <- nc
+      }
+      else if (is.numeric(ilst[[i]][[nc]])) {
+        symType <- "parameter"
+        isSet <- FALSE
+        symDim <- nc-1
+      }
+      olst[[i]] <- list (name=symName, type=symType, dim=symDim, form="sparse")
+      symText <- attr(ilst[[i]], "ts", exact=TRUE)
+      if (is.character(symText)) {
+        ilst[[i]]$ts <- symText
+      }
+      v <- matrix(0, nrow=nr, ncol=nc)
+      uels <- c()
+      if (! isSet) {
+        v[,symDim+1] <- ilst[[i]][,symDim+1]
+      }
+      for (j in c(1:symDim)) {
+        v[,j] <- as.numeric(ilst[[i]][,j])
+        uels <- c(uels,list(levels(ilst[[i]][,j])))
+      }
+      olst[[i]]$val <- v
+      olst[[i]]$uels <- uels
+    }
+    else {
+      stop ("unrecognized input found: ilst[[",i,"]]")
+    }
+  }
+
+  wgdx (gdxName, olst)
+} # wgdx.lst
+
