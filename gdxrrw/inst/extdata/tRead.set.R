@@ -54,7 +54,7 @@ tryCatch({
   if (prod(jxfc != jvfc)) stop ("mismatch in set ijk, index J")
   if (prod(kxfc != kvfc)) stop ("mismatch in set ijk, index K")
 
-  print ("All tests for rgdx.set passed");
+  print ("All tests for rgdx.set passed")
   return (TRUE)
 }
 
