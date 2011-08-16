@@ -3162,6 +3162,7 @@ SEXP rgdx (SEXP args)
   int arglen,  maxPossibleElements, z, b, matched, sparesIndex;
   double  *p, *dimVal, *dimElVect;
   char buf[3*sizeof(shortStringBuf_t)];
+  char symName[GMS_SSSIZE];
   char sText[GMS_SSSIZE], msg[GMS_SSSIZE], stringEle[GMS_SSSIZE];
   char *types[] = {"set", "parameter", "variable", "equation"};
   char *forms[] = {"full", "sparse"};
@@ -3259,7 +3260,7 @@ SEXP rgdx (SEXP args)
                inputData->name );
       error (buf);
     }
-    gdxSymbolInfo (gdxHandle, symIdx, buf, &symDim, &symType);
+    gdxSymbolInfo (gdxHandle, symIdx, symName, &symDim, &symType);
     if (inputData->ts == 1) {
       gdxSymbolInfoX(gdxHandle, symIdx, &ACount, &rc, sText);
     }
@@ -3707,7 +3708,7 @@ SEXP rgdx (SEXP args)
   if (withList) {
     /* Creating string vector for symbol Name */
     PROTECT(compName = allocVector(STRSXP, 1) );
-    SET_STRING_ELT(compName, 0, mkChar(inputData->name));
+    SET_STRING_ELT(compName, 0, mkChar(symName));
     alloc++;
     /* Creating string vector for symbol type */
     PROTECT(compType = allocVector(STRSXP, 1) );
