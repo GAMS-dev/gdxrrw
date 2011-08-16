@@ -325,6 +325,23 @@ wgdx.lst <- function(gdxName, ilst)
       olst[[i]]$val <- v
       olst[[i]]$uels <- uels
     }
+    else if (! is.list (ilst[[i]]) &&
+             is.numeric(ilst[[i]]) &&
+             is.null(dim(ilst[[i]])) ) {
+      # reading a scalar
+      symName <- attr(ilst[[i]], "symName", exact=TRUE)
+      if (! is.character(symName)) {
+        stop ("error processing ilst[[",i,"]]: missing/bogus symName attribute")
+      }
+      olst[[i]] <- list (name=symName, type="parameter", dim=0, form="full", val=as.numeric(ilst[[i]]))
+      symText <- attr(ilst[[i]], "ts", exact=TRUE)
+      if (is.character(symText)) {
+        ilst[[i]]$ts <- symText
+      }
+    }
+    else if (is.list (ilst[[i]])) {
+      olst[[i]] <- ilst[[i]]
+    }
     else {
       stop ("unrecognized input found: ilst[[",i,"]]")
     }
