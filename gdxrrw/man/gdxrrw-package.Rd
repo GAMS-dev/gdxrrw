@@ -3,7 +3,7 @@
 \alias{gdxrrw}
 \docType{package}
 \title{
-This package contains different methods to transfer data between GDX file and R
+  This package contains different methods to transfer data between GDX file and R
 }
 \description{
 This package implements an interface between GAMS and R.  It
@@ -14,17 +14,18 @@ This package implements an interface between GAMS and R.  It
 \tabular{ll}{
 Package: \tab gdxrrw\cr
 Type: \tab Package\cr
-Version: \tab 1.0\cr
-Date: \tab 2010-06-22\cr
-License: \tab What license is it under?\cr
+Version: \tab 0.0-2\cr
+Date: \tab 2011-08-16\cr
 LazyLoad: \tab yes\cr
 }
-It contains five methods
-	1. igdx(...)
-	2. rgdx("gdxfile", ...)
-	3. wgdx("gdxfile", ...)
-	4. gams("model", ...)
-	5. gdxInfo("gdxfile")
+It contains five classes methods:
+\itemize{
+  \item{igdx(...)}
+  \item{rgdx("gdxfile", ...) and related functions}
+  \item{wgdx("gdxfile", ...) and related functions}
+  \item{gams("gmsfile", ...)}
+  \item{gdxInfo("gdxfile")}
+}
 }
 \author{Original coding by Rishabh Jain.  Adopted and packaged by
 Steve Dirkse.  Maintainer: \email{R@gams.com}}

@@ -2,6 +2,7 @@
 \alias{wgdx}
 \alias{wgdx.df}
 \alias{wgdx.scalar}
+\alias{wgdx.lst}
 \title{Write R data to GDX}
 \description{
   Create a GDX file containing the GAMS data described in the
@@ -18,6 +19,9 @@
 
   # write a scalar - inverse of \code{rgdx.scalar}
   wgdx.scalar(gdxName, s)
+
+  # write multiple symbols
+  wgdx.lst(gdxName, ilst)
 }
 \arguments{
   \item{gdxName}{the name of the GDX file to write}
@@ -25,6 +29,10 @@
   parameters to write}
   \item{df}{data frame to write to GDX}
   \item{s}{scalar to write to GDX}
+  \item{ilst}{list of inputs, each of which can be a data frame as
+  returned by \code{rgdx.param} or \code{rgdx.set}, a scalar as
+  returned by \code{rgdx.scalar}, or a symbol list as required for
+  input to \code{wgdx}}
 }
 \details{}
 \author{Original coding by Rishabh Jain.  Adopted and packaged by
@@ -35,7 +43,7 @@ Steve Dirkse.  Maintainer: \email{R@gams.com}}
   troubleshoot and solve this problem.
 
   The routines \code{wgdx.df} and \code{wgdx.scalar} are experimental
-  and temporary.  Don't use them for production work.
+  and perhaps temporary.  Don't use them for production work.
 }
 \seealso{
  \code{\link{igdx}}, \code{\link{rgdx}}, \code{\link{gdxInfo}}

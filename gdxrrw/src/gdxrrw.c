@@ -25,8 +25,8 @@
   * SEXP VECTOR_ELT (SEXP x, int i);
   * SEXP STRING_ELT (SEXP x, int i);
   * const char * CHAR (SEXP x);
-  * 
-*/
+  *
+  */
 
 #include <R.h>
 #include <Rinternals.h>
