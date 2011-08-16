@@ -40,7 +40,7 @@ tryCatch({
                form="full", uels=list(as.character(bdf$JJ)),
                val=as.array(as.numeric(bdf$theValues)) )
   clst <- list(name="c", type="parameter", ts=attr(cdf,"symName"),
-               form="sparse", uels=c(list(as.character(cdf$from)),list(as.character(cdf$to))),
+               form="sparse", uels=c(list(levels(cdf$from)),list(levels(cdf$to))),
                val=matrix(data=NA,nrow=nrow(cdf),ncol=ncol(cdf)) )
   clst$val[,1] <- as.numeric(cdf$from)
   clst$val[,2] <- as.numeric(cdf$to)
