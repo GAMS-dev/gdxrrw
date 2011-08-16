@@ -2912,6 +2912,7 @@ writeGdx(char *gdxFileName,
         else {
           rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
                                      nColumns, GMS_DT_SET, 0);
+          vals[0] = 0;
         }
         if (!rc) {
           error("Could not write data with gdxDataWriteMapStart");
@@ -2990,6 +2991,7 @@ writeGdx(char *gdxFileName,
         else {
           rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
                                      nColumns, GMS_DT_SET, 0);
+          vals[0] = 0;
         }
         if (!rc) {
           error("Could not write data with gdxDataWriteMapStart");
