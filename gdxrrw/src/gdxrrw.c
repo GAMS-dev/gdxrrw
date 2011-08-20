@@ -26,6 +26,8 @@
   * SEXP STRING_ELT (SEXP x, int i);
   * const char * CHAR (SEXP x);
   *
+  *
+  * TO DO: output=std global should go - no need to have old-style stuff
   */
 
 #include <R.h>
@@ -3931,7 +3933,7 @@ SEXP gams (SEXP args)
   SEXP *symList, result = R_NilValue;
   int symListLen = 0;
   FILE *fp;
-  const char *inputPtr;
+  const char *argStr;
   char *writeDataStr, *fileExt, *p;
   shortStringBuf_t input;
   shortStringBuf_t gmsFileName;
@@ -3957,10 +3959,10 @@ SEXP gams (SEXP args)
     error("Wrong Argument Type");
   }
 
-  inputPtr = CHAR(STRING_ELT(firstArg, 0));
+  argStr = CHAR(STRING_ELT(firstArg, 0));
 
   if (2 == arglen) {
-    if (0 == strcmp("?", inputPtr)) {
+    if (0 == strcmp("?", argStr)) {
       int n = (int)strlen (ID);
       memcpy (strippedID, ID+1, n-2);
       strippedID[n-2] = '\0';
@@ -3969,8 +3971,8 @@ SEXP gams (SEXP args)
     } /* if audit run */
   } /* if one arg, of character type */
 
-  checkStringLength(inputPtr);
-  (void) CHAR2ShortStr (inputPtr, input);
+  checkStringLength(argStr);
+  (void) CHAR2ShortStr (argStr, input);
   p = strtok (input, " ");
   (void) CHAR2ShortStr (p, gmsFileName);
   fileExt = strstr (p, ".");
@@ -3979,7 +3981,7 @@ SEXP gams (SEXP args)
   }
   fp = fopen (gmsFileName,"r");
   if (fp == NULL) {
-    error("Cannot find or open %s file.\n", gmsFileName);
+    error("Cannot find or open GAMS source file '%s'.\n", gmsFileName);
   }
   else {
     fclose(fp);
@@ -4013,9 +4015,9 @@ SEXP gams (SEXP args)
     /* free memory */
     free(symList);
   }
-  rc = callGams(input);
+  rc = callGams(argStr);
   if (rc) {
-    error("GAMS run failed.\n");
+    error("GAMS run failed: rc = %d.\n", rc);
   }
   /* read only first element from GDX file */
   result = getGamsSoln (gmsFileName);
