@@ -635,8 +635,8 @@ getGamsSoln(char *gmsFileName)
   gdxUelIndex_t uels;
   gdxValues_t values;
   shortStringBuf_t gsBuf;
-  char *gForm, *field, *outputStyle;
-  int outStyle, nField;
+  char *gForm, *field;
+  int nField;
   char *types[] = {"set", "parameter", "variable", "equation"};
   char *forms[] = {"full", "sparse"};
   char *fields[] = {"l", "m", "up", "lo", "s"};
@@ -745,19 +745,6 @@ getGamsSoln(char *gmsFileName)
         /* else warning message */
         warning(" To change default behavior of 'field', please enter it as 'l/m/lo/up/s'.\n" );
         Rprintf("You entered it as %s.\n", field);
-      }
-    }
-
-    outStyle = 0;
-    outputStyle = getGlobalString("output", gsBuf);
-    if ((outputStyle != NULL) && ('\0' != *outputStyle)) {
-      if (strcmp(outputStyle,"std") == 0) {
-        outStyle = 1;
-      }
-      else {
-        /* else warning message */
-        warning("To change default behavior of 'output', please enter it as 'std'.\n" );
-        Rprintf("You entered it as %s.\n", outputStyle);
       }
     }
 
@@ -1079,142 +1066,135 @@ getGamsSoln(char *gmsFileName)
         break;
       } /* switch(symDim) */
     }
-    /* Create a 1-by-1 array of structs. */
-    if (outStyle == 0) {
-      /* List form */
 
-      /* Creating string vector for symbol Name */
-      PROTECT(compName = allocVector(STRSXP, 1) );
-      SET_STRING_ELT(compName, 0, mkChar(inputData->name));
+    /* Create a 1-by-1 array of structs. */
+    /* List form */
+    /* Creating string vector for symbol Name */
+    PROTECT(compName = allocVector(STRSXP, 1) );
+    SET_STRING_ELT(compName, 0, mkChar(inputData->name));
+    gamsAlloc++;
+    /* Creating string vector for symbol type */
+    PROTECT(compType = allocVector(STRSXP, 1) );
+    gamsAlloc++;
+    switch (symType) {
+    case dt_set:
+      SET_STRING_ELT( compType, 0, mkChar(types[0]) );
+      break;
+    case dt_par:
+      SET_STRING_ELT( compType, 0, mkChar(types[1]) );
+      break;
+    case dt_var:
+      SET_STRING_ELT( compType, 0, mkChar(types[2]) );
+      break;
+    case dt_equ:
+      SET_STRING_ELT( compType, 0, mkChar(types[3]) );
+      break;
+    default:
+      error("Unrecognized type of symbol found.");
+    }
+
+    /* Creating int vector for symbol Dim */
+    PROTECT(compDim = allocVector(INTSXP, 1) );
+    INTEGER(compDim)[0] = symDim;
+    gamsAlloc++;
+    /* Creating string vector for val data form */
+    PROTECT(compForm = allocVector(STRSXP, 1) );
+    gamsAlloc++;
+    if (inputData->dForm == full) {
+      SET_STRING_ELT(compForm, 0, mkChar(forms[0]));
+    }
+    else {
+      SET_STRING_ELT(compForm, 0, mkChar(forms[1]));
+    }
+
+    /* Create a string vector for symbol  field */
+    if (symType == dt_var || symType == dt_equ) {
+      outFields++;
+      PROTECT(compField = allocVector(STRSXP, 1));
       gamsAlloc++;
-      /* Creating string vector for symbol type */
-      PROTECT(compType = allocVector(STRSXP, 1) );
-      gamsAlloc++;
-      switch (symType) {
-      case dt_set:
-        SET_STRING_ELT( compType, 0, mkChar(types[0]) );
+      switch(inputData->dField) {
+      case level:
+        SET_STRING_ELT(compField, 0, mkChar( fields[0] ));
         break;
-      case dt_par:
-        SET_STRING_ELT( compType, 0, mkChar(types[1]) );
+      case marginal:
+        SET_STRING_ELT(compField, 0, mkChar( fields[1] ));
         break;
-      case dt_var:
-        SET_STRING_ELT( compType, 0, mkChar(types[2]) );
+      case upper:
+        SET_STRING_ELT(compField, 0, mkChar( fields[2] ));
         break;
-      case dt_equ:
-        SET_STRING_ELT( compType, 0, mkChar(types[3]) );
+      case lower:
+        SET_STRING_ELT(compField, 0, mkChar( fields[3] ));
+        break;
+      case scale:
+        SET_STRING_ELT(compField, 0, mkChar( fields[4] ));
         break;
       default:
         error("Unrecognized type of symbol found.");
       }
+    }
 
-      /* Creating int vector for symbol Dim */
-      PROTECT(compDim = allocVector(INTSXP, 1) );
-      INTEGER(compDim)[0] = symDim;
-      gamsAlloc++;
-      /* Creating string vector for val data form */
-      PROTECT(compForm = allocVector(STRSXP, 1) );
-      gamsAlloc++;
-      if (inputData->dForm == full) {
-        SET_STRING_ELT(compForm, 0, mkChar(forms[0]));
-      }
-      else {
-        SET_STRING_ELT(compForm, 0, mkChar(forms[1]));
-      }
+    PROTECT(OPListComp = allocVector(STRSXP, outFields));
+    gamsAlloc++;
+    /* populating list component names */
+    SET_STRING_ELT(OPListComp, 0, mkChar("name"));
+    SET_STRING_ELT(OPListComp, 1, mkChar("type"));
+    SET_STRING_ELT(OPListComp, 2, mkChar("dim"));
+    SET_STRING_ELT(OPListComp, 3, mkChar("val"));
+    SET_STRING_ELT(OPListComp, 4, mkChar("form"));
+    SET_STRING_ELT(OPListComp, 5, mkChar("uels"));
 
-      /* Create a string vector for symbol  field */
-      if (symType == dt_var || symType == dt_equ) {
-        outFields++;
-        PROTECT(compField = allocVector(STRSXP, 1));
-        gamsAlloc++;
-        switch(inputData->dField) {
-        case level:
-          SET_STRING_ELT(compField, 0, mkChar( fields[0] ));
-          break;
-        case marginal:
-          SET_STRING_ELT(compField, 0, mkChar( fields[1] ));
-          break;
-        case upper:
-          SET_STRING_ELT(compField, 0, mkChar( fields[2] ));
-          break;
-        case lower:
-          SET_STRING_ELT(compField, 0, mkChar( fields[3] ));
-          break;
-        case scale:
-          SET_STRING_ELT(compField, 0, mkChar( fields[4] ));
-          break;
-        default:
-          error("Unrecognized type of symbol found.");
-        }
-      }
+    nField = 5;
 
-      PROTECT(OPListComp = allocVector(STRSXP, outFields));
-      gamsAlloc++;
-      /* populating list component names */
-      SET_STRING_ELT(OPListComp, 0, mkChar("name"));
-      SET_STRING_ELT(OPListComp, 1, mkChar("type"));
-      SET_STRING_ELT(OPListComp, 2, mkChar("dim"));
-      SET_STRING_ELT(OPListComp, 3, mkChar("val"));
-      SET_STRING_ELT(OPListComp, 4, mkChar("form"));
-      SET_STRING_ELT(OPListComp, 5, mkChar("uels"));
+    if (symType == dt_var || symType == dt_equ) {
+      nField++;
+      SET_STRING_ELT(OPListComp, nField, mkChar("field"));
+    }
+    if (inputData->ts) {
+      nField++;
+      SET_STRING_ELT(OPListComp, nField, mkChar("ts"));
+    }
+    if (inputData->te) {
+      nField++;
+      SET_STRING_ELT(OPListComp, nField, mkChar("te"));
+    }
 
-      nField = 5;
+    PROTECT(OPList = allocVector(VECSXP, outFields));
+    gamsAlloc++;
 
-      if (symType == dt_var || symType == dt_equ) {
-        nField++;
-        SET_STRING_ELT(OPListComp, nField, mkChar("field"));
-      }
-      if (inputData->ts) {
-        nField++;
-        SET_STRING_ELT(OPListComp, nField, mkChar("ts"));
-      }
-      if (inputData->te) {
-        nField++;
-        SET_STRING_ELT(OPListComp, nField, mkChar("te"));
-      }
-
-
-      PROTECT(OPList = allocVector(VECSXP, outFields));
-      gamsAlloc++;
-
-      /* populating list component vector */
-      SET_VECTOR_ELT(OPList, 0, compName);
-      SET_VECTOR_ELT(OPList, 1, compType);
-      SET_VECTOR_ELT(OPList, 2, compDim);
-      if (inputData->dForm == full) {
-        SET_VECTOR_ELT(OPList, 3, compFullVal);
-      }
-      else {
-        SET_VECTOR_ELT(OPList, 3, compVal);
-      }
-      SET_VECTOR_ELT(OPList, 4, compForm);
-      if (inputData->withUel) {
-        SET_VECTOR_ELT(OPList, 5, inputData->filterUel);
-      }
-      else {
-        SET_VECTOR_ELT(OPList, 5, compUels);
-      }
-
-      nField = 5;
-      if (symType == dt_var || symType == dt_equ) {
-        nField++;
-        SET_VECTOR_ELT(OPList, nField, compField);
-      }
-      if (inputData->ts) {
-        nField++;
-        SET_VECTOR_ELT(OPList, nField, compTs);
-      }
-      if (inputData->te) {
-        nField++;
-        SET_VECTOR_ELT(OPList, nField, compTe);
-      }
-
-      /* Setting attribute name */
-      setAttrib(OPList, R_NamesSymbol, OPListComp);
+    /* populating list component vector */
+    SET_VECTOR_ELT(OPList, 0, compName);
+    SET_VECTOR_ELT(OPList, 1, compType);
+    SET_VECTOR_ELT(OPList, 2, compDim);
+    if (inputData->dForm == full) {
+      SET_VECTOR_ELT(OPList, 3, compFullVal);
     }
     else {
-      /* Only value */
-      OPList = compVal;
+      SET_VECTOR_ELT(OPList, 3, compVal);
     }
+    SET_VECTOR_ELT(OPList, 4, compForm);
+    if (inputData->withUel) {
+      SET_VECTOR_ELT(OPList, 5, inputData->filterUel);
+    }
+    else {
+      SET_VECTOR_ELT(OPList, 5, compUels);
+    }
+
+    nField = 5;
+    if (symType == dt_var || symType == dt_equ) {
+      nField++;
+      SET_VECTOR_ELT(OPList, nField, compField);
+    }
+    if (inputData->ts) {
+      nField++;
+      SET_VECTOR_ELT(OPList, nField, compTs);
+    }
+    if (inputData->te) {
+      nField++;
+      SET_VECTOR_ELT(OPList, nField, compTe);
+    }
+
+    /* Setting attribute name */
+    setAttrib(OPList, R_NamesSymbol, OPListComp);
 
     if (!gdxDataReadDone (gdxHandle)) {
       error ("Could not gdxDataReadDone");
