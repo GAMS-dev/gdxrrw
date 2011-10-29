@@ -110,6 +110,13 @@ struct wgdxStruct
 };
 typedef struct wgdxStruct wgdxStruct_t;
 
+typedef unsigned long long int uint64_t;
+
+union d64_t {
+  double x;
+  uint64_t u64;
+};
+
 static int alloc;
 
 static int wAlloc;
@@ -2733,6 +2740,8 @@ writeGdx(char *gdxFileName,
   wgdxStruct_t **data;
   gdxUelIndex_t uelIndices;
   gdxValues_t   vals;
+  union d64_t d64, d64_NA_REAL;
+  gdxSVals_t sVals;
   shortStringBuf_t msgBuf;
   shortStringBuf_t expText;
   shortStringBuf_t gsBuf;
@@ -2744,7 +2753,7 @@ writeGdx(char *gdxFileName,
   SEXP dimVect;
   int totalElement, total,  nColumns, nRows, ndimension, index, total_num_of_elements;
   int d, subindex, inner;
-  double *dimVal, *pd, dt;
+  double *dimVal, *pd, dt, posInf, negInf;
   int *pi;
   int *subscript;
   const char *inputTime;
@@ -2782,6 +2791,18 @@ writeGdx(char *gdxFileName,
     error("Could not open gdx file with gdxOpenWrite: %s",
           lastErrMsg);
   }
+
+  d64_NA_REAL.x = NA_REAL;
+
+  gdxGetSpecialValues (gdxHandle, sVals);
+  d64.u64 = 0x7fffffffffffffff; /* positive QNaN, mantissa all on */
+  sVals[GMS_SVIDX_UNDEF] = d64.x;
+  dt = 0.0;
+  posInf =  1 / dt;
+  negInf = -1 / dt;
+  sVals[GMS_SVIDX_PINF] = posInf;
+  sVals[GMS_SVIDX_MINF] = negInf;
+  gdxSetSpecialValues (gdxHandle, sVals);
 
   rc = gdxUELRegisterStrStart (gdxHandle);
   assert(rc);
@@ -2927,24 +2948,11 @@ writeGdx(char *gdxFileName,
             else {
               vals[0] = pi[nColumns*nRows + j];
             }
-            if (vals[0] != 0 && gdxMapValue (gdxHandle, vals[0], &z)) { /* it's special */
-              switch (z) {
-              case sv_valpin:
-                vals[0] = NA_REAL;
-                break;
-              case sv_valmin:
-                vals[0] = NA_REAL;
-                break;
-              case sv_valeps:
-                vals[0] = 0;
-                break;
-              case sv_valund:
-              case sv_valna:
-                vals[0] = NA_REAL;
-                break;
-              default:
-                error ("Unrecognized map-value %d returned for %g", z, vals[0]);
-              } /* end of switch/case */
+            if (isnan(vals[0])) {
+              d64.x = vals[0];
+              if (d64.u64 == d64_NA_REAL.u64) {
+                vals[0] = sVals[GMS_SVIDX_NA];
+              }
             }
           }
           /* No need to write zero values */
@@ -3018,24 +3026,11 @@ writeGdx(char *gdxFileName,
           }
           if (data[i]->dType == parameter) {
             vals[0] = dt;
-            if (vals[0] != 0 && gdxMapValue (gdxHandle, vals[0], &z)) { /* it's special */
-              switch (z) {
-              case sv_valpin:
-                vals[0] = NA_REAL;
-                break;
-              case sv_valmin:
-                vals[0] = NA_REAL;
-                break;
-              case sv_valeps:
-                vals[0] = 0;
-                break;
-              case sv_valund:
-              case sv_valna:
-                vals[0] = NA_REAL;
-                break;
-              default:
-                error("Unrecognized map-value %d returned for %g", z, vals[0]);
-              } /* end of switch/case */
+            if (isnan(dt)) {
+              d64.x = dt;
+              if (d64.u64 == d64_NA_REAL.u64) {
+                vals[0] = sVals[GMS_SVIDX_NA];
+              }
             }
           }
           else if (set == data[i]->dType) {
