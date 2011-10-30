@@ -638,9 +638,12 @@ getGamsSoln(char *gmsFileName)
   shortStringBuf_t msgBuf, uelName;
   char buf[3*sizeof(shortStringBuf_t)];
   int nUEL, iUEL, defaultIndex,  UELUserMapping, highestMappedUEL, ndimension;
-  double  *p, *dimVal;
+  double *p, *dimVal;
+  double dt, posInf, negInf;
   gdxUelIndex_t uels;
   gdxValues_t values;
+  gdxSVals_t sVals;
+  union d64_t d64;
   shortStringBuf_t gsBuf;
   char *gForm, *field;
   int nField;
@@ -772,6 +775,17 @@ getGamsSoln(char *gmsFileName)
     if (errNum || 0 == rc) {
       error ("Could not open gdx file with gdxOpenRead");
     }
+
+    gdxGetSpecialValues (gdxHandle, sVals);
+    d64.u64 = 0x7fffffffffffffff; /* positive QNaN, mantissa all on */
+    sVals[GMS_SVIDX_UNDEF] = d64.x;
+    sVals[GMS_SVIDX_NA] = NA_REAL;
+    dt = 0.0;
+    posInf =  1 / dt;
+    negInf = -1 / dt;
+    sVals[GMS_SVIDX_PINF] = posInf;
+    sVals[GMS_SVIDX_MINF] = negInf;
+    gdxSetSpecialValues (gdxHandle, sVals);
 
     gdxSymbolInfo (gdxHandle, 1, inputData->name, &symDim, &symType);
     /* checking that symbol is of type parameter/set/equaltion/variable */
@@ -914,37 +928,8 @@ getGamsSoln(char *gmsFileName)
           index = matched + symDim*(int)mwNElements;
           matched = matched +1;
 
-          if (symType != dt_set) {
-            if (gdxMapValue (gdxHandle, values[inputData->dField], &k)) { /* it's special */
-              switch (k) {
-              case sv_valpin:
-                p[index] = NA_REAL;
-                break;
-              case sv_valmin:
-                p[index] = NA_REAL;
-                break;
-              case sv_valeps:
-                p[index] = 0;
-                break;
-              case sv_normal:
-                p[index] = values[inputData->dField];
-                break;
-              case sv_valund:
-              case sv_valna:
-                p[index] = NA_REAL;
-                break;
-              default:
-                sprintf(buf,
-                        "Unrecognized map-value %d returned for %g",
-                        k,
-                        values[inputData->dField]);
-                error(buf);
-              } /* end of switch/case */
-            }
-            else {
-              p[index] = values[inputData->dField];
-            }
-          }
+          if (symType != dt_set)
+            p[index] = values[inputData->dField];
         }
         if (matched == maxPossibleElements) {
           break;
@@ -968,37 +953,8 @@ getGamsSoln(char *gmsFileName)
             index = nonZero+symDim*mrows;
           }
           nonZero++;
-          if (symType != dt_set) {
-            if (gdxMapValue (gdxHandle, values[inputData->dField], &k)) { /* it's special */
-              switch (k) {
-              case sv_valpin:
-                p[index] = NA_REAL;
-                break;
-              case sv_valmin:
-                p[index] = -NA_REAL;
-                break;
-              case sv_valeps:
-                p[index] = 0;
-                break;
-              case sv_normal:
-                p[index] = values[inputData->dField];
-                break;
-              case sv_valund:
-              case sv_valna:
-                p[index] = NA_REAL;
-                break;
-              default:
-                sprintf(buf,
-                        "Unrecognized map-value %d returned for %g",
-                        k,
-                        values[inputData->dField]);
-                error(buf);
-              }
-            }
-            else {
-              p[index] = values[inputData->dField];
-            }
-          }
+          if (symType != dt_set)
+            p[index] = values[inputData->dField];
         } /* end of if (set || val != 0) */
       } /* loop over GDX records */
     }
@@ -2740,14 +2696,14 @@ writeGdx(char *gdxFileName,
   wgdxStruct_t **data;
   gdxUelIndex_t uelIndices;
   gdxValues_t   vals;
-  union d64_t d64, d64_NA_REAL;
   gdxSVals_t sVals;
+  union d64_t d64, d64_NA_REAL;
   shortStringBuf_t msgBuf;
   shortStringBuf_t expText;
   shortStringBuf_t gsBuf;
   const char *stringUelIndex;
   int rc, errNum;
-  int i, j, k, z, found;
+  int i, j, k, found;
   int iSym;
   int idx;
   SEXP dimVect;
@@ -3131,6 +3087,9 @@ SEXP rgdx (SEXP args)
   struct rgdxStruct *inputData;
   gdxUelIndex_t uels;
   gdxValues_t values;
+  gdxSVals_t sVals;
+  union d64_t d64;
+  double dt, posInf, negInf;
   shortStringBuf_t msgBuf;
   shortStringBuf_t uelName;
   const char *uelElementName;
@@ -3229,6 +3188,17 @@ SEXP rgdx (SEXP args)
   if (errNum || 0 == rc) {
     error("Could not gdx file with gdxOpenRead");
   }
+
+  gdxGetSpecialValues (gdxHandle, sVals);
+  d64.u64 = 0x7fffffffffffffff; /* positive QNaN, mantissa all on */
+  sVals[GMS_SVIDX_UNDEF] = d64.x;
+  sVals[GMS_SVIDX_NA] = NA_REAL;
+  dt = 0.0;
+  posInf =  1 / dt;
+  negInf = -1 / dt;
+  sVals[GMS_SVIDX_PINF] = posInf;
+  sVals[GMS_SVIDX_MINF] = negInf;
+  gdxSetSpecialValues (gdxHandle, sVals);
 
   /* read symbol name only if input list is present */
   if (withList) {
@@ -3446,37 +3416,8 @@ SEXP rgdx (SEXP args)
             index = matched + symDim*(int)mwNElements;
             matched = matched +1;
 
-            if (symType != dt_set) {
-              if (gdxMapValue (gdxHandle, values[inputData->dField], &k)) /* it's special */ {
-                switch (k) {
-                case sv_valpin:
-                  p[index] = NA_REAL;
-                  break;
-                case sv_valmin:
-                  p[index] = NA_REAL;
-                  break;
-                case sv_valeps:
-                  p[index] = 0;
-                  break;
-                case sv_normal:
-                  p[index] = values[inputData->dField];
-                  break;
-                case sv_valund:
-                case sv_valna:
-                  p[index] = NA_REAL;
-                  break;
-                default:
-                  sprintf(buf,
-                          "Unrecognized map-value %d returned for %g",
-                          k,
-                          values[inputData->dField]);
-                  error(buf);
-                } /* end of switch/case */
-              }
-              else {
-                p[index] = values[inputData->dField];
-              }
-            }
+            if (symType != dt_set)
+              p[index] = values[inputData->dField];
           }
           if (matched == maxPossibleElements) {
             break;
@@ -3530,37 +3471,8 @@ SEXP rgdx (SEXP args)
               index = nonZero+symDim*mrows;
             }
             nonZero++;
-            if (symType != dt_set) {
-              if (gdxMapValue (gdxHandle, values[inputData->dField], &k)) /* it's special */ {
-                switch (k) {
-                case sv_valpin:
-                  p[index] = NA_REAL;
-                  break;
-                case sv_valmin:
-                  p[index] = -NA_REAL;
-                  break;
-                case sv_valeps:
-                  p[index] = 0;
-                  break;
-                case sv_normal:
-                  p[index] = values[inputData->dField];
-                  break;
-                case sv_valund:
-                case sv_valna:
-                  p[index] = NA_REAL;
-                  break;
-                default:
-                  sprintf(buf,
-                          "Unrecognized map-value %d returned for %g",
-                          k,
-                          values[inputData->dField]);
-                  error(buf);
-                }
-              }
-              else {
-                p[index] = values[inputData->dField];
-              }
-            }
+            if (symType != dt_set)
+              p[index] = values[inputData->dField];
           } /* end of if (set || val != 0) */
         } /* loop over GDX records */
       }
