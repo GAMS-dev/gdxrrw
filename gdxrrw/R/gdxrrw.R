@@ -11,9 +11,9 @@
 ## End(Not run)
 
 
-rgdx <- function(gdxName, requestList = NULL)
+rgdx <- function(gdxName, requestList = NULL, squeeze=TRUE)
 {
-  .External("rgdx", gdxName, requestList, PACKAGE="gdxrrw")
+  .External("rgdx", gdxName=gdxName, requestList=requestList, squeeze=squeeze, PACKAGE="gdxrrw")
 }
 
 wgdx <- function(gdxName, ...)
@@ -28,7 +28,7 @@ gams <- function(gms, ...)
 
 gdxInfo <- function(gdxName = NULL)
 {
-  .External("gdxInfo", gdxName, PACKAGE="gdxrrw")
+  .External("gdxInfo", gdxName=gdxName, PACKAGE="gdxrrw")
 }
 
 igdx <- function(gamsSysDir = NULL)

@@ -634,7 +634,7 @@ getGamsSoln(char *gmsFileName)
   char line[LINELEN], astring[LINELEN], *s, *array[50], *gdxFile;
   int loop, maxPossibleElements, z;
   const char *uelElementName;
-  int rc, errNum, symDim, symType, mrows, ncols, nRecs, iRec, changeIdx, index, k, kk, nonZero;
+  int rc, errNum, symDim, symType, mrows, ncols, nRecs, iRec, changeIdx, index, k, kk, kRec;
   shortStringBuf_t msgBuf, uelName;
   char buf[3*sizeof(shortStringBuf_t)];
   int nUEL, iUEL, defaultIndex,  UELUserMapping, highestMappedUEL, ndimension;
@@ -783,6 +783,7 @@ getGamsSoln(char *gmsFileName)
     dt = 0.0;
     posInf =  1 / dt;
     negInf = -1 / dt;
+  sVals[GMS_SVIDX_EPS] = 0;
     sVals[GMS_SVIDX_PINF] = posInf;
     sVals[GMS_SVIDX_MINF] = negInf;
     gdxSetSpecialValues (gdxHandle, sVals);
@@ -938,21 +939,20 @@ getGamsSoln(char *gmsFileName)
       free(returnedIndex);
     }/* End of with uels */
     else {
-      nonZero = 0;
       if (symType == dt_var || symType == dt_equ ) {
         gdxDataReadRawStart (gdxHandle, 1, &nRecs);
       }
 
-      for (iRec = 0;  iRec < nRecs;  iRec++) {
+      for (iRec = 0, kRec = 0;  iRec < nRecs;  iRec++) {
         gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-        if (symType == dt_set || values[inputData->dField] != 0) {
-          index = 0;
-          /* For non zero */
+        if ((dt_set == symType) ||
+            (0 != values[inputData->dField]) ) {
+          /* store the value */
           for (kk = 0;  kk < symDim;  kk++) {
-            p[nonZero+kk*mrows] = uels[kk];
-            index = nonZero+symDim*mrows;
+            p[kRec + kk*mrows] = uels[kk];
           }
-          nonZero++;
+          index = kRec + symDim*mrows;
+          kRec++;
           if (symType != dt_set)
             p[index] = values[inputData->dField];
         } /* end of if (set || val != 0) */
@@ -3061,6 +3061,63 @@ loadGDX (void)
   return;
 } /* loadGDX */
 
+/* interpret the squeeze arg for rgdx as a logical/boolean */
+static Rboolean getSqueezeArgRead (SEXP squeeze)
+{
+  const char *s;
+
+  switch (TYPEOF(squeeze)) {
+  case LGLSXP:
+    return LOGICAL(squeeze)[0];
+    break;
+  case INTSXP:
+    return INTEGER(squeeze)[0];
+    break;
+  case REALSXP:
+    if (0.0 == REAL(squeeze)[0])
+      return FALSE;
+    else
+      return TRUE;
+    break;
+  case STRSXP:
+    s = CHAR(STRING_ELT(squeeze, 0));
+    if ('\0' == s[1])
+      switch (s[0]) {
+      case 'T':
+      case 't':
+      case 'Y':
+      case 'y':
+      case '1':
+        return TRUE;
+      case 'F':
+      case 'f':
+      case 'N':
+      case 'n':
+      case '0':
+        return FALSE;
+      default:
+        return NA_LOGICAL;
+      }
+    if (0 == strcmp("TRUE",s)) return TRUE;
+    if (0 == strcmp("True",s)) return TRUE;
+    if (0 == strcmp("true",s)) return TRUE;
+    if (0 == strcmp("YES",s)) return TRUE;
+    if (0 == strcmp("Yes",s)) return TRUE;
+    if (0 == strcmp("yes",s)) return TRUE;
+
+    if (0 == strcmp("FALSE",s)) return FALSE;
+    if (0 == strcmp("False",s)) return FALSE;
+    if (0 == strcmp("false",s)) return FALSE;
+    if (0 == strcmp("NO",s)) return FALSE;
+    if (0 == strcmp("No",s)) return FALSE;
+    if (0 == strcmp("no",s)) return FALSE;
+
+    return NA_LOGICAL;
+    break;
+  }
+  return NA_LOGICAL;
+} /* getSqueezeArgRead */
+
 /* ---------------------------- rgdx -----------------------------------
  * This is the main gateway function
  * to be called from R console
@@ -3071,7 +3128,7 @@ loadGDX (void)
 SEXP rgdx (SEXP args)
 {
   const char *funcName = "rgdx";
-  SEXP fileName, requestList, UEList;
+  SEXP fileName, requestList, squeeze, UEList;
   SEXP compName = R_NilValue,
     compType = R_NilValue,
     compDim = R_NilValue,
@@ -3096,7 +3153,7 @@ SEXP rgdx (SEXP args)
   shortStringBuf_t gdxFileName;
   int symIdx, symDim, symType;
   int rc, errNum, ACount, mrows, ncols, nUEL, iUEL;
-  int  k, kk, iRec, nRecs, index, changeIdx, nonZero;
+  int  k, kk, iRec, nRecs, index, changeIdx, kRec;
   int UELUserMapping, highestMappedUEL;
   int arglen,  maxPossibleElements, z, b, matched, sparesIndex;
   double  *p, *dimVal, *dimElVect;
@@ -3112,9 +3169,10 @@ SEXP rgdx (SEXP args)
   int outFields = 6;
   int mwNElements =0;
   int uelProperty = 0;
+  Rboolean zeroSqueeze = NA_LOGICAL;
 
   /* setting intial values */
-  nonZero = 0;
+  kRec = 0;
   alloc = 0;
   maxPossibleElements = 0; /* this just to shut up compiler warnings */
 
@@ -3123,13 +3181,14 @@ SEXP rgdx (SEXP args)
 
   /* ----------------- Check proper number of inputs and outputs ------------
    * Function should follow specification of
-   * rgdx ('gdxFileName', requestList = NULL)
+   * rgdx ('gdxFileName', requestList = NULL, squeeze = TRUE)
    * ------------------------------------------------------------------------ */
-  if (3 != arglen) {
-    error ("usage: %s(gdxName, requestList = NULL) - incorrect arg count", funcName);
+  if (4 != arglen) {
+    error ("usage: %s(gdxName, requestList = NULL, squeeze = TRUE) - incorrect arg count", funcName);
   }
   fileName = CADR(args);
   requestList = CADDR(args);
+  squeeze = CADDDR(args);
   if (TYPEOF(fileName) != STRSXP) {
     error ("usage: %s(gdxName, requestList = NULL) - gdxName must be a string", funcName);
   }
@@ -3138,7 +3197,7 @@ SEXP rgdx (SEXP args)
   else {
     withList = 1;
     if (TYPEOF(requestList) != VECSXP) {
-      error ("usage: %s(gdxName, requestList) - requestList must be a list", funcName);
+      error ("usage: %s(gdxName, requestList, squeeze) - requestList must be a list", funcName);
     }
   }
 
@@ -3153,6 +3212,11 @@ SEXP rgdx (SEXP args)
       return R_NilValue;
     } /* if audit run */
   } /* if one arg, of character type */
+
+  zeroSqueeze = getSqueezeArgRead (squeeze);
+  if (NA_LOGICAL == zeroSqueeze) {
+    error ("usage: %s(gdxName, requestList, squeeze = TRUE)\n    squeeze argument could not be interpreted as logical", funcName);
+  }
 
   /* ------------------- check if the GDX file exists --------------- */
   checkFileExtension (gdxFileName);
@@ -3196,6 +3260,7 @@ SEXP rgdx (SEXP args)
   dt = 0.0;
   posInf =  1 / dt;
   negInf = -1 / dt;
+  sVals[GMS_SVIDX_EPS] = 0;
   sVals[GMS_SVIDX_PINF] = posInf;
   sVals[GMS_SVIDX_MINF] = negInf;
   gdxSetSpecialValues (gdxHandle, sVals);
@@ -3427,7 +3492,6 @@ SEXP rgdx (SEXP args)
       } /* End of else of if (te) */
     } /* End of with uels */
     else {
-      nonZero = 0;
       if (symType == dt_var || symType == dt_equ ) {
         gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
       }
@@ -3438,7 +3502,7 @@ SEXP rgdx (SEXP args)
           if (values[GMS_VAL_LEVEL]) {
             elementIndex = (int) values[GMS_VAL_LEVEL];
             gdxGetElemText(gdxHandle, elementIndex, msg, &IDum);
-            SET_STRING_ELT(textElement, nonZero, mkChar(msg));
+            SET_STRING_ELT(textElement, iRec, mkChar(msg));
           }
           else {
             strcpy(stringEle, "");
@@ -3448,29 +3512,26 @@ SEXP rgdx (SEXP args)
                 strcat(stringEle, ".");
               }
             }
-            SET_STRING_ELT(textElement, nonZero, mkChar(stringEle));
+            SET_STRING_ELT(textElement, iRec, mkChar(stringEle));
             kk = 0;
           }
-          index = 0;
-
           for (kk = 0;  kk < symDim;  kk++) {
-            p[nonZero+kk*mrows] = uels[kk];
-            index = nonZero+symDim*mrows;
+            p[iRec+kk*mrows] = uels[kk];
           }
-          nonZero++;
         }  /* loop over GDX records */
-      }
+      }    /* inputdata->te = 1: must be a set */
       else {
-        for (iRec = 0;  iRec < nRecs;  iRec++) {
+        for (iRec = 0, kRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-          if (symType == dt_set || values[inputData->dField] != 0) {
-            index = 0;
-            /* For non zero */
+          if ((dt_set == symType) ||
+              (! zeroSqueeze ) ||
+              (0 != values[inputData->dField])) {
+            /* store the value */
             for (kk = 0;  kk < symDim;  kk++) {
-              p[nonZero+kk*mrows] = uels[kk];
-              index = nonZero+symDim*mrows;
+              p[kRec + kk*mrows] = uels[kk];
             }
-            nonZero++;
+            index = kRec + symDim*mrows;
+            kRec++;
             if (symType != dt_set)
               p[index] = values[inputData->dField];
           } /* end of if (set || val != 0) */
