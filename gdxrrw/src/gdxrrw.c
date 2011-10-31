@@ -154,7 +154,8 @@ static void
 checkRgdxList (const SEXP lst, struct rgdxStruct *data);
 
 static void
-unpackArgs (SEXP *args, int argLen, SEXP **symList, int *symListSiz, int *symListLen);
+unpackWgdxArgs (SEXP *args, int argLen, SEXP **symList,
+                int *symListSiz, int *symListLen, char *zeroSqueeze);
 
 static void
 readWgdxList(const SEXP lst,
@@ -268,7 +269,8 @@ static void
 writeGdx(char *fileName,
          int symListLen,
          SEXP *symList,
-         int fromGAMS);
+         int fromGAMS,
+         char zeroSqueeze);
 
 static void
 loadGDX (void);
@@ -1963,9 +1965,11 @@ processArg (SEXP a, int argNum, SEXP *symList, int symListSiz, int *symListLen)
 
 
 void
-unpackArgs (SEXP *args, int argLen, SEXP **symList, int *symListSiz, int *symListLen)
+unpackWgdxArgs (SEXP *args, int argLen, SEXP **symList,
+                int *symListSiz, int *symListLen, char *zeroSqueeze)
 {
-  int i;
+  int i, stopper;
+  const char *argName, *s;
   SEXP t;
   SEXP a;
 
@@ -1974,14 +1978,90 @@ unpackArgs (SEXP *args, int argLen, SEXP **symList, int *symListSiz, int *symLis
          "And does it work to have a multi-line error message?\n"
          "That would be nice if it did.\n", argLen);
 #endif
+  *zeroSqueeze = 'y';           /* default is yes */
   *symListLen = *symListSiz = 0;
-  for (a = *args, i = 2;  i < argLen;  i++) {
+  for (a = *args, i = 2, stopper = argLen ;  i < argLen;  i++) {
     a = CDR(a);
     t = CAR(a);
 #if 0
     Rprintf ("DEBUG: args = %p   len: %d\n", t, length(t));
 #endif
-    *symListSiz += length(t);
+    if (isNull(TAG(a))) {
+      /* no name for this argument, assume it is a list, checked later */
+      *symListSiz += length(t);
+    }
+    else {
+      argName = CHAR(PRINTNAME(TAG(a)));
+      if (0 != strcmp("",argName)) {
+        error ("usage: wgdx: unrecognized argument name '%s'\n", argName);
+      }
+      if (i != argLen-1) {
+        error ("usage: wgdx: argument '%s' must follow symbol lists\n", argName);
+      }
+      switch (TYPEOF(t)) {
+      case LGLSXP:
+        *zeroSqueeze = LOGICAL(t)[0] ? 'y' : 'n';
+        break;
+      case INTSXP:
+        *zeroSqueeze = INTEGER(t)[0] ? 'y' : 'n';
+        break;
+      case REALSXP:
+        if (0.0 == REAL(t)[0])
+          *zeroSqueeze = 'n';
+        break;
+      case STRSXP:
+        s = CHAR(STRING_ELT(t, 0));
+        if ('\0' == s[0])
+          error ("usage: wgdx: argument '%s' is invalid\n", argName);
+        if ('\0' == s[1])
+          switch (s[0]) {
+          case 'T':
+          case 't':
+          case 'Y':
+          case 'y':
+          case '1':
+            *zeroSqueeze = 'y';
+            break;
+          case 'F':
+          case 'f':
+          case 'N':
+          case 'n':
+          case '0':
+            *zeroSqueeze = 'n';
+            break;
+          case 'E':
+          case 'e':
+            *zeroSqueeze = 'e';
+            break;
+          default:
+            error ("usage: wgdx: argument '%s' is invalid\n", argName);
+          }
+        if ((0 == strcmp("TRUE",s)) ||
+            (0 == strcmp("True",s)) ||
+            (0 == strcmp("true",s)) ||
+            (0 == strcmp("YES",s)) ||
+            (0 == strcmp("Yes",s)) ||
+            (0 == strcmp("yes",s)) )
+          *zeroSqueeze = 'y';
+        else if ((0 == strcmp("FALSE",s)) ||
+                 (0 == strcmp("False",s)) ||
+                 (0 == strcmp("false",s)) ||
+                 (0 == strcmp("NO",s)) ||
+                 (0 == strcmp("No",s)) ||
+                 (0 == strcmp("no",s)) )
+          *zeroSqueeze = 'n';
+        else if ((0 == strcmp("EPS",s)) ||
+                 (0 == strcmp("Eps",s)) ||
+                 (0 == strcmp("eps",s)) )
+          *zeroSqueeze = 'e';
+        else
+          error ("usage: wgdx: argument '%s' is invalid\n", argName);
+        break;
+      default:
+        error ("usage: wgdx: argument '%s' is invalid\n", argName);
+      } /* end switch(TYPEOF(t)) */
+      stopper = argLen - 1;
+    }
   }
 #if 0
   Rprintf ("Last arg processed\n");
@@ -1993,14 +2073,14 @@ unpackArgs (SEXP *args, int argLen, SEXP **symList, int *symListSiz, int *symLis
   *symList = malloc (*symListSiz * sizeof(**symList));
   memset (*symList, 0, *symListSiz * sizeof(**symList));
 
-  for (a = *args, i = 2;  i < argLen;  i++) {
+  for (a = *args, i = 2;  i < stopper;  i++) {
     a = CDR(a);
     t = CAR(a);
     processArg (t, i, *symList, *symListSiz, symListLen);
   }
 
   return;
-} /* unpackArgs */
+} /* unpackWgdxArgs */
 
 
 void
@@ -2688,7 +2768,8 @@ static void
 writeGdx(char *gdxFileName,
          int symListLen,
          SEXP *symList,
-         int fromGAMS)
+         int fromGAMS,
+         char zeroSqueeze)
 {
   FILE *matdata = NULL;
   SEXP uelIndex, compName, valData;
@@ -3835,6 +3916,7 @@ SEXP wgdx (SEXP args)
   int symListSiz = 0, symListLen = 0;
   shortStringBuf_t gdxFileName;
   int arglen;
+  char zeroSqueeze;
 
   arglen = length(args);
   if (arglen == 1) {
@@ -3865,10 +3947,10 @@ SEXP wgdx (SEXP args)
 
   checkFileExtension (gdxFileName);
 
-  unpackArgs (&args, arglen, &symList, &symListSiz, &symListLen);
+  unpackWgdxArgs (&args, arglen, &symList, &symListSiz, &symListLen, &zeroSqueeze);
 
   /* check and write data to gdxfile */
-  writeGdx (gdxFileName, symListLen, symList, 0);
+  writeGdx (gdxFileName, symListLen, symList, 0, zeroSqueeze);
   free (symList);
   return R_NilValue;
 } /* wgdx */
@@ -3959,7 +4041,7 @@ SEXP gams (SEXP args)
     for (i = 0;  i < arglen-2;  i++) {
       args = CDR(args); symList[i] = CAR(args);
     }
-    writeGdx (gmsFileName, symListLen, symList, 1);
+    writeGdx (gmsFileName, symListLen, symList, 1, 'y');
     /* free memory */
     free(symList);
   }

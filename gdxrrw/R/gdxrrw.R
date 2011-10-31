@@ -18,7 +18,7 @@ rgdx <- function(gdxName, requestList = NULL, squeeze=TRUE)
 
 wgdx <- function(gdxName, ...)
 {
-  .External("wgdx", gdxName, ..., PACKAGE="gdxrrw")
+  .External("wgdx", gdxName=gdxName, ..., PACKAGE="gdxrrw")
 }
 
 gams <- function(gms, ...)
