@@ -3936,6 +3936,34 @@ SEXP gdxInfo (SEXP args)
     Keys[GMS_MAX_INDEX_DIM];
   char *dn, c;
 
+#if 1
+  SEXP ap, el;
+  const char *name;
+
+  Rprintf ("gdxInfo called with %d args\n", length(args)); 
+  for (i = 0, ap = args;  ap != R_NilValue;  i++, ap = CDR(ap)) {
+    name = isNull(TAG(ap)) ? "" : CHAR(PRINTNAME(TAG(ap)));
+    el = CAR(ap);
+    if (0 == length(el)) {
+      if (NILSXP == TYPEOF(el))
+        Rprintf ("[%d] '%s' NILSXP\n", i, name);
+      else
+        Rprintf ("[%d] '%s' R type, length 0\n", i, name);
+      continue;
+    }
+    switch (TYPEOF(el)) {
+    case REALSXP:
+      Rprintf ("[%d] '%s' REALSXP %g\n", i, name, REAL(el)[0]);
+      break;
+    case STRSXP:
+      Rprintf ("[%d] '%s' STRSXP %s\n", i, name, CHAR(STRING_ELT(el,0)));
+      break;
+    default:
+      Rprintf ("[%d] '%s' unhandled R type\n", i, name);
+    }
+  }
+#endif
+
   /* first arg is function name - ignore it */
   arglen = length(args);
 
