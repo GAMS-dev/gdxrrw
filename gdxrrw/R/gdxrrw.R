@@ -36,9 +36,9 @@ igdx <- function(gamsSysDir = NULL)
   .External("igdx", gamsSysDir, PACKAGE="gdxrrw")
 }
 
-rgdx.param <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE)
+rgdx.param <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, squeeze=TRUE)
 {
-  sym <- rgdx(gdxName, list(name=symName,compress=compress,ts=ts))
+  sym <- rgdx(gdxName, list(name=symName,compress=compress,ts=ts),squeeze=squeeze)
   if (sym$type != "parameter") {
     stop ("Expected to read a parameter: symbol ", symName, " is a ", sym$type)
   }
