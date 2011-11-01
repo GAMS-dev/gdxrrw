@@ -785,7 +785,7 @@ getGamsSoln(char *gmsFileName)
     dt = 0.0;
     posInf =  1 / dt;
     negInf = -1 / dt;
-  sVals[GMS_SVIDX_EPS] = 0;
+    sVals[GMS_SVIDX_EPS] = 0;
     sVals[GMS_SVIDX_PINF] = posInf;
     sVals[GMS_SVIDX_MINF] = negInf;
     gdxSetSpecialValues (gdxHandle, sVals);
@@ -1992,7 +1992,7 @@ unpackWgdxArgs (SEXP *args, int argLen, SEXP **symList,
     }
     else {
       argName = CHAR(PRINTNAME(TAG(a)));
-      if (0 != strcmp("",argName)) {
+      if (0 != strcmp("squeeze",argName)) {
         error ("usage: wgdx: unrecognized argument name '%s'\n", argName);
       }
       if (i != argLen-1) {
@@ -2992,9 +2992,13 @@ writeGdx(char *gdxFileName,
               }
             }
           }
-          /* No need to write zero values */
-          if ((data[i]->dType == parameter && vals[0] != 0)
-             || data[i]->dType == set) {
+          if ((parameter == data[i]->dType) && 
+              (0 == vals[0]) && ('e' == zeroSqueeze))
+            vals[0] = sVals[GMS_SVIDX_EPS];
+          if ((set == data[i]->dType) ||
+              ('n' == zeroSqueeze) ||
+              (0 != vals[0])) {
+            /* write the value to GDX */
             rc = gdxDataWriteMap (gdxHandle, uelIndices, vals);
             if (!rc) {
               error("Could not write parameter MAP with gdxDataWriteMap");
@@ -3077,9 +3081,14 @@ writeGdx(char *gdxFileName,
               error ("Only zero-one values are allowed when specifying sets with form=full\n");
             }
           }
-          /* No need to write zero values */
-          if ((data[i]->dType == parameter && vals[0] != 0)
-             || (data[i]->dType == set && 0 != dt)) {
+          if ((parameter == data[i]->dType) && 
+              (0 == vals[0]) && ('e' == zeroSqueeze))
+            vals[0] = sVals[GMS_SVIDX_EPS];
+          if (((set == data[i]->dType) && (0 != dt))  ||
+              ((parameter == data[i]->dType) && 
+               (('n' == zeroSqueeze) ||
+                (0 != vals[0]))) ) {
+            /* write the value to GDX */
             rc = gdxDataWriteMap(gdxHandle, uelIndices, vals);
             if (!rc) {
               error("Could not write parameter MAP with gdxDataWriteMap");
