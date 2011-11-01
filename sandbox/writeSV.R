@@ -21,10 +21,14 @@ svList <- list (name='sv', type='parameter', form='sparse', dim=2,
                 ts='special values with default squeeze="yes"',
                 val=sv, uels=c(uels,uels))
 
-print ("first write with defaults");
+fn0 <- "wSV0.gdx"
+print (paste("first write with defaults: output =",fn0));
+wgdx (fn0, svList)
 
-wgdx ("wSV0.gdx", svList)
+fn1 <- "wSV1.gdx"
+print (paste("second write with option squeeze=FALSE: output =",fn1));
+wgdx (fn1, svList, squeeze=FALSE)
 
-wgdx ("wSV1.gdx", svList, squeeze=FALSE)
-
-wgdx ("wSV2.gdx", svList, squeeze='Eps')
+fn2 <- "wSV2.gdx"
+print (paste("third write with option squeeze='eps': output =",fn2));
+wgdx (fn2, svList, squeeze='Eps')
