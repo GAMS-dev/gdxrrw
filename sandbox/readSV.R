@@ -1,14 +1,16 @@
 print ("test reading special values with form='sparse' and no filter")
 rgdx('?')
 
-print ("first read with defaults")
-sv <- rgdx ('svGAMS',list(name='sv'))
+fn <- "svxls.gdx"
 
-print ("second read with squeeze=FALSE")
-sv2 <- rgdx ('svGAMS',list(name='sv'),squeeze=FALSE)
+print (paste("first read with defaults: input =",fn))
+sv <- rgdx (fn,list(name='sv'))
 
-print ("third read as data frame with default squeeze")
-svdf0 <- rgdx.param ('svGAMS', 'sv', ts=TRUE)
+print (paste("second read with squeeze=FALSE: input =",fn))
+sv2 <- rgdx (fn,list(name='sv'),squeeze=FALSE)
 
-print ("fourth read as data frame with squeeze=FALSE")
-svdf1 <- rgdx.param ('svGAMS', 'sv', ts=TRUE, squeeze=FALSE)
+print (paste("third read as data frame with default squeeze: input =",fn))
+svdf0 <- rgdx.param (fn, 'sv', ts=TRUE)
+
+print (paste("fourth read as data frame with squeeze=FALSE: input =",fn))
+svdf1 <- rgdx.param (fn, 'sv', ts=TRUE, squeeze=FALSE)
