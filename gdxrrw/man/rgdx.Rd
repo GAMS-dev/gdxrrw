@@ -11,11 +11,11 @@
 }
 \usage{
   # generic form - return a symbol as a list
-  rgdx(gdxName, requestList = NULL)
+  rgdx(gdxName, requestList = NULL, squeeze = TRUE)
 
   # return a set or parameter in a data frame
   rgdx.set(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE)
-  rgdx.param(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE)
+  rgdx.param(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, squeeze=TRUE)
 
   # return a scalar
   rgdx.scalar(gdxName, symName, ts=FALSE)
@@ -26,6 +26,7 @@
   information about how much information to return and in what
   format.  This argument must be a list.  If omitted, the universe of
   UELs contained in the GDX file is returned}
+  \item{squeeze}{if TRUE, squeeze out any zero or EPS stored in the GDX container}
   \item{symName}{the name of the GDX symbol to read}
   \item{names}{the column names to use in the data frame returned}
   \item{compress}{if TRUE, compress the factors in the data frame so they only include required levels.  For the default compress=FALSE, each factor includes levels for the entire universe of UELs in the GDX file}
