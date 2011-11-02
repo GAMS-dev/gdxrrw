@@ -2,6 +2,7 @@
 
 tests <- c("tReadSparse1", "tReadFull1",
            "tRead.set", "tRead.param",
+           "tReadSV",
            "tWriteSparse1", "tWriteSparse2", "tWriteFull1", "tWriteFull2",
            "tWrap",
            "tLS")
