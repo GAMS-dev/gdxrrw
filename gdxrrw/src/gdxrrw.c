@@ -2805,7 +2805,7 @@ writeGdx(char *gdxFileName,
   gdxUelIndex_t uelIndices;
   gdxValues_t   vals;
   gdxSVals_t sVals;
-  union d64_t d64, d64_NA_REAL;
+  union d64_t d64;
   shortStringBuf_t msgBuf;
   shortStringBuf_t expText;
   shortStringBuf_t gsBuf;
@@ -2855,8 +2855,6 @@ writeGdx(char *gdxFileName,
     error("Could not open gdx file with gdxOpenWrite: %s",
           lastErrMsg);
   }
-
-  d64_NA_REAL.x = NA_REAL;
 
   gdxGetSpecialValues (gdxHandle, sVals);
   d64.u64 = 0x7fffffffffffffff; /* positive QNaN, mantissa all on */
@@ -3012,12 +3010,11 @@ writeGdx(char *gdxFileName,
             else {
               vals[0] = pi[nColumns*nRows + j];
             }
-            if (isnan(vals[0])) {
-              d64.x = vals[0];
-              if (d64.u64 == d64_NA_REAL.u64) {
-                vals[0] = sVals[GMS_SVIDX_NA];
-              }
+#if 1
+            if (ISNA(vals[0])) {
+              vals[0] = sVals[GMS_SVIDX_NA];
             }
+#endif
           }
           if ((parameter == data[i]->dType) && 
               (0 == vals[0]) && ('e' == zeroSqueeze))
@@ -3094,11 +3091,8 @@ writeGdx(char *gdxFileName,
           }
           if (data[i]->dType == parameter) {
             vals[0] = dt;
-            if (isnan(dt)) {
-              d64.x = dt;
-              if (d64.u64 == d64_NA_REAL.u64) {
-                vals[0] = sVals[GMS_SVIDX_NA];
-              }
+            if (ISNA(vals[0])) {
+              vals[0] = sVals[GMS_SVIDX_NA];
             }
           }
           else if (set == data[i]->dType) {
