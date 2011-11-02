@@ -231,13 +231,13 @@ void downCase (char *string);
 int
 getNonZeroElements (gdxHandle_t h, int symIdx, dField_t dField);
 
-SEXP
-compressData(SEXP data,
-             SEXP globalUEL,
-             SEXP uelOut,
-             int numberOfUel,
-             int symbolDim,
-             int nRec);
+void
+compressData (SEXP data,
+              SEXP globalUEL,
+              SEXP uelOut,
+              int numberOfUel,
+              int symbolDim,
+              int nRec);
 
 SEXP
 sparseToFull(SEXP compVal,
@@ -620,7 +620,8 @@ SEXP
 getGamsSoln(char *gmsFileName)
 {
   SEXP  UEList;
-  SEXP OPListComp, OPList, dimVect, textElement;
+  SEXP OPListComp, OPList, dimVect;
+  SEXP textElement = R_NilValue;
   SEXP compName = R_NilValue,
     compType = R_NilValue,
     compDim = R_NilValue,
@@ -964,7 +965,7 @@ getGamsSoln(char *gmsFileName)
     /* Converting data into its compressed form. */
     if (inputData->compress == 1) {
       PROTECT(compUels = allocVector(VECSXP, symDim));
-      compVal = compressData(compVal, UEList, compUels, nUEL, symDim, mrows);
+      compressData (compVal, UEList, compUels, nUEL, symDim, mrows);
     }
 
     /* Converting sparse data into full matrix */
@@ -1629,15 +1630,17 @@ getNonZeroElements (gdxHandle_t h, int symIdx, dField_t dField)
   return nonZero;
 }
 
-/* This method compress the raw data(both value and uel) and remove redundant zeros from
- * value matrix and re-index output matrix. And it also remove non present uel elements from UEL */
-SEXP
-compressData(SEXP data,
-             SEXP globalUEL,
-             SEXP uelOut,
-             int numberOfUel,
-             int symbolDim,
-             int nRec)
+/* This method compresses the raw data (both value and uel)
+ * and removes redundant zeros from
+ * value matrix and re-index output matrix.
+ * And it also remove non present uel elements from UEL */
+void
+compressData (SEXP data,
+              SEXP globalUEL,
+              SEXP uelOut,
+              int numberOfUel,
+              int symbolDim,
+              int nRec)
 {
   int *mask, i, j, k, l, total, elements;
   double *col;
@@ -1678,8 +1681,8 @@ compressData(SEXP data,
   }
   free(mask);
   alloc++;
-  return data;
-} /* End of compressData */
+  return;
+} /* compressData */
 
 
 /* This method converts sparse data into full data */
@@ -3246,7 +3249,7 @@ SEXP rgdx (SEXP args)
   int  k, kk, iRec, nRecs, index, changeIdx, kRec;
   int UELUserMapping, highestMappedUEL;
   int arglen,  maxPossibleElements, z, b, matched, sparesIndex;
-  double  *p, *dimVal, *dimElVect;
+  double *p, *dimVal, *dimElVect;
   char buf[3*sizeof(shortStringBuf_t)];
   char symName[GMS_SSSIZE];
   char sText[GMS_SSSIZE], msg[GMS_SSSIZE], stringEle[GMS_SSSIZE];
@@ -3632,7 +3635,7 @@ SEXP rgdx (SEXP args)
     /* Converting data into its compressed form. */
     if (inputData->compress == 1) {
       PROTECT(compUels = allocVector(VECSXP, symDim));
-      compVal = compressData(compVal, UEList, compUels, nUEL, symDim, mrows);
+      compressData (compVal, UEList, compUels, nUEL, symDim, mrows);
     }
     /* TODO/TEST: create full dimensional string matrix */
     if (inputData->te == 1) {
