@@ -14,12 +14,12 @@ This package implements an interface between GAMS and R.  It
 \tabular{ll}{
 Package: \tab gdxrrw\cr
 Type: \tab Package\cr
-Version: \tab 0.0-2\cr
-Date: \tab 2011-08-16\cr
+Version: \tab 0.0-3\cr
+Date: \tab 2011-11-02\cr
 License: \tab GNU GPL\cr
 LazyLoad: \tab yes\cr
 }
-It contains five classes methods:
+It contains five classes of methods:
 \itemize{
   \item{igdx(...)}
   \item{rgdx("gdxfile", ...) and related functions}
@@ -28,7 +28,7 @@ It contains five classes methods:
   \item{gdxInfo("gdxfile")}
 }
 }
-\author{Original coding by Rishabh Jain.  Adopted and packaged by
+\author{Original coding by Rishabh Jain.  Adopted, packaged, and extended by
 Steve Dirkse.  Maintainer: \email{R@gams.com}}
 \keyword{ package }
 \keyword{ data }
