@@ -4,9 +4,9 @@ rgdx <- function(gdxName, requestList = NULL, squeeze=TRUE)
   .External("rgdx", gdxName=gdxName, requestList=requestList, squeeze=squeeze, PACKAGE="gdxrrw")
 }
 
-wgdx <- function(gdxName, ...)
+wgdx <- function(gdxName, ..., squeeze='y')
 {
-  .External("wgdx", gdxName=gdxName, ..., PACKAGE="gdxrrw")
+  .External("wgdx", gdxName=gdxName, ..., squeeze=squeeze, PACKAGE="gdxrrw")
 }
 
 gams <- function(gms, ...)
@@ -185,7 +185,7 @@ rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE)
   return(symDF)
 } # rgdx.set
 
-wgdx.df <- function(gdxName, df)
+wgdx.df <- function(gdxName, df, squeeze='y')
 {
   if (! is.character(gdxName)) {
     stop ("gdxName must GDX file name")
@@ -233,7 +233,7 @@ wgdx.df <- function(gdxName, df)
   }
   lst$val <- v
   lst$uels <- uels
-  wgdx (gdxName, lst)
+  wgdx (gdxName, lst, squeeze=squeeze)
 } # wgdx.df
 
 wgdx.scalar <- function(gdxName, s)
@@ -260,7 +260,7 @@ wgdx.scalar <- function(gdxName, s)
 } # wgdx.scalar
 
 # input list of symbols: contents are data frames, scalars, or symLists
-wgdx.lst <- function(gdxName, ilst)
+wgdx.lst <- function(gdxName, ilst, squeeze='y')
 {
   if (! is.character(gdxName)) {
     stop ("gdxName must GDX file name")
@@ -335,6 +335,5 @@ wgdx.lst <- function(gdxName, ilst)
     }
   }
 
-  wgdx (gdxName, olst)
+  wgdx (gdxName, olst, squeeze=squeeze)
 } # wgdx.lst
-

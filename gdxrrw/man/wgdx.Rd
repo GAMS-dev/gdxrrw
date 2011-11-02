@@ -12,21 +12,24 @@
 }
 \usage{
   # generic form - each arg is a list specifying a symbol to write
-  wgdx(gdxName, ...)
+  wgdx(gdxName, ..., squeeze = 'y')
 
   # write a data frame - inverse of \code{rgdx.param} and \code{rgdx.set}
-  wgdx.df(gdxName, df)
+  wgdx.df(gdxName, df, squeeze = 'y')
 
   # write a scalar - inverse of \code{rgdx.scalar}
   wgdx.scalar(gdxName, s)
 
   # write multiple symbols
-  wgdx.lst(gdxName, ilst)
+  wgdx.lst(gdxName, ilst, squeeze = 'y')
 }
 \arguments{
   \item{gdxName}{the name of the GDX file to write}
   \item{\dots}{zero or more lists describing the sets and
   parameters to write}
+  \item{squeeze}{if 'y'/TRUE/nonzero, squeeze out zeros: do not store
+  in GDX.  If 'n'/FALSE/zero, do not squeeze out zeros: store explicit
+  zeros in GDX.  If 'e', store zeros as EPS in the GDX.}
   \item{df}{data frame to write to GDX}
   \item{s}{scalar to write to GDX}
   \item{ilst}{list of inputs, each of which can be a data frame as
