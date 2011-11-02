@@ -3988,15 +3988,13 @@ SEXP wgdx (SEXP args)
   (void) CHAR2ShortStr (CHAR(STRING_ELT(fileName, 0)), gdxFileName);
 
   msgInit ();
-  if (2 == arglen) {
-    if (0 == strcmp("?", gdxFileName)) {
-      int n = (int)strlen (ID);
-      memcpy (strippedID, ID+1, n-2);
-      strippedID[n-2] = '\0';
-      Rprintf ("R-file source info: %s\n", strippedID);
-      return R_NilValue;
-    } /* if audit run */
-  } /* if one arg, of character type */
+  if (0 == strcmp("?", gdxFileName)) {
+    int n = (int)strlen (ID);
+    memcpy (strippedID, ID+1, n-2);
+    strippedID[n-2] = '\0';
+    Rprintf ("R-file source info: %s\n", strippedID);
+    return R_NilValue;
+  } /* if audit run */
 
   checkFileExtension (gdxFileName);
 
