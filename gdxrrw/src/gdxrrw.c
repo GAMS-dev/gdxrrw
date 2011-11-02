@@ -2034,8 +2034,9 @@ unpackWgdxArgs (SEXP *args, int argLen, SEXP **symList,
       case STRSXP:
         s = CHAR(STRING_ELT(t, 0));
         if ('\0' == s[0])
-          error ("usage: wgdx: argument '%s' is invalid\n", argName);
-        if ('\0' == s[1])
+          error ("usage: wgdx: argument '%s=<empty_string>' is invalid\n", argName);
+        if ('\0' == s[1]) {
+          /* single character */
           switch (s[0]) {
           case 'T':
           case 't':
@@ -2056,35 +2057,39 @@ unpackWgdxArgs (SEXP *args, int argLen, SEXP **symList,
             *zeroSqueeze = 'e';
             break;
           default:
-            error ("usage: wgdx: argument '%s' is invalid\n", argName);
+            error ("usage: wgdx: argument '%s=%s' is invalid\n", argName, s);
           }
-        if ((0 == strcmp("TRUE",s)) ||
-            (0 == strcmp("True",s)) ||
-            (0 == strcmp("true",s)) ||
-            (0 == strcmp("YES",s)) ||
-            (0 == strcmp("Yes",s)) ||
-            (0 == strcmp("yes",s)) )
-          *zeroSqueeze = 'y';
-        else if ((0 == strcmp("FALSE",s)) ||
-                 (0 == strcmp("False",s)) ||
-                 (0 == strcmp("false",s)) ||
-                 (0 == strcmp("NO",s)) ||
-                 (0 == strcmp("No",s)) ||
-                 (0 == strcmp("no",s)) )
-          *zeroSqueeze = 'n';
-        else if ((0 == strcmp("EPS",s)) ||
-                 (0 == strcmp("Eps",s)) ||
-                 (0 == strcmp("eps",s)) )
-          *zeroSqueeze = 'e';
-        else
-          error ("usage: wgdx: argument '%s' is invalid\n", argName);
+        }
+        else {
+          /* handle multi-char string */
+          if ((0 == strcmp("TRUE",s)) ||
+              (0 == strcmp("True",s)) ||
+              (0 == strcmp("true",s)) ||
+              (0 == strcmp("YES",s)) ||
+              (0 == strcmp("Yes",s)) ||
+              (0 == strcmp("yes",s)) )
+            *zeroSqueeze = 'y';
+          else if ((0 == strcmp("FALSE",s)) ||
+                   (0 == strcmp("False",s)) ||
+                   (0 == strcmp("false",s)) ||
+                   (0 == strcmp("NO",s)) ||
+                   (0 == strcmp("No",s)) ||
+                   (0 == strcmp("no",s)) )
+            *zeroSqueeze = 'n';
+          else if ((0 == strcmp("EPS",s)) ||
+                   (0 == strcmp("Eps",s)) ||
+                   (0 == strcmp("eps",s)) )
+            *zeroSqueeze = 'e';
+          else
+            error ("usage: wgdx: argument '%s=%s' is invalid\n", argName, s);
+        }
         break;
       default:
         error ("usage: wgdx: argument '%s' is invalid\n", argName);
       } /* end switch(TYPEOF(t)) */
       stopper = argLen - 1;
     }
-  }
+  } /* end loop over arg list */
 #if 0
   Rprintf ("Last arg processed\n");
   a = CDR(a);
