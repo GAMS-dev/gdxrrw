@@ -960,6 +960,25 @@ getGamsSoln(char *gmsFileName)
             p[index] = values[inputData->dField];
         } /* end of if (set || val != 0) */
       } /* loop over GDX records */
+      if (kRec < mrows) {
+        Rprintf("DEBUG getGamsSoln: shrinking matrix from %d to %d rows.\n",
+                mrows, kRec);
+        SEXP newCV, tmp;
+        double *newp;
+        double *from, *to;
+
+        PROTECT(newCV = allocMatrix(REALSXP, kRec, ncols));
+        newp = REAL(newCV);
+        for (kk = 0;  kk <= symDim;  kk++) {
+          from = p    + kk*mrows;
+          to   = newp + kk*kRec;
+          memcpy (to, from, sizeof(*p)*kRec);
+        }
+        tmp = compVal;
+        compVal = newCV;
+        UNPROTECT_PTR(tmp);
+        mrows = kRec;
+      }
     }
 
     /* Converting data into its compressed form. */
@@ -3629,6 +3648,23 @@ SEXP rgdx (SEXP args)
               p[index] = values[inputData->dField];
           } /* end of if (set || val != 0) */
         } /* loop over GDX records */
+        if (kRec < mrows) {
+          SEXP newCV, tmp;
+          double *newp;
+          double *from, *to;
+
+          PROTECT(newCV = allocMatrix(REALSXP, kRec, ncols));
+          newp = REAL(newCV);
+          for (kk = 0;  kk <= symDim;  kk++) {
+            from = p    + kk*mrows;
+            to   = newp + kk*kRec;
+            memcpy (to, from, sizeof(*p)*kRec);
+          }
+          tmp = compVal;
+          compVal = newCV;
+          UNPROTECT_PTR(tmp);
+          mrows = kRec;
+        }
       }
     }
 
