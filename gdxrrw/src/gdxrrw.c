@@ -888,7 +888,7 @@ getGamsSoln(char *gmsFileName)
     }
     if (inputData->withUel == 0) {
       /* check for non zero elements for variable and equation */
-      if (symType == dt_var || symType == dt_equ ) {
+      if (symType == dt_var || symType == dt_equ) {
         mrows = getNonZeroElements (gdxHandle, 1, inputData->dField);
       }
       /* Creat 2D sparse R array */
@@ -3497,7 +3497,7 @@ SEXP rgdx (SEXP args)
     }
     if (inputData->withUel == 0) {
       /*  check for non zero elements for variable and equation */
-      if (symType == dt_var || symType == dt_equ ) {
+      if ((symType == dt_var || symType == dt_equ) && zeroSqueeze) {
         mrows = getNonZeroElements(gdxHandle, symIdx, inputData->dField);
       }
       /* Creat 2D sparse R array */
@@ -3635,7 +3635,7 @@ SEXP rgdx (SEXP args)
         for (iRec = 0, kRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
           if ((dt_set == symType) ||
-              (! zeroSqueeze ) ||
+              (! zeroSqueeze) ||
               (0 != values[inputData->dField])) {
             /* store the value */
             for (kk = 0;  kk < symDim;  kk++) {
