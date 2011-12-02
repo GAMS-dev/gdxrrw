@@ -4392,33 +4392,37 @@ SEXP gdxInfo (SEXP args)
 #define GDXLIBRARYVER 0
 #define GDXFILEVER    1
 #define GDXPRODUCER   2
-#define RETLIST_LEN   3
-#if 0
 #define GDXSYMCOUNT   3
 #define GDXUELCOUNT   4
 #define RETLIST_LEN   5
-#endif
 
   if (requestList) {
     /* for now just make up some data */
     SEXP retList;               /* list to return */
-    SEXP elt0;                  /* first element */
-    SEXP elt1;                  /* second element */
-    SEXP elt2;
+    SEXP elt[RETLIST_LEN];      /* list elements */
     SEXP listNames;
     
     /* generate the components for the list */
-    PROTECT(elt0 = allocVector(STRSXP, 1));
-    allocCnt++;
     gdxGetDLLVersion (gdxHandle, msg);
-    SET_STRING_ELT(elt0, 0, mkChar(msg));
-    PROTECT(elt1 = allocVector(STRSXP, 1));
+    PROTECT(elt[GDXLIBRARYVER] = allocVector(STRSXP, 1));
     allocCnt++;
+    SET_STRING_ELT(elt[GDXLIBRARYVER], 0, mkChar(msg));
+
     gdxFileVersion (gdxHandle, FileVersion, FileProducer);
-    SET_STRING_ELT(elt1, 0, mkChar(FileVersion));
-    PROTECT(elt2 = allocVector(STRSXP, 1));
+    PROTECT(elt[GDXFILEVER] = allocVector(STRSXP, 1));
     allocCnt++;
-    SET_STRING_ELT(elt2, 0, mkChar(FileProducer));
+    SET_STRING_ELT(elt[GDXFILEVER], 0, mkChar(FileVersion));
+    PROTECT(elt[GDXPRODUCER] = allocVector(STRSXP, 1));
+    allocCnt++;
+    SET_STRING_ELT(elt[GDXPRODUCER], 0, mkChar(FileProducer));
+
+    gdxSystemInfo (gdxHandle, &NrSy, &NrUel);
+    PROTECT(elt[GDXSYMCOUNT] = allocVector(INTSXP, 1));
+    allocCnt++;
+    INTEGER(elt[GDXSYMCOUNT])[0] = NrSy;
+    PROTECT(elt[GDXUELCOUNT] = allocVector(INTSXP, 1));
+    allocCnt++;
+    INTEGER(elt[GDXUELCOUNT])[0] = NrUel;
 
     /* generate the names for the list */
     PROTECT(listNames = allocVector(STRSXP, RETLIST_LEN));
@@ -4426,15 +4430,16 @@ SEXP gdxInfo (SEXP args)
     SET_STRING_ELT(listNames, GDXLIBRARYVER, mkChar("gdxLibraryVer"));
     SET_STRING_ELT(listNames, GDXFILEVER   , mkChar("gdxFileVer"));
     SET_STRING_ELT(listNames, GDXPRODUCER  , mkChar("producer"));
+    SET_STRING_ELT(listNames, GDXSYMCOUNT  , mkChar("symCount"));
+    SET_STRING_ELT(listNames, GDXUELCOUNT  , mkChar("uelCount"));
 
     PROTECT(retList = allocVector(VECSXP, RETLIST_LEN));
     allocCnt++;
 
     /* populating retList with its components */
-    SET_VECTOR_ELT(retList, GDXLIBRARYVER, elt0);
-    SET_VECTOR_ELT(retList, GDXFILEVER   , elt1);
-    SET_VECTOR_ELT(retList, GDXPRODUCER  , elt2);
-
+    for (i = 0;  i < RETLIST_LEN;  i++) {
+      SET_VECTOR_ELT (retList, i, elt[i]);
+    }
     /* put in the names for the components */
     setAttrib (retList, R_NamesSymbol, listNames);
     result = retList;
