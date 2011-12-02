@@ -4394,7 +4394,9 @@ SEXP gdxInfo (SEXP args)
 #define GDXPRODUCER   2
 #define GDXSYMCOUNT   3
 #define GDXUELCOUNT   4
-#define RETLIST_LEN   5
+#define GDXSETS       5
+#define GDXPARMS      6
+#define RETLIST_LEN   7
 
   if (requestList) {
     /* for now just make up some data */
@@ -4424,6 +4426,14 @@ SEXP gdxInfo (SEXP args)
     allocCnt++;
     INTEGER(elt[GDXUELCOUNT])[0] = NrUel;
 
+    PROTECT(elt[GDXSETS] = allocVector(STRSXP, 2));
+    allocCnt++;
+    SET_STRING_ELT(elt[GDXSETS], 0, mkChar("I"));
+    SET_STRING_ELT(elt[GDXSETS], 1, mkChar("J"));
+
+    PROTECT(elt[GDXPARMS] = allocVector(STRSXP, 0));
+    allocCnt++;
+
     /* generate the names for the list */
     PROTECT(listNames = allocVector(STRSXP, RETLIST_LEN));
     allocCnt++;
@@ -4432,6 +4442,8 @@ SEXP gdxInfo (SEXP args)
     SET_STRING_ELT(listNames, GDXPRODUCER  , mkChar("producer"));
     SET_STRING_ELT(listNames, GDXSYMCOUNT  , mkChar("symCount"));
     SET_STRING_ELT(listNames, GDXUELCOUNT  , mkChar("uelCount"));
+    SET_STRING_ELT(listNames, GDXSETS      , mkChar("sets"));
+    SET_STRING_ELT(listNames, GDXPARMS     , mkChar("parameters"));
 
     PROTECT(retList = allocVector(VECSXP, RETLIST_LEN));
     allocCnt++;
