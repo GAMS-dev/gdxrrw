@@ -14,10 +14,23 @@ gams <- function(gms, ...)
   .External("gams", gms, ..., PACKAGE="gdxrrw")
 }
 
-gdxInfo <- function(gdxName = NULL)
+gdxInfo <- function(gdxName = NULL, dump=TRUE, returnList=FALSE, returnDF=FALSE)
 {
-  .External("gdxInfo", gdxName=gdxName, PACKAGE="gdxrrw")
-}
+  d <- as.logical(dump)
+  if (is.na(d)) {
+    stop ("gdxInfo: argument dump=", print(dump), " not a good logical value")
+  }
+  rl <- as.logical(returnList)
+  if (is.na(rl)) {
+    stop ("gdxInfo: argument returnList=", print(returnList), " not a good logical value")
+  }
+  rdf <- as.logical(returnDF)
+  if (is.na(rdf)) {
+    stop ("gdxInfo: argument returnDF=", print(returnDF), " not a good logical value")
+  }
+#  print (paste('gdxInfo: dump=',d,'returnList=',rl,'returnDF=',rdf))
+  .External("gdxInfo", gdxName=gdxName, dump=d, returnList=rl, returnDF=rdf, PACKAGE="gdxrrw")
+} # gdxInfo
 
 igdx <- function(gamsSysDir = NULL)
 {

@@ -4116,10 +4116,14 @@ SEXP gdxInfo (SEXP args)
 {
   const char *funcName = "gdxInfo";
   SEXP fileName;
+  SEXP dumpExp, requestListExp, requestDFExp;
+  SEXP result = R_NilValue;
+  int dump, requestList, requestDF;
   int arglen;
   shortStringBuf_t gdxFileName;
   int rc,i,j,NrSy,NrUel,ADim,ACount,AUser,AUser2,NRec,FDim,IDum, BadUels=0;
   int ATyp, ATyp2;
+  int allocCnt = 0;
   char
     msg[GMS_SSSIZE],
     FileVersion[GMS_SSSIZE], FileProducer[GMS_SSSIZE],
@@ -4132,7 +4136,7 @@ SEXP gdxInfo (SEXP args)
     Keys[GMS_MAX_INDEX_DIM];
   char *dn, c;
 
-#if 1
+#if 0
   SEXP ap, el;
   const char *name;
 
@@ -4154,6 +4158,9 @@ SEXP gdxInfo (SEXP args)
     case STRSXP:
       Rprintf ("[%d] '%s' STRSXP %s\n", i, name, CHAR(STRING_ELT(el,0)));
       break;
+    case LGLSXP:
+      Rprintf ("[%d] '%s' LGLSXP %d\n", i, name, LOGICAL(el)[0]);
+      break;
     default:
       Rprintf ("[%d] '%s' unhandled R type\n", i, name);
     }
@@ -4165,12 +4172,13 @@ SEXP gdxInfo (SEXP args)
 
   /* ----------------- Check proper number of inputs ------------
    * Function should follow specification of
-   * gdxInfo ('gdxName')
+   * gdxInfo ('gdxName',dump=LGLSXP)
    * -----------------------------------------------------------------------*/
-  if (2 != arglen) {
-    error ("usage: %s(gdxName=NULL) - incorrect arg count", funcName);
+  if (5 != arglen) {
+    error ("usage: %s(gdxName=NULL, dump=TRUE, returnList=FALSE, returnDF=FALSE) - incorrect arg count", funcName);
   }
-  fileName = CADR(args);
+  args = CDR(args);             /* skip first arg: it's the function name */
+  fileName = CAR(args);
 
   loadGDX();
   if (TYPEOF(fileName) == NILSXP) {
@@ -4186,13 +4194,38 @@ SEXP gdxInfo (SEXP args)
     return R_NilValue;
   }
 
-  /* Checking that argument is of type string */
+  /* Checking that first argument is of type string */
   if (TYPEOF(fileName) != STRSXP) {
-    error ("usage: %s(gdxName) - gdxName must be a string", funcName);
+    error ("usage: %s - argument 'gdxName' must be a string", funcName);
+  }
+
+  dumpExp = CADR(args);
+  /* Checking that dump argument is of type logical */
+  if (TYPEOF(dumpExp) != LGLSXP) {
+    error ("usage: %s - argument 'dump' must be a logical", funcName);
+  }
+  dump = LOGICAL(dumpExp)[0];
+
+  requestListExp = CADDR(args);
+  /* Checking that requestList argument is of type logical */
+  if (TYPEOF(requestListExp) != LGLSXP) {
+    error ("usage: %s - argument 'requestList' must be a logical", funcName);
+  }
+  requestList = LOGICAL(requestListExp)[0];
+
+  requestDFExp = CADDDR(args);
+  /* Checking that requestDF argument is of type logical */
+  if (TYPEOF(requestDFExp) != LGLSXP) {
+    error ("usage: %s - argument 'requestDF' must be a logical", funcName);
+  }
+  requestDF = LOGICAL(requestDFExp)[0];
+
+  if (requestList && requestDF) {
+    Rprintf ("Cannot return both a list and a data frame: setting requestList FALSE\n");
+    requestList = 0;
   }
 
   (void) CHAR2ShortStr (CHAR(STRING_ELT(fileName, 0)), gdxFileName);
-
   checkFileExtension (gdxFileName);
 
   rc = gdxCreate (&gdxHandle, msg, sizeof(msg));
@@ -4211,152 +4244,207 @@ SEXP gdxInfo (SEXP args)
              gdxFileName, msg, rc);
   }
 
-  gdxFileVersion (gdxHandle, FileVersion, FileProducer);
-  gdxSystemInfo (gdxHandle, &NrSy, &NrUel);
-  Rprintf("*  File version   : %s\n", FileVersion);
-  Rprintf("*  Producer       : %s\n", FileProducer);
-  Rprintf("*  Symbols        : %d\n", NrSy);
-  Rprintf("*  Unique Elements: %d\n", NrUel);
+  if (dump) {
+    gdxFileVersion (gdxHandle, FileVersion, FileProducer);
+    gdxSystemInfo (gdxHandle, &NrSy, &NrUel);
+    Rprintf("*  File version   : %s\n", FileVersion);
+    Rprintf("*  Producer       : %s\n", FileProducer);
+    Rprintf("*  Symbols        : %d\n", NrSy);
+    Rprintf("*  Unique Elements: %d\n", NrUel);
 
-  /* Acroynms */
-  for (i = 1;  i <= gdxAcronymCount (gdxHandle);  i++) {
-    gdxAcronymGetInfo (gdxHandle, i, sName, sText, &rc);
-    Rprintf("Acronym %s", sName);
-    if (strlen(sText))
-      Rprintf(" '%s'", sText);
-    Rprintf(";\n");
-  }
-
-  /* Symbolinfo */
-  Rprintf ("$ontext\n");
-  for (i = 1;  i <= NrSy;  i++) {
-    gdxSymbolInfo (gdxHandle, i, sName, &ADim, &ATyp);
-    gdxSymbolInfoX (gdxHandle, i, &ACount, &rc, sText);
-    Rprintf ("%-15s %3d %-12s %s\n", sName, ADim, gmsGdxTypeText[ATyp], sText);
-  }
-  Rprintf ("$offtext\n");
-
-  Rprintf ("$onempty onembedded\n");
-  dn = NULL;
-  for (i = 1;  i <= NrSy;  i++) {
-    gdxSymbolInfo (gdxHandle, i, sName, &ADim, &ATyp);
-    gdxSymbolInfoX (gdxHandle, i, &ACount, &AUser, sText);
-
-    if (GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp)
-      Rprintf ("$ontext\n");
-
-    if (GMS_DT_VAR == ATyp) {
-      if (AUser < 0 || AUser>=GMS_VARTYPE_MAX)
-        AUser = GMS_VARTYPE_FREE;
-      MEMCPY (dv, gmsDefRecVar[AUser], GMS_VAL_MAX*sizeof(double));
-      dn = (char *) gmsVarTypeText[AUser];
-    }
-    else if (GMS_DT_EQU == ATyp) {
-      if (AUser < 0 || AUser>=GMS_EQUTYPE_MAX)
-        AUser = GMS_EQUTYPE_E;
-      MEMCPY (dv, gmsDefRecEqu[AUser], GMS_VAL_MAX*sizeof(double));
-    }
-    else
-      dv[GMS_VAL_LEVEL] = 0.0;
-
-    if (0 == ADim && GMS_DT_PAR == ATyp) /* Scalar */
-      Rprintf ("Scalar");
-    else {
-      if (GMS_DT_VAR == ATyp)
-        Rprintf ("%s ", dn);
-      Rprintf ("%s", gmsGdxTypeText[ATyp]);
-    }
-    if (GMS_DT_ALIAS == ATyp) {
-      gdxSymbolInfo (gdxHandle, AUser, sName2, &j, &ATyp2);
-      Rprintf (" (%s, %s);\n", sName, sName2);
-    }
-    else {
-      Rprintf(" %s", sName);
-      if (ADim > 0) {
-        gdxSymbolGetDomain (gdxHandle, i, Keys);
-        Rprintf ("(");
-        for (j = 0;  j < ADim;  j++) {
-          if (Keys[j]==0)
-            strcpy (sName,"*");
-          else
-            gdxSymbolInfo (gdxHandle, Keys[j], sName2, &AUser2, &ATyp2);
-          if (j < ADim-1)
-            Rprintf ("%s,", sName);
-          else
-            Rprintf ("%s)", sName);
-        }
-      }
+    /* Acroynms */
+    for (i = 1;  i <= gdxAcronymCount (gdxHandle);  i++) {
+      gdxAcronymGetInfo (gdxHandle, i, sName, sText, &rc);
+      Rprintf("Acronym %s", sName);
       if (strlen(sText))
         Rprintf(" '%s'", sText);
+      Rprintf(";\n");
     }
-    if (0 == ACount) {
+
+    /* Symbolinfo */
+    Rprintf ("$ontext\n");
+    for (i = 1;  i <= NrSy;  i++) {
+      gdxSymbolInfo (gdxHandle, i, sName, &ADim, &ATyp);
+      gdxSymbolInfoX (gdxHandle, i, &ACount, &rc, sText);
+      Rprintf ("%-15s %3d %-12s %s\n", sName, ADim, gmsGdxTypeText[ATyp], sText);
+    }
+    Rprintf ("$offtext\n");
+
+    Rprintf ("$onempty onembedded\n");
+    dn = NULL;
+    for (i = 1;  i <= NrSy;  i++) {
+      gdxSymbolInfo (gdxHandle, i, sName, &ADim, &ATyp);
+      gdxSymbolInfoX (gdxHandle, i, &ACount, &AUser, sText);
+
+      if (GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp)
+        Rprintf ("$ontext\n");
+
+      if (GMS_DT_VAR == ATyp) {
+        if (AUser < 0 || AUser>=GMS_VARTYPE_MAX)
+          AUser = GMS_VARTYPE_FREE;
+        MEMCPY (dv, gmsDefRecVar[AUser], GMS_VAL_MAX*sizeof(double));
+        dn = (char *) gmsVarTypeText[AUser];
+      }
+      else if (GMS_DT_EQU == ATyp) {
+        if (AUser < 0 || AUser>=GMS_EQUTYPE_MAX)
+          AUser = GMS_EQUTYPE_E;
+        MEMCPY (dv, gmsDefRecEqu[AUser], GMS_VAL_MAX*sizeof(double));
+      }
+      else
+        dv[GMS_VAL_LEVEL] = 0.0;
+
       if (0 == ADim && GMS_DT_PAR == ATyp) /* Scalar */
-        Rprintf (" / 0.0 /;\n");
-      else if (GMS_DT_ALIAS != ATyp)
-        Rprintf (" / /;\n");
-    }
-    else {
-      Rprintf ("/\n");
-      gdxDataReadRawStart (gdxHandle, i, &NRec);
-      while (gdxDataReadRaw (gdxHandle, Keys, Vals, &FDim)) {
-        if ((GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp) && 0 == memcmp(Vals,dv,GMS_VAL_MAX*sizeof(double))) /* all default records */
-          continue;
-        if (GMS_DT_PAR == ATyp && 0.0 == Vals[GMS_VAL_LEVEL])
-          continue;
-        for (j = 1;  j <= ADim;  j++) {
-          if (1 == gdxUMUelGet (gdxHandle, Keys[j-1], UelName, &IDum))
-            Rprintf ("'%s'", UelName);
-          else {
-            Rprintf ("L__", Keys[j-1]);
-            BadUels++;
+        Rprintf ("Scalar");
+      else {
+        if (GMS_DT_VAR == ATyp)
+          Rprintf ("%s ", dn);
+        Rprintf ("%s", gmsGdxTypeText[ATyp]);
+      }
+      if (GMS_DT_ALIAS == ATyp) {
+        gdxSymbolInfo (gdxHandle, AUser, sName2, &j, &ATyp2);
+        Rprintf (" (%s, %s);\n", sName, sName2);
+      }
+      else {
+        Rprintf(" %s", sName);
+        if (ADim > 0) {
+          gdxSymbolGetDomain (gdxHandle, i, Keys);
+          Rprintf ("(");
+          for (j = 0;  j < ADim;  j++) {
+            if (Keys[j]==0)
+              strcpy (sName,"*");
+            else
+              gdxSymbolInfo (gdxHandle, Keys[j], sName2, &AUser2, &ATyp2);
+            if (j < ADim-1)
+              Rprintf ("%s,", sName);
+            else
+              Rprintf ("%s)", sName);
           }
-          if (j < ADim)
-            Rprintf (".");
         }
-        if (GMS_DT_PAR == ATyp)
-          Rprintf(" %s\n", val2str(gdxHandle, Vals[GMS_VAL_LEVEL], msg));
-        else if (GMS_DT_SET == ATyp)
-          if (Vals[GMS_VAL_LEVEL]) {
-            j = (int) Vals[GMS_VAL_LEVEL];
-            gdxGetElemText (gdxHandle, j, msg, &IDum);
-            Rprintf (" '%s'\n", msg);
-          }
-          else
-            Rprintf ("\n");
-        else if (GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp) {
-          Rprintf (" .");
-          c = '(';
-          for (j = GMS_VAL_LEVEL; j < GMS_VAL_MAX;  j++) {
-            if (Vals[j] != dv[j]) {
-              if (GMS_VAL_SCALE == j && GMS_DT_VAR == ATyp &&
-                  AUser != GMS_VARTYPE_POSITIVE && AUser != GMS_VARTYPE_NEGATIVE && AUser != GMS_VARTYPE_FREE)
-                Rprintf ("%c prior %s", c, val2str (gdxHandle, Vals[GMS_VAL_SCALE], msg));
-              else
-                Rprintf ("%c %s %s", c, gmsValTypeText[j]+1, val2str(gdxHandle, Vals[j], msg));
-              if ('(' == c)
-                c = ',';
+        if (strlen(sText))
+          Rprintf(" '%s'", sText);
+      }
+      if (0 == ACount) {
+        if (0 == ADim && GMS_DT_PAR == ATyp) /* Scalar */
+          Rprintf (" / 0.0 /;\n");
+        else if (GMS_DT_ALIAS != ATyp)
+          Rprintf (" / /;\n");
+      }
+      else {
+        Rprintf ("/\n");
+        gdxDataReadRawStart (gdxHandle, i, &NRec);
+        while (gdxDataReadRaw (gdxHandle, Keys, Vals, &FDim)) {
+          if ((GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp) && 0 == memcmp(Vals,dv,GMS_VAL_MAX*sizeof(double))) /* all default records */
+            continue;
+          if (GMS_DT_PAR == ATyp && 0.0 == Vals[GMS_VAL_LEVEL])
+            continue;
+          for (j = 1;  j <= ADim;  j++) {
+            if (1 == gdxUMUelGet (gdxHandle, Keys[j-1], UelName, &IDum))
+              Rprintf ("'%s'", UelName);
+            else {
+              Rprintf ("L__", Keys[j-1]);
+              BadUels++;
             }
+            if (j < ADim)
+              Rprintf (".");
           }
-          Rprintf (" )\n");
+          if (GMS_DT_PAR == ATyp)
+            Rprintf(" %s\n", val2str(gdxHandle, Vals[GMS_VAL_LEVEL], msg));
+          else if (GMS_DT_SET == ATyp)
+            if (Vals[GMS_VAL_LEVEL]) {
+              j = (int) Vals[GMS_VAL_LEVEL];
+              gdxGetElemText (gdxHandle, j, msg, &IDum);
+              Rprintf (" '%s'\n", msg);
+            }
+            else
+              Rprintf ("\n");
+          else if (GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp) {
+            Rprintf (" .");
+            c = '(';
+            for (j = GMS_VAL_LEVEL; j < GMS_VAL_MAX;  j++) {
+              if (Vals[j] != dv[j]) {
+                if (GMS_VAL_SCALE == j && GMS_DT_VAR == ATyp &&
+                    AUser != GMS_VARTYPE_POSITIVE && AUser != GMS_VARTYPE_NEGATIVE && AUser != GMS_VARTYPE_FREE)
+                  Rprintf ("%c prior %s", c, val2str (gdxHandle, Vals[GMS_VAL_SCALE], msg));
+                else
+                  Rprintf ("%c %s %s", c, gmsValTypeText[j]+1, val2str(gdxHandle, Vals[j], msg));
+                if ('(' == c)
+                  c = ',';
+              }
+            }
+            Rprintf (" )\n");
+          }
         }
       }
+      Rprintf ("/;\n");
+      j = 1;
+      while (gdxSymbolGetComment (gdxHandle, i, j++, msg))
+        Rprintf ("* %s\n", msg);
+      if (GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp)
+        Rprintf ("$offtext\n");
+      Rprintf("\n");
     }
-    Rprintf ("/;\n");
-    j = 1;
-    while (gdxSymbolGetComment (gdxHandle, i, j++, msg))
-      Rprintf ("* %s\n", msg);
-    if (GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp)
-      Rprintf ("$offtext\n");
-    Rprintf("\n");
+    Rprintf ("$offempty offembedded\n");
+
+    if (BadUels > 0)
+      Rprintf("**** %d reference(s) to unique elements without a string representation\n", BadUels);
   }
-  Rprintf ("$offempty offembedded\n");
 
-  if (BadUels > 0)
-    Rprintf("**** %d reference(s) to unique elements without a string representation\n", BadUels);
+#define GDXLIBRARYVER 0
+#define GDXFILEVER    1
+#define GDXPRODUCER   2
+#define RETLIST_LEN   3
+#if 0
+#define GDXSYMCOUNT   3
+#define GDXUELCOUNT   4
+#define RETLIST_LEN   5
+#endif
 
+  if (requestList) {
+    /* for now just make up some data */
+    SEXP retList;               /* list to return */
+    SEXP elt0;                  /* first element */
+    SEXP elt1;                  /* second element */
+    SEXP elt2;
+    SEXP listNames;
+    
+    /* generate the components for the list */
+    PROTECT(elt0 = allocVector(STRSXP, 1));
+    allocCnt++;
+    gdxGetDLLVersion (gdxHandle, msg);
+    SET_STRING_ELT(elt0, 0, mkChar(msg));
+    PROTECT(elt1 = allocVector(STRSXP, 1));
+    allocCnt++;
+    gdxFileVersion (gdxHandle, FileVersion, FileProducer);
+    SET_STRING_ELT(elt1, 0, mkChar(FileVersion));
+    PROTECT(elt2 = allocVector(STRSXP, 1));
+    allocCnt++;
+    SET_STRING_ELT(elt2, 0, mkChar(FileProducer));
+
+    /* generate the names for the list */
+    PROTECT(listNames = allocVector(STRSXP, RETLIST_LEN));
+    allocCnt++;
+    SET_STRING_ELT(listNames, GDXLIBRARYVER, mkChar("gdxLibraryVer"));
+    SET_STRING_ELT(listNames, GDXFILEVER   , mkChar("gdxFileVer"));
+    SET_STRING_ELT(listNames, GDXPRODUCER  , mkChar("producer"));
+
+    PROTECT(retList = allocVector(VECSXP, RETLIST_LEN));
+    allocCnt++;
+
+    /* populating retList with its components */
+    SET_VECTOR_ELT(retList, GDXLIBRARYVER, elt0);
+    SET_VECTOR_ELT(retList, GDXFILEVER   , elt1);
+    SET_VECTOR_ELT(retList, GDXPRODUCER  , elt2);
+
+    /* put in the names for the components */
+    setAttrib (retList, R_NamesSymbol, listNames);
+    result = retList;
+  }
+
+  (void) gdxClose (gdxHandle);
   gdxFree (&gdxHandle);
 
-  return R_NilValue;
+  UNPROTECT(allocCnt);
+  return result;
 } /* gdxInfo */
 
 /* gateway routine for igdx
