@@ -53,6 +53,14 @@ static const char *formatMessage(int errNum);
 
 #define LINELEN 1024
 #define MAX_STRING 128
+#if defined(__linux__) && defined(__x86_64)
+/* long story: GLIBC hacked up memcpy on my Fedora 15 machine
+ * so GLIBC 2.14 is required to use the gdxrrw.so.  That is not acceptable.
+ */
+# define MEMCPY memmove
+#else
+# define MEMCPY memcpy
+#endif
 
 gdxHandle_t gdxHandle = (gdxHandle_t) 0;
 
@@ -972,7 +980,7 @@ getGamsSoln(char *gmsFileName)
         for (kk = 0;  kk <= symDim;  kk++) {
           from = p    + kk*mrows;
           to   = newp + kk*kRec;
-          memcpy (to, from, sizeof(*p)*kRec);
+          MEMCPY (to, from, sizeof(*p)*kRec);
         }
         tmp = compVal;
         compVal = newCV;
@@ -3657,7 +3665,7 @@ SEXP rgdx (SEXP args)
           for (kk = 0;  kk <= symDim;  kk++) {
             from = p    + kk*mrows;
             to   = newp + kk*kRec;
-            memcpy (to, from, sizeof(*p)*kRec);
+            MEMCPY (to, from, sizeof(*p)*kRec);
           }
           tmp = compVal;
           compVal = newCV;
@@ -4240,13 +4248,13 @@ SEXP gdxInfo (SEXP args)
     if (GMS_DT_VAR == ATyp) {
       if (AUser < 0 || AUser>=GMS_VARTYPE_MAX)
         AUser = GMS_VARTYPE_FREE;
-      memcpy (dv, gmsDefRecVar[AUser], GMS_VAL_MAX*sizeof(double));
+      MEMCPY (dv, gmsDefRecVar[AUser], GMS_VAL_MAX*sizeof(double));
       dn = (char *) gmsVarTypeText[AUser];
     }
     else if (GMS_DT_EQU == ATyp) {
       if (AUser < 0 || AUser>=GMS_EQUTYPE_MAX)
         AUser = GMS_EQUTYPE_E;
-      memcpy (dv, gmsDefRecEqu[AUser], GMS_VAL_MAX*sizeof(double));
+      MEMCPY (dv, gmsDefRecEqu[AUser], GMS_VAL_MAX*sizeof(double));
     }
     else
       dv[GMS_VAL_LEVEL] = 0.0;

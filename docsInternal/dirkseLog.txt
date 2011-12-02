@@ -13,6 +13,9 @@ R CMD REMOVE gdxrrw  {to remove, or undo an install}
 R CMD check gdxrrw
 R CMD build gdxrrw
 R CMD build gdxrrw --binary {what we want to avoid user compiling}
+# with R 2.14, R CMD build cannot be used for making binaries, instead
+# do:
+R CMD INSTALL gdxrrw --build
 # it works better to check the clean tarball, one we might distribute
 R CMD build gdxrrw && R CMD check gdxrrw_0.0-3.tar.gz ; echo "check rc = $?"
 
