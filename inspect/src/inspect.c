@@ -128,9 +128,12 @@ SEXP inspect (SEXP args)
   int i, k, n, n2;
   SEXP ap, e, v, attr;
   SEXP r;                       /* return value */
-  SEXP f;                       /* factor - part or all of return */
-  SEXP fLevels;                 /* levels for factor f */
-  SEXP class;                   /* used to set the class of f (or another SEXP) */
+  SEXP f1, f2;                  /* factor2 - part or all of return */
+  SEXP f1Levels, f2Levels;      /* levels for factors */
+  SEXP dfClass, factorClass;    /* used to set object classes */
+  SEXP val;                     /* val column of data frame */
+  SEXP rNames;                  /* names for the data frame */
+  SEXP rRowNames;               /* row names for the data frame */
   const char *name;
   char msg[256];
 
@@ -214,25 +217,63 @@ SEXP inspect (SEXP args)
 
   } /* if v */
 
-  /* create f to match as.factor(c("A","B","Z")) */
-  PROTECT(f = allocVector(INTSXP, 3));
-  for (i = 0;  i < 3;  i++)
-    INTEGER(f)[i] = i+1;
-  PROTECT(fLevels = allocVector(STRSXP, 3));
-  SET_STRING_ELT(fLevels, 0, mkChar("A"));
-  SET_STRING_ELT(fLevels, 1, mkChar("B"));
-  SET_STRING_ELT(fLevels, 2, mkChar("Z"));
-  setAttrib (f, R_LevelsSymbol, fLevels);
-#if 0
-  setAttrib (f, R_ClassSymbol, mkChar("factor"));
-#else
-  PROTECT(class = allocVector(STRSXP, 1));
-  SET_STRING_ELT(class, 0, mkChar("factor"));
-  classgets (f, class);
-#endif
+  PROTECT(factorClass = allocVector(STRSXP, 1));
+  SET_STRING_ELT(factorClass, 0, mkChar("factor"));
 
-  r = f;
-  UNPROTECT(3);
+  /* create f1 to match as.factor(c("A","B")) */
+  PROTECT(f1 = allocVector(INTSXP, 4));
+  INTEGER(f1)[0] = 1;
+  INTEGER(f1)[1] = 1;
+  INTEGER(f1)[2] = 2;
+  INTEGER(f1)[3] = 2;
+  PROTECT(f1Levels = allocVector(STRSXP, 2));
+  SET_STRING_ELT(f1Levels, 0, mkChar("A"));
+  SET_STRING_ELT(f1Levels, 1, mkChar("B"));
+  setAttrib (f1, R_LevelsSymbol, f1Levels);
+  classgets (f1, factorClass);
+
+  PROTECT(f2 = allocVector(INTSXP, 4));
+  INTEGER(f2)[0] = 1;
+  INTEGER(f2)[1] = 2;
+  INTEGER(f2)[2] = 1;
+  INTEGER(f2)[3] = 2;
+  PROTECT(f2Levels = allocVector(STRSXP, 2));
+  SET_STRING_ELT(f2Levels, 0, mkChar("one"));
+  SET_STRING_ELT(f2Levels, 1, mkChar("two"));
+  setAttrib (f2, R_LevelsSymbol, f2Levels);
+  classgets (f2, factorClass);
+
+  PROTECT(val = allocVector(REALSXP, 4));
+  REAL(val)[0] = 1;
+  REAL(val)[1] = 2;
+  REAL(val)[2] = 11;
+  REAL(val)[3] = 12;
+
+  PROTECT(r = allocVector(VECSXP, 3));
+
+  SET_VECTOR_ELT(r, 0, f1);
+  SET_VECTOR_ELT(r, 1, f2);
+  SET_VECTOR_ELT(r, 2, val);
+
+  PROTECT(rNames = allocVector(STRSXP, 3));
+  SET_STRING_ELT(rNames, 0, mkChar("f1"));
+  SET_STRING_ELT(rNames, 1, mkChar("f2"));
+  SET_STRING_ELT(rNames, 2, mkChar("val"));
+  setAttrib (r, R_NamesSymbol, rNames);
+
+  PROTECT(rRowNames = allocVector(STRSXP, 4));
+  SET_STRING_ELT(rRowNames, 0, mkChar("1"));
+  SET_STRING_ELT(rRowNames, 1, mkChar("2"));
+  SET_STRING_ELT(rRowNames, 2, mkChar("3"));
+  SET_STRING_ELT(rRowNames, 3, mkChar("4"));
+  setAttrib (r, R_RowNamesSymbol, rRowNames);
+
+  PROTECT(dfClass = allocVector(STRSXP, 1));
+  SET_STRING_ELT(dfClass, 0, mkChar("data.frame"));
+  classgets (r, dfClass);
+
+
+  UNPROTECT ( 10 );
   return r;
 } /* inspect */
 
