@@ -127,6 +127,10 @@ SEXP inspect (SEXP args)
 {
   int i, k, n, n2;
   SEXP ap, e, v, attr;
+  SEXP r;                       /* return value */
+  SEXP f;                       /* factor - part or all of return */
+  SEXP fLevels;                 /* levels for factor f */
+  SEXP class;                   /* used to set the class of f (or another SEXP) */
   const char *name;
   char msg[256];
 
@@ -210,6 +214,25 @@ SEXP inspect (SEXP args)
 
   } /* if v */
 
-  return R_NilValue;
+  /* create f to match as.factor(c("A","B","Z")) */
+  PROTECT(f = allocVector(INTSXP, 3));
+  for (i = 0;  i < 3;  i++)
+    INTEGER(f)[i] = i+1;
+  PROTECT(fLevels = allocVector(STRSXP, 3));
+  SET_STRING_ELT(fLevels, 0, mkChar("A"));
+  SET_STRING_ELT(fLevels, 1, mkChar("B"));
+  SET_STRING_ELT(fLevels, 2, mkChar("Z"));
+  setAttrib (f, R_LevelsSymbol, fLevels);
+#if 0
+  setAttrib (f, R_ClassSymbol, mkChar("factor"));
+#else
+  PROTECT(class = allocVector(STRSXP, 1));
+  SET_STRING_ELT(class, 0, mkChar("factor"));
+  classgets (f, class);
+#endif
+
+  r = f;
+  UNPROTECT(3);
+  return r;
 } /* inspect */
 
