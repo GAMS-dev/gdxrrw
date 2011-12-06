@@ -19,14 +19,17 @@ void showExp (const char *s, SEXP e, int i)
     return;
   }
   switch (typ) {
+  case LGLSXP:
+    Rprintf ("%s: LGLSXP, TYPEOF=%d: %d\n", s, typ, LOGICAL(e)[i]);
+    break;
+  case INTSXP:
+    Rprintf ("%s: INTSXP, TYPEOF=%d: %d\n", s, typ, INTEGER(e)[i]);
+    break;
   case REALSXP:
     Rprintf ("%s: REALSXP, TYPEOF=%d: %g\n", s, typ, REAL(e)[i]);
     break;
   case STRSXP:
     Rprintf ("%s: STRSXP, TYPEOF=%d: %s\n", s, typ, CHAR(STRING_ELT(e,i)));
-    break;
-  case LGLSXP:
-    Rprintf ("%s: LGLSXP, TYPEOF=%d: %d\n", s, typ, LOGICAL(e)[i]);
     break;
   case VECSXP:
     Rprintf ("%s: VECSXP, TYPEOF=%d\n", s, typ);
@@ -38,10 +41,92 @@ void showExp (const char *s, SEXP e, int i)
   return;
 } /* showExp */
 
+typedef struct symbRec {
+  SEXP e;
+  char def[32];
+} symbRec_t;
+
+#if 0
+symbRec_t symbRecs[] = {
+  {R_Bracket2Symbol, "R_Bracket2Symbol"},
+  {R_BracketSymbol, "R_BracketSymbol"},
+  {R_BraceSymbol, "R_BraceSymbol"},
+  {R_ClassSymbol, "R_ClassSymbol"},
+  {R_DeviceSymbol, "R_DeviceSymbol"}
+};
+#else
+symbRec_t symbRecs[] = {
+  {NULL, "R_Bracket2Symbol"},
+  {NULL, "R_BracketSymbol"},
+  {NULL, "R_BraceSymbol"},
+  {NULL, "R_ClassSymbol"},
+  {NULL, "R_DeviceSymbol"},
+  {NULL, "R_DimNamesSymbol"},
+  {NULL, "R_DimSymbol"},
+  {NULL, "R_DollarSymbol"},
+  {NULL, "R_DotsSymbol"},
+  {NULL, "R_DropSymbol"},
+  {NULL, "R_LastvalueSymbol"},
+  {NULL, "R_LevelsSymbol"},
+  {NULL, "R_ModeSymbol"},
+  {NULL, "R_NameSymbol"},
+  {NULL, "R_NamesSymbol"},
+  {NULL, "R_NaRmSymbol"},
+  {NULL, " R_PackageSymbol"},
+  {NULL, " R_QuoteSymbol"},
+  {NULL, "R_RowNamesSymbol"},
+  {NULL, "R_SeedsSymbol"},
+  {NULL, "R_SourceSymbol"},
+  {NULL, "R_TspSymbol"}
+};
+#endif
+#define N_SYMBRECS (sizeof(symbRecs)/sizeof(symbRecs[0]))
+
+void listAttribs (SEXP e)
+{
+  int k;
+  int hit;
+  SEXP attr;
+
+  k = 0;
+  symbRecs[k++].e = R_Bracket2Symbol;
+  symbRecs[k++].e = R_BracketSymbol;
+  symbRecs[k++].e = R_BraceSymbol;
+  symbRecs[k++].e = R_ClassSymbol;
+  symbRecs[k++].e = R_DeviceSymbol;
+  symbRecs[k++].e = R_DimNamesSymbol;
+  symbRecs[k++].e = R_DimSymbol;
+  symbRecs[k++].e = R_DollarSymbol;
+  symbRecs[k++].e = R_DotsSymbol;
+  symbRecs[k++].e = R_DropSymbol;
+  symbRecs[k++].e = R_LastvalueSymbol;
+  symbRecs[k++].e = R_LevelsSymbol;
+  symbRecs[k++].e = R_ModeSymbol;
+  symbRecs[k++].e = R_NameSymbol;
+  symbRecs[k++].e = R_NamesSymbol;
+  symbRecs[k++].e = R_NaRmSymbol;
+  symbRecs[k++].e = R_PackageSymbol;
+  symbRecs[k++].e = R_QuoteSymbol;
+  symbRecs[k++].e = R_RowNamesSymbol;
+  symbRecs[k++].e = R_SeedsSymbol;
+  symbRecs[k++].e = R_SourceSymbol;
+  symbRecs[k++].e = R_TspSymbol;
+
+  assert(k==N_SYMBRECS);
+
+  for (k = 0;  k < N_SYMBRECS;  k++) {
+    attr = getAttrib (e, symbRecs[k].e);
+    hit = (R_NilValue != attr);
+    if (hit)
+      Rprintf ("getAttrib(e,%32s): %s\n", symbRecs[k].def, hit ? "    yes" : " no");
+  }
+  return;
+} /* listAttribs */
+
 SEXP inspect (SEXP args)
 {
-  int i, n;
-  SEXP ap, el, v, attr;
+  int i, k, n, n2;
+  SEXP ap, e, v, attr;
   const char *name;
   char msg[256];
 
@@ -49,34 +134,20 @@ SEXP inspect (SEXP args)
   Rprintf ("inspect called with %d args\n", length(args));
   for (i = 0, ap = args;  ap != R_NilValue;  i++, ap = CDR(ap)) {
     name = isNull(TAG(ap)) ? "" : CHAR(PRINTNAME(TAG(ap)));
-    el = CAR(ap);
-    if (0 == length(el)) {
-      if (NILSXP == TYPEOF(el))
-        Rprintf ("[%d] '%s' NILSXP\n", i, name);
-      else
-        Rprintf ("[%d] '%s' R type, length 0\n", i, name);
-      continue;
-    }
-    switch (TYPEOF(el)) {
-    case REALSXP:
-      Rprintf ("%d  [%d] '%s' REALSXP %g\n", TYPEOF(el), i, name, REAL(el)[0]);
-      break;
-    case STRSXP:
-      Rprintf ("%d  [%d] '%s' STRSXP %s\n", TYPEOF(el), i, name, CHAR(STRING_ELT(el,0)));
-      break;
-    case LGLSXP:
-      Rprintf ("%d  [%d] '%s' LGLSXP %d\n", TYPEOF(el), i, name, LOGICAL(el)[0]);
-      break;
-    case VECSXP:
-      Rprintf ("%d  [%d] '%s' VECSXP\n", TYPEOF(el), i, name);
-      v = el;
-      break;
-    default:
-      Rprintf ("%d  [%d] '%s' unhandled R type\n", TYPEOF(el), i, name);
-    }
+    e = CAR(ap);
+    sprintf (msg, "arg %d (%s)", i, name);
+    showExp (msg, e, 0);
+    if (VECSXP == TYPEOF(e))
+      v = e;
   }
 
   if (R_NilValue != v) {
+    Rprintf ("isFrame (v) = %d\n", isFrame(v));
+    Rprintf ("isFactor(v) = %d\n", isFactor(v));
+    Rprintf ("Checking attributes of VECSXP\n");
+    listAttribs (v);
+    Rprintf ("\n");
+
     attr = getAttrib (v, R_DimSymbol);
     if (R_NilValue != attr) {
       n = length(attr);
@@ -84,10 +155,12 @@ SEXP inspect (SEXP args)
         Rprintf ("attribute dim[%d]: %d\n", i, INTEGER(attr)[i]);
       }
     }
+
     attr = getAttrib (v, R_ClassSymbol);
     if (R_NilValue != attr) {
       Rprintf ("attribute class: %s\n", CHAR(STRING_ELT(attr,0)));
     }
+
     attr = getAttrib (v, R_RowNamesSymbol);
     if (R_NilValue != attr) {
       n = length(attr);
@@ -96,9 +169,46 @@ SEXP inspect (SEXP args)
         showExp (msg, attr, i);
       } /* for i */
     }   /* RowNamesSymbol not NULL */
-  }
 
-  showExp ("test nil", R_NilValue, 0);
+    attr = getAttrib (v, R_NamesSymbol);
+    if (R_NilValue != attr) {
+      n = length(attr);
+      for (i = 0;  i < n;  i++) {
+        sprintf (msg, "attribute names[%d]", i);
+        showExp (msg, attr, i);
+      } /* for i */
+    }
+
+    n = length(v);
+    Rprintf ("VECSXP has length %d\n", n);
+    Rprintf ("Checking elements of VECSXP\n");
+    for (i = 0;  i < n;  i++) {
+      e = VECTOR_ELT(v, i);
+      Rprintf ("isFrame (v[%d]) = %d\n", i, isFrame(e));
+      Rprintf ("isFactor(v[%d]) = %d\n", i, isFactor(e));
+      sprintf (msg, "dataframe column %d", i);
+      showExp (msg, e, 0);
+#if 1
+      Rprintf ("Checking attributes of v[%d]\n", i);
+      listAttribs (e);
+      // Rprintf ("\n");
+#endif
+      attr = getAttrib (e, R_ClassSymbol);
+      if (R_NilValue != attr) {
+        Rprintf ("attribute class: %s\n", CHAR(STRING_ELT(attr,0)));
+      }
+      attr = getAttrib (e, R_LevelsSymbol);
+      if (R_NilValue != attr) {
+        n2 = length(attr);
+        for (k = 0;  k < n2;  k++) {
+          sprintf (msg, "level v[%d][%d]", i, k);
+          showExp (msg, attr, k);
+        } /* for k */
+      }
+      Rprintf ("\n");
+    } /* loop over elements in the dataframe list */
+
+  } /* if v */
 
   return R_NilValue;
 } /* inspect */
