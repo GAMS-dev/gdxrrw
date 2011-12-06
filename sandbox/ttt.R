@@ -1,3 +1,5 @@
 gdxInfo('sv')
 gdxInfo ('sv',dump=FALSE,returnList=TRUE)
 gdxInfo ('trnsport',dump=FALSE,returnList=TRUE)
+orig <- data.frame(f1=c("A","A","B","B"), f2=c("one","two","one","two"), val=c(1,2,11,12))
+gdxInfo (orig)

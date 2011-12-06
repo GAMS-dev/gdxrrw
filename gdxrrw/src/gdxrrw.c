@@ -4142,7 +4142,7 @@ SEXP gdxInfo (SEXP args)
     Keys[GMS_MAX_INDEX_DIM];
   char *dn, c;
 
-#if 0
+#if 1
   SEXP ap, el;
   const char *name;
 
@@ -4159,16 +4159,16 @@ SEXP gdxInfo (SEXP args)
     }
     switch (TYPEOF(el)) {
     case REALSXP:
-      Rprintf ("[%d] '%s' REALSXP %g\n", i, name, REAL(el)[0]);
+      Rprintf ("%d  [%d] '%s' REALSXP %g\n", TYPEOF(el), i, name, REAL(el)[0]);
       break;
     case STRSXP:
-      Rprintf ("[%d] '%s' STRSXP %s\n", i, name, CHAR(STRING_ELT(el,0)));
+      Rprintf ("%d  [%d] '%s' STRSXP %s\n", TYPEOF(el), i, name, CHAR(STRING_ELT(el,0)));
       break;
     case LGLSXP:
-      Rprintf ("[%d] '%s' LGLSXP %d\n", i, name, LOGICAL(el)[0]);
+      Rprintf ("%d  [%d] '%s' LGLSXP %d\n", TYPEOF(el), i, name, LOGICAL(el)[0]);
       break;
     default:
-      Rprintf ("[%d] '%s' unhandled R type\n", i, name);
+      Rprintf ("%d  [%d] '%s' unhandled R type\n", TYPEOF(el), i, name);
     }
   }
 #endif
