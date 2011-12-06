@@ -4121,9 +4121,15 @@ SEXP gdxInfo (SEXP args)
   int dump, requestList, requestDF;
   int arglen;
   shortStringBuf_t gdxFileName;
-  int rc,i,j,NrSy,NrUel,ADim,ACount,AUser,AUser2,NRec,FDim,IDum, BadUels=0;
+  int rc,i,j,NrUel,ADim,ACount,AUser,AUser2,NRec,FDim,IDum, BadUels=0;
   int ATyp, ATyp2;
   int allocCnt = 0;
+  int iSym, nSyms;
+  int iSet, nSets; 
+  int iPar, nPars;
+  int iVar, nVars;
+  int iEqu, nEqus;
+  int iAlias, nAliases;
   char
     msg[GMS_SSSIZE],
     FileVersion[GMS_SSSIZE], FileProducer[GMS_SSSIZE],
@@ -4246,10 +4252,10 @@ SEXP gdxInfo (SEXP args)
 
   if (dump) {
     gdxFileVersion (gdxHandle, FileVersion, FileProducer);
-    gdxSystemInfo (gdxHandle, &NrSy, &NrUel);
+    gdxSystemInfo (gdxHandle, &nSyms, &NrUel);
     Rprintf("*  File version   : %s\n", FileVersion);
     Rprintf("*  Producer       : %s\n", FileProducer);
-    Rprintf("*  Symbols        : %d\n", NrSy);
+    Rprintf("*  Symbols        : %d\n", nSyms);
     Rprintf("*  Unique Elements: %d\n", NrUel);
 
     /* Acroynms */
@@ -4263,7 +4269,7 @@ SEXP gdxInfo (SEXP args)
 
     /* Symbolinfo */
     Rprintf ("$ontext\n");
-    for (i = 1;  i <= NrSy;  i++) {
+    for (i = 1;  i <= nSyms;  i++) {
       gdxSymbolInfo (gdxHandle, i, sName, &ADim, &ATyp);
       gdxSymbolInfoX (gdxHandle, i, &ACount, &rc, sText);
       Rprintf ("%-15s %3d %-12s %s\n", sName, ADim, gmsGdxTypeText[ATyp], sText);
@@ -4272,7 +4278,7 @@ SEXP gdxInfo (SEXP args)
 
     Rprintf ("$onempty onembedded\n");
     dn = NULL;
-    for (i = 1;  i <= NrSy;  i++) {
+    for (i = 1;  i <= nSyms;  i++) {
       gdxSymbolInfo (gdxHandle, i, sName, &ADim, &ATyp);
       gdxSymbolInfoX (gdxHandle, i, &ACount, &AUser, sText);
 
@@ -4395,8 +4401,11 @@ SEXP gdxInfo (SEXP args)
 #define GDXSYMCOUNT   3
 #define GDXUELCOUNT   4
 #define GDXSETS       5
-#define GDXPARMS      6
-#define RETLIST_LEN   7
+#define GDXPARS       6
+#define GDXVARS       7
+#define GDXEQUS       8
+#define GDXALIASES    9
+#define RETLIST_LEN   10
 
   if (requestList) {
     /* for now just make up some data */
@@ -4418,21 +4427,73 @@ SEXP gdxInfo (SEXP args)
     allocCnt++;
     SET_STRING_ELT(elt[GDXPRODUCER], 0, mkChar(FileProducer));
 
-    gdxSystemInfo (gdxHandle, &NrSy, &NrUel);
+    gdxSystemInfo (gdxHandle, &nSyms, &NrUel);
     PROTECT(elt[GDXSYMCOUNT] = allocVector(INTSXP, 1));
     allocCnt++;
-    INTEGER(elt[GDXSYMCOUNT])[0] = NrSy;
+    INTEGER(elt[GDXSYMCOUNT])[0] = nSyms;
     PROTECT(elt[GDXUELCOUNT] = allocVector(INTSXP, 1));
     allocCnt++;
     INTEGER(elt[GDXUELCOUNT])[0] = NrUel;
 
-    PROTECT(elt[GDXSETS] = allocVector(STRSXP, 2));
-    allocCnt++;
-    SET_STRING_ELT(elt[GDXSETS], 0, mkChar("I"));
-    SET_STRING_ELT(elt[GDXSETS], 1, mkChar("J"));
+    nSets = nPars = nVars = nEqus = nAliases = 0;
+    for (iSym = 1;  iSym <= nSyms;  iSym++) {
+      gdxSymbolInfo (gdxHandle, iSym, sName, &ADim, &ATyp);
+      switch (ATyp) {
+      case GMS_DT_SET:
+        nSets++;
+        break;
+      case GMS_DT_PAR:
+        nPars++;
+        break;
+      case GMS_DT_VAR:
+        nVars++;
+        break;
+      case GMS_DT_EQU:
+        nEqus++;
+        break;
+      case GMS_DT_ALIAS:
+        nAliases++;
+        break;
+      }
+    }
 
-    PROTECT(elt[GDXPARMS] = allocVector(STRSXP, 0));
+    PROTECT(elt[GDXSETS] = allocVector(STRSXP, nSets));
     allocCnt++;
+    PROTECT(elt[GDXPARS] = allocVector(STRSXP, nPars));
+    allocCnt++;
+    PROTECT(elt[GDXVARS] = allocVector(STRSXP, nVars));
+    allocCnt++;
+    PROTECT(elt[GDXEQUS] = allocVector(STRSXP, nEqus));
+    allocCnt++;
+    PROTECT(elt[GDXALIASES] = allocVector(STRSXP, nAliases));
+    allocCnt++;
+
+    iSet = iPar = iVar = iEqu = iAlias = 0;
+    for (iSym = 1;  iSym <= nSyms;  iSym++) {
+      gdxSymbolInfo (gdxHandle, iSym, sName, &ADim, &ATyp);
+      switch (ATyp) {
+      case GMS_DT_SET:
+        SET_STRING_ELT(elt[GDXSETS], iSet, mkChar(sName));
+        iSet++;
+        break;
+      case GMS_DT_PAR:
+        SET_STRING_ELT(elt[GDXPARS], iPar, mkChar(sName));
+        iPar++;
+        break;
+      case GMS_DT_VAR:
+        SET_STRING_ELT(elt[GDXVARS], iVar, mkChar(sName));
+        iVar++;
+        break;
+      case GMS_DT_EQU:
+        SET_STRING_ELT(elt[GDXEQUS], iEqu, mkChar(sName));
+        iEqu++;
+        break;
+      case GMS_DT_ALIAS:
+        SET_STRING_ELT(elt[GDXALIASES], iAlias, mkChar(sName));
+        iAlias++;
+        break;
+      }
+    }
 
     /* generate the names for the list */
     PROTECT(listNames = allocVector(STRSXP, RETLIST_LEN));
@@ -4443,7 +4504,10 @@ SEXP gdxInfo (SEXP args)
     SET_STRING_ELT(listNames, GDXSYMCOUNT  , mkChar("symCount"));
     SET_STRING_ELT(listNames, GDXUELCOUNT  , mkChar("uelCount"));
     SET_STRING_ELT(listNames, GDXSETS      , mkChar("sets"));
-    SET_STRING_ELT(listNames, GDXPARMS     , mkChar("parameters"));
+    SET_STRING_ELT(listNames, GDXPARS      , mkChar("parameters"));
+    SET_STRING_ELT(listNames, GDXVARS      , mkChar("variables"));
+    SET_STRING_ELT(listNames, GDXEQUS      , mkChar("equations"));
+    SET_STRING_ELT(listNames, GDXALIASES   , mkChar("aliases"));
 
     PROTECT(retList = allocVector(VECSXP, RETLIST_LEN));
     allocCnt++;
