@@ -1,4 +1,4 @@
-/* #include <R.h> */
+#include <R.h>
 #include <Rinternals.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -6,16 +6,47 @@
 #include <math.h>
 #include <assert.h>
 
-SEXP inspect (SEXP args);
+void showExp (const char *s, SEXP e, int i)
+{
+  int typ;
+
+  typ = TYPEOF(e);
+  if (0 == length(e)) {
+    if (NILSXP == typ)
+      Rprintf ("%s: NILSXP\n", s);
+    else
+      Rprintf ("%s: R type, TYPEOF=%d, length 0\n", s, typ);
+    return;
+  }
+  switch (typ) {
+  case REALSXP:
+    Rprintf ("%s: REALSXP, TYPEOF=%d: %g\n", s, typ, REAL(e)[i]);
+    break;
+  case STRSXP:
+    Rprintf ("%s: STRSXP, TYPEOF=%d: %s\n", s, typ, CHAR(STRING_ELT(e,i)));
+    break;
+  case LGLSXP:
+    Rprintf ("%s: LGLSXP, TYPEOF=%d: %d\n", s, typ, LOGICAL(e)[i]);
+    break;
+  case VECSXP:
+    Rprintf ("%s: VECSXP, TYPEOF=%d\n", s, typ);
+    break;
+  default:
+    Rprintf ("%s: R type, TYPEOF=%d\n", s, typ);
+  }
+
+  return;
+} /* showExp */
 
 SEXP inspect (SEXP args)
 {
   int i, n;
   SEXP ap, el, v, attr;
   const char *name;
+  char msg[256];
 
-  v = R_NilValue; 
-  Rprintf ("inspect called with %d args\n", length(args)); 
+  v = R_NilValue;
+  Rprintf ("inspect called with %d args\n", length(args));
   for (i = 0, ap = args;  ap != R_NilValue;  i++, ap = CDR(ap)) {
     name = isNull(TAG(ap)) ? "" : CHAR(PRINTNAME(TAG(ap)));
     el = CAR(ap);
@@ -61,29 +92,13 @@ SEXP inspect (SEXP args)
     if (R_NilValue != attr) {
       n = length(attr);
       for (i = 0;  i < n;  i++) {
-        Rprintf ("attribute row.names[%d]: %s\n", i, "not easy");
-        switch (TYPEOF(attr)) {
-        case REALSXP:
-          Rprintf ("%d REALSXP %g\n", TYPEOF(attr), REAL(el)[0]);
-          break;
-        case STRSXP:
-          Rprintf ("%d STRSXP %s\n", TYPEOF(attr), CHAR(STRING_ELT(attr,i)));
-          break;
-        case INTSXP:
-          Rprintf ("%d INTSXP %d\n", TYPEOF(attr), INTEGER(attr)[i]);
-          break;
-        case LGLSXP:
-          Rprintf ("%d LGLSXP %d\n", TYPEOF(attr), LOGICAL(attr)[i]);
-          break;
-        case VECSXP:
-          Rprintf ("%d VECSXP\n", TYPEOF(attr));
-          break;
-        default:
-          Rprintf ("%d unhandled R type\n", TYPEOF(attr));
-        }
-      }
-    }
+        sprintf (msg, "attribute row.names[%d]", i);
+        showExp (msg, attr, i);
+      } /* for i */
+    }   /* RowNamesSymbol not NULL */
   }
+
+  showExp ("test nil", R_NilValue, 0);
 
   return R_NilValue;
 } /* inspect */

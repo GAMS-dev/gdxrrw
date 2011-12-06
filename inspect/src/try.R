@@ -1,3 +1,4 @@
+# R CMD SHLIB inspect.c
 dyn.load('inspect.so')
 inspect <- function(o)
 {
