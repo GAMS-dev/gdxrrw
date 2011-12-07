@@ -4530,8 +4530,8 @@ SEXP gdxInfo (SEXP args)
     SEXP dfClass, asIsClass;
     SEXP domTmp;
 
-    /* columns for sets DF: name, dim, card, index, text, doms */
-    SEXP setName, setDim, setCard, setIndex, setText, setDoms;
+    /* columns for sets DF: name, index, dim, card, text, doms */
+    SEXP setName, setIndex, setDim, setCard, setText, setDoms;
     SEXP setColNames, setRowNames;
 
     /* columns for parameters DF: name, index, dim, card, text, doms */
@@ -4551,11 +4551,11 @@ SEXP gdxInfo (SEXP args)
 
     PROTECT(setName = allocVector(STRSXP, nSets));
     allocCnt++;
+    PROTECT(setIndex = allocVector(INTSXP, nSets));
+    allocCnt++;
     PROTECT(setDim = allocVector(INTSXP, nSets));
     allocCnt++;
     PROTECT(setCard = allocVector(INTSXP, nSets));
-    allocCnt++;
-    PROTECT(setIndex = allocVector(INTSXP, nSets));
     allocCnt++;
     PROTECT(setText = allocVector(STRSXP, nSets));
     allocCnt++;
@@ -4591,9 +4591,9 @@ SEXP gdxInfo (SEXP args)
       switch (symType) {
       case GMS_DT_SET:
         SET_STRING_ELT(setName, iSet, mkChar(symName));
+        INTEGER(setIndex)[iSet] = iSym;
         INTEGER(setDim)[iSet] = symDim;
         INTEGER(setCard)[iSet] = symCount;
-        INTEGER(setIndex)[iSet] = iSym;
         SET_STRING_ELT(setText, iSet, mkChar(sText));
         PROTECT(domTmp = allocVector(INTSXP, symDim));
         allocCnt++;
@@ -4640,9 +4640,9 @@ SEXP gdxInfo (SEXP args)
     allocCnt++;
 
     SET_VECTOR_ELT(elt[GDXSETS], 0, setName);
-    SET_VECTOR_ELT(elt[GDXSETS], 1, setDim);
-    SET_VECTOR_ELT(elt[GDXSETS], 2, setCard);
-    SET_VECTOR_ELT(elt[GDXSETS], 3, setIndex);
+    SET_VECTOR_ELT(elt[GDXSETS], 1, setIndex);
+    SET_VECTOR_ELT(elt[GDXSETS], 2, setDim);
+    SET_VECTOR_ELT(elt[GDXSETS], 3, setCard);
     SET_VECTOR_ELT(elt[GDXSETS], 4, setText);
     SET_VECTOR_ELT(elt[GDXSETS], 5, setDoms);
 
@@ -4650,9 +4650,9 @@ SEXP gdxInfo (SEXP args)
     allocCnt++;
     /* columns for sets DF: name, dim, card, index, text */
     SET_STRING_ELT(setColNames, 0, mkChar("name"));
-    SET_STRING_ELT(setColNames, 1, mkChar("dim"));
-    SET_STRING_ELT(setColNames, 2, mkChar("card"));
-    SET_STRING_ELT(setColNames, 3, mkChar("index"));
+    SET_STRING_ELT(setColNames, 1, mkChar("index"));
+    SET_STRING_ELT(setColNames, 2, mkChar("dim"));
+    SET_STRING_ELT(setColNames, 3, mkChar("card"));
     SET_STRING_ELT(setColNames, 4, mkChar("text"));
     SET_STRING_ELT(setColNames, 5, mkChar("doms"));
     PROTECT(setRowNames = allocVector(INTSXP, nSets));
