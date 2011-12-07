@@ -4109,6 +4109,18 @@ SEXP gams (SEXP args)
 } /* gams */
 
 
+#define GDXLIBRARYVER 0
+#define GDXFILEVER    1
+#define GDXPRODUCER   2
+#define GDXSYMCOUNT   3
+#define GDXUELCOUNT   4
+#define GDXSETS       5
+#define GDXPARS       6
+#define GDXVARS       7
+#define GDXEQUS       8
+#define GDXALIASES    9
+#define RETLIST_LEN   10
+
 /* the gateway routine for gdxInfo.
  * This is very similar to gdxdump: it prints everything on R command prompt.
 */
@@ -4116,14 +4128,19 @@ SEXP gdxInfo (SEXP args)
 {
   const char *funcName = "gdxInfo";
   SEXP fileName;
-  SEXP dumpExp, requestListExp, requestDFExp;
+  SEXP dumpExp, returnListExp, returnDFExp;
   SEXP result = R_NilValue;
-  int dump, requestList, requestDF;
+  SEXP retList;               /* list to return */
+  SEXP elt[RETLIST_LEN];      /* list elements */
+  SEXP listNames;
+    
+  int dump, returnList, returnDF;
   int arglen;
   shortStringBuf_t gdxFileName;
   int rc,i,j,NrUel,ADim,ACount,AUser,AUser2,NRec,FDim,IDum, BadUels=0;
   int ATyp, ATyp2;
   int allocCnt = 0;
+  int symDim, symCount;
   int iSym, nSyms;
   int iSet, nSets; 
   int iPar, nPars;
@@ -4142,7 +4159,7 @@ SEXP gdxInfo (SEXP args)
     Keys[GMS_MAX_INDEX_DIM];
   char *dn, c;
 
-#if 1
+#if 0
   SEXP ap, el;
   const char *name;
 
@@ -4212,23 +4229,23 @@ SEXP gdxInfo (SEXP args)
   }
   dump = LOGICAL(dumpExp)[0];
 
-  requestListExp = CADDR(args);
-  /* Checking that requestList argument is of type logical */
-  if (TYPEOF(requestListExp) != LGLSXP) {
-    error ("usage: %s - argument 'requestList' must be a logical", funcName);
+  returnListExp = CADDR(args);
+  /* Checking that returnList argument is of type logical */
+  if (TYPEOF(returnListExp) != LGLSXP) {
+    error ("usage: %s - argument 'returnList' must be a logical", funcName);
   }
-  requestList = LOGICAL(requestListExp)[0];
+  returnList = LOGICAL(returnListExp)[0];
 
-  requestDFExp = CADDDR(args);
-  /* Checking that requestDF argument is of type logical */
-  if (TYPEOF(requestDFExp) != LGLSXP) {
-    error ("usage: %s - argument 'requestDF' must be a logical", funcName);
+  returnDFExp = CADDDR(args);
+  /* Checking that returnDF argument is of type logical */
+  if (TYPEOF(returnDFExp) != LGLSXP) {
+    error ("usage: %s - argument 'returnDF' must be a logical", funcName);
   }
-  requestDF = LOGICAL(requestDFExp)[0];
+  returnDF = LOGICAL(returnDFExp)[0];
 
-  if (requestList && requestDF) {
-    Rprintf ("Cannot return both a list and a data frame: setting requestList FALSE\n");
-    requestList = 0;
+  if (returnList && returnDF) {
+    Rprintf ("Cannot return both a list and a data frame: setting returnList FALSE\n");
+    returnList = 0;
   }
 
   (void) CHAR2ShortStr (CHAR(STRING_ELT(fileName, 0)), gdxFileName);
@@ -4395,24 +4412,7 @@ SEXP gdxInfo (SEXP args)
       Rprintf("**** %d reference(s) to unique elements without a string representation\n", BadUels);
   }
 
-#define GDXLIBRARYVER 0
-#define GDXFILEVER    1
-#define GDXPRODUCER   2
-#define GDXSYMCOUNT   3
-#define GDXUELCOUNT   4
-#define GDXSETS       5
-#define GDXPARS       6
-#define GDXVARS       7
-#define GDXEQUS       8
-#define GDXALIASES    9
-#define RETLIST_LEN   10
-
-  if (requestList) {
-    /* for now just make up some data */
-    SEXP retList;               /* list to return */
-    SEXP elt[RETLIST_LEN];      /* list elements */
-    SEXP listNames;
-    
+  if (returnList || returnDF) {
     /* generate the components for the list */
     gdxGetDLLVersion (gdxHandle, msg);
     PROTECT(elt[GDXLIBRARYVER] = allocVector(STRSXP, 1));
@@ -4457,6 +4457,33 @@ SEXP gdxInfo (SEXP args)
       }
     }
 
+    /* generate the names for the list */
+    PROTECT(listNames = allocVector(STRSXP, RETLIST_LEN));
+    allocCnt++;
+    SET_STRING_ELT(listNames, GDXLIBRARYVER, mkChar("gdxLibraryVer"));
+    SET_STRING_ELT(listNames, GDXFILEVER   , mkChar("gdxFileVer"));
+    SET_STRING_ELT(listNames, GDXPRODUCER  , mkChar("producer"));
+    SET_STRING_ELT(listNames, GDXSYMCOUNT  , mkChar("symCount"));
+    SET_STRING_ELT(listNames, GDXUELCOUNT  , mkChar("uelCount"));
+    SET_STRING_ELT(listNames, GDXSETS      , mkChar("sets"));
+    SET_STRING_ELT(listNames, GDXPARS      , mkChar("parameters"));
+    SET_STRING_ELT(listNames, GDXVARS      , mkChar("variables"));
+    SET_STRING_ELT(listNames, GDXEQUS      , mkChar("equations"));
+    SET_STRING_ELT(listNames, GDXALIASES   , mkChar("aliases"));
+
+    PROTECT(retList = allocVector(VECSXP, RETLIST_LEN));
+    allocCnt++;
+
+    /* populating retList with its common components */
+    for (i = 0;  i <= GDXUELCOUNT;  i++) {
+      SET_VECTOR_ELT (retList, i, elt[i]);
+    }
+    /* put in the names for the components */
+    setAttrib (retList, R_NamesSymbol, listNames);
+    result = retList;
+  } /* if (returnList or returnDF */
+
+  if (returnList) {
     PROTECT(elt[GDXSETS] = allocVector(STRSXP, nSets));
     allocCnt++;
     PROTECT(elt[GDXPARS] = allocVector(STRSXP, nPars));
@@ -4495,31 +4522,101 @@ SEXP gdxInfo (SEXP args)
       }
     }
 
-    /* generate the names for the list */
-    PROTECT(listNames = allocVector(STRSXP, RETLIST_LEN));
-    allocCnt++;
-    SET_STRING_ELT(listNames, GDXLIBRARYVER, mkChar("gdxLibraryVer"));
-    SET_STRING_ELT(listNames, GDXFILEVER   , mkChar("gdxFileVer"));
-    SET_STRING_ELT(listNames, GDXPRODUCER  , mkChar("producer"));
-    SET_STRING_ELT(listNames, GDXSYMCOUNT  , mkChar("symCount"));
-    SET_STRING_ELT(listNames, GDXUELCOUNT  , mkChar("uelCount"));
-    SET_STRING_ELT(listNames, GDXSETS      , mkChar("sets"));
-    SET_STRING_ELT(listNames, GDXPARS      , mkChar("parameters"));
-    SET_STRING_ELT(listNames, GDXVARS      , mkChar("variables"));
-    SET_STRING_ELT(listNames, GDXEQUS      , mkChar("equations"));
-    SET_STRING_ELT(listNames, GDXALIASES   , mkChar("aliases"));
-
-    PROTECT(retList = allocVector(VECSXP, RETLIST_LEN));
-    allocCnt++;
-
-    /* populating retList with its components */
-    for (i = 0;  i < RETLIST_LEN;  i++) {
+    /* populating retList with its returnList-specific components */
+    for (i = GDXSETS;  i < RETLIST_LEN;  i++) {
       SET_VECTOR_ELT (retList, i, elt[i]);
     }
-    /* put in the names for the components */
-    setAttrib (retList, R_NamesSymbol, listNames);
-    result = retList;
-  }
+  } /* if (returnList) */
+  else if (returnDF) {
+    /* columns for set DF: name, dim, card, index, text */
+    SEXP setName, setDim, setCard, setIndex, setText;
+    SEXP setColNames, setRowNames;
+    SEXP dfClass;
+
+    PROTECT(setName = allocVector(STRSXP, nSets));
+    allocCnt++;
+    PROTECT(setDim = allocVector(INTSXP, nSets));
+    allocCnt++;
+    PROTECT(setCard = allocVector(INTSXP, nSets));
+    allocCnt++;
+    PROTECT(setIndex = allocVector(INTSXP, nSets));
+    allocCnt++;
+    PROTECT(setText = allocVector(STRSXP, nSets));
+    allocCnt++;
+    
+    iSet = iPar = iVar = iEqu = iAlias = 0;
+    for (iSym = 1;  iSym <= nSyms;  iSym++) {
+      gdxSymbolInfo (gdxHandle, iSym, sName, &symDim, &ATyp);
+      gdxSymbolInfoX (gdxHandle, iSym, &symCount, &AUser, sText);
+      switch (ATyp) {
+      case GMS_DT_SET:
+        SET_STRING_ELT(setName, iSet, mkChar(sName));
+        INTEGER(setDim)[iSet] = symDim;
+        INTEGER(setCard)[iSet] = symCount;
+        INTEGER(setIndex)[iSet] = iSym;
+        SET_STRING_ELT(setText, iSet, mkChar(sText));
+        iSet++;
+        break;
+      case GMS_DT_PAR:
+        iPar++;
+        break;
+      case GMS_DT_VAR:
+        iVar++;
+        break;
+      case GMS_DT_EQU:
+        iEqu++;
+        break;
+      case GMS_DT_ALIAS:
+        iAlias++;
+        break;
+      }
+    } /* loop over symbols */
+
+    PROTECT(elt[GDXSETS] = allocVector(VECSXP, 5));
+    allocCnt++;
+
+    SET_VECTOR_ELT(elt[GDXSETS], 0, setName);
+    SET_VECTOR_ELT(elt[GDXSETS], 1, setDim);
+    SET_VECTOR_ELT(elt[GDXSETS], 2, setCard);
+    SET_VECTOR_ELT(elt[GDXSETS], 3, setIndex);
+    SET_VECTOR_ELT(elt[GDXSETS], 4, setText);
+
+    PROTECT(setColNames = allocVector(STRSXP, 5));
+    allocCnt++;
+    /* columns for set DF: name, dim, card, index, text */
+    SET_STRING_ELT(setColNames, 0, mkChar("name"));
+    SET_STRING_ELT(setColNames, 1, mkChar("dim"));
+    SET_STRING_ELT(setColNames, 2, mkChar("card"));
+    SET_STRING_ELT(setColNames, 3, mkChar("index"));
+    SET_STRING_ELT(setColNames, 4, mkChar("text"));
+    setAttrib (elt[GDXSETS], R_NamesSymbol, setColNames);
+
+    PROTECT(setRowNames = allocVector(INTSXP, nSets));
+    allocCnt++;
+    for (iSet = 0;  iSet < nSets;  iSet++)
+      INTEGER(setRowNames)[iSet] = iSet+1;
+    setAttrib (elt[GDXSETS], R_RowNamesSymbol, setRowNames);
+
+    PROTECT(dfClass = allocVector(STRSXP, 1));
+    allocCnt++;
+    SET_STRING_ELT(dfClass, 0, mkChar("data.frame"));
+    classgets (elt[GDXSETS], dfClass);
+
+    /* hack */
+    PROTECT(elt[GDXPARS] = allocVector(STRSXP, 0));
+    allocCnt++;
+    PROTECT(elt[GDXVARS] = allocVector(STRSXP, 0));
+    allocCnt++;
+    PROTECT(elt[GDXEQUS] = allocVector(STRSXP, 0));
+    allocCnt++;
+    PROTECT(elt[GDXALIASES] = allocVector(STRSXP, 0));
+    allocCnt++;
+
+    /* populating retList with its returnDF-specific components */
+    for (i = GDXSETS;  i < RETLIST_LEN;  i++) {
+      SET_VECTOR_ELT (retList, i, elt[i]);
+    }
+  }   /* returnDF */
 
   (void) gdxClose (gdxHandle);
   gdxFree (&gdxHandle);
