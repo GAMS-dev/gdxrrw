@@ -4137,7 +4137,8 @@ SEXP gdxInfo (SEXP args)
   int dump, returnList, returnDF;
   int arglen;
   shortStringBuf_t gdxFileName;
-  int rc,i,j,NrUel,ADim,ACount,AUser,AUser2,NRec,FDim,IDum, BadUels=0;
+  int rc,i,j,k,NrUel,ADim,ACount,AUser,AUser2,NRec,FDim,IDum, BadUels=0;
+  int iDummy;
   int ATyp, ATyp2;
   int allocCnt = 0;
   int symDim, symCount;
@@ -4146,7 +4147,7 @@ SEXP gdxInfo (SEXP args)
   int iPar, nPars;
   int iVar, nVars;
   int iEqu, nEqus;
-  int iAlias, nAliases;
+  int iAli, nAliases;
   char
     msg[GMS_SSSIZE],
     FileVersion[GMS_SSSIZE], FileProducer[GMS_SSSIZE],
@@ -4495,7 +4496,7 @@ SEXP gdxInfo (SEXP args)
     PROTECT(elt[GDXALIASES] = allocVector(STRSXP, nAliases));
     allocCnt++;
 
-    iSet = iPar = iVar = iEqu = iAlias = 0;
+    iSet = iPar = iVar = iEqu = iAli = 0;
     for (iSym = 1;  iSym <= nSyms;  iSym++) {
       gdxSymbolInfo (gdxHandle, iSym, sName, &ADim, &ATyp);
       switch (ATyp) {
@@ -4516,8 +4517,8 @@ SEXP gdxInfo (SEXP args)
         iEqu++;
         break;
       case GMS_DT_ALIAS:
-        SET_STRING_ELT(elt[GDXALIASES], iAlias, mkChar(sName));
-        iAlias++;
+        SET_STRING_ELT(elt[GDXALIASES], iAli, mkChar(sName));
+        iAli++;
         break;
       }
     }
@@ -4528,10 +4529,23 @@ SEXP gdxInfo (SEXP args)
     }
   } /* if (returnList) */
   else if (returnDF) {
-    /* columns for set DF: name, dim, card, index, text */
-    SEXP setName, setDim, setCard, setIndex, setText;
+    SEXP dfClass, asIsClass;
+
+    /* columns for set DF: name, dim, card, index, text, doms */
+    SEXP setName, setDim, setCard, setIndex, setText, setDoms;
     SEXP setColNames, setRowNames;
-    SEXP dfClass;
+    SEXP domTmp;
+
+    /* columns for aliases DF: name, index, base */
+    SEXP aliName, aliIndex, aliBase;
+    SEXP aliColNames, aliRowNames;
+
+    PROTECT(dfClass = allocVector(STRSXP, 1));
+    allocCnt++;
+    SET_STRING_ELT(dfClass, 0, mkChar("data.frame"));
+    PROTECT(asIsClass = allocVector(STRSXP, 1));
+    allocCnt++;
+    SET_STRING_ELT(asIsClass, 0, mkChar("AsIs"));
 
     PROTECT(setName = allocVector(STRSXP, nSets));
     allocCnt++;
@@ -4543,8 +4557,18 @@ SEXP gdxInfo (SEXP args)
     allocCnt++;
     PROTECT(setText = allocVector(STRSXP, nSets));
     allocCnt++;
+    PROTECT(setDoms = allocVector(VECSXP, nSets));
+    allocCnt++;
+    classgets (setDoms, asIsClass);
     
-    iSet = iPar = iVar = iEqu = iAlias = 0;
+    PROTECT(aliName = allocVector(STRSXP, nAliases));
+    allocCnt++;
+    PROTECT(aliIndex = allocVector(INTSXP, nAliases));
+    allocCnt++;
+    PROTECT(aliBase = allocVector(INTSXP, nAliases));
+    allocCnt++;
+
+    iSet = iPar = iVar = iEqu = iAli = 0;
     for (iSym = 1;  iSym <= nSyms;  iSym++) {
       gdxSymbolInfo (gdxHandle, iSym, sName, &symDim, &ATyp);
       gdxSymbolInfoX (gdxHandle, iSym, &symCount, &AUser, sText);
@@ -4555,6 +4579,14 @@ SEXP gdxInfo (SEXP args)
         INTEGER(setCard)[iSet] = symCount;
         INTEGER(setIndex)[iSet] = iSym;
         SET_STRING_ELT(setText, iSet, mkChar(sText));
+        PROTECT(domTmp = allocVector(INTSXP, symDim));
+        allocCnt++;
+        gdxSymbolGetDomain (gdxHandle, iSym, Keys);
+        for (k = 0;  k < symDim;  k++) {
+          INTEGER(domTmp)[k] = Keys[k];
+        }
+        SET_VECTOR_ELT(setDoms, iSet, domTmp);
+        domTmp = R_NilValue;
         iSet++;
         break;
       case GMS_DT_PAR:
@@ -4567,12 +4599,15 @@ SEXP gdxInfo (SEXP args)
         iEqu++;
         break;
       case GMS_DT_ALIAS:
-        iAlias++;
+        SET_STRING_ELT(aliName, iAli, mkChar(sName));
+        INTEGER(aliIndex)[iAli] = iSym;
+        INTEGER(aliBase)[iAli] = AUser;
+        iAli++;
         break;
       }
     } /* loop over symbols */
 
-    PROTECT(elt[GDXSETS] = allocVector(VECSXP, 5));
+    PROTECT(elt[GDXSETS] = allocVector(VECSXP, 6));
     allocCnt++;
 
     SET_VECTOR_ELT(elt[GDXSETS], 0, setName);
@@ -4580,8 +4615,9 @@ SEXP gdxInfo (SEXP args)
     SET_VECTOR_ELT(elt[GDXSETS], 2, setCard);
     SET_VECTOR_ELT(elt[GDXSETS], 3, setIndex);
     SET_VECTOR_ELT(elt[GDXSETS], 4, setText);
+    SET_VECTOR_ELT(elt[GDXSETS], 5, setDoms);
 
-    PROTECT(setColNames = allocVector(STRSXP, 5));
+    PROTECT(setColNames = allocVector(STRSXP, 6));
     allocCnt++;
     /* columns for set DF: name, dim, card, index, text */
     SET_STRING_ELT(setColNames, 0, mkChar("name"));
@@ -4589,18 +4625,37 @@ SEXP gdxInfo (SEXP args)
     SET_STRING_ELT(setColNames, 2, mkChar("card"));
     SET_STRING_ELT(setColNames, 3, mkChar("index"));
     SET_STRING_ELT(setColNames, 4, mkChar("text"));
-    setAttrib (elt[GDXSETS], R_NamesSymbol, setColNames);
-
+    SET_STRING_ELT(setColNames, 5, mkChar("doms"));
     PROTECT(setRowNames = allocVector(INTSXP, nSets));
     allocCnt++;
     for (iSet = 0;  iSet < nSets;  iSet++)
       INTEGER(setRowNames)[iSet] = iSet+1;
-    setAttrib (elt[GDXSETS], R_RowNamesSymbol, setRowNames);
 
-    PROTECT(dfClass = allocVector(STRSXP, 1));
-    allocCnt++;
-    SET_STRING_ELT(dfClass, 0, mkChar("data.frame"));
+    setAttrib (elt[GDXSETS], R_NamesSymbol, setColNames);
+    setAttrib (elt[GDXSETS], R_RowNamesSymbol, setRowNames);
     classgets (elt[GDXSETS], dfClass);
+
+    PROTECT(elt[GDXALIASES] = allocVector(VECSXP, 3));
+    allocCnt++;
+
+    SET_VECTOR_ELT(elt[GDXALIASES], 0, aliName);
+    SET_VECTOR_ELT(elt[GDXALIASES], 1, aliIndex);
+    SET_VECTOR_ELT(elt[GDXALIASES], 2, aliBase);
+
+    PROTECT(aliColNames = allocVector(STRSXP, 3));
+    allocCnt++;
+    /* columns for alias DF: name, index, base */
+    SET_STRING_ELT(aliColNames, 0, mkChar("name"));
+    SET_STRING_ELT(aliColNames, 1, mkChar("index"));
+    SET_STRING_ELT(aliColNames, 2, mkChar("base"));
+    PROTECT(aliRowNames = allocVector(INTSXP, nAliases));
+    allocCnt++;
+    for (iAli = 0;  iAli < nAliases;  iAli++)
+      INTEGER(aliRowNames)[iAli] = iAli+1;
+
+    setAttrib (elt[GDXALIASES], R_NamesSymbol, aliColNames);
+    setAttrib (elt[GDXALIASES], R_RowNamesSymbol, aliRowNames);
+    classgets (elt[GDXALIASES], dfClass);
 
     /* hack */
     PROTECT(elt[GDXPARS] = allocVector(STRSXP, 0));
@@ -4608,8 +4663,6 @@ SEXP gdxInfo (SEXP args)
     PROTECT(elt[GDXVARS] = allocVector(STRSXP, 0));
     allocCnt++;
     PROTECT(elt[GDXEQUS] = allocVector(STRSXP, 0));
-    allocCnt++;
-    PROTECT(elt[GDXALIASES] = allocVector(STRSXP, 0));
     allocCnt++;
 
     /* populating retList with its returnDF-specific components */
