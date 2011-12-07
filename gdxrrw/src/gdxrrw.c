@@ -4130,34 +4130,32 @@ SEXP gdxInfo (SEXP args)
   SEXP fileName;
   SEXP dumpExp, returnListExp, returnDFExp;
   SEXP result = R_NilValue;
-  SEXP retList;               /* list to return */
-  SEXP elt[RETLIST_LEN];      /* list elements */
+  SEXP retList = R_NilValue;    /* list to return */
+  SEXP elt[RETLIST_LEN];        /* list elements */
   SEXP listNames;
     
   int dump, returnList, returnDF;
   int arglen;
   shortStringBuf_t gdxFileName;
-  int rc,i,j,k,NrUel,ADim,ACount,AUser,AUser2,NRec,FDim,IDum, BadUels=0;
-  int iDummy;
-  int ATyp, ATyp2;
-  int allocCnt = 0;
+  int rc, i, j, k, nUels;
   int symDim, symCount;
+  int symType, symType2;
+  int symUser, symUser2;        /* user data - different meaning for different symbols types */
+  int nRecs, FDim, BadUels=0;
+  int iDummy;
+  int allocCnt = 0;
   int iSym, nSyms;
   int iSet, nSets; 
   int iPar, nPars;
   int iVar, nVars;
   int iEqu, nEqus;
   int iAli, nAliases;
-  char
-    msg[GMS_SSSIZE],
-    FileVersion[GMS_SSSIZE], FileProducer[GMS_SSSIZE],
-    sName[GMS_SSSIZE], sName2[GMS_SSSIZE], sText[GMS_SSSIZE], UelName[GMS_SSSIZE];
-
-  double
-    Vals[GMS_VAL_MAX],
-    dv[GMS_VAL_MAX];
-  int
-    Keys[GMS_MAX_INDEX_DIM];
+  char msg[GMS_SSSIZE];
+  char FileVersion[GMS_SSSIZE], FileProducer[GMS_SSSIZE];
+  char symName[GMS_SSSIZE], symName2[GMS_SSSIZE], sText[GMS_SSSIZE], UelName[GMS_SSSIZE];
+  double Vals[GMS_VAL_MAX];
+  double dv[GMS_VAL_MAX];
+  int Keys[GMS_MAX_INDEX_DIM];
   char *dn, c;
 
 #if 0
@@ -4270,16 +4268,16 @@ SEXP gdxInfo (SEXP args)
 
   if (dump) {
     gdxFileVersion (gdxHandle, FileVersion, FileProducer);
-    gdxSystemInfo (gdxHandle, &nSyms, &NrUel);
+    gdxSystemInfo (gdxHandle, &nSyms, &nUels);
     Rprintf("*  File version   : %s\n", FileVersion);
     Rprintf("*  Producer       : %s\n", FileProducer);
     Rprintf("*  Symbols        : %d\n", nSyms);
-    Rprintf("*  Unique Elements: %d\n", NrUel);
+    Rprintf("*  Unique Elements: %d\n", nUels);
 
     /* Acroynms */
     for (i = 1;  i <= gdxAcronymCount (gdxHandle);  i++) {
-      gdxAcronymGetInfo (gdxHandle, i, sName, sText, &rc);
-      Rprintf("Acronym %s", sName);
+      gdxAcronymGetInfo (gdxHandle, i, symName, sText, &rc);
+      Rprintf("Acronym %s", symName);
       if (strlen(sText))
         Rprintf(" '%s'", sText);
       Rprintf(";\n");
@@ -4288,106 +4286,106 @@ SEXP gdxInfo (SEXP args)
     /* Symbolinfo */
     Rprintf ("$ontext\n");
     for (i = 1;  i <= nSyms;  i++) {
-      gdxSymbolInfo (gdxHandle, i, sName, &ADim, &ATyp);
-      gdxSymbolInfoX (gdxHandle, i, &ACount, &rc, sText);
-      Rprintf ("%-15s %3d %-12s %s\n", sName, ADim, gmsGdxTypeText[ATyp], sText);
+      gdxSymbolInfo (gdxHandle, i, symName, &symDim, &symType);
+      gdxSymbolInfoX (gdxHandle, i, &symCount, &rc, sText);
+      Rprintf ("%-15s %3d %-12s %s\n", symName, symDim, gmsGdxTypeText[symType], sText);
     }
     Rprintf ("$offtext\n");
 
     Rprintf ("$onempty onembedded\n");
     dn = NULL;
     for (i = 1;  i <= nSyms;  i++) {
-      gdxSymbolInfo (gdxHandle, i, sName, &ADim, &ATyp);
-      gdxSymbolInfoX (gdxHandle, i, &ACount, &AUser, sText);
+      gdxSymbolInfo (gdxHandle, i, symName, &symDim, &symType);
+      gdxSymbolInfoX (gdxHandle, i, &symCount, &symUser, sText);
 
-      if (GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp)
+      if (GMS_DT_VAR == symType || GMS_DT_EQU == symType)
         Rprintf ("$ontext\n");
 
-      if (GMS_DT_VAR == ATyp) {
-        if (AUser < 0 || AUser>=GMS_VARTYPE_MAX)
-          AUser = GMS_VARTYPE_FREE;
-        MEMCPY (dv, gmsDefRecVar[AUser], GMS_VAL_MAX*sizeof(double));
-        dn = (char *) gmsVarTypeText[AUser];
+      if (GMS_DT_VAR == symType) {
+        if (symUser < 0 || symUser>=GMS_VARTYPE_MAX)
+          symUser = GMS_VARTYPE_FREE;
+        MEMCPY (dv, gmsDefRecVar[symUser], GMS_VAL_MAX*sizeof(double));
+        dn = (char *) gmsVarTypeText[symUser];
       }
-      else if (GMS_DT_EQU == ATyp) {
-        if (AUser < 0 || AUser>=GMS_EQUTYPE_MAX)
-          AUser = GMS_EQUTYPE_E;
-        MEMCPY (dv, gmsDefRecEqu[AUser], GMS_VAL_MAX*sizeof(double));
+      else if (GMS_DT_EQU == symType) {
+        if (symUser < 0 || symUser>=GMS_EQUTYPE_MAX)
+          symUser = GMS_EQUTYPE_E;
+        MEMCPY (dv, gmsDefRecEqu[symUser], GMS_VAL_MAX*sizeof(double));
       }
       else
         dv[GMS_VAL_LEVEL] = 0.0;
 
-      if (0 == ADim && GMS_DT_PAR == ATyp) /* Scalar */
+      if (0 == symDim && GMS_DT_PAR == symType) /* Scalar */
         Rprintf ("Scalar");
       else {
-        if (GMS_DT_VAR == ATyp)
+        if (GMS_DT_VAR == symType)
           Rprintf ("%s ", dn);
-        Rprintf ("%s", gmsGdxTypeText[ATyp]);
+        Rprintf ("%s", gmsGdxTypeText[symType]);
       }
-      if (GMS_DT_ALIAS == ATyp) {
-        gdxSymbolInfo (gdxHandle, AUser, sName2, &j, &ATyp2);
-        Rprintf (" (%s, %s);\n", sName, sName2);
+      if (GMS_DT_ALIAS == symType) {
+        gdxSymbolInfo (gdxHandle, symUser, symName2, &j, &symType2);
+        Rprintf (" (%s, %s);\n", symName, symName2);
       }
       else {
-        Rprintf(" %s", sName);
-        if (ADim > 0) {
+        Rprintf(" %s", symName);
+        if (symDim > 0) {
           gdxSymbolGetDomain (gdxHandle, i, Keys);
           Rprintf ("(");
-          for (j = 0;  j < ADim;  j++) {
+          for (j = 0;  j < symDim;  j++) {
             if (Keys[j]==0)
-              strcpy (sName,"*");
+              strcpy (symName,"*");
             else
-              gdxSymbolInfo (gdxHandle, Keys[j], sName2, &AUser2, &ATyp2);
-            if (j < ADim-1)
-              Rprintf ("%s,", sName);
+              gdxSymbolInfo (gdxHandle, Keys[j], symName2, &symUser2, &symType2);
+            if (j < symDim-1)
+              Rprintf ("%s,", symName);
             else
-              Rprintf ("%s)", sName);
+              Rprintf ("%s)", symName);
           }
         }
         if (strlen(sText))
           Rprintf(" '%s'", sText);
       }
-      if (0 == ACount) {
-        if (0 == ADim && GMS_DT_PAR == ATyp) /* Scalar */
+      if (0 == symCount) {
+        if (0 == symDim && GMS_DT_PAR == symType) /* Scalar */
           Rprintf (" / 0.0 /;\n");
-        else if (GMS_DT_ALIAS != ATyp)
+        else if (GMS_DT_ALIAS != symType)
           Rprintf (" / /;\n");
       }
       else {
         Rprintf ("/\n");
-        gdxDataReadRawStart (gdxHandle, i, &NRec);
+        gdxDataReadRawStart (gdxHandle, i, &nRecs);
         while (gdxDataReadRaw (gdxHandle, Keys, Vals, &FDim)) {
-          if ((GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp) && 0 == memcmp(Vals,dv,GMS_VAL_MAX*sizeof(double))) /* all default records */
+          if ((GMS_DT_VAR == symType || GMS_DT_EQU == symType) && 0 == memcmp(Vals,dv,GMS_VAL_MAX*sizeof(double))) /* all default records */
             continue;
-          if (GMS_DT_PAR == ATyp && 0.0 == Vals[GMS_VAL_LEVEL])
+          if (GMS_DT_PAR == symType && 0.0 == Vals[GMS_VAL_LEVEL])
             continue;
-          for (j = 1;  j <= ADim;  j++) {
-            if (1 == gdxUMUelGet (gdxHandle, Keys[j-1], UelName, &IDum))
+          for (j = 1;  j <= symDim;  j++) {
+            if (1 == gdxUMUelGet (gdxHandle, Keys[j-1], UelName, &iDummy))
               Rprintf ("'%s'", UelName);
             else {
               Rprintf ("L__", Keys[j-1]);
               BadUels++;
             }
-            if (j < ADim)
+            if (j < symDim)
               Rprintf (".");
           }
-          if (GMS_DT_PAR == ATyp)
+          if (GMS_DT_PAR == symType)
             Rprintf(" %s\n", val2str(gdxHandle, Vals[GMS_VAL_LEVEL], msg));
-          else if (GMS_DT_SET == ATyp)
+          else if (GMS_DT_SET == symType)
             if (Vals[GMS_VAL_LEVEL]) {
               j = (int) Vals[GMS_VAL_LEVEL];
-              gdxGetElemText (gdxHandle, j, msg, &IDum);
+              gdxGetElemText (gdxHandle, j, msg, &iDummy);
               Rprintf (" '%s'\n", msg);
             }
             else
               Rprintf ("\n");
-          else if (GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp) {
+          else if (GMS_DT_VAR == symType || GMS_DT_EQU == symType) {
             Rprintf (" .");
             c = '(';
             for (j = GMS_VAL_LEVEL; j < GMS_VAL_MAX;  j++) {
               if (Vals[j] != dv[j]) {
-                if (GMS_VAL_SCALE == j && GMS_DT_VAR == ATyp &&
-                    AUser != GMS_VARTYPE_POSITIVE && AUser != GMS_VARTYPE_NEGATIVE && AUser != GMS_VARTYPE_FREE)
+                if (GMS_VAL_SCALE == j && GMS_DT_VAR == symType &&
+                    symUser != GMS_VARTYPE_POSITIVE && symUser != GMS_VARTYPE_NEGATIVE && symUser != GMS_VARTYPE_FREE)
                   Rprintf ("%c prior %s", c, val2str (gdxHandle, Vals[GMS_VAL_SCALE], msg));
                 else
                   Rprintf ("%c %s %s", c, gmsValTypeText[j]+1, val2str(gdxHandle, Vals[j], msg));
@@ -4403,7 +4401,7 @@ SEXP gdxInfo (SEXP args)
       j = 1;
       while (gdxSymbolGetComment (gdxHandle, i, j++, msg))
         Rprintf ("* %s\n", msg);
-      if (GMS_DT_VAR == ATyp || GMS_DT_EQU == ATyp)
+      if (GMS_DT_VAR == symType || GMS_DT_EQU == symType)
         Rprintf ("$offtext\n");
       Rprintf("\n");
     }
@@ -4413,6 +4411,7 @@ SEXP gdxInfo (SEXP args)
       Rprintf("**** %d reference(s) to unique elements without a string representation\n", BadUels);
   }
 
+  nSets = nPars = nVars = nEqus = nAliases = 0;
   if (returnList || returnDF) {
     /* generate the components for the list */
     gdxGetDLLVersion (gdxHandle, msg);
@@ -4428,18 +4427,17 @@ SEXP gdxInfo (SEXP args)
     allocCnt++;
     SET_STRING_ELT(elt[GDXPRODUCER], 0, mkChar(FileProducer));
 
-    gdxSystemInfo (gdxHandle, &nSyms, &NrUel);
+    gdxSystemInfo (gdxHandle, &nSyms, &nUels);
     PROTECT(elt[GDXSYMCOUNT] = allocVector(INTSXP, 1));
     allocCnt++;
     INTEGER(elt[GDXSYMCOUNT])[0] = nSyms;
     PROTECT(elt[GDXUELCOUNT] = allocVector(INTSXP, 1));
     allocCnt++;
-    INTEGER(elt[GDXUELCOUNT])[0] = NrUel;
+    INTEGER(elt[GDXUELCOUNT])[0] = nUels;
 
-    nSets = nPars = nVars = nEqus = nAliases = 0;
     for (iSym = 1;  iSym <= nSyms;  iSym++) {
-      gdxSymbolInfo (gdxHandle, iSym, sName, &ADim, &ATyp);
-      switch (ATyp) {
+      gdxSymbolInfo (gdxHandle, iSym, symName, &symDim, &symType);
+      switch (symType) {
       case GMS_DT_SET:
         nSets++;
         break;
@@ -4498,26 +4496,26 @@ SEXP gdxInfo (SEXP args)
 
     iSet = iPar = iVar = iEqu = iAli = 0;
     for (iSym = 1;  iSym <= nSyms;  iSym++) {
-      gdxSymbolInfo (gdxHandle, iSym, sName, &ADim, &ATyp);
-      switch (ATyp) {
+      gdxSymbolInfo (gdxHandle, iSym, symName, &symDim, &symType);
+      switch (symType) {
       case GMS_DT_SET:
-        SET_STRING_ELT(elt[GDXSETS], iSet, mkChar(sName));
+        SET_STRING_ELT(elt[GDXSETS], iSet, mkChar(symName));
         iSet++;
         break;
       case GMS_DT_PAR:
-        SET_STRING_ELT(elt[GDXPARS], iPar, mkChar(sName));
+        SET_STRING_ELT(elt[GDXPARS], iPar, mkChar(symName));
         iPar++;
         break;
       case GMS_DT_VAR:
-        SET_STRING_ELT(elt[GDXVARS], iVar, mkChar(sName));
+        SET_STRING_ELT(elt[GDXVARS], iVar, mkChar(symName));
         iVar++;
         break;
       case GMS_DT_EQU:
-        SET_STRING_ELT(elt[GDXEQUS], iEqu, mkChar(sName));
+        SET_STRING_ELT(elt[GDXEQUS], iEqu, mkChar(symName));
         iEqu++;
         break;
       case GMS_DT_ALIAS:
-        SET_STRING_ELT(elt[GDXALIASES], iAli, mkChar(sName));
+        SET_STRING_ELT(elt[GDXALIASES], iAli, mkChar(symName));
         iAli++;
         break;
       }
@@ -4570,11 +4568,11 @@ SEXP gdxInfo (SEXP args)
 
     iSet = iPar = iVar = iEqu = iAli = 0;
     for (iSym = 1;  iSym <= nSyms;  iSym++) {
-      gdxSymbolInfo (gdxHandle, iSym, sName, &symDim, &ATyp);
-      gdxSymbolInfoX (gdxHandle, iSym, &symCount, &AUser, sText);
-      switch (ATyp) {
+      gdxSymbolInfo (gdxHandle, iSym, symName, &symDim, &symType);
+      gdxSymbolInfoX (gdxHandle, iSym, &symCount, &symUser, sText);
+      switch (symType) {
       case GMS_DT_SET:
-        SET_STRING_ELT(setName, iSet, mkChar(sName));
+        SET_STRING_ELT(setName, iSet, mkChar(symName));
         INTEGER(setDim)[iSet] = symDim;
         INTEGER(setCard)[iSet] = symCount;
         INTEGER(setIndex)[iSet] = iSym;
@@ -4599,9 +4597,9 @@ SEXP gdxInfo (SEXP args)
         iEqu++;
         break;
       case GMS_DT_ALIAS:
-        SET_STRING_ELT(aliName, iAli, mkChar(sName));
+        SET_STRING_ELT(aliName, iAli, mkChar(symName));
         INTEGER(aliIndex)[iAli] = iSym;
-        INTEGER(aliBase)[iAli] = AUser;
+        INTEGER(aliBase)[iAli] = symUser;
         iAli++;
         break;
       }
