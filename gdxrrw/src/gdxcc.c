@@ -778,7 +778,11 @@ int gdxCreate (gdxHandle_t *pgdx, char *msgBuf, int msgBufSize)
   if (! gdxIsReady) {
     return 0;
   }
+#if 0
   assert(XCreate);
+#else
+  if (! XCreate) { strcpy(msgBuf,"Error, XCreate is NULL"); return 0; }
+#endif
   XCreate(pgdx);
   if(pgdx == NULL)
   { strcpy(msgBuf,"Error while creating object"); return 0; }
@@ -796,7 +800,11 @@ int gdxCreateD (gdxHandle_t *pgdx, const char *dirName,
   if (! gdxIsReady) {
     return 0;
   }
+#if 0
   assert(XCreate);
+#else
+  if (! XCreate) { strcpy(msgBuf,"Error, XCreate is NULL"); return 0; }
+#endif
   XCreate(pgdx);
   if(pgdx == NULL)
   { strcpy(msgBuf,"Error while creating object"); return 0; }
@@ -814,7 +822,11 @@ int gdxCreateL (gdxHandle_t *pgdx, const char *libName,
   if (! gdxIsReady) {
     return 0;
   }
+#if 0
   assert(XCreate);
+#else
+  if (! XCreate) { strcpy(msgBuf,"Error, XCreate is NULL"); return 0; }
+#endif
   XCreate(pgdx);
   if(pgdx == NULL)
   { strcpy(msgBuf,"Error while creating object"); return 0; }
@@ -824,7 +836,11 @@ int gdxCreateL (gdxHandle_t *pgdx, const char *libName,
 
 int gdxFree   (gdxHandle_t *pgdx)
 {
+#if 0
   assert(XFree);
+#else
+  if (! XFree) { return 0; }
+#endif
   XFree(pgdx); pgdx = NULL;
   objectCount--;
   return 1;

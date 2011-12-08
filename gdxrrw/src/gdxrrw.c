@@ -2146,7 +2146,6 @@ registerInputUEL(SEXP uelOut,
       /* Rprintf("str at %d is %s\n", j, uelString); */
 
       rc = gdxUELRegisterStr (gdxHandle, uelString, &gi);
-      assert(rc);
       if (rc != 1) {
         error ("could not register: %s\n", uelString);
       }
@@ -2875,7 +2874,9 @@ writeGdx(char *gdxFileName,
   gdxSetSpecialValues (gdxHandle, sVals);
 
   rc = gdxUELRegisterStrStart (gdxHandle);
-  assert(rc);
+  if (! rc) {
+    error ("could not gdxUELRegisterStrStart\n");
+  }
 
   PROTECT(uelIndex = allocVector(VECSXP, symListLen));
   wAlloc++;
@@ -2893,7 +2894,8 @@ writeGdx(char *gdxFileName,
   }
 
   rc = gdxUELRegisterDone(gdxHandle);
-  assert(rc);
+  if (! rc)
+    error ("could not gdxUELRegisterDone: rc = %d\n", rc);
 
   /* start writing data to GDX file */
   memset (uelIndices, 0, sizeof(gdxUelIndex_t));
