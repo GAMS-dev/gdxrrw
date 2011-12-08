@@ -34,5 +34,4 @@ Steve Dirkse.  Maintainer: \email{R@gams.com}}
 \keyword{ data }
 \keyword{ optimize }
 \keyword{ interface }
-\examples{
-}
+% \examples{ }

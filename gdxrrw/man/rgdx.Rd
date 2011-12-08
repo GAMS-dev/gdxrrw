@@ -32,7 +32,7 @@
   \item{compress}{if TRUE, compress the factors in the data frame so they only include required levels.  For the default compress=FALSE, each factor includes levels for the entire universe of UELs in the GDX file}
   \item{ts}{if TRUE, include the \code{.ts} field (i.e. the explanatory text) for the symbol in the return}
 }
-\details{}
+% \details{}
 \value{
   By default, the return value is a list with components describing
   the data item or symbol returned.

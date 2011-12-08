@@ -37,7 +37,7 @@
   returned by \code{rgdx.scalar}, or a symbol list as required for
   input to \code{wgdx}}
 }
-\details{}
+% \details{}
 \author{Original coding by Rishabh Jain.  Adopted and packaged by
 Steve Dirkse.  Maintainer: \email{R@gams.com}}
 \note{
