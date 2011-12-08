@@ -1,26 +1,37 @@
 Some helpful commands:
 assume $rrw is the dir containing the package tree, i.e. the gdxrrw
-directory.
+directory, or https://svn.gams.com/source/share/gdxrrw in our case.
 
-on linux (ike), we are trying
-gg2 alpha ; gup ; gll  (to put a GAMS sysdir in the PATH)
+================ Linux (ike, 64-bit Redhat) ================
+Typically we start with
+  gg2 alpha ; gup ; gll  (to put a GAMS sysdir in the PATH)
 OR
 you can have one set via an R .First function
 cd $rrw
-# R CMD INSTALL -l ~/R/x86_64-redhat-linux-gnu-library/2.13 gdxrrw  no -l needed
+
 R CMD INSTALL gdxrrw
 R CMD REMOVE gdxrrw  {to remove, or undo an install}
 R CMD check gdxrrw
-R CMD build gdxrrw
-R CMD build gdxrrw --binary {what we want to avoid user compiling}
+
 # with R 2.14, R CMD build cannot be used for making binaries, instead
 # do:
 R CMD INSTALL gdxrrw --build
-# it works better to check the clean tarball, one we might distribute
-R CMD build gdxrrw && R CMD check gdxrrw_0.0-3.tar.gz ; echo "check rc = $?"
+# to create the binary gdxrrw_X.Y-Z_R_x86_64-redhat-linux-gnu.tar.gz
 
-or on Windows, we are trying
+# to build and check locally
+R CMD check gdxrrw ; echo "check rc = $?"
 
+# this command creates a source distribution: gdxrrw_X.Y-Z.tar.gz but
+# we don't distribute that
+R CMD build gdxrrw
+
+-- unneeded/old stuff
+# R CMD INSTALL -l ~/R/x86_64-redhat-linux-gnu-library/2.13 gdxrrw  no -l needed
+# --binary flag no longer supported
+# R CMD build gdxrrw --binary {what we want to avoid user compiling}
+
+
+================ Window (cleveland, Steve's 64-bit Windows 7 desktop) ================
 R CMD INSTALL -l C:\R\2.12 gdxrrw
 R CMD REMOVE  -l C:\R\2.12 gdxrrw  {to remove, or undo an install}
 R CMD build gdxrrw --binary {what we want to avoid user compiling}
@@ -29,6 +40,8 @@ R CMD build gdxrrw --binary {what we want to avoid user compiling}
 R CMD INSTALL -l C:\R\2.12 --no-multiarch gdxrrw
 R --arch=x64 CMD INSTALL -l C:\R\2.12 gdxrrw
 
+
+================ Mac OSX (what Mac machine will we use?) ================
 On shanti (OS X) we tried
 R CMD INSTALL gdxrrw
 R CMD build gdxrrw --binary
@@ -37,9 +50,6 @@ R CMD build gdxrrw && R CMD check gdxrrw_0.0-3.tar.gz ; echo "check rc = $?"
 # R CMD INSTALL -l ~/Library/R/2.13/library gdxrrw #  no need to set -l
 
 
+================ Misc ================
 > .First <- function() { library(gdxrrw) ; igdx("/home/steve/leg_alpha/gmstest")}
 > library(gdxrrw)  but this can go in .First as above
-> l2 <- list(name='f');
-> o <- rgdx('trnsport.gdx',l2);
-> o$uels <- NULL
-> wgdx('ttt',o)
