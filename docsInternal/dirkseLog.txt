@@ -31,10 +31,20 @@ R CMD build gdxrrw
 # R CMD build gdxrrw --binary {what we want to avoid user compiling}
 
 
-================ Window (cleveland, Steve's 64-bit Windows 7 desktop) ================
-R CMD INSTALL -l C:\R\2.12 gdxrrw
-R CMD REMOVE  -l C:\R\2.12 gdxrrw  {to remove, or undo an install}
-R CMD build gdxrrw --binary {what we want to avoid user compiling}
+================ Windows (cleveland, Steve's 64-bit Windows 7 desktop) ================
+# with .libPaths() set to include C:\\R\\2.12 the -l flag is not necessary
+# R CMD INSTALL -l C:\R\2.12 gdxrrw
+# R CMD REMOVE  -l C:\R\2.12 gdxrrw  {to remove, or undo an install}
+
+# with R 2.14, R CMD build cannot be used for making binaries
+# the new "INSTALL pkgname --build" syntax also works with 2.12.1
+# R CMD build gdxrrw --binary {what we want to avoid user compiling}
+
+# do these from a normal command prompt, not one started from the
+# Visual Studio menu.
+R CMD INSTALL gdxrrw
+R CMD REMOVE  gdxrrw    {to remove, or undo an install}
+R CMD INSTALL gdxrrw --build   {creates gdxrrw_X.Y-Z.zip for distribution}
 
 -- these didn't work so well
 R CMD INSTALL -l C:\R\2.12 --no-multiarch gdxrrw
