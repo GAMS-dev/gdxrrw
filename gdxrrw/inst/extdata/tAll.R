@@ -6,6 +6,7 @@ tests <- c("tReadSparse1", "tReadFull1",
            "tWriteSparse1", "tWriteSparse2", "tWriteFull1", "tWriteFull2",
            "tWriteSV",
            "tWrap",
+           "tInfo1",
            "tLS")
 for (t in tests) {
   print (paste("Starting test", t))
