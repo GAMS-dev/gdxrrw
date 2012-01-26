@@ -41,7 +41,7 @@ tryCatch({
   if (! chkVec("aliases", character(0), s$aliases))
     stop ("gdxInfo: s$aliases for trnsport is bogus")
 
-  print ("Successfully completed gdxInfo tests")
+  print ("Successfully completed gdxInfo test 1")
   return (TRUE)
 }
 

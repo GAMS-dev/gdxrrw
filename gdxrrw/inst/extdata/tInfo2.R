@@ -27,20 +27,33 @@ chkFrame <- function(s, f1, f2) {
       print (paste("checking", s, ": item", k, "card is wrong"))
       return (FALSE)
     }
-    if (f1[k,"text"] != f2[k,"text"]) {
-      print (paste("checking", s, ": item", k, "text is wrong"))
+    if (! (is.null(f1[k,"text"]) && is.null(f2[k,"text"]))) {
+      if (f1[k,"text"] != f2[k,"text"]) {
+        print (paste("checking", s, ": item", k, "text is wrong"))
+        return (FALSE)
+      }
+    }
+    f1d <- f1[k,"doms"][[1]]
+    f2d <- f2[k,"doms"][[1]]
+    if (length(f1d) != length(f2d)) {
+      print (paste("checking", s, ": item", k, "doms length is wrong"))
       return (FALSE)
     }
-    if (f1[k,"doms"] != f2[k,"doms"]) {
-      print (paste("checking", s, ": item", k, "doms is wrong"))
-      return (FALSE)
+    n <- length(f1d)
+    if (n > 0) {
+      for (kk in c(1:n)) {
+        if (f1d[kk] != f2d[kk]) {
+          print (paste("checking", s, ": item", k, "doms is wrong"))
+          return (FALSE)
+        }
+      }
     }
   }
   return (TRUE)
 } # chkFrame
 
-# compare the parameter data frames f1 and f2, return TRUE if the same, FALSE o/w
-chkParameters <- function(s, f1, f2) {
+# compare the data frames f1 and f2, return TRUE if the same, FALSE o/w
+chkVarEqu <- function(s, f1, f2) {
   if (! is.data.frame(f1))   return (FALSE)
   if (! is.data.frame(f2))   return (FALSE)
   nc     <- ncol(f1)
@@ -65,8 +78,8 @@ chkParameters <- function(s, f1, f2) {
       print (paste("checking", s, ": item", k, "card is wrong"))
       return (FALSE)
     }
-    if (f1[k,"text"] != f2[k,"text"]) {
-      print (paste("checking", s, ": item", k, "text is wrong"))
+    if (! (is.null(f1[k,"text"]) && is.null(f2[k,"text"]))) {
+      print ("unchecked text")
       return (FALSE)
     }
     f1d <- f1[k,"doms"][[1]]
@@ -86,7 +99,7 @@ chkParameters <- function(s, f1, f2) {
     }
   }
   return (TRUE)
-} # chkParameters
+} # chkVarEqu
 
 tryCatch({
 
@@ -121,20 +134,39 @@ tryCatch({
       "distance in thousands of miles", "freight in dollars per case per thousand miles", 
       "transport cost in thousands of dollars per case"),
     doms = structure(list(1L, 2L, 1:2, integer(0), 1:2), class = "AsIs")),
-  .Names = c("name", "index", "dim", "card", "text", "doms"), row.names = c(NA, 5L), class = "data.frame")
+  .Names = c("name", "index", "dim", "card", "text", "doms"),
+  row.names = c(NA, 5L), class = "data.frame")
 
-  if (! chkParameters("sets", s_sets, s$sets))
+  s_variables <- structure(list(
+    name = c("x", "z"),
+    index = 8:9,
+    dim = c(2L, 0L),
+    card = c(6L, 1L),
+    doms = structure(list(1:2, integer(0)), class = "AsIs")),
+  .Names = c("name", "index", "dim", "card", "doms"),
+  row.names = 1:2, class = "data.frame")
+
+  s_equations <- structure(list(
+    name = c("cost", "supply", "demand"),
+    index = 10:12,
+    dim = c(0L, 1L, 1L),
+    card = 1:3,
+    doms = structure(list(integer(0), 1L, 2L), class = "AsIs")),
+  .Names = c("name", "index", "dim", "card", "doms"),
+  row.names = c(NA, 3L), class = "data.frame")
+
+  if (! chkFrame("sets", s_sets, s$sets))
     stop ("gdxInfo: s$sets for trnsport is bogus")
-  if (! chkParameters("parameters", s_parameters, s$parameters))
+  if (! chkFrame("parameters", s_parameters, s$parameters))
     stop ("gdxInfo: s$parameters for trnsport is bogus")
-#  if (! chkVec("variables", c("x","z"), s$variables))
-#    stop ("gdxInfo: s$variables for trnsport is bogus")
-#  if (! chkVec("equations", c("cost","supply", "demand"), s$equations))
-#    stop ("gdxInfo: s$equations for trnsport is bogus")
-#  if (! chkVec("aliases", character(0), s$aliases))
-#    stop ("gdxInfo: s$aliases for trnsport is bogus")
+  if (! chkFrame("variables", s_variables, s$variables))
+    stop ("gdxInfo: s$variables for trnsport is bogus")
+  if (! chkFrame("equations", s_equations, s$equations))
+    stop ("gdxInfo: s$equations for trnsport is bogus")
+  if (0 != nrow(s$aliases))
+    stop ("gdxInfo: s$aliases for trnsport is bogus")
 
-  print ("Successfully completed gdxInfo tests")
+  print ("Successfully completed gdxInfo test 2")
   return (TRUE)
 }
 
