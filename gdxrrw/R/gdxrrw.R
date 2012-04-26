@@ -130,7 +130,10 @@ rgdx.scalar <- function(gdxName, symName, ts=FALSE)
   if (dimsym > 0) {
     stop ("Parameter ", symName, " has dimension ", dimsym, ": scalar output not possible")
   }
-  c <- readsym$val[1,1]
+  c <- 0
+  if (1 == dim(readsym$val)[1]) {
+    c <- readsym$val[1,1]
+  }
   attr(c,"symName") <- readsym$name
   if (ts) {
     attr(c,"ts") <- readsym$ts
