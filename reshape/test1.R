@@ -19,10 +19,18 @@ str(lst)
 # or just write to GDX directly by specifying the GDX name
 rc <- wgdx.reshape (sample1a,symDim,gdxName="test2.gdx")
 
+# write the data, but specify the symbol name in the call
+# also specify the name of the aggregated (aka time) index
+rc <- wgdx.reshape (sample1,symDim,symName='prod',gdxName="test3.gdx",tName="year")
 
 
-# rc <- wgdx.reshape (sample1a,symDim,"prd",tName='year',gdxName="test1.gdx")
+# put the symbol name and text in the input data,
+# and write the symbol only - no index sets
+sample1b <- sample1
+attr(sample1b,"symName") <- "prd4"
+attr(sample1b,"ts") <- "text for prd4"
+rc <- wgdx.reshape (sample1b,symDim,tName='year',gdxName="test4.gdx",setsToo=FALSE)
 
-# attr(sample1,"symName") <- "defaultPrd"
-# attr(sample1,"ts") <- "explicit text"
-# rc <- wgdx.reshape (sample1,3,tName='year',gdxName="testJJ.gdx")
+# reorder test4 so the output parameter looks like prd(year, crop, region)
+rc <- wgdx.reshape (sample1b,symDim,tName='year',gdxName="test5.gdx",setsToo=FALSE,order=c(-1,1,2))
+rc <- wgdx.reshape (sample1b,symDim,tName='year',gdxName="test6.gdx",setsToo=FALSE,order=c('*','crop','region'))

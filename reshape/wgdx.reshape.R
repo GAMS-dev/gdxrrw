@@ -53,7 +53,20 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
   names(outDF)[symDim+1] <- "value"
   str(outDF)
   if (setsToo) {
-    stop ('setsToo true branch not implemented')
+    ## write index sets first, then symName
+    outLst <- list()
+    length(outLst) <- symDim + 1
+    for (i in 1:symDim) {
+      lvls <- levels(outDF[[i]])
+      outLst[[i]] <- list(name=names(outDF)[[i]], type='set', uels=c(list(lvls)))
+    }
+    outLst[[symDim+1]] <- outDF
+    if (is.character(gdxName)) {
+      wgdx.lst(gdxName,outLst)
+    }
+    else {
+      return(outLst)
+    }
   }
   else {
     if (is.character(gdxName)) {
