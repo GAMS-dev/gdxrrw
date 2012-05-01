@@ -47,10 +47,20 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
   if (is.character(tName)) {
     names(outDF)[symDim] <- tName
   }
-  else  {
+  else {
     names(outDF)[symDim] <- 'time'
   }
   names(outDF)[symDim+1] <- "value"
   str(outDF)
-  wgdx.df(gdxName,outDF)
+  if (setsToo) {
+    stop ('setsToo true branch not implemented')
+  }
+  else {
+    if (is.character(gdxName)) {
+      wgdx.df(gdxName,outDF)
+    }
+    else {
+      return(list(outDF))
+    }
+  }
 } # wgdx.reshape
