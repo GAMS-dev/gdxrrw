@@ -31,6 +31,9 @@ attr(sample1b,"symName") <- "prd4"
 attr(sample1b,"ts") <- "text for prd4"
 rc <- wgdx.reshape (sample1b,symDim,tName='year',gdxName="test4.gdx",setsToo=FALSE)
 
+rc <- wgdx.reshape (sample1b,symDim,tName='year',gdxName="test5.gdx",order=c(2,1,-1))
+
+
 # reorder test4 so the output parameter looks like prd(year, crop, region)
-rc <- wgdx.reshape (sample1b,symDim,tName='year',gdxName="test5.gdx",setsToo=FALSE,order=c(-1,1,2))
-rc <- wgdx.reshape (sample1b,symDim,tName='year',gdxName="test6.gdx",setsToo=FALSE,order=c('*','crop','region'))
+# rc <- wgdx.reshape (sample1b,symDim,tName='year',gdxName="test5.gdx",setsToo=FALSE,order=c(-1,2,1))
+# rc <- wgdx.reshape (sample1b,symDim,tName='year',gdxName="test6.gdx",setsToo=FALSE,order=c('*','crop','region'))

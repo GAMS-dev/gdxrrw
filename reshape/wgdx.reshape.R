@@ -25,11 +25,59 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
                           gdxName=NULL, setsToo=TRUE, order=NULL) {
   nCols <- ncol(inDF)
   inNames <- names(inDF)
-  idCols <- 1:(symDim-1)
-  dtCols <- symDim:nCols
+  if (is.null(order)) {
+    idCols <- 1:(symDim-1)
+    dtCols <- symDim:nCols
+    str(idCols)
+    outDF <- reshape (inDF, idvar=inNames[idCols], varying=list(dtCols),
+                      direction="long", times=inNames[dtCols])
+  }
+  else if ((! is.vector(order)) || (symDim != length(order))) {
+    stop ("specified order must be a vector of length symDim")
+  }
+  else {
+    if (is.character(order)) {
+      stop ("order must be numeric for now")
+    }
+    else if (! is.numeric(order)) {
+      stop ("optional order vector must be numeric or character")
+    }
+    idCols <- vector(mode="integer",length=symDim-1)
+    dtCols <- 1:nCols
+    idCount <- 0
+    for (k in 1:symDim) {
+      j <- order[k]
+      if (j > 0) {
+        idCount <- idCount + 1
+        if (dtCols[j] <= 0) {
+          stop ('duplicate entry in order vector: nonsense')
+        }
+        dtCols[j] <- 0
+        idCols[idCount] <- j
+      }
+      else {
+        tCol <- k
+      }
+    }                                   # for k in 1:symDim
+    if ((symDim-1) != idCount) {
+      stop ('order vector must specify symDim-1 index columns')
+    }
+    oo <- c(idCols,(1:nCols)[-idCols])
+    df2 <- inDF[oo]
+    idCols <- 1:(symDim-1)
+    dtCols <- symDim:nCols
+    if (symDim == tCol) {               # no need to re-order after reshaping
+      outDF <- reshape (df2, idvar=inNames[idCols], varying=list(dtCols),
+                        direction="long", times=inNames[dtCols])
+    }
+    else {
+      df3 <- reshape (df2, idvar=inNames[idCols], varying=list(dtCols),
+                      direction="long", times=inNames[dtCols])
+      oo <- c(1:(jCol-1),symDim,jCol:(symDim-1))
+      outDF <- df3[oo]
+    }
+  }
 
-  outDF <- reshape (inDF, idvar=inNames[idCols], varying=list(dtCols),
-                    direction="long", times=inNames[dtCols])
   for (i in 1:symDim) {
     outDF[[i]] <- as.factor(outDF[[i]])
   }
