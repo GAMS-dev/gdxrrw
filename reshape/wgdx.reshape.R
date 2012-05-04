@@ -24,11 +24,10 @@
 wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
                           gdxName=NULL, setsToo=TRUE, order=NULL) {
   nCols <- ncol(inDF)
-  inNames <- names(inDF)
   if (is.null(order)) {
     idCols <- 1:(symDim-1)
     dtCols <- symDim:nCols
-    str(idCols)
+    inNames <- names(inDF)
     outDF <- reshape (inDF, idvar=inNames[idCols], varying=list(dtCols),
                       direction="long", times=inNames[dtCols])
   }
@@ -66,6 +65,7 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
     df2 <- inDF[oo]
     idCols <- 1:(symDim-1)
     dtCols <- symDim:nCols
+    inNames <- names(df2)
     if (symDim == tCol) {               # no need to re-order after reshaping
       outDF <- reshape (df2, idvar=inNames[idCols], varying=list(dtCols),
                         direction="long", times=inNames[dtCols])
@@ -73,7 +73,15 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
     else {
       df3 <- reshape (df2, idvar=inNames[idCols], varying=list(dtCols),
                       direction="long", times=inNames[dtCols])
-      oo <- c(1:(jCol-1),symDim,jCol:(symDim-1))
+      oo <- vector(mode="integer",length=symDim+1)
+      for (k in 1:tCol-1) {
+        oo[k] = k
+      }
+      oo[tCol] = symDim
+      for (k in tCol+1:symDim) {
+        oo[k] = k-1
+      }
+      oo[symDim+1] = symDim+1
       outDF <- df3[oo]
     }
   }
