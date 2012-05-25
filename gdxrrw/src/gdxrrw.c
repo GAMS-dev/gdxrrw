@@ -3371,7 +3371,7 @@ SEXP rgdx (SEXP args)
     error ("Error creating GDX object: %s", msgBuf);
   rc = gdxOpenRead (gdxHandle, gdxFileName, &errNum);
   if (errNum || 0 == rc) {
-    error("Could not gdx file with gdxOpenRead");
+    error("Could not open gdx file with gdxOpenRead");
   }
 
   gdxGetSpecialValues (gdxHandle, sVals);
