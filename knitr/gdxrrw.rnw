@@ -1,0 +1,241 @@
+%% Author:  Renger van Nieuwkoop
+%% Email:   renger@vannieuwkoop.ch
+%% Date:    21 Sep 2011
+%% Version Control Information: $Id$
+
+\documentclass[11pt,a4paper]{scrartcl}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{listings}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{natbib}
+\usepackage{alltt}
+\usepackage{pgf}
+\usepackage{natbib}
+\usepackage{amssymb,amsmath}
+%%\usepackage[ngerman]{babel}
+%%\usepackage[T1]{fontenc}
+\usepackage[left=1in,top=1in,right=1in,bottom=1in,nohead]{geometry}
+
+\begin{document}
+
+
+\newcommand{\vect}[1]{\boldsymbol{#1}}
+\linespread{1} % single spaces lines
+\small \normalsize
+\begin{flushleft}
+\textcolor{blue}{
+\textbf{Author}:      Renger van Nieuwkoop \\
+\textbf{E-mail}:      renger@vannieuwkoop.ch\\
+\textbf{Project}:     Entropy\\
+\textbf{Theme}:       Using gdxrrw\\
+\textbf{Status}:      DRAFT}
+\end{flushleft}
+
+\section{Using gdxrrw for moving data from R to GAMS}
+
+\subsection{Moving a dataframe  from R to GAMS}
+\label{sec:moving-datafr-from}
+
+
+There are several ways for moving data from R to GAMS. Let us start with
+a three dimensional table that  we import from a text file ((REFSAMPLE.DAT).
+The file contains survey data for households the values of four different variables (APER, CAR,
+WKSTAT and ZERO) for two indices (PNR and HHNR). This data should be
+saved in the GAMS parameter REFSAMPLE(HHNR,PNR,*), where the * stands
+for the elements "APER","CAR","WKSTAT" and "ZERO".
+
+\bigskip
+
+\begin{figure}[h]
+\caption{Example of a data frame in wide format}
+\begin{center}
+\includegraphics{refsample.png}
+\end{center}
+\end{figure}
+
+<<>>=
+refsample<-read.csv("REFSAMPLE.dat",sep="\t", header=T)
+str(refsample)
+@
+
+gdxrrw can send a dataframe to gdx if it has the long format opposed
+to the actual wide format (remember the dataframe has the two first
+columns as indices and the row headings from row 3 to 6 as the third
+index).  Changing the format can be done with the R command
+\textit{reshape}. This function reshapes a data frame between 'wide'
+nsformat with repeated measurements in separate columns of the same
+record and 'long' format with the repeated measurements in separate
+records.
+
+<<>>=
+refsamplel <- reshape(refsample,idvar=c("PNR","HHNR"),varying=list(3:6),direction="long",times=c("APER","CAR","WKSTAT","ZERO"))
+str(refsamplel)
+@
+
+In our example this means that the data will look like
+
+\begin{table}[htbp]
+\begin{center}
+\caption{Example of a data frame in long format}
+ \begin{tabular}{llll}
+0 & 0 & APER & 1 \\
+0 & 0 & CAR & 2 \\
+1 & 0 & APER & 1 \\
+1 & 0 & CAR & 2 \\
+2 & 1 & APER & 1
+
+\end{tabular}
+\end{center}
+\end{table}
+
+We are now almost finished. We only have to change the format of the
+variables to factors and add a name for the GAMS parameter using the
+dataframe attribute syntax.
+
+<<>>=
+refsamplel[[1]]<-as.factor(refsamplel[[1]])
+refsamplel[[2]]<-as.factor(refsamplel[[2]])
+refsamplel[[3]]<-as.factor(refsamplel[[3]])
+attr(refsamplel,"symName") <- 'refsample';
+@
+
+The last thing to do is write the dataframe in long format to the gdx
+file (entropy.gdx) using the command \textit{wgdx.df}.
+<<>>=
+wgdx.df('entropy',refsamplel)
+@
+If the command is succesfull, you will see  ``NULL'' in the console.
+The gdx file can now be inspected:
+
+\bigskip
+\includegraphics{gdx.png}
+
+Note that the parameter is saved as refsample(*,*,*) and not as
+refsample(pnr,hhnr,*). This is however no problem as one can easily
+import the parameter explicitly defined over the sets.
+
+Let make this process more streamlined by defining a function that
+does the writing to gdx directly
+
+<<>>=
+# Read a dataframe x and save the data as a parameter with the name "parname"
+# in a gdx file with the name  "gdxname". The parameter is defined over "dim"
+# dimensions and the dataframe has "totcol" columns.
+
+gdxwritedf<- function(x,dim,totcol,parname) {
+# Define the sets that define xxx
+   count <-dim-2
+   indices<-c(names(x)[[1]])
+   for (i in 1:count){
+       names(x)[[i]]
+       indices<-c(indices,names(x)[[i+1]])
+   }
+# Define the names of the set elements:
+   count<-totcol-dim
+   secindices<-c(names(x)[[dim+1]])
+   for (i in 1:count){
+       secindices<-c(secindices,names(x)[[i+2]])
+   }
+
+# Reshape the data from wide format to long format:
+   xl <- reshape(x,idvar=indices,varying=list(dim:totcol),direction="long",times=secindices)
+   for (i in 1:dim){
+       xl[[i]]<-as.factor(xl[[i]])
+   }
+   attr(xl,"symName") <- parname
+   return(xl)
+}
+@
+and run the function in R on the dataframe example and name this
+parameter ``refsample'':
+<<results=hide>>=
+t<-gdxwritedf(refsample,3,6,"refsample")
+@
+We now can send it to a gdx file with the name ``data.gdx''
+<<results=hide>>=
+wgdx.df("data.gdx",t)
+@
+If we have several dataframes, we can use the function
+\textit{wgdx.lst}, which can send a list of dataframes to a gdx file.
+For example:
+<<results=hide>>=
+t2<-(gdxwritedf(refsample,3,6,"refsample2"))
+tl<-list(t,t2)
+wgdx.lst("data.gdx",tl)
+@
+
+\subsection{Moving  a set from R to  Gams}
+
+We saw when writing a dataframe to gdx we loose the information on the
+sets. We can, however, easily send the sets to the same gdx file.
+
+We first define the sets for the household ids.
+<<results=hide>>=
+hhnr <-list(unique(refsample$HHNR))
+hhlst <- list (name='hhnr', type='set', ts='Household ID', uels=c(hhnr))
+wgdx("test",hhlst)
+@
+We do the same for the personal IDs and the set with the questions.
+<<results=hide>>=
+pnr  <-list(unique(refsample$PNR))
+plst <-list(name='pnr', type='set', ts='Person ID', uels=c(pnr))
+q<-list(colnames(refsample[,3:6]))
+qlst <-list(name='q', type='set', ts='Questions', uels=c(q))
+wgdx("refsamplesets.gdx",qlst,plst,hhlst)
+@
+
+
+\subsection{Moving  a parameter or set from Gams to R}
+
+Getting information from a gdx file is quite easy. Here we grab the
+original dataframe, which is a parameter in Gams, and the set.
+<<>>=
+refsampleG<-rgdx.param("data.gdx","refsample")
+head(refsampleG)
+hhnrset<-rgdx.set("refsamplesets.gdx","hhnr")
+head(hhnrset)
+@
+
+
+\subsection{Questions}
+
+\begin{enumerate}
+  \item I tried to use wgdx to write all sets and parameters from the
+    ``refsample'' from R to gdx using a list. I did not manage to do
+    this, because it was hard for me to find the correct list
+    specification for the dataframe.
+  \item If I check the structure of the set hhnrset, I get all the
+    factors  (including the set $pnr$ as well as the elements  APER, CAR,
+    WKSTAT):
+<<>>=
+str(hhnrset)
+@
+I don't know if this is intended or if one can get rid of the
+additional elements.
+\end{enumerate}
+
+\end{document}
+
+\bibliographystyle{APA}
+\bibliography{d:/research/literature/jabref}
+
+
+
+
+
+
+str(q)
+q
+pnr
+plst
+str(q)
+str(plst)
+test<-list(qlst)
+wgdx.lst("test",qlst)
+? wgdx.df
+wgdx.set("test",q)
+t<-rgdx.set("refsamplesets.gdx","pnr",ts=T)
+q<-rgdx.set("refsamplesets.gdx","q",ts=T)
+str(q)
