@@ -1,0 +1,123 @@
+\documentclass[11pt]{scrartcl}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{listings}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{alltt}
+\usepackage{pgf}
+\usepackage{amssymb,amsmath}
+%%\usepackage[ngerman]{babel}
+%%\usepackage[T1]{fontenc}
+\usepackage[left=1in,top=1in,right=1in,bottom=1in,nohead]{geometry}
+
+\begin{document}
+
+\linespread{1} % single spaces lines
+\small \normalsize
+\begin{flushleft}
+\textcolor{blue}{
+\textbf{Author}:      Steve Dirkse\\
+\textbf{E-mail}:      R@gams.com\\
+\textbf{Theme}:       wgdx.reshape\\
+\textbf{Status}:      DRAFT}
+\end{flushleft}
+
+\section{The problem}
+
+One weak spot in \textbf{gdxrrw} is the lack of support for data
+frames that result from calls to \textit{read.csv} when the data is in
+'wide' format.  For example, the data file \texttt{sample1.dat} looks
+like this:
+
+\begin{figure}[h]
+\caption{sample CSV data in wide format}
+\begin{center}
+\includegraphics{sample1.png}
+\end{center}
+\end{figure}
+
+and can be read easily into an R data frame:
+
+<<>>=
+sample1 <- read.csv ("sample1.dat", sep="\t", header=T)
+str(sample1)
+@
+
+On inspection, we recognize that this is really data for a
+3-dimensional parameter.  The GAMS representation for this same data
+might look like this:
+
+\begin{verbatim}
+blah blah blah
+blah blah blah
+\end{verbatim}
+
+In order to properly write the data frame \texttt{sample1} to GDX via
+\textit{wgdx.df}, we need to first reshape it.  This can be a somewhat
+time-consuming and error-prone process, so we are looking for a more
+convenient way to handle this.
+
+\section{The solution}
+
+To make reshaping easier and more reliable we will automate the
+process with a wrapper utility.  We assume that the data is stored in
+an R data frame in the usual way.  The also assume that the user
+specifies explicitly the number of dimensions she expects the GAMS
+data to have.  While this may not be strictly necessary in all cases
+it adds clarity and avoids surprising results.
+
+<<>>=
+# the data file and read.csv should not change, that is basic R stuff
+# and we don't want to force any change there
+sample1 <- read.csv ("sample1.dat", sep="\t", header=T)
+# we are really dealing with 3-dimensional data: production(crop, region, year)
+symDim <- 3
+@
+
+The fewest number of arguments you can have is two: the data and the
+symbol dimension, as described above.  However, it is always necessary
+to provide also a symbol name when writing to GDX.  The symbol name
+can be added to the data frame as an attribute, which is sometimes
+handy.  The returned list is suitable for passing to
+\textit{wgdx.lst}, either by itself or in combination with other data
+that need to be combined in the same GDX container.  Note that in
+addition to the 3-dimensional numeric production data, the list
+returned contains the index sets defined by the data.
+
+<<>>=
+sample1a <- sample1
+attr(sample1a,"symName") <- "production"
+lst <- wgdx.reshape (sample1a,symDim)
+wgdx.lst ('test1.gdx', lst)
+str(lst)
+@
+
+It is also possible to pass the symbol name as an argument.  This
+argument takes precedence over the attribute specification of the
+symbol name.
+
+<<>>=
+lst <- wgdx.reshape (sample1a,symDim,symName='prod')
+wgdx.lst ('test1b.gdx', lst)
+str(lst)
+@
+
+\subsection{Writing to GDX directly}
+
+By default, \textit{wgdx.reshape} returns a reshaped dataframe in a
+list.  The makes it possible to combine the data returned with other
+data and send it all to GDX.  However, there is some overhead in doing
+this.  R is known for being wasteful of memory and in this case there
+are one or more copies of the data being made that would not be
+necessary if the data were written to GDX directly by the
+\textit{wgdx.reshape} wrapper instead of being returned.  To force
+this behavior, simply specify the GDX name on the argument list, and
+the reshaped data will to directly to GDX instead of being returned in
+a list.
+
+<<>>=
+rc <- wgdx.reshape (sample1a,symDim,gdxName='test2.gdx')
+@
+
+\end{document}
