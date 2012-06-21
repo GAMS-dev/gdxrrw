@@ -160,17 +160,17 @@ gdxwritedf<- function(x,dim,totcol,parname) {
 @
 and run the function in R on the dataframe example and name this
 parameter ``refsample'':
-<<results=hide>>=
+<<results='hide'>>=
 t<-gdxwritedf(refsample,3,6,"refsample")
 @
 We now can send it to a gdx file with the name ``data.gdx''
-<<results=hide>>=
+<<results='hide'>>=
 wgdx.df("data.gdx",t)
 @
 If we have several dataframes, we can use the function
 \textit{wgdx.lst}, which can send a list of dataframes to a gdx file.
 For example:
-<<results=hide>>=
+<<results='hide'>>=
 t2<-(gdxwritedf(refsample,3,6,"refsample2"))
 tl<-list(t,t2)
 wgdx.lst("data.gdx",tl)
@@ -182,13 +182,13 @@ We saw when writing a dataframe to gdx we loose the information on the
 sets. We can, however, easily send the sets to the same gdx file.
 
 We first define the sets for the household ids.
-<<results=hide>>=
+<<results='hide'>>=
 hhnr <-list(unique(refsample$HHNR))
 hhlst <- list (name='hhnr', type='set', ts='Household ID', uels=c(hhnr))
 wgdx("test",hhlst)
 @
 We do the same for the personal IDs and the set with the questions.
-<<results=hide>>=
+<<results='hide'>>=
 pnr  <-list(unique(refsample$PNR))
 plst <-list(name='pnr', type='set', ts='Person ID', uels=c(pnr))
 q<-list(colnames(refsample[,3:6]))
