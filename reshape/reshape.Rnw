@@ -49,14 +49,18 @@ On inspection, we recognize that this is really data for a
 might look like this:
 
 \begin{verbatim}
-blah blah blah
-blah blah blah
+parameter prd(crop, region, time) 'production' /
+wht.usa.y2010 1.1
+wht.usa.y2011 1.11
+* etc., etc.
+crn.rus.y2013 7.13
+crn.rus.y2014 7.14 /;
 \end{verbatim}
 
 In order to properly write the data frame \texttt{sample1} to GDX via
-\textit{wgdx.df}, we need to first reshape it.  This can be a somewhat
-time-consuming and error-prone process, so we are looking for a more
-convenient way to handle this.
+\textit{wgdx.df}, we need to first reshape it.  R provides some help
+here with the \textit{reshape} function but even so, this can be a
+somewhat time-consuming and error-prone process.
 
 \section{The solution}
 
@@ -68,22 +72,26 @@ data to have.  While this may not be strictly necessary in all cases
 it adds clarity and avoids surprising results.
 
 <<>>=
+# the source line is temporary: get this into gdxrrw
+source ("wgdx.reshape.R")
 # the data file and read.csv should not change, that is basic R stuff
 # and we don't want to force any change there
 sample1 <- read.csv ("sample1.dat", sep="\t", header=T)
-# we are really dealing with 3-dimensional data: production(crop, region, year)
+# we are really dealing with 3-dimensional data: prd(crop, region, year)
 symDim <- 3
 @
 
 The fewest number of arguments you can have is two: the data and the
-symbol dimension, as described above.  However, it is always necessary
-to provide also a symbol name when writing to GDX.  The symbol name
-can be added to the data frame as an attribute, which is sometimes
-handy.  The returned list is suitable for passing to
-\textit{wgdx.lst}, either by itself or in combination with other data
-that need to be combined in the same GDX container.  Note that in
-addition to the 3-dimensional numeric production data, the list
-returned contains the index sets defined by the data.
+symbol dimension, as described above.  In this case, the wrapper
+assumes that the first \texttt{symDim-1} columns are index columns,
+while each of the remaining columns is a data column.  The indices
+from all the data columns are combined into the final index set
+(default name: \texttt{time}).  It is always necessary to provide a
+symbol name when writing to GDX.  The symbol name can be added to the
+data frame as an attribute, which is sometimes handy.  The returned
+list is suitable for passing to \textit{wgdx.lst}, either by itself or
+in combination with other data that need to be combined in the same
+GDX container.
 
 <<>>=
 sample1a <- sample1
@@ -93,31 +101,92 @@ wgdx.lst ('test1.gdx', lst)
 str(lst)
 @
 
-It is also possible to pass the symbol name as an argument.  This
-argument takes precedence over the attribute specification of the
-symbol name.
-
-<<>>=
-lst <- wgdx.reshape (sample1a,symDim,symName='prod')
-wgdx.lst ('test1b.gdx', lst)
-str(lst)
-@
+Note that in addition to the 3-dimensional numeric production data,
+the list returned contains the index sets crop, region, and time
+defined by the data.
 
 \subsection{Writing to GDX directly}
 
 By default, \textit{wgdx.reshape} returns a reshaped dataframe in a
 list.  The makes it possible to combine the data returned with other
-data and send it all to GDX.  However, there is some overhead in doing
-this.  R is known for being wasteful of memory and in this case there
-are one or more copies of the data being made that would not be
-necessary if the data were written to GDX directly by the
-\textit{wgdx.reshape} wrapper instead of being returned.  To force
-this behavior, simply specify the GDX name on the argument list, and
-the reshaped data will to directly to GDX instead of being returned in
-a list.
+data and send it all to the same GDX.  However, there is some overhead
+in doing this.  R is known for being wasteful of memory and in this
+case there are one or more copies of the data being made that would
+not be necessary if the data were written to GDX directly by the
+\textit{wgdx.reshape} wrapper instead of being returned.  To write to
+GDX directly (and more efficiently and perhaps more conveniently),
+simply specify the GDX name on the argument list, and the reshaped
+data will go directly to GDX instead of being returned in a list.
 
 <<>>=
 rc <- wgdx.reshape (sample1a,symDim,gdxName='test2.gdx')
+@
+
+\subsection{Optional arguments}
+
+The \textit{wgdx.reshape} wrapper makes several assumptions about how
+it should reshape the data and what should be returned or written to
+GDX.  These assumptions correspond to the default settings of several
+optional arguments discussed below.
+
+It is possible to pass the symbol name as an argument.  This
+argument takes precedence over the attribute specification of the
+symbol name.
+
+<<>>=
+lst <- wgdx.reshape (sample1a,symDim,symName='prd')
+wgdx.lst ('test1b.gdx', lst)
+str(lst)
+@
+
+It is possible to specify the name of the aggregated index set created
+by the wrapper from the index elements taken from the data rows if the
+default \texttt{time} is not suitable.
+
+<<>>=
+lst <- wgdx.reshape (sample1a,symDim,tName='year',gdxName='test2.gdx')
+@
+
+Check what output looks better here: with gdxName or without.
+
+In some cases the index sets used to declare and work with the data in
+\texttt{sample1} may already exist or may be different from those
+implied by \texttt{sample1}.  If so, the extraction of these sets can
+be suppressed by setting \textit{setsToo=FALSE}.
+
+<<>>=
+lst <- wgdx.reshape (sample1a,symDim,setsToo=FALSE)
+wgdx.lst ('testNoSets.gdx', lst)
+str(lst)
+@
+
+\subsection{Reordering the data}
+
+By default, the first \texttt{symDim-1} columns of the data frame
+input are used as the first index columns of the result, while the
+final index column of the result is the aggregation of the column
+headers from the data columns.  This can be changed by using the
+\textit{order} argument.
+
+If specified, \textit{order} must be a vector of length
+\textit{symDim}.  The value in \textit{order[k]} specifies what column
+of the input data frame to use as the \textit{k'th} index column of
+the output.  To indicate which index position takes the aggregated
+data column headers, use a non-positive value or `*` for
+\textit{order[k]}.
+
+<<>>=
+# this duplicates the default ordering: crop, region, time
+lst <- wgdx.reshape (sample1a,symDim,order=c(1,2,-1))
+wgdx.lst ('testDefaultOrder.gdx', lst)
+str(lst)
+@
+
+<<>>=
+# this orders the output as prd(year,crop,region)
+lst <- wgdx.reshape (sample1a,symDim,,tName='year',symName='prd',order=c(-1,1,2))
+wgdx.lst ('testYearCropRegion.gdx', lst)
+str(lst)
 @
 
 \end{document}
