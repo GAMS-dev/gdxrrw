@@ -107,7 +107,7 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
     names(outDF)[symDim] <- 'time'
   }
   names(outDF)[symDim+1] <- "value"
-  str(outDF)
+  # str(outDF)
   if (setsToo) {
     ## write index sets first, then symName
     outLst <- list()
