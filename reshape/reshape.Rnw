@@ -149,6 +149,19 @@ lst <- wgdx.reshape (sample1a,symDim,tName='year',gdxName='test2.gdx')
 
 Check what output looks better here: with gdxName or without.
 
+If you would like to include explanatory text for the symbols written
+to GDX you can do so using a combination of attributes and an optional
+argument, as in the following example.
+
+<<>>=
+sample1b <- sample1
+attr(sample1b,"symName") <- "prd_b"
+attr(sample1b,"symText") <- "grain production in million metric tons"
+lst <- wgdx.reshape (sample1b,symDim)
+wgdx.lst ('testJJJ.gdx', lst)
+str(lst)
+@
+
 In some cases the index sets used to declare and work with the data in
 \texttt{sample1} may already exist or may be different from those
 implied by \texttt{sample1}.  If so, the extraction of these sets can
