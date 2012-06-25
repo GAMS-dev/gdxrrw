@@ -315,7 +315,7 @@ wgdx.lst <- function(gdxName, ilst, squeeze='y')
       olst[[i]] <- list (name=symName, type=symType, dim=symDim, form="sparse")
       symText <- attr(ilst[[i]], "ts", exact=TRUE)
       if (is.character(symText)) {
-        ilst[[i]]$ts <- symText
+        olst[[i]]$ts <- symText
       }
       v <- matrix(0, nrow=nr, ncol=nc)
       uels <- c()
