@@ -24,6 +24,7 @@
 wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
                           gdxName=NULL, setsToo=TRUE, order=NULL) {
   nCols <- ncol(inDF)
+  timeIdx <- symDim                     # default index position for time aggregate
   if (is.null(order)) {
     idCols <- 1:(symDim-1)
     dtCols <- symDim:nCols
@@ -35,6 +36,7 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
     stop ("specified order must be a vector of length symDim")
   }
   else {
+    timeIdx <- -1
     if (is.character(order)) {
       stop ("order must be numeric for now")
     }
@@ -55,18 +57,21 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
         idCols[idCount] <- j
       }
       else {
-        tCol <- k
+        timeIdx <- k
       }
     }                                   # for k in 1:symDim
     if ((symDim-1) != idCount) {
       stop ('order vector must specify symDim-1 index columns')
+    }
+    if ((symDim-1) != idCount) {
+      stop ('order vector must have a non-positive entry to specify the "time" index')
     }
     oo <- c(idCols,(1:nCols)[-idCols])
     df2 <- inDF[oo]
     idCols <- 1:(symDim-1)
     dtCols <- symDim:nCols
     inNames <- names(df2)
-    if (symDim == tCol) {               # no need to re-order after reshaping
+    if (symDim == timeIdx) {     # no need to re-order after reshaping
       outDF <- reshape (df2, idvar=inNames[idCols], varying=list(dtCols),
                         direction="long", times=inNames[dtCols])
     }
@@ -74,11 +79,11 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
       df3 <- reshape (df2, idvar=inNames[idCols], varying=list(dtCols),
                       direction="long", times=inNames[dtCols])
       oo <- vector(mode="integer",length=symDim+1)
-      for (k in 1:tCol-1) {
+      for (k in 1:timeIdx-1) {
         oo[k] = k
       }
-      oo[tCol] = symDim
-      for (k in tCol+1:symDim) {
+      oo[timeIdx] = symDim
+      for (k in timeIdx+1:symDim) {
         oo[k] = k-1
       }
       oo[symDim+1] = symDim+1
@@ -101,10 +106,10 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
     attr(outDF,"ts") <- symText
   }
   if (is.character(tName)) {
-    names(outDF)[symDim] <- tName
+    names(outDF)[timeIdx] <- tName
   }
   else {
-    names(outDF)[symDim] <- 'time'
+    names(outDF)[timeIdx] <- 'time'
   }
   names(outDF)[symDim+1] <- "value"
   # str(outDF)

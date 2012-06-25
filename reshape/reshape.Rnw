@@ -184,7 +184,7 @@ str(lst)
 
 <<>>=
 # this orders the output as prd(year,crop,region)
-lst <- wgdx.reshape (sample1a,symDim,,tName='year',symName='prd',order=c(-1,1,2))
+lst <- wgdx.reshape (sample1a,symDim,tName='year',symName='prd',order=c(-1,1,2))
 wgdx.lst ('testYearCropRegion.gdx', lst)
 str(lst)
 @
