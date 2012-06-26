@@ -1,12 +1,18 @@
 
 rgdx <- function(gdxName, requestList = NULL, squeeze=TRUE)
 {
-  .External("rgdx", gdxName=gdxName, requestList=requestList, squeeze=squeeze, PACKAGE="gdxrrw")
+  if (is.null(requestList) && (gdxName == '?') {
+    invisible(.External("rgdx", gdxName=gdxName, requestList=NULL,
+                        squeeze=squeeze, PACKAGE="gdxrrw"))
+  }
+  else {
+    .External("rgdx", gdxName=gdxName, requestList=requestList, squeeze=squeeze, PACKAGE="gdxrrw")
+  }
 }
 
 wgdx <- function(gdxName, ..., squeeze='y')
 {
-  .External("wgdx", gdxName=gdxName, ..., squeeze=squeeze, PACKAGE="gdxrrw")
+  invisible(.External("wgdx", gdxName=gdxName, ..., squeeze=squeeze, PACKAGE="gdxrrw"))
 }
 
 gams <- function(gms, ...)
@@ -34,7 +40,7 @@ gdxInfo <- function(gdxName = NULL, dump=TRUE, returnList=FALSE, returnDF=FALSE)
 
 igdx <- function(gamsSysDir = NULL)
 {
-  .External("igdx", gamsSysDir, PACKAGE="gdxrrw")
+  invisible(.External("igdx", gamsSysDir, PACKAGE="gdxrrw"))
 }
 
 rgdx.param <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, squeeze=TRUE)
