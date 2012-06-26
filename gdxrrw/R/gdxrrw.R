@@ -1,7 +1,7 @@
 
 rgdx <- function(gdxName, requestList = NULL, squeeze=TRUE)
 {
-  if (is.null(requestList) && (gdxName == '?') {
+  if (is.null(requestList) && (gdxName == '?')) {
     invisible(.External("rgdx", gdxName=gdxName, requestList=NULL,
                         squeeze=squeeze, PACKAGE="gdxrrw"))
   }
@@ -35,7 +35,14 @@ gdxInfo <- function(gdxName = NULL, dump=TRUE, returnList=FALSE, returnDF=FALSE)
     stop ("gdxInfo: argument returnDF=", print(returnDF), " not a good logical value")
   }
 #  print (paste('gdxInfo: dump=',d,'returnList=',rl,'returnDF=',rdf))
-  .External("gdxInfo", gdxName=gdxName, dump=d, returnList=rl, returnDF=rdf, PACKAGE="gdxrrw")
+  if (! (rl || rdf)) {
+    invisible(.External("gdxInfo", gdxName=gdxName, dump=d, returnList=rl,
+                        returnDF=rdf, PACKAGE="gdxrrw"))
+  }
+  else {
+    .External("gdxInfo", gdxName=gdxName, dump=d, returnList=rl,
+              returnDF=rdf, PACKAGE="gdxrrw")
+  }
 } # gdxInfo
 
 igdx <- function(gamsSysDir = NULL)
@@ -210,7 +217,7 @@ rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE)
 wgdx.df <- function(gdxName, df, squeeze='y')
 {
   if (! is.character(gdxName)) {
-    stop ("gdxName must GDX file name")
+    stop ("gdxName must be a GDX file name")
   }
   if (! is.data.frame(df)) {
     stop ("df must be a data frame")
