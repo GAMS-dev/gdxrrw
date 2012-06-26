@@ -22,7 +22,8 @@
 #   check if setsToo default could be FALSE: ping Renger etc.
 
 wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
-                          gdxName=NULL, setsToo=TRUE, order=NULL) {
+                          gdxName=NULL, setsToo=TRUE, order=NULL,
+                          setNames=NULL) {
   nCols <- ncol(inDF)
   timeIdx <- symDim                     # default index position for time aggregate
   if (is.null(order)) {
@@ -116,10 +117,31 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
   if (setsToo) {
     ## write index sets first, then symName
     outLst <- list()
+
     length(outLst) <- symDim + 1
+    setNamesLen <- 0
+    if (! is.null(setNames)) {
+      if (! is.character(setNames)) {
+        stop ("setNames must be a string or string vector")
+      }
+      else if (! is.vector(setNames)) {
+        stop ("setNames must be a string or string vector")
+      }
+      else {
+        ## guard against zero-length vector
+        setNamesLen <- length(setNames)
+      }
+    }
+    kk <- 0
     for (i in 1:symDim) {
       lvls <- levels(outDF[[i]])
       outLst[[i]] <- list(name=names(outDF)[[i]], type='set', uels=c(list(lvls)))
+      if (setNamesLen > 0) {            # tack on the next set text
+        kk <- kk + 1
+        outLst[[i]]$ts <- setNames[[kk]]
+        if (kk >= setNamesLen)
+          kk <- 0
+      }
     }
     outLst[[symDim+1]] <- outDF
     if (is.character(gdxName)) {
