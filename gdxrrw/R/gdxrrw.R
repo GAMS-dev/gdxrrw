@@ -397,6 +397,9 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
   timeIdx <- symDim                     # default index position for time aggregate
   if (is.null(order)) {
     idCols <- 1:(symDim-1)
+    for (i in idCols) {
+      inDF[[i]] <- as.factor(inDF[[i]])
+    }
     outDF <- melt (inDF, id=idCols)
   }
   else if ((! is.vector(order)) || (symDim != length(order))) {
@@ -436,6 +439,9 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
     oo <- c(idCols,(1:nCols)[-idCols])
     df2 <- inDF[oo]
     idCols <- 1:(symDim-1)
+    for (i in idCols) {
+      df2[[i]] <- as.factor(df2[[i]])
+    }
     if (symDim == timeIdx) {     # no need to re-order after reshaping
       outDF <- melt (df2, id=idCols)
     }
@@ -454,9 +460,6 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
     }
   }
 
-  for (i in 1:symDim) {
-    outDF[[i]] <- as.factor(outDF[[i]])
-  }
   if (is.null(symName)) {
     symName <- attr(inDF, "symName", exact=TRUE)
   }
