@@ -397,10 +397,7 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
   timeIdx <- symDim                     # default index position for time aggregate
   if (is.null(order)) {
     idCols <- 1:(symDim-1)
-    dtCols <- symDim:nCols
-    inNames <- names(inDF)
-    outDF <- reshape (inDF, idvar=inNames[idCols], varying=list(dtCols),
-                      direction="long", times=inNames[dtCols])
+    outDF <- melt (inDF, id=idCols)
   }
   else if ((! is.vector(order)) || (symDim != length(order))) {
     stop ("specified order must be a vector of length symDim")
@@ -439,15 +436,11 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
     oo <- c(idCols,(1:nCols)[-idCols])
     df2 <- inDF[oo]
     idCols <- 1:(symDim-1)
-    dtCols <- symDim:nCols
-    inNames <- names(df2)
     if (symDim == timeIdx) {     # no need to re-order after reshaping
-      outDF <- reshape (df2, idvar=inNames[idCols], varying=list(dtCols),
-                        direction="long", times=inNames[dtCols])
+      outDF <- melt (df2, id=idCols)
     }
     else {
-      df3 <- reshape (df2, idvar=inNames[idCols], varying=list(dtCols),
-                      direction="long", times=inNames[dtCols])
+      df3 <- melt (df2, id=idCols)
       oo <- vector(mode="integer",length=symDim+1)
       for (k in 1:timeIdx-1) {
         oo[k] = k

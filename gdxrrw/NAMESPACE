@@ -2,4 +2,4 @@ useDynLib(gdxrrw)
 
 export (rgdx, wgdx, gams, gdxInfo, igdx)
 export (rgdx.param, rgdx.scalar, rgdx.set)
-export (wgdx.df, wgdx.scalar, wgdx.lst)
+export (wgdx.df, wgdx.scalar, wgdx.lst, wgdx.reshape)
