@@ -168,7 +168,69 @@ structure(list(hdrA = structure(c(2L, 2L, 2L, 1L, 1L, 1L, 2L,
 
   ## -----------------------------------------------------------------------------
   ## test7: use optional arg order, but set to reproduce the default order
-  lst7 <- wgdx.reshape (df, 4)
+  lst7 <- wgdx.reshape (df, 4, order = c(1,2,3,0))
+  if (! chkLists ("test7 index 1", lst7[[1]], lstA))
+    stop ("test7: index set 1 'hdrA' failed check");
+  if (! chkLists ("test7 index 2", lst7[[2]], lstB))
+    stop ("test7: index set 2 'hdrB' failed check");
+  if (! chkLists ("test7 index 3", lst7[[3]], lstC))
+    stop ("test7: index set 3 'hdrC' failed check");
+  if (! chkLists ("test7 index 4(time agg)", lst7[[4]], lstT3))
+    stop ("test7: index set 4 'time' failed check");
+  if (! chkFrames ("test7 df", lst7[[5]], df3_))
+    stop ("test7: data frame failed check");
+
+
+  ## -----------------------------------------------------------------------------
+  ## test8: use optional arg order to get defName(hdrA, hdrC, time)
+  lst8 <- wgdx.reshape (df, 3, order = c(1,3,0))
+  if (! chkLists ("test8 index 1", lst8[[1]], lstA))
+    stop ("test8: index set 1 'hdrA' failed check");
+  if (! chkLists ("test8 index 2", lst8[[2]], lstC))
+    stop ("test8: index set 2 'hdrC' failed check");
+  lstT8 <- structure(list(
+                         name = "time", type = "set",
+                         uels = list(c("hdrB", "hdrD", "hdrE"))),
+                    .Names = c("name", "type", "uels"))
+  if (! chkLists ("test8 index 3(time agg)", lst8[[3]], lstT8))
+    stop ("test8: index set 3 'time' failed check");
+df8_ <-
+structure(list(hdrA = structure(c(2L, 2L, 2L, 1L, 1L, 1L, 
+2L, 2L, 2L, 1L, 1L, 1L, 2L, 2L, 2L, 1L, 1L, 1L), class = "factor", .Label = c("crn", 
+"wht")), hdrC = structure(c(1L, 2L, 3L, 4L, 5L, 6L, 1L, 2L, 3L, 
+4L, 5L, 6L, 1L, 2L, 3L, 4L, 5L, 6L), class = "factor", .Label = c("1", 
+"2", "3", "4", "5", "6")), time = structure(c(1L, 1L, 1L, 1L, 
+1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L, 3L, 3L, 3L), .Label = c("hdrB", 
+"hdrD", "hdrE"), class = "factor"), value = c(100, 200, 300, 
+400, 500, 600, 1.4, 2.4, 3.4, 4.4, 5.4, 6.4, 1.5, 2.5, 3.5, 4.5, 
+5.5, 6.5)), .Names = c("hdrA", "hdrC", "time", "value"), row.names = c(NA, 
+-18L), class = "data.frame", symName = "defName")
+  if (! chkFrames ("test8 df", lst8[[4]], df8_))
+    stop ("test8: data frame failed check");
+
+
+  ## -----------------------------------------------------------------------------
+  ## test9: use optional arg order to get defName(hdrC, hdrA, time)
+  lst9 <- wgdx.reshape (df, 3, order = c(3,1,0))
+  if (! chkLists ("test9 index 1", lst9[[1]], lstC))
+    stop ("test9: index set 1 'hdrC' failed check");
+  if (! chkLists ("test8 index 2", lst9[[2]], lstA))
+    stop ("test9: index set 2 'hdrA' failed check");
+  if (! chkLists ("test9 index 3(time agg)", lst9[[3]], lstT8))
+    stop ("test9: index set 3 'time' failed check");
+df9_ <-
+structure(list(hdrC = structure(c(1L, 2L, 3L, 4L, 5L, 6L, 1L, 
+2L, 3L, 4L, 5L, 6L, 1L, 2L, 3L, 4L, 5L, 6L), class = "factor", .Label = c("1", 
+"2", "3", "4", "5", "6")), hdrA = structure(c(2L, 2L, 2L, 1L, 
+1L, 1L, 2L, 2L, 2L, 1L, 1L, 1L, 2L, 2L, 2L, 1L, 1L, 1L), class = "factor", .Label = c("crn", 
+"wht")), time = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 
+2L, 2L, 2L, 3L, 3L, 3L, 3L, 3L, 3L), .Label = c("hdrB", "hdrD", 
+"hdrE"), class = "factor"), value = c(100, 200, 300, 400, 500, 
+600, 1.4, 2.4, 3.4, 4.4, 5.4, 6.4, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5
+)), .Names = c("hdrC", "hdrA", "time", "value"), row.names = c(NA, 
+-18L), class = "data.frame", symName = "defName")
+  if (! chkFrames ("test9 df", lst9[[4]], df9_))
+    stop ("test9: data frame failed check");
 
 
   ## -----------------------------------------------------------------------------
