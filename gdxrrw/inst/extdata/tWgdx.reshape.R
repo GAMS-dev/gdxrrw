@@ -110,7 +110,7 @@ structure(list(hdrA = structure(c(2L, 2L, 2L, 1L, 1L, 1L, 2L,
 
 
   ## -----------------------------------------------------------------------------
-  ## test4: use some optional args
+  ## test4: use optional args symName and tName
   lst4 <- wgdx.reshape (df, 4, tName = 'leftovers', symName = 'mySymName')
   if (! chkLists ("test4 index 1", lst4[[1]], lstA))
     stop ("test4: index set 1 'hdrA' failed check");
@@ -128,6 +128,47 @@ structure(list(hdrA = structure(c(2L, 2L, 2L, 1L, 1L, 1L, 2L,
   if (! chkFrames ("test4 df", lst4[[5]], df4_))
     stop ("test4: data frame failed check");
   
+
+  ## -----------------------------------------------------------------------------
+  ## test5: use optional arg setsToo=FALSE
+  lst5 <- wgdx.reshape (df, 4, setsToo = FALSE)
+  if (1 != length(lst5))
+    stop ("test5: expected a return list of length 1 with setsToo = FALSE");
+  ## should be the same data as test 3
+  if (! chkFrames ("test5 df", lst5[[1]], df3_))
+    stop ("test5: data frame failed check");
+
+
+  ## -----------------------------------------------------------------------------
+  ## test6: use optional arg setNames and attribute "ts", 
+  dfts <- df
+  attr(dfts,"ts") <- 'explanatory text for parameter'
+  lst6 <- wgdx.reshape (dfts, 4, setNames = c("column A","column B","column C", "aggregated index"))
+  lstAtxt <- lstA
+  lstAtxt$ts <- "column A"
+  if (! chkLists ("test6 index 1", lst6[[1]], lstAtxt))
+    stop ("test6: index set 1 'hdrA' failed check");
+  lstBtxt <- lstB
+  lstBtxt$ts <- "column B"
+  if (! chkLists ("test6 index 2", lst6[[2]], lstBtxt))
+    stop ("test6: index set 2 'hdrB' failed check");
+  lstCtxt <- lstC
+  lstCtxt$ts <- "column C"
+  if (! chkLists ("test6 index 3", lst6[[3]], lstCtxt))
+    stop ("test6: index set 3 'hdrC' failed check");
+  lstT6 <- lstT3
+  lstT6$ts <- 'aggregated index'
+  if (! chkLists ("test6 index 4(time agg)", lst6[[4]], lstT6))
+    stop ("test6: index set 4 'time' failed check");
+  df6_ <- df3_
+  attr(df6_,"ts") <- 'explanatory text for parameter'
+  if (! chkFrames ("test6 df", lst6[[5]], df6_))
+    stop ("test6: data frame failed check");
+
+
+  ## -----------------------------------------------------------------------------
+  ## test7: use optional arg order, but set to reproduce the default order
+  lst7 <- wgdx.reshape (df, 4)
 
 
   ## -----------------------------------------------------------------------------

@@ -47,7 +47,17 @@ chkLists <- function(s, f1, f2) {
         }
       }
     }
-    if (n > 3) return (FALSE)
+    if (n > 3) {
+      ## element 4: symbol text
+      if (! is.character(f1[[4]]))   return (FALSE)
+      if (! is.character(f2[[4]]))   return (FALSE)
+      if ("ts"         != f2Names[[4]])   return (FALSE)
+      if (f1Names[[4]] != f2Names[[4]])   return (FALSE)
+      if (f1[[4]] != f2[[4]])        return (FALSE)
+    }
+    if (n > 4) {
+      return (FALSE)
+    }
     return (TRUE)
   }
 
