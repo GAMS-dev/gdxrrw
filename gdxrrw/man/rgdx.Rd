@@ -90,7 +90,7 @@ Steve Dirkse.  Maintainer: \email{R@gams.com}}
     # complete tests and examples can be run in the
     # extdata directory of the gdxrrw package
     # check .libPaths for a hint on where packages are installed
-    setwd("C:/R/2.12/gdxrrw/extdata")
+    setwd(paste(.libPaths()[1],"/gdxrrw/extdata",sep=""))
     source("tAll.R")
   }
 }
