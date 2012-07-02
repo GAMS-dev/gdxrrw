@@ -134,7 +134,7 @@ symbol name.
 
 <<>>=
 lst <- wgdx.reshape (sample1a,symDim,symName='prd')
-wgdx.lst ('test1b.gdx', lst)
+wgdx.lst ('test3.gdx', lst)
 attributes(lst[[4]])$symName
 @
 
