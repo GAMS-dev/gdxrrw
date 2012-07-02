@@ -4857,15 +4857,20 @@ SEXP igdx (SEXP args)
   int arglen;
   int rc, gdxLoaded;
   char loadPath[GMS_SSSIZE];
-  SEXP pSysDir;
+  SEXP pSysDir, silent;
   shortStringBuf_t sysDir, msgBuf;
+  Rboolean isSilent = NA_LOGICAL;
 
   arglen = length(args);
-  if (2 != arglen) {
-    error ("usage: %s(gamsSysDir=NULL) - incorrect arg count", funcName);
+  if (3 != arglen) {
+    error ("usage: %s(gamsSysDir=NULL, silent=FALSE) - incorrect arg count", funcName);
   }
   pSysDir = CADR(args);
-
+  silent = CADDR(args);
+  isSilent = getSqueezeArgRead (silent);
+  if (NA_LOGICAL == isSilent) {
+    isSilent = FALSE;
+  }
   gdxLoaded = gdxLibraryLoaded();
 
   if (TYPEOF(pSysDir) != NILSXP) { /* we should have gamsSysDir */
@@ -4879,7 +4884,7 @@ SEXP igdx (SEXP args)
       (void) gdxLibraryUnload ();
     }
     rc = gdxGetReadyD (sysDir, msgBuf, sizeof(msgBuf));
-    if (0 == rc) {
+    if ((0 == rc) && ! isSilent) {
       Rprintf ("Error loading the GDX API from directory %s\n", sysDir);
       Rprintf ("%s\n", msgBuf);
     }
@@ -4890,13 +4895,16 @@ SEXP igdx (SEXP args)
   INTEGER(result)[0] = gdxLoaded;
   UNPROTECT(1);
   if (gdxLoaded) {
-    Rprintf ("The GDX library has been loaded\n");
+    if (! isSilent)
+      Rprintf ("The GDX library has been loaded\n");
     gdxGetLoadPath (loadPath);
-    Rprintf ("GDX library load path: %s\n",
-             loadPath[0] ? loadPath : "unknown");
+    if (! isSilent)
+      Rprintf ("GDX library load path: %s\n",
+               loadPath[0] ? loadPath : "unknown");
   }
   else {
-    Rprintf ("The GDX library has been not been loaded\n");
+    if (! isSilent)
+      Rprintf ("The GDX library has been not been loaded\n");
   }
   
   return result;

@@ -45,9 +45,9 @@ gdxInfo <- function(gdxName = NULL, dump=TRUE, returnList=FALSE, returnDF=FALSE)
   }
 } # gdxInfo
 
-igdx <- function(gamsSysDir = NULL)
+igdx <- function(gamsSysDir = NULL, silent = FALSE)
 {
-  invisible(.External("igdx", gamsSysDir, PACKAGE="gdxrrw"))
+  invisible(.External("igdx", gamsSysDir, silent=silent, PACKAGE="gdxrrw"))
 }
 
 rgdx.param <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, squeeze=TRUE)

@@ -6,12 +6,13 @@
   to interface with GDX data, and report on the status of the
   initialization.
 }
-\usage{igdx(gamsSysDir)}
+\usage{igdx(gamsSysDir=NULL, silent=FALSE)}
 \arguments{
   \item{gamsSysDir}{a directory containing the external GDX libraries,
   typically the GAMS system directory.  If this argument is omitted,
   no loading is done but we still report on the initialization
   status.}
+  \item{silent}{controls logging of results}
 }
 \author{Steve Dirkse.  Maintainer: \email{R@gams.com}}
 \note{
