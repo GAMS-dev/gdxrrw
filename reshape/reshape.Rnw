@@ -72,8 +72,6 @@ data to have.  While this may not be strictly necessary in all cases
 it adds clarity and avoids surprising results.
 
 <<>>=
-# the source line is temporary: get this into gdxrrw
-source ("wgdx.reshape.R")
 # the data file and read.csv should not change, that is basic R stuff
 # and we don't want to force any change there
 sample1 <- read.csv ("sample1.dat", sep="\t", header=T)
