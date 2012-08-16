@@ -1,7 +1,7 @@
 sets
   i / i1 * i3 /
-  j / j1 * j2 /
-  k / k1 * k6 /
+  j / j1 * j3 /
+  k / k1 * k9 /
   ijk(i,j,k)  'map i-j space to singly-indexed'
   c           'commodities consumed'           / wht, crn, ric /
   ;
@@ -19,8 +19,8 @@ parameters
   ;
 scalar m;
 
-rPrd(c,i,j) = uniform(1,2);
-tij(i,j) = uniform(1,2);
+rPrd(c,i,j) = uniform(0.2,2);
+tij(i,j) = uniform(1,5);
 rPrd(c,i,j) = rPrd(c,i,j) * tij(i,j);
 x0(i,j) = ord(i);
 y0(i,j) = ord(j);
