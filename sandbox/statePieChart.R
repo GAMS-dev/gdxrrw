@@ -40,7 +40,7 @@ yy <- xx
 rad0 <- max(0.4, 0.4 * minradius)  # maximum radius of pie chart
 
 map('state',region=slist)
-map.axes()
+# map.axes()
 
 for (k in 1:ns) {
     xx[npp] <- x[k]

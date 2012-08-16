@@ -7,6 +7,10 @@ sets
     Utah
     Montana
     Idaho
+    Wyoming
+    Arizona
+    Colorado
+   "New Mexico" 
   /
   c 'commodities consumed' / wht, crn, ric /
   ;
@@ -20,7 +24,10 @@ parameters
 scalar m;
 
 rPrd(c,s) = uniform(0.2,2);
+rPrd('wht','Wyoming') = 0;
 t(s) = uniform(1,5);
+t('California') = 5;
+rPrd('ric','California') = smax{s, rPrd('ric',s)};
 rPrd(c,s) = rPrd(c,s) * t(s);
 
 t(s) = sum {c, rPrd(c,s)};
