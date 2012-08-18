@@ -4,7 +4,7 @@
 #   the scaled production for each commodity and state
 #   the scale factor w for each state
 
-# library(maps)
+library(maps)
 
 fnData <- "stateRes.gdx"
 sdf <- rgdx.set(fnData,'s',compress=TRUE)
@@ -13,7 +13,7 @@ s <- (rgdx(fnData,list(name='sPrd',form='full',compress=TRUE)))$val
 w <- (rgdx(fnData,list(name='w',form='full',compress=TRUE)))$val
 
 slist <- as.vector(sdf$i)
-ns <- length(slist)  # number of nodes
+ns <- length(slist)  # number of states
 idx <- match(slist, state.name)
 x <- state.center$x[idx]
 y <- state.center$y[idx]
