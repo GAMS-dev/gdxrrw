@@ -42,62 +42,6 @@
 
 gdxHandle_t gdxHandle = (gdxHandle_t) 0;
 
-/* Structure and Enum definition */
-typedef enum dType
-{
-  set = GMS_DT_SET,
-  parameter = GMS_DT_PAR
-} dType_t;
-
-typedef enum dForm
-{
-  unKnown=0,
-  full,
-  sparse
-} dForm_t;
-
-typedef enum dField
-{
-  level = GMS_VAL_LEVEL,
-  marginal = GMS_VAL_MARGINAL,
-  lower = GMS_VAL_LOWER,
-  upper = GMS_VAL_UPPER,
-  scale = GMS_VAL_SCALE,
-  max = GMS_VAL_MAX
-} dField_t;
-
-struct rgdxStruct
-{
-  char name[1024];
-  dForm_t dForm;
-  dField_t dField;
-  int withField;
-  int compress;
-  int ts;
-  int te;
-  int withUel;
-  SEXP filterUel;
-};
-
-struct wgdxStruct
-{
-  char name[1024];
-  dForm_t dForm;
-  dType_t dType;
-  int withVal;
-  int withTs;
-  int withUel;
-  int dim;
-};
-typedef struct wgdxStruct wgdxStruct_t;
-
-typedef unsigned long long int uint64_t;
-
-union d64_t {
-  double x;
-  uint64_t u64;
-};
-
 static int alloc;
 
 static int wAlloc;
@@ -111,8 +55,6 @@ static int globalGams;
 static int wUEL;
 
 static shortStringBuf_t lastErrMsg;
-
-static char mexPath[512];
 
 static const char *validSymListNames[] = {
   "name"
@@ -132,7 +74,7 @@ static char strippedID[256];
 
 /* -------------------- Method declaration -----------------------*/
 static void
-checkRgdxList (const SEXP lst, struct rgdxStruct *data);
+checkRgdxList (const SEXP lst, rgdxStruct_t *data);
 
 static void
 unpackWgdxArgs (SEXP *args, int argLen, SEXP **symList,
@@ -614,7 +556,7 @@ getGamsSoln(char *gmsFileName)
     compField = R_NilValue,
     compTs = R_NilValue,
     compTe = R_NilValue;
-  struct rgdxStruct *inputData;
+  rgdxStruct_t *inputData;
   FILE *fp, *fin;
   char line[LINELEN], astring[LINELEN], *s, *array[50], *gdxFile;
   int loop, maxPossibleElements, z;
@@ -628,7 +570,7 @@ getGamsSoln(char *gmsFileName)
   gdxUelIndex_t uels;
   gdxValues_t values;
   gdxSVals_t sVals;
-  union d64_t d64;
+  d64_t d64;
   shortStringBuf_t gsBuf;
   char *gForm, *field;
   int nField;
@@ -2453,7 +2395,7 @@ readWgdxList(SEXP structure,
 
 /* This function check the input list for valid data */
 void
-checkRgdxList (const SEXP lst, struct rgdxStruct *data)
+checkRgdxList (const SEXP lst, rgdxStruct_t *data)
 {
   SEXP lstName, tmp, tmpUel;
   SEXP bufferUel;
@@ -2789,7 +2731,7 @@ writeGdx(char *gdxFileName,
   gdxUelIndex_t uelIndices;
   gdxValues_t   vals;
   gdxSVals_t sVals;
-  union d64_t d64;
+  d64_t d64;
   shortStringBuf_t msgBuf;
   shortStringBuf_t expText;
   shortStringBuf_t gsBuf;
@@ -3239,11 +3181,11 @@ SEXP rgdx (SEXP args)
     compTe = R_NilValue;
   SEXP OPListComp, OPList, dimVect, textElement, elVect;
   FILE    *fin;
-  struct rgdxStruct *inputData;
+  rgdxStruct_t *inputData;
   gdxUelIndex_t uels;
   gdxValues_t values;
   gdxSVals_t sVals;
-  union d64_t d64;
+  d64_t d64;
   double dt, posInf, negInf;
   shortStringBuf_t msgBuf;
   shortStringBuf_t uelName;
@@ -4137,6 +4079,7 @@ SEXP gdxInfo (SEXP args)
   double dv[GMS_VAL_MAX];
   int Keys[GMS_MAX_INDEX_DIM];
   char *dn, c;
+  char mexPath[512];
 
 #if 0
   SEXP ap, el;
@@ -4884,6 +4827,6 @@ SEXP igdx (SEXP args)
     if (! isSilent)
       Rprintf ("The GDX library has been not been loaded\n");
   }
-  
+
   return result;
 } /* igdx */

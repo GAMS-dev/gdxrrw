@@ -25,6 +25,49 @@
 
 typedef char shortStringBuf_t[GMS_SSSIZE];
 typedef void (GDX_CALLCONV *gdxGetLoadPath_t) (char *s);
+typedef enum dType {
+  set = GMS_DT_SET,
+  parameter = GMS_DT_PAR
+} dType_t;
+typedef enum dForm {
+  unKnown=0,
+  full,
+  sparse
+} dForm_t;
+typedef enum dField {
+  level = GMS_VAL_LEVEL,
+  marginal = GMS_VAL_MARGINAL,
+  lower = GMS_VAL_LOWER,
+  upper = GMS_VAL_UPPER,
+  scale = GMS_VAL_SCALE,
+  max = GMS_VAL_MAX
+} dField_t;
+typedef struct rgdxStruct {
+  char name[1024];
+  dForm_t dForm;
+  dField_t dField;
+  int withField;
+  int compress;
+  int ts;
+  int te;
+  int withUel;
+  SEXP filterUel;
+} rgdxStruct_t;
+typedef struct wgdxStruct {
+  char name[1024];
+  dForm_t dForm;
+  dType_t dType;
+  int withVal;
+  int withTs;
+  int withUel;
+  int dim;
+} wgdxStruct_t;
+typedef unsigned long long int uint64_t;
+typedef union d64 {
+  double x;
+  uint64_t u64;
+} d64_t;
+
 
 GDX_FUNCPTR(gdxGetLoadPath);
 
