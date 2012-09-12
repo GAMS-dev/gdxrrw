@@ -75,6 +75,30 @@ CHAR2ShortStr (const char *from, shortStringBuf_t to)
   return to;
 } /* CHAR2ShortStr */
 
+/* checkFileExtension: checks the file extension of the gdx file.
+ * If fileName does not have '.gdx' then we add it here
+*/
+void
+checkFileExtension (shortStringBuf_t fileName)
+{
+  char *fileExt;
+
+  fileExt = strrchr (fileName, '.');
+  if (NULL == fileExt) {
+    if (strlen(fileName) < sizeof(shortStringBuf_t)-4) {
+      fileName = strcat(fileName, ".gdx");
+    }
+    else {
+      error ("Input file name '%s' is too long\n", fileName);
+    }
+  }
+  else if (0 != strcasecmp(".gdx", fileExt)) {
+    error ("Input file extension '%s' is not valid: input must be a GDX file\n",
+           fileExt);
+  }
+  return;
+} /* checkFileExtension */
+
 /* checkStringLength
  * raise an exception if the input str is too long to be a short-string
  */

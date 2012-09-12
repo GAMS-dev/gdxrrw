@@ -71,6 +71,22 @@ typedef union d64 {
 GDX_FUNCPTR(gdxGetLoadPath);
 
 
+/* ********** functions in gdxrrw.c **************** */
+SEXP
+gdxInfo (SEXP args);
+
+
+/* ********** functions in gdxrrw.c **************** */
+SEXP
+rgdx (SEXP args);
+SEXP
+wgdx (SEXP args);
+SEXP
+igdx (SEXP args);
+SEXP
+gams (SEXP args);
+
+
 /* ********** functions in getGamsSoln.c **************** */
 SEXP
 getGamsSoln (const char *gmsFileName);
@@ -79,6 +95,8 @@ getGamsSoln (const char *gmsFileName);
 /* ********** functions in utils.c ********************** */
 char *
 CHAR2ShortStr (const char *from, shortStringBuf_t to);
+void
+checkFileExtension (shortStringBuf_t fileName);
 void
 checkStringLength (const char *str);
 void
