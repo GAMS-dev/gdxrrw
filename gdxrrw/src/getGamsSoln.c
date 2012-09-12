@@ -89,8 +89,8 @@ getGlobalUEL (SEXP globalUEL, int withCompress)
           error("Compression is not allowed with Input UEL.");
         }
         if (TYPEOF(tmp) != VECSXP) {
-          Rprintf ("List component 'uels'  must be a list - found %d instead.\n",TYPEOF(tmp));
-          error("Input list component 'uels' must be a list.");
+          Rprintf ("List element 'uels'  must be a list - found %d instead.\n",TYPEOF(tmp));
+          error("Input list element 'uels' must be a list.");
         }
         else {
           PROTECT(globalUEL = allocVector(VECSXP, length(tmp)));

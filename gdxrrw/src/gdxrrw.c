@@ -843,13 +843,15 @@ registerInputUEL(SEXP uelOut,
 } /* registerInputUEL */
 
 
-/* This function validates the structure of the input lists,
- * sets certain global variables, and constructs the universe of UELs */
+/* readWgdxList: read lst (aka the input request list or write specifier),
+ * validate it, and store the result in *wSpecPtr.
+ * Also sets certain global variables, and constructs the universe of UELs
+ */
 void
-readWgdxList (SEXP structure, int iSym, SEXP uelIndex,
-             wSpec_t **wSpecPtr, int fromGAMS)
+readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
+              wSpec_t **wSpecPtr, int fromGAMS)
 {
-  SEXP lstName, tmpUel;
+  SEXP lstNames, tmpUel;
   SEXP dimension;
   SEXP nameExp = NULL;
   SEXP typeExp = NULL;
@@ -859,7 +861,7 @@ readWgdxList (SEXP structure, int iSym, SEXP uelIndex,
   SEXP dimExp = NULL;
   SEXP tsExp = NULL;
   int i, j;
-  int listLen;
+  int nElements;                /* number of elements in lst */
   int dimUels;
   int nCoords = 0, sz, withDim;
   const char *tmpName;
@@ -876,58 +878,58 @@ readWgdxList (SEXP structure, int iSym, SEXP uelIndex,
   wSpec->dForm = sparse;
   wSpec->dType = set;
 
-  /* check maximum number of fields */
-  if (7 < length(structure) || length(structure) < 1) {
-    error("Incorrect number of components in input list argument.\n");
+  nElements = length(lst);
+  /* check maximum number of elements */
+  if (nElements < 1 || nElements > 7) {
+    error("Incorrect number of elements in input list argument.");
   }
 
-  listLen = length(structure);
-  lstName = getAttrib(structure, R_NamesSymbol);
-  if (lstName == R_NilValue) {
-    error ("Input symbol list has no field names, %s", validFieldMsg);
+  lstNames = getAttrib(lst, R_NamesSymbol);
+  if (lstNames == R_NilValue) {
+    error ("Input symbol list has no element names, %s", validFieldMsg);
   }
 
   /* first, check that all names are recognized, reject o/w
    * in the process, store the symbol for direct access later
    */
-  for (i = 0; i < listLen; i++) {
-    compName = CHAR(STRING_ELT(lstName, i));
+  for (i = 0;  i < nElements;  i++) {
+    compName = CHAR(STRING_ELT(lstNames, i));
     if (0 == strcmp("name", compName)) {
-      nameExp = VECTOR_ELT(structure, i);
+      nameExp = VECTOR_ELT(lst, i);
     }
     else if (0 == strcmp("type", compName)) {
-      typeExp = VECTOR_ELT(structure, i);
+      typeExp = VECTOR_ELT(lst, i);
     }
     else if (0 == strcmp("val", compName)) {
-      valExp = VECTOR_ELT(structure, i);
+      valExp = VECTOR_ELT(lst, i);
     }
     else if (0 == strcmp("uels", compName)) {
-      uelsExp = VECTOR_ELT(structure, i);
+      uelsExp = VECTOR_ELT(lst, i);
     }
     else if (0 == strcmp("form", compName)) {
-      formExp = VECTOR_ELT(structure, i);
+      formExp = VECTOR_ELT(lst, i);
     }
     else if (0 == strcmp("dim", compName)) {
-      dimExp = VECTOR_ELT(structure, i);
+      dimExp = VECTOR_ELT(lst, i);
     }
     else if (0 == strcmp("ts", compName)) {
-      tsExp = VECTOR_ELT(structure, i);
+      tsExp = VECTOR_ELT(lst, i);
     }
     else {
-      Rprintf ("Input list components must be according to this specification:\n");
+      Rprintf ("Input list elements must be according to this specification:\n");
       Rprintf ("'name', 'type', 'val', 'uels', 'form', 'dim', 'ts'.\n");
-      error ("Incorrect type of input list component '%s' specified.",
+      error ("Incorrect type of input list element '%s' specified.",
              compName);
     }
   }
 
   /* now process the fields provided */
   if (NULL == nameExp)
-    error ("Required list component 'name' is missing. Please try again.\n");
+    error ("Required list element 'name' is missing. Please try again.\n");
   if (STRSXP != TYPEOF(nameExp)) {
-    Rprintf ("List component 'name' must be a string - found %d instead\n",
+    Rprintf ("List element 'name' must be a string - found %d instead\n",
              TYPEOF(nameExp));
-    error ("Input list component 'name' must be string.\n");
+    error ("Input list element 'name' must be string.\n");
   }
   tmpName = CHAR(STRING_ELT(nameExp, 0));
   checkStringLength (tmpName);
@@ -935,9 +937,9 @@ readWgdxList (SEXP structure, int iSym, SEXP uelIndex,
 
   if (tsExp) {
     if (STRSXP != TYPEOF(tsExp)) {
-      Rprintf ("List component 'ts' must be a string - found %d instead\n",
+      Rprintf ("List element 'ts' must be a string - found %d instead\n",
                TYPEOF(tsExp));
-      error ("Input list component 'ts' must be string.\n");
+      error ("Input list element 'ts' must be string.\n");
     }
     checkStringLength (CHAR(STRING_ELT(tsExp, 0)));
     wSpec->withTs = 1;
@@ -945,9 +947,9 @@ readWgdxList (SEXP structure, int iSym, SEXP uelIndex,
 
   if (formExp) {
     if (STRSXP != TYPEOF(formExp)) {
-      Rprintf ("List component 'form' must be a string - found %d instead\n",
+      Rprintf ("List element 'form' must be a string - found %d instead\n",
                TYPEOF(formExp));
-      error ("Input list component 'form' must be string");
+      error ("Input list element 'form' must be string");
     }
     tmpName = CHAR(STRING_ELT(formExp, 0));
     if (strcasecmp("full", tmpName) == 0) {
@@ -957,15 +959,15 @@ readWgdxList (SEXP structure, int iSym, SEXP uelIndex,
       wSpec->dForm = sparse;
     }
     else {
-      error("Input list component 'form' must be either 'full' or 'sparse'.");
+      error("Input list element 'form' must be either 'full' or 'sparse'.");
     }
   } /* formExp */
 
   if (typeExp) {                /* optional */
     if (STRSXP != TYPEOF(typeExp)) {
-      Rprintf ("List component 'type' must be a string - found %d instead\n",
+      Rprintf ("List element 'type' must be a string - found %d instead\n",
                TYPEOF(typeExp));
-      error ("Input list component 'type' must be string.\n");
+      error ("Input list element 'type' must be string.\n");
     }
     tmpName = CHAR(STRING_ELT(typeExp, 0));
     if (0 == strcasecmp("set", tmpName) ) {
@@ -976,14 +978,14 @@ readWgdxList (SEXP structure, int iSym, SEXP uelIndex,
     }
     else {
       Rprintf ("type found = %s\n", tmpName);
-      error ("Input list component 'type' must be either 'set' or 'parameter'.\n");
+      error ("Input list element 'type' must be either 'set' or 'parameter'.\n");
     }
   }
 
   if (dimExp) {                 /* optional */
     if (INTSXP == TYPEOF(dimExp)) {
       if (length(dimExp) != 1) {
-        error ("Optional input list component 'dim' must have only one element.\n");
+        error ("Optional input list element 'dim' must have only one element.\n");
       }
       if (INTEGER(dimExp)[0] < 0) {
         error("Negative value is not allowed as valid input for 'dim'.\n");
@@ -993,7 +995,7 @@ readWgdxList (SEXP structure, int iSym, SEXP uelIndex,
     }
     else if (REALSXP == TYPEOF(dimExp)) {
       if (length(dimExp) != 1) {
-        error ("Optional input list component 'dim' must have only one element.\n");
+        error ("Optional input list element 'dim' must have only one element.\n");
       }
       if (REAL(dimExp)[0] < 0) {
         error("Negative value is not allowed as valid input for 'dim'.\n");
@@ -1005,22 +1007,22 @@ readWgdxList (SEXP structure, int iSym, SEXP uelIndex,
       }
     }
     else {
-      Rprintf ("List component 'dim' must be numeric - found %d instead\n",
+      Rprintf ("List element 'dim' must be numeric - found %d instead\n",
                TYPEOF(dimExp));
-      error ("Optional input list component 'dim' must be numeric.\n");
+      error ("Optional input list element 'dim' must be numeric.\n");
     }
   } /* dimExp */
 
   dimUels = -1;
   if (uelsExp) {                /* optional */
     if (VECSXP != TYPEOF(uelsExp)) {
-      Rprintf ("List component 'uels' must be an un-named list - found %d instead\n",
+      Rprintf ("List element 'uels' must be an un-named list - found %d instead\n",
                TYPEOF(uelsExp));
-      error ("Input list component 'uels' must be unnamed list.\n");
+      error ("Input list element 'uels' must be unnamed list.\n");
     }
     dimUels = length(uelsExp);
     if (0 == dimUels) {
-      error ("Empty input list component 'uels' is not allowed.\n");
+      error ("Empty input list element 'uels' is not allowed.\n");
     }
     if (withDim && wSpec->dim != dimUels) {
       error ("Inconsistent dimension found: 'dim'=%d  doesn't match '.uels' dimension=%d.\n",
@@ -1052,10 +1054,10 @@ readWgdxList (SEXP structure, int iSym, SEXP uelIndex,
 
   if (NULL == valExp) {         /* .val field missing */
     if (parameter == wSpec->dType) {
-      error ("Missing 'val' is a required list component for parameters.");
+      error ("Missing 'val' is a required list element for parameters.");
     }
     if (set == wSpec->dType && 0 == wSpec->withUel) {
-      error ("Missing 'val' is a required list component for sets with no UELs.");
+      error ("Missing 'val' is a required list element for sets with no UELs.");
     }
   }
   else {
@@ -1079,12 +1081,12 @@ readWgdxList (SEXP structure, int iSym, SEXP uelIndex,
         /* getting data matrix */
         sz = INTEGER(dimension)[0];
         if (sz > INT_MAX) {
-          error ("Input list component 'val' exceeds row limit of %d",
+          error ("Input list element 'val' exceeds row limit of %d",
                  INT_MAX);
         }
         sz = INTEGER(dimension)[1];
         if (sz > INT_MAX) {
-          error ("Input list component 'val' exceeds column limit of %d",
+          error ("Input list element 'val' exceeds column limit of %d",
                  INT_MAX);
         }
         nCoords = sz;
@@ -1113,7 +1115,7 @@ readWgdxList (SEXP structure, int iSym, SEXP uelIndex,
         /* This is for Full/Dense data */
         nCoords = length(dimension);
         if (nCoords > GMS_MAX_INDEX_DIM) {
-          error ("Input list component 'val' exceeds GDX dimension limit of %d.",
+          error ("Input list element 'val' exceeds GDX dimension limit of %d.",
                  GMS_MAX_INDEX_DIM);
         }
         if (withDim) {
@@ -1132,9 +1134,9 @@ readWgdxList (SEXP structure, int iSym, SEXP uelIndex,
       }
     }
     else {
-      Rprintf("List component 'val' must be a numeric matrix - found %d instead.\n",
+      Rprintf("List element 'val' must be a numeric matrix - found %d instead.\n",
               TYPEOF(valExp));
-      error ("Input list component 'val' must be a numeric matrix");
+      error ("Input list element 'val' must be a numeric matrix");
     }
   } /* valExp not NULL */
 
