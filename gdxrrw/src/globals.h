@@ -68,8 +68,54 @@ typedef union d64 {
   uint64_t u64;
 } d64_t;
 
-
 GDX_FUNCPTR(gdxGetLoadPath);
 
+
+/* ********** functions in getGamsSoln.c **************** */
+SEXP
+getGamsSoln (const char *gmsFileName);
+
+
+/* ********** functions in utils.c ********************** */
+char *
+CHAR2ShortStr (const char *from, shortStringBuf_t to);
+void
+checkStringLength (const char *str);
+void
+compressData (SEXP data, SEXP globalUEL, SEXP uelOut,
+              int numberOfUel, int symbolDim, int nRec);
+int
+findInFilter (int k, SEXP filterList, const char *uelName);
+char *
+getGlobalString (const char *globName, shortStringBuf_t result);
+int
+getNonZeroElements (gdxHandle_t h, int symIdx, dField_t dField);
+int
+isCompress (void);
+void
+loadGDX (void);
+void
+makeStrVec (SEXP outExp, SEXP inExp);
+SEXP
+sparseToFull(SEXP compVal, SEXP compFullVal, SEXP compUels,
+             int type, int nRec, int symbolDim);
+
+
+/* ****** global variables ****** */
+#if defined(_GDXRRW_MAIN_)
+#define _GDXRRW_EXTERN_
+gdxHandle_t gdxHandle = (gdxHandle_t) 0;
+int gamsoIsUnset = 0;
+#else
+#define _GDXRRW_EXTERN_ extern
+extern gdxHandle_t gdxHandle;
+extern int gamsoIsUnset;
+#endif  /* defined(_GDXRRW_MAIN_) */
+
+_GDXRRW_EXTERN_ int alloc;
+_GDXRRW_EXTERN_ int gamsAlloc;
+_GDXRRW_EXTERN_ int globalGams;
+_GDXRRW_EXTERN_ int wUEL;
+_GDXRRW_EXTERN_ int gamsoIsUnset;
 
 #endif /* ! defined(_GDXRRW_GLOBALS_H_) */

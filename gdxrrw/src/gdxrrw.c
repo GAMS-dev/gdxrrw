@@ -38,21 +38,12 @@
 
 #include "gdxcc.h"
 #include "gclgms.h"
+#define _GDXRRW_MAIN_
 #include "globals.h"
-
-gdxHandle_t gdxHandle = (gdxHandle_t) 0;
-
-static int alloc;
 
 static int wAlloc;
 
-static int gamsAlloc;
-
 static char specialCommand[LINELEN];
-
-static int globalGams;
-
-static int wUEL;
 
 static shortStringBuf_t lastErrMsg;
 
@@ -105,27 +96,8 @@ static int
 GSExec(char *command,
        int *progrc,
        int showWindow);
-SEXP
-getGlobalUEL(SEXP globalUEL,
-             int withCompress);
-
-SEXP
-getGamsSoln(char *gmsFileName);
-
-char *
-CHAR2ShortStr (const char *from, shortStringBuf_t to);
-
 void
 cat2ShortStr (shortStringBuf_t dest, const char *src);
-
-int isCompress(void);
-
-char *getGlobalString (const char *globName, shortStringBuf_t result);
-
-char *
-delete_char(char *src,
-            char c,
-            int len);
 
 void
 createUelOut(SEXP val,
@@ -146,29 +118,10 @@ val2str (gdxHandle_t h, double val, char *s);
 void
 checkFileExtension (shortStringBuf_t fileName);
 
-void
-checkStringLength(const char *str);
-
 void downCase (char *string);
 
 int
 getNonZeroElements (gdxHandle_t h, int symIdx, dField_t dField);
-
-void
-compressData (SEXP data,
-              SEXP globalUEL,
-              SEXP uelOut,
-              int numberOfUel,
-              int symbolDim,
-              int nRec);
-
-SEXP
-sparseToFull(SEXP compVal,
-             SEXP compFullVal,
-             SEXP compUels,
-             int type,
-             int nRec,
-             int symbolDim);
 
 SEXP
 createElementMatrix(SEXP compVal,
@@ -178,16 +131,6 @@ createElementMatrix(SEXP compVal,
                     int symbolDim,
                     int nRec);
 
-void
-checkForRepetition(SEXP bufferUel);
-
-SEXP
-convertToOutput(SEXP bufferUel,
-                SEXP tmpUel);
-
-int
-checkIfExist (int k, SEXP filterUel, const char *uelName);
-
 static void
 writeGdx(char *fileName,
          int symListLen,
@@ -195,8 +138,6 @@ writeGdx(char *fileName,
          int fromGAMS,
          char zeroSqueeze);
 
-static void
-loadGDX (void);
 
 /*-------------------- Method exposed to R -----------------------*/
 
@@ -467,813 +408,6 @@ static int GSExec(char *command,
 #endif /* if defined(_WIN32) */
 }
 
-SEXP
-getGlobalUEL(SEXP globalUEL,
-             int withCompress)
-{
-  SEXP gamso, tmp, lstName, tmpUel, bufferUel;
-  int i, j, infields, found;
-  found = 0;
-
-  gamso = findVar( install("gamso"), R_GlobalEnv );
-
-  if (gamso == NULL || TYPEOF(gamso) == NILSXP  ||  TYPEOF(gamso) == SYMSXP) {
-    globalGams = 0;
-    wUEL = 0;
-    return R_NilValue;
-  }
-
-  /*  else if (TYPEOF(gamso) != VECSXP  && globalGams)
-    {
-      warning("To change default behavior, please enter 'gamso' as list.\n" );
-      Rprintf("You entered it as %d.\n", TYPEOF(gamso) );
-      globalGams = 0;
-      return R_NilValue;
-      } */
-
-  else if (TYPEOF(gamso) == VECSXP && globalGams == 1) {
-    lstName = getAttrib(gamso, R_NamesSymbol);
-    i=0;
-    infields = length(gamso);
-    if (infields == 0) {
-      wUEL = 0;
-    }
-    /* Checking if field data is for "name" */
-    for (i = 0; i < infields; i++) {
-      if (strcmp("uels", CHAR(STRING_ELT(lstName, i))) == 0) {
-        found = 1;
-        break;
-      }
-    }
-
-    if (found == 1 && globalGams == 1) {
-      tmp = VECTOR_ELT(gamso, i);
-      if (tmp != NULL) {
-        if (withCompress == 1) {
-          error("Compression is not allowed with Input UEL.");
-        }
-        if (TYPEOF(tmp) != VECSXP) {
-          Rprintf ("List component 'uels'  must be a list - found %d instead.\n",TYPEOF(tmp));
-          error("Input list component 'uels' must be a list.");
-        }
-        else {
-          PROTECT(globalUEL = allocVector(VECSXP, length(tmp)));
-          gamsAlloc++;
-          for (j = 0; j < length(tmp); j++) {
-            tmpUel = VECTOR_ELT(tmp, j);
-            if (tmpUel == R_NilValue) {
-              error("Empty Uel is not allowed ");
-            }
-            else {
-              bufferUel = allocVector(STRSXP, length(tmpUel));
-              /* Convert to output */
-              bufferUel =  convertToOutput(bufferUel, tmpUel);
-              SET_VECTOR_ELT(globalUEL, j, bufferUel);
-              wUEL = 1;
-            }
-          }
-        }
-      }
-    }
-  }
-  return globalUEL;
-}  /* End of getGlobalUels */
-
-
-SEXP
-getGamsSoln(char *gmsFileName)
-{
-  SEXP UEList;
-  SEXP OPListComp, OPList, dimVect;
-  SEXP textElement = R_NilValue;
-  SEXP compName = R_NilValue,
-    compType = R_NilValue,
-    compDim = R_NilValue,
-    compVal = R_NilValue,
-    compFullVal = R_NilValue,
-    compForm = R_NilValue,
-    compUels = R_NilValue,
-    compField = R_NilValue,
-    compTs = R_NilValue,
-    compTe = R_NilValue;
-  rgdxStruct_t *inputData;
-  FILE *fp, *fin;
-  char line[LINELEN], astring[LINELEN], *s, *array[50], *gdxFile;
-  int loop, maxPossibleElements, z;
-  const char *uelElementName;
-  int rc, errNum, symDim, symType, mrows, ncols, nRecs, iRec, changeIdx, index, k, kk, kRec;
-  shortStringBuf_t msgBuf, uelName;
-  char buf[3*sizeof(shortStringBuf_t)];
-  int nUEL, iUEL, defaultIndex,  UELUserMapping, highestMappedUEL, ndimension;
-  double *p, *dimVal;
-  double dt, posInf, negInf;
-  gdxUelIndex_t uels;
-  gdxValues_t values;
-  gdxSVals_t sVals;
-  d64_t d64;
-  shortStringBuf_t gsBuf;
-  char *gForm, *field;
-  int nField;
-  char *types[] = {"set", "parameter", "variable", "equation"};
-  char *forms[] = {"full", "sparse"};
-  char *fields[] = {"l", "m", "up", "lo", "s"};
-  int b, matched, sparesIndex, totalElement;
-  int *returnedIndex;
-  int mwNElements =0;
-  int uelProperty = 0;
-  int outFields = 6;
-
-  /* Setting default values */
-  inputData = malloc(sizeof(*inputData));
-
-  inputData->dForm = sparse;
-  inputData->compress = isCompress();
-  inputData->dField = level;
-  inputData->withUel = 0;
-  inputData->ts = 0;
-  inputData->te = 0;
-  inputData->withField = 0;
-
-  if ((fp = fopen(gmsFileName,"r")) == NULL) {
-    error("Cannot find/open %s file.\n", gmsFileName);
-  }
-  astring[0] = '\0';
-  /* read the file till $set matout */
-  while (fgets(line,LINELEN,fp) != NULL) {
-    /* throw away leading spaces */
-    s = line;
-    while (isspace(*s)) s++;
-    if (!*s) continue;
-
-    if (sscanf(s, "$set matout %s", astring) == 1) {
-      break;
-    }
-  }
-  fclose(fp);
-
-  /* this bunch just to shut up compiler warnings */
-  loop = 0;
-  maxPossibleElements = 0;
-  OPList = R_NilValue;
-
-  if (astring != NULL && strcmp(astring, "") != 0) {
-    array[0]=strtok(line," ");
-    if (array[0]==NULL) {
-      Rprintf("No test to search.\n");
-    }
-    for (loop=1; loop<50; loop++) {
-      array[loop]=strtok(NULL," ");
-
-      if (array[loop]==NULL) {
-        break;
-      }
-      else {
-        delete_char(array[loop], ',', 0);
-        delete_char(array[loop], '\'', 0);
-        delete_char(array[loop], '"', 0);
-      }
-    }
-  }
-
-  /* At least one element is there in GDX file */
-  if (loop - 3 > 0) {
-    /* This is for global UEL */
-    wUEL = 0;
-    inputData->filterUel = getGlobalUEL(inputData->filterUel, inputData->compress);
-    if (wUEL == 0) {
-      inputData->withUel = 0;
-    }
-    else {
-      inputData->withUel = 1;
-    }
-    gForm = getGlobalString("form", gsBuf);
-    if (gForm != NULL) {
-      if (strcmp(gForm,"full") == 0) {
-        inputData->dForm = full;
-      }
-      else if (strcmp(gForm,"sparse") == 0) {
-        inputData->dForm = sparse;
-      }
-      else {
-        /* else warning message */
-        warning("To change default behavior of 'form', please enter it as 'full' or 'sparse'\n" );
-        Rprintf("You entered it as %s.\n", gForm);
-      }
-    }
-
-    field = getGlobalString("field", gsBuf);
-    if (field != NULL) {
-      if (strcmp(field, "l") == 0) {
-        inputData->dField = level;
-      }
-      else if (strcmp(field, "m") == 0) {
-        inputData->dField = marginal;
-      }
-      else if (strcmp(field, "lo") == 0) {
-        inputData->dField = lower;
-      }
-      else if (strcmp(field, "up") == 0) {
-        inputData->dField = upper;
-      }
-      else if (strcmp(field, "s") == 0) {
-        inputData->dField = scale;
-      }
-      else {
-        /* else warning message */
-        warning(" To change default behavior of 'field', please enter it as 'l/m/lo/up/s'.\n" );
-        Rprintf("You entered it as %s.\n", field);
-      }
-    }
-
-    /* -------------Start reading data from gdx file------------------- */
-    gdxFile = array[2];
-    fin = fopen (gdxFile,"r");
-    if (fin==NULL) {
-      sprintf (buf, "File '%s' not found!\n", gdxFile);
-      error(buf);
-    }
-    fclose(fin);
-
-    loadGDX();
-    rc = gdxCreate (&gdxHandle, msgBuf, sizeof(msgBuf));
-    if (0 == rc)
-      error ("Error creating GDX object: %s", msgBuf);
-    rc = gdxOpenRead (gdxHandle, gdxFile, &errNum);
-    if (errNum || 0 == rc) {
-      error ("Could not open gdx file with gdxOpenRead");
-    }
-
-    gdxGetSpecialValues (gdxHandle, sVals);
-    d64.u64 = 0x7fffffffffffffff; /* positive QNaN, mantissa all on */
-    sVals[GMS_SVIDX_UNDEF] = d64.x;
-    sVals[GMS_SVIDX_NA] = NA_REAL;
-    dt = 0.0;
-    posInf =  1 / dt;
-    negInf = -1 / dt;
-    sVals[GMS_SVIDX_EPS] = 0;
-    sVals[GMS_SVIDX_PINF] = posInf;
-    sVals[GMS_SVIDX_MINF] = negInf;
-    gdxSetSpecialValues (gdxHandle, sVals);
-
-    gdxSymbolInfo (gdxHandle, 1, inputData->name, &symDim, &symType);
-    /* checking that symbol is of type parameter/set/equation/variable */
-    if (!(symType == dt_par || symType == dt_set || symType == dt_var || symType == dt_equ)) {
-      Rprintf("GDX symbol %s (index=1, symDim=%d, symType=%d)"
-              " is not recognized as set, parameter, variable, or equation\n",
-              inputData->name, symDim, symType);
-      error("Invalid symbol. Please check listing file.\n");
-    }
-
-    /* Get global UEL from GDX file */
-    (void) gdxUMUelInfo (gdxHandle, &nUEL, &highestMappedUEL);
-    PROTECT(UEList = allocVector(STRSXP, nUEL));
-    gamsAlloc++;
-    for (iUEL = 1;  iUEL <= nUEL;  iUEL++) {
-      if (!gdxUMUelGet (gdxHandle, iUEL, uelName, &UELUserMapping)) {
-        error("Could not gdxUMUelGet");
-      }
-      SET_STRING_ELT(UEList, iUEL-1, mkChar(uelName));
-    }
-
-    /* Checking dimension of input uel and parameter in GDX file.
-     * If they are not equal then error. */
-
-    if (inputData->withUel == 1 && length(inputData->filterUel) != symDim) {
-      error("Dimension of UEL entered does not match with symbol in GDX");
-    }
-    /* Creating default uel if none entered */
-    if (inputData->withUel == 0) {
-      PROTECT(compUels = allocVector(VECSXP, symDim));
-      gamsAlloc++;
-      for (defaultIndex = 0; defaultIndex < symDim; defaultIndex++) {
-        SET_VECTOR_ELT(compUels, defaultIndex, UEList);
-      }
-    }
-
-    /* Start reading data */
-    gdxDataReadRawStart (gdxHandle, 1, &nRecs);
-    /* if it is a parameter, add 1 to the dimension */
-    mrows = nRecs;
-    if (symType != dt_set) {
-      ncols = symDim+1;
-    }
-    else {
-      ncols = symDim;
-    }
-
-    /* TODO: filter UEL
-     *  this is to check total number of elements that matches
-     * in Input UEL. Then create a 2D double matrix for sparse format.
-     * compute total number of elements matched in Input UEL.
-     */
-    mwNElements = 0;
-
-    if (inputData->withUel == 1) {
-      maxPossibleElements = 1;
-      for (z = 0; z < symDim; z++) {
-        mwNElements = length(VECTOR_ELT(inputData->filterUel, z));
-        maxPossibleElements = maxPossibleElements*mwNElements;
-      }
-      mwNElements = 0;
-
-      for (iRec = 0;  iRec < nRecs;  iRec++) {
-        gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-        b = 0;
-        for (k = 0; k < symDim; k++) {
-          uelProperty = 0;
-          uelElementName = CHAR(STRING_ELT(UEList, uels[k]-1));
-          uelProperty = checkIfExist (k, inputData->filterUel, uelElementName);
-          /* uel element exists */
-          if (uelProperty > 0) {
-            b++;
-          }
-          else {
-            break;
-          }
-        }
-        if (b == symDim) {
-          mwNElements++;
-          if (mwNElements == maxPossibleElements) {
-            break;
-          }
-        }
-      }
-      iRec = 0;
-      k = 0;
-    }
-    /* Allocating memory for 2D sparse matrix */
-    if (inputData->withUel == 1) {
-      PROTECT(compVal = allocMatrix(REALSXP, mwNElements, ncols));
-      gamsAlloc++;
-      if (inputData->te && symType == dt_set) {
-        PROTECT(textElement = allocVector(STRSXP, mwNElements));
-        gamsAlloc++;
-      }
-    }
-    if (inputData->withUel == 0) {
-      /* check for non zero elements for variable and equation */
-      if (symType == dt_var || symType == dt_equ) {
-        mrows = getNonZeroElements (gdxHandle, 1, inputData->dField);
-      }
-      /* Creat 2D sparse R array */
-      PROTECT(compVal = allocMatrix(REALSXP, mrows, ncols));
-      gamsAlloc++;
-      if (inputData->te && symType == dt_set) {
-        PROTECT(textElement = allocVector(STRSXP, mrows));
-        gamsAlloc++;
-      }
-    }
-
-    p = REAL(compVal);
-    /* TODO/TEST: filtered read */
-    if (inputData->withUel == 1) {
-      matched = 0;
-      gdxDataReadRawStart (gdxHandle, 1, &nRecs);
-
-      returnedIndex = malloc(symDim*sizeof(*returnedIndex));
-      for (iRec = 0;  iRec < nRecs;  iRec++) {
-        gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-        index = 0;
-        b = 0;
-
-        for (k = 0;  k < symDim;  k++) {
-          uelProperty = 0;
-          returnedIndex[k] = 0;
-          uelElementName = CHAR(STRING_ELT(UEList, uels[k]-1));
-          uelProperty = checkIfExist (k, inputData->filterUel, uelElementName);
-          if (uelProperty > 0) {
-            returnedIndex[k] = uelProperty;
-            b++;
-          }
-          else {
-            break;
-          }
-        }
-        if (b == symDim) {
-          for (sparesIndex = 0; sparesIndex < symDim; sparesIndex++) {
-            p[matched + sparesIndex*mwNElements] = returnedIndex[sparesIndex];
-          }
-          index = matched + symDim*(int)mwNElements;
-          matched = matched +1;
-
-          if (symType != dt_set)
-            p[index] = values[inputData->dField];
-        }
-        if (matched == maxPossibleElements) {
-          break;
-        }
-      }
-      free(returnedIndex);
-    }/* End of with uels */
-    else {
-      if (symType == dt_var || symType == dt_equ ) {
-        gdxDataReadRawStart (gdxHandle, 1, &nRecs);
-      }
-
-      for (iRec = 0, kRec = 0;  iRec < nRecs;  iRec++) {
-        gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-        if ((dt_set == symType) ||
-            (0 != values[inputData->dField]) ) {
-          /* store the value */
-          for (kk = 0;  kk < symDim;  kk++) {
-            p[kRec + kk*mrows] = uels[kk];
-          }
-          index = kRec + symDim*mrows;
-          kRec++;
-          if (symType != dt_set)
-            p[index] = values[inputData->dField];
-        } /* end of if (set || val != 0) */
-      } /* loop over GDX records */
-      if (kRec < mrows) {
-        Rprintf("DEBUG getGamsSoln: shrinking matrix from %d to %d rows.\n",
-                mrows, kRec);
-        SEXP newCV, tmp;
-        double *newp;
-        double *from, *to;
-
-        PROTECT(newCV = allocMatrix(REALSXP, kRec, ncols));
-        newp = REAL(newCV);
-        for (kk = 0;  kk <= symDim;  kk++) {
-          from = p    + kk*mrows;
-          to   = newp + kk*kRec;
-          MEMCPY (to, from, sizeof(*p)*kRec);
-        }
-        tmp = compVal;
-        compVal = newCV;
-        UNPROTECT_PTR(tmp);
-        mrows = kRec;
-      }
-    }
-
-    /* Converting data into its compressed form. */
-    if (inputData->compress == 1) {
-      PROTECT(compUels = allocVector(VECSXP, symDim));
-      compressData (compVal, UEList, compUels, nUEL, symDim, mrows);
-    }
-
-    /* Converting sparse data into full matrix */
-    if (inputData->dForm == full) {
-      switch (symDim) {
-      case 0:
-        PROTECT(compFullVal = allocVector(REALSXP, 1));
-        gamsAlloc++;
-        if (compVal != R_NilValue && REAL(compVal) != NULL) {
-          REAL(compFullVal)[0] = REAL(compVal)[0];
-        }
-        else {
-          REAL(compFullVal)[0] = 0;
-        }
-        break;
-      case 1:
-        PROTECT(dimVect = allocVector(REALSXP, 2));
-        gamsAlloc++;
-        dimVal = REAL(dimVect);
-
-        if (inputData->withUel == 1) {
-          dimVal[0] = length(VECTOR_ELT(inputData->filterUel, 0));
-          PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(inputData->filterUel, 0))));
-          gamsAlloc++;
-          compFullVal = sparseToFull(compVal, compFullVal, inputData->filterUel, symType, mwNElements, symDim);
-        }
-        else {
-          dimVal[0] = length(VECTOR_ELT(compUels, 0));
-          PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(compUels, 0))));
-          gamsAlloc++;
-          compFullVal = sparseToFull(compVal, compFullVal, compUels, symType, mrows, symDim);
-        }
-        dimVal[1] = 1;
-        setAttrib(compFullVal, R_DimSymbol, dimVect);
-        break;
-      default:
-        PROTECT(dimVect = allocVector(REALSXP, symDim));
-        gamsAlloc++;
-        totalElement = 1;
-        dimVal = REAL(dimVect);
-        ndimension = 0;
-        if (inputData->withUel == 1) {
-          for (ndimension = 0; ndimension < symDim; ndimension++) {
-            dimVal[ndimension] = length(VECTOR_ELT(inputData->filterUel, ndimension));
-            totalElement = (totalElement * length(VECTOR_ELT(inputData->filterUel, ndimension)));
-          }
-        }
-        else {
-          for (ndimension = 0; ndimension < symDim; ndimension++) {
-            dimVal[ndimension] = length(VECTOR_ELT(compUels, ndimension));
-            totalElement = (totalElement * length(VECTOR_ELT(compUels, ndimension)));
-          }
-        }
-        PROTECT(compFullVal = allocVector(REALSXP, totalElement));
-        gamsAlloc++;
-        if (inputData->withUel ==1) {
-          compFullVal = sparseToFull(compVal, compFullVal, inputData->filterUel, symType, mwNElements, symDim);
-        }
-        else {
-          compFullVal = sparseToFull(compVal, compFullVal, compUels, symType, mrows, symDim);
-        }
-        
-        setAttrib(compFullVal, R_DimSymbol, dimVect);
-        break;
-      } /* switch(symDim) */
-    }
-
-    /* Create a 1-by-1 array of structs. */
-    /* List form */
-    /* Creating string vector for symbol Name */
-    PROTECT(compName = allocVector(STRSXP, 1) );
-    SET_STRING_ELT(compName, 0, mkChar(inputData->name));
-    gamsAlloc++;
-    /* Creating string vector for symbol type */
-    PROTECT(compType = allocVector(STRSXP, 1) );
-    gamsAlloc++;
-    switch (symType) {
-    case dt_set:
-      SET_STRING_ELT( compType, 0, mkChar(types[0]) );
-      break;
-    case dt_par:
-      SET_STRING_ELT( compType, 0, mkChar(types[1]) );
-      break;
-    case dt_var:
-      SET_STRING_ELT( compType, 0, mkChar(types[2]) );
-      break;
-    case dt_equ:
-      SET_STRING_ELT( compType, 0, mkChar(types[3]) );
-      break;
-    default:
-      error("Unrecognized type of symbol found.");
-    }
-
-    /* Creating int vector for symbol Dim */
-    PROTECT(compDim = allocVector(INTSXP, 1) );
-    INTEGER(compDim)[0] = symDim;
-    gamsAlloc++;
-    /* Creating string vector for val data form */
-    PROTECT(compForm = allocVector(STRSXP, 1) );
-    gamsAlloc++;
-    if (inputData->dForm == full) {
-      SET_STRING_ELT(compForm, 0, mkChar(forms[0]));
-    }
-    else {
-      SET_STRING_ELT(compForm, 0, mkChar(forms[1]));
-    }
-
-    /* Create a string vector for symbol  field */
-    if (symType == dt_var || symType == dt_equ) {
-      outFields++;
-      PROTECT(compField = allocVector(STRSXP, 1));
-      gamsAlloc++;
-      switch(inputData->dField) {
-      case level:
-        SET_STRING_ELT(compField, 0, mkChar( fields[0] ));
-        break;
-      case marginal:
-        SET_STRING_ELT(compField, 0, mkChar( fields[1] ));
-        break;
-      case upper:
-        SET_STRING_ELT(compField, 0, mkChar( fields[2] ));
-        break;
-      case lower:
-        SET_STRING_ELT(compField, 0, mkChar( fields[3] ));
-        break;
-      case scale:
-        SET_STRING_ELT(compField, 0, mkChar( fields[4] ));
-        break;
-      default:
-        error("Unrecognized type of symbol found.");
-      }
-    }
-
-    PROTECT(OPListComp = allocVector(STRSXP, outFields));
-    gamsAlloc++;
-    /* populating list component names */
-    SET_STRING_ELT(OPListComp, 0, mkChar("name"));
-    SET_STRING_ELT(OPListComp, 1, mkChar("type"));
-    SET_STRING_ELT(OPListComp, 2, mkChar("dim"));
-    SET_STRING_ELT(OPListComp, 3, mkChar("val"));
-    SET_STRING_ELT(OPListComp, 4, mkChar("form"));
-    SET_STRING_ELT(OPListComp, 5, mkChar("uels"));
-
-    nField = 5;
-
-    if (symType == dt_var || symType == dt_equ) {
-      nField++;
-      SET_STRING_ELT(OPListComp, nField, mkChar("field"));
-    }
-    if (inputData->ts) {
-      nField++;
-      SET_STRING_ELT(OPListComp, nField, mkChar("ts"));
-    }
-    if (inputData->te) {
-      nField++;
-      SET_STRING_ELT(OPListComp, nField, mkChar("te"));
-    }
-
-    PROTECT(OPList = allocVector(VECSXP, outFields));
-    gamsAlloc++;
-
-    /* populating list component vector */
-    SET_VECTOR_ELT(OPList, 0, compName);
-    SET_VECTOR_ELT(OPList, 1, compType);
-    SET_VECTOR_ELT(OPList, 2, compDim);
-    if (inputData->dForm == full) {
-      SET_VECTOR_ELT(OPList, 3, compFullVal);
-    }
-    else {
-      SET_VECTOR_ELT(OPList, 3, compVal);
-    }
-    SET_VECTOR_ELT(OPList, 4, compForm);
-    if (inputData->withUel) {
-      SET_VECTOR_ELT(OPList, 5, inputData->filterUel);
-    }
-    else {
-      SET_VECTOR_ELT(OPList, 5, compUels);
-    }
-
-    nField = 5;
-    if (symType == dt_var || symType == dt_equ) {
-      nField++;
-      SET_VECTOR_ELT(OPList, nField, compField);
-    }
-    if (inputData->ts) {
-      nField++;
-      SET_VECTOR_ELT(OPList, nField, compTs);
-    }
-    if (inputData->te) {
-      nField++;
-      SET_VECTOR_ELT(OPList, nField, compTe);
-    }
-
-    /* Setting attribute name */
-    setAttrib(OPList, R_NamesSymbol, OPListComp);
-
-    if (!gdxDataReadDone (gdxHandle)) {
-      error ("Could not gdxDataReadDone");
-    }
-    errNum = gdxClose (gdxHandle);
-    if (errNum != 0) {
-      error("Errors detected when closing gdx file");
-    }
-    (void) gdxFree (&gdxHandle);
-  } /* end if loop - 3 > 0 */
-  free(inputData);
-  return OPList;
-} /* getGamsSoln */
-
-/* this method for global input "compress" */
-int isCompress(void)
-{
-  SEXP gamso, tmp, lstName;
-  Rboolean logical = NA_LOGICAL;
-  char *str;
-  int i, infields;
-  int compress = 0;
-  int found = 0;
-  shortStringBuf_t fName;
-
-  str = NULL;
-  gamso = findVar( install("gamso"), R_GlobalEnv );
-
-  if (gamso == NULL || TYPEOF(gamso) == NILSXP  ||  TYPEOF(gamso) == SYMSXP) {
-    globalGams = 0;
-    return 0;
-  }
-
-  /*   if (TYPEOF(gamso) != VECSXP  && globalGams)
-       {
-       warning("To change default behavior, please enter 'gamso' as list.\n" );
-       Rprintf("You entered it as %d.\n", TYPEOF(gamso) );
-       globalGams = 0;
-       return 0;
-       } */
-
-  else if (TYPEOF(gamso) == VECSXP && globalGams == 1) {
-    lstName = getAttrib(gamso, R_NamesSymbol);
-    i=0;
-    infields = length(gamso);
-    /* Checking if field data is for "name" */
-    for (i = 0; i < infields; i++) {
-      if (strcasecmp("compress", CHAR(STRING_ELT(lstName, i))) == 0) {
-        found = 1;
-        break;
-      }
-    }
-
-    if (found == 1 && globalGams) {
-      tmp = VECTOR_ELT(gamso, i);
-      if (TYPEOF(tmp) == STRSXP) {
-        str = CHAR2ShortStr (CHAR(STRING_ELT(tmp, 0)), fName);
-        if (NULL != str) {
-          if (strcasecmp(fName,"true") == 0)
-            compress = 1;
-          else if (strcmp(fName,"false") == 0)
-            compress = 0;
-          else {
-            /* else warning message */
-            warning ("To change default behavior of 'compress', please enter it as 'true' or 'false'\n" );
-            Rprintf ("You entered it as %s.\n", str);
-          }
-        }
-      } /* TYPEOF=STRSXP */
-      else if (TYPEOF(tmp) == LGLSXP) {
-        logical = LOGICAL(tmp)[0];
-        if (logical == TRUE)
-          compress = 1;
-        else
-          compress = 0;
-      }
-      else {
-        warning ("To change default behavior of 'compress', please enter it as either a string or a logical.\n");
-        Rprintf ("You entered it with TYPEOF('compress') = %d.\n", TYPEOF(tmp));
-        return 0;
-      }
-    }
-  }
-  return compress;
-} /* isCompress */
-
-
-/* This method will read variable "gamso" from R workspace */
-char *getGlobalString (const char *globName, shortStringBuf_t result)
-{
-  SEXP gamso, lstName, tmp;
-  char *str;
-  int i, infields, found;
-
-  str = NULL;
-  gamso = findVar (install("gamso"), R_GlobalEnv);
-
-  if (gamso == NULL || TYPEOF(gamso) == NILSXP  ||  TYPEOF(gamso) == SYMSXP) {
-    globalGams = 0;
-    *result = '\0';
-    return NULL;
-  }
-  /*  else if (TYPEOF(gamso) != VECSXP  && globalGams == 1)
-    {
-      warning("To change default behavior, please enter 'gamso' as list.\n");
-      Rprintf("You entered it as %d.\n", TYPEOF(gamso) );
-      globalGams = 0;
-      return NULL;
-      }*/
-  else if (TYPEOF(gamso) == VECSXP && globalGams == 1) {
-    lstName = getAttrib (gamso, R_NamesSymbol);
-    i=0;
-    infields = length(gamso);
-    /* Checking if field data is for "name" */
-    for (found = 0, i = 0;  i < infields;  i++) {
-      if (strcmp(globName, CHAR(STRING_ELT(lstName, i))) == 0) {
-        found = 1;
-        break;
-      }
-    }
-
-    if (found == 1 && globalGams == 1) {
-      tmp = VECTOR_ELT(gamso, i);
-      if (TYPEOF(tmp) == STRSXP) {
-        checkStringLength (CHAR(STRING_ELT(tmp, 0)));
-        str = CHAR2ShortStr (CHAR(STRING_ELT(tmp, 0)), result);
-      }
-      else {
-        warning("To change default behavior of %s, please enter it as string.\n", globName );
-        Rprintf("You entered it as %d.\n", TYPEOF(tmp));
-        return NULL;
-      }
-    }
-  }
-  return str;
-} /* getGlobalString */
-
-
-
-/* Delete single character from string */
-char*
-delete_char(char *src,
-            char c,
-            int len)
-{
-  char *dst;
-  int i;
-
-  /* Do not remove NULL characters. */
-  if (c == 0)
-    return NULL;
-
-  /* Small attempt to control a buffer overflow if the
-   * the string is not null-terminated and a proper length
-   * is not specified. */
-  if (len <= 0)
-    len = MAX_STRING;
-
-  dst = src;
-
-  for (i = 0 ; i < len && *src != 0 ; i++, src++) {
-    if ( *src != c )
-      *dst++ = *src;
-  }
-
-  /*Ensure the string is null-terminated.*/
-  *dst = 0;
-  return src;
-} /* End of delete_char */
-
 void
 createUelOut(SEXP val,
              SEXP uelOut,
@@ -1463,26 +597,6 @@ val2str (gdxHandle_t h, double val, char *s)
   }
 } /* val2str */
 
-
-char *
-CHAR2ShortStr (const char *from, shortStringBuf_t to)
-{
-  size_t n;
-
-  if (NULL == from)
-    return NULL;
-  n = strlen(from);
-  if (n >= sizeof(shortStringBuf_t)) {
-    n = sizeof(shortStringBuf_t);
-    strncpy(to, from, n);
-    to[n-1] = '\0';
-  }
-  else
-    strcpy(to, from);
-  return to;
-} /* CHAR2ShortStr */
-
-
 void
 cat2ShortStr (shortStringBuf_t dest, const char *src)
 {
@@ -1527,23 +641,6 @@ checkFileExtension (shortStringBuf_t fileName)
   return;
 } /* checkFileExtension */
 
-/* Every string input has to be in certain limit to be writen to GDX file */
-void
-checkStringLength(const char *str)
-{
-  int i;
-
-  i = (int) strlen (str);
-  if (0 == i) {
-    error("Cannot access empty field. Please try again" );
-  }
-  else if (i >= sizeof(shortStringBuf_t)) {
-    error("The data entered is too long: len=%d exceeds limit=%d.",
-          i, (int)sizeof(shortStringBuf_t)-1);
-  }
-} /* checkStringLength */
-
-
 void downCase (char *s)
 {
   if (NULL == s)
@@ -1552,122 +649,6 @@ void downCase (char *s)
     *s = tolower(*s);
   return;
 } /* downCase */
-
-
-/* Return number of non - Zero elements of variable/equation */
-int
-getNonZeroElements (gdxHandle_t h, int symIdx, dField_t dField)
-{
-  int nRecs, changeIdx, i, nonZero;
-  gdxUelIndex_t uels;
-  gdxValues_t values;
-
-  nonZero = 0;
-  gdxDataReadRawStart (h, symIdx, &nRecs);
-  for (i = 0; i < nRecs; i++) {
-    gdxDataReadRaw (h, uels, values, &changeIdx);
-    if (values[dField] != 0) {
-      nonZero++;
-    }
-  }
-  return nonZero;
-}
-
-/* This method compresses the raw data (both value and uel)
- * and removes redundant zeros from
- * value matrix and re-index output matrix.
- * And it also remove non present uel elements from UEL */
-void
-compressData (SEXP data,
-              SEXP globalUEL,
-              SEXP uelOut,
-              int numberOfUel,
-              int symbolDim,
-              int nRec)
-{
-  int *mask, i, j, k, l, total, elements;
-  double *col;
-  SEXP bufferUel;
-
-  mask = malloc(numberOfUel*sizeof(*mask));
-  col =  REAL(data);
-  for (i = 0; i < symbolDim; i++) {
-    /* step 1: set all mask value to zero. */
-    for (j = 0; j < numberOfUel; j++) {
-      mask[j] = 0;
-    }
-    total = 0;
-    /* step 2: loop through data martix column and set mask = 1 for corresponding positions */
-    for (k = 0; k < nRec; k++) {
-      if (mask[(int)col[k + nRec*i] - 1] == 0) {
-        mask[(int)col[k + nRec*i] - 1] = 1;
-        total = total + 1;
-      }
-    }
-    /* step 3: create cellArray with size = total, fill in UEL if mask[] = 1 */
-    /* step 4: step through 1's at mask and create sum */
-    bufferUel = allocVector(STRSXP, total);
-    elements = 0;
-    for (l = 0; l < numberOfUel; l++) {
-      if (mask[l] == 1) {
-        elements = elements + 1;
-        mask[l] = elements;
-        SET_STRING_ELT(bufferUel, elements -1, duplicate(STRING_ELT(globalUEL, l)));
-      }
-    }
-    /* step 5: step through column and update index value = mask[] */
-    l = 0;
-    for (l = 0; l < nRec; l++) {
-      col[l + nRec*i] = mask[(int)col[l + nRec*i] - 1];
-    }
-    SET_VECTOR_ELT(uelOut, i, bufferUel);
-  }
-  free(mask);
-  alloc++;
-  return;
-} /* compressData */
-
-
-/* This method converts sparse data into full data */
-SEXP
-sparseToFull(SEXP compVal,
-             SEXP compFullVal,
-             SEXP compUels,
-             int type,
-             int nRec,
-             int symbolDim)
-{
-  int i,j, iRec,  nCols;
-  double *p, *pVal;
-  int index = 0;
-  int totNumber = 1;
-
-  /* Step 1: loop over full matrix and set every value as 0 */
-  pVal = REAL(compFullVal);
-  for (j = 0; j < length(compFullVal); j++) {
-    pVal[j] = 0;
-  }
-  i = 0;
-  /* Step 2: loop over each row of sparse matrix and populate full matrix */
-  p = REAL(compVal);
-  nCols = symbolDim;
-
-  for (iRec = 0; iRec < nRec; iRec++) {
-    index = 0;
-    totNumber = 1;
-    for (i = 0; i < nCols; i++) {
-      index = index + (p[iRec + nRec*i] - 1)*totNumber;
-      totNumber = (totNumber)*length(VECTOR_ELT(compUels, i));
-    }
-    if (type != dt_set) {
-      pVal[index] = p[iRec + nRec*symbolDim];
-    }
-    else {
-      pVal[index] = 1;
-    }
-  }
-  return compFullVal;
-} /* End of sparseToFull */
 
 
 /* create text element Matrix from sparse data and element vector */
@@ -1705,101 +686,6 @@ createElementMatrix(SEXP compVal,
 
   return compTe;
 } /* End of createElementMatrix */
-
-
-/* just to shut up some warnings on Linux */
-typedef int (*compareFunc_t) (const void *, const void *);
-
-/* This method is to check repetition in Input UEL.
- * It has to be a list of unique elements, without repetition */
-void
-checkForRepetition(SEXP bufferUel)
-{
-  int i;
-  shortStringBuf_t *elements;
-  int nRec;
-
-  /* Step 1: get all the string element and store in array*/
-  nRec = length(bufferUel);
-
-  elements =  malloc(nRec * sizeof(*elements));
-  for (i = 0; i < nRec; i++) {
-    strcpy(elements[i], CHAR(STRING_ELT(bufferUel, i)));
-  }
-  /* Step 2: Sort the array */
-  qsort(elements, nRec, sizeof(*elements), (compareFunc_t)strcmp);
-  /* Step 3: loop over the sorted array and check for repetition */
-  i = 0;
-  for (i = 0; i < nRec - 1; i++) {
-    if (0 == strcmp(elements[i], elements[i+1])) {
-      Rprintf("Input UEL have repeated entry of '%s'\n",
-              elements[i]);
-      error("Repetition in input UEL is not allowed.");
-    }
-  }
-  free(*elements);
-} /* checkForRepetition */
-
-
-/* This method convert input UEL cell into output cell array of strings */
-SEXP
-convertToOutput(SEXP bufferUel,
-                SEXP tmpUel)
-{
-  int  len;
-  char buffer [256];
-  double *doubleData;
-  int *intData;
-  int w = 0;
-
-  len = length(tmpUel);
-  if (TYPEOF(tmpUel) == REALSXP) {
-    doubleData = REAL(tmpUel);
-    for (w = 0; w < len; w++) {
-      sprintf(buffer, "%g", doubleData[w]);
-      SET_STRING_ELT(bufferUel, w, mkChar(buffer));
-    }
-  }
-  else if (TYPEOF(tmpUel) == INTSXP) {
-    intData = INTEGER(tmpUel);
-    for (w = 0; w < len; w++) {
-      sprintf(buffer, "%i", intData[w]);
-      SET_STRING_ELT(bufferUel, w, mkChar(buffer));
-    }
-  }
-  else if (TYPEOF(tmpUel) == STRSXP) {
-    for (w = 0; w < len; w++) {
-      SET_STRING_ELT(bufferUel, w, duplicate(STRING_ELT(tmpUel, w)));
-    }
-  }
-
-  checkForRepetition(bufferUel);
-
-  return bufferUel;
-} /* convertToOutput*/
-
-
-int checkIfExist (int k, SEXP filterUel, const char *uelName)
-{
-  SEXP tmpUel;
-  int i, n;
-  const char *uelString;
-  int element = 0;
-
-  /* TODO: uelString has to be const char *,
-   * that's why there is a warrning message at compilation */
-  tmpUel = VECTOR_ELT(filterUel, k);
-  n = length(tmpUel);
-  for (i=0; i < n; i++) {
-    uelString = CHAR(STRING_ELT(tmpUel, i));
-    if (0 == strcmp(uelString, uelName)) {
-      element = i+1;
-      break;
-    }
-  }
-  return element;
-} /* checkIfExist */
-
 
 /* checkSymList: checks if a is potentially a valid symList
  * return:
@@ -2281,7 +1167,7 @@ readWgdxList(SEXP structure,
       else if (TYPEOF(tmpUel) == REALSXP || TYPEOF(tmpUel) == INTSXP) {
         /* Convert to output */
         bufferUel = allocVector(STRSXP, length(tmpUel));
-        bufferUel =  convertToOutput (bufferUel, tmpUel);
+        makeStrVec (bufferUel, tmpUel);
         SET_VECTOR_ELT (uelOut, j, bufferUel);
       }
       else {
@@ -2688,7 +1574,7 @@ checkRgdxList (const SEXP lst, rgdxStruct_t *data)
         else {
           bufferUel = allocVector(STRSXP, length(tmpUel));
           /* Convert to output */
-          bufferUel =  convertToOutput(bufferUel, tmpUel);
+          makeStrVec (bufferUel, tmpUel);
           SET_VECTOR_ELT(data->filterUel, j, bufferUel);
         }
       }
@@ -3073,34 +1959,6 @@ writeGdx(char *gdxFileName,
   UNPROTECT(wAlloc);
 } /* writeGdx */
 
-static void
-loadGDX (void)
-{
-  shortStringBuf_t msg;
-  int rc;
-
-  if (gdxLibraryLoaded())
-    return;                     /* all done already */
-  rc = gdxGetReady (msg, sizeof(msg));
-  if (0 == rc) {
-    Rprintf ("Error loading the GDX API\n");
-    Rprintf ("%s\n", msg);
-    Rprintf ("Hint: try calling igdx() with the name of the GAMS system directory\n");
-    Rprintf ("      before calling this routine.\n");
-#if defined(_WIN32)
-    Rprintf ("      You can also add the GAMS system directory to the PATH.\n");
-#elif defined(__APPLE__)
-    Rprintf ("      You can also add the GAMS system directory to the PATH\n");
-    Rprintf ("      and to DYLD_LIBRARY_PATH.\n");
-#else
-    Rprintf ("      You can also add the GAMS system directory to the PATH\n");
-    Rprintf ("      and to LD_LIBRARY_PATH.\n");
-#endif
-    error ("Error loading the GDX API: %s", msg);
-  }
-  return;
-} /* loadGDX */
-
 /* interpret the squeeze arg for rgdx as a logical/boolean */
 static Rboolean getSqueezeArgRead (SEXP squeeze)
 {
@@ -3208,7 +2066,7 @@ SEXP rgdx (SEXP args)
   int withList = 0;
   int outFields = 6;
   int mwNElements =0;
-  int uelProperty = 0;
+  int uelPos;
   Rboolean zeroSqueeze = NA_LOGICAL;
 
   /* setting intial values */
@@ -3394,11 +2252,10 @@ SEXP rgdx (SEXP args)
         gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
         b = 0;
         for (k = 0; k < symDim; k++) {
-          uelProperty = 0;
           uelElementName = CHAR(STRING_ELT(UEList, uels[k]-1));
-          uelProperty = checkIfExist (k, inputData->filterUel, uelElementName);
+          uelPos = findInFilter (k, inputData->filterUel, uelElementName);
           /* uel element exists */
-          if (uelProperty > 0) {
+          if (uelPos > 0) {
             b++;
           }
           else {
@@ -3452,12 +2309,11 @@ SEXP rgdx (SEXP args)
           index = 0;
           b = 0;
           for (k = 0;  k < symDim;  k++) {
-            uelProperty = 0;
             returnedIndex[k] = 0;
             uelElementName = CHAR(STRING_ELT(UEList, uels[k]-1));
-            uelProperty = checkIfExist (k, inputData->filterUel, uelElementName);
-            if (uelProperty > 0) {
-              returnedIndex[k] = uelProperty;
+            uelPos = findInFilter (k, inputData->filterUel, uelElementName);
+            if (uelPos > 0) {
+              returnedIndex[k] = uelPos;
               b++;
             }
             else {
@@ -3503,12 +2359,11 @@ SEXP rgdx (SEXP args)
           b = 0;
 
           for (k = 0;  k < symDim;  k++) {
-            uelProperty = 0;
             returnedIndex[k] = 0;
             uelElementName = CHAR(STRING_ELT(UEList, uels[k]-1));
-            uelProperty = checkIfExist (k, inputData->filterUel, uelElementName);
-            if (uelProperty > 0) {
-              returnedIndex[k] = uelProperty;
+            uelPos = findInFilter (k, inputData->filterUel, uelElementName);
+            if (uelPos > 0) {
+              returnedIndex[k] = uelPos;
               b++;
             }
             else {
