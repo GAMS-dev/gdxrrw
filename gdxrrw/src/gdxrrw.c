@@ -41,6 +41,9 @@
 #define _GDXRRW_MAIN_
 #include "globals.h"
 
+/* The version info below changes when this file is updated */
+char ID[GMS_SSSIZE] = "$Id$";
+
 static int wAlloc;
 
 static char specialCommand[LINELEN];

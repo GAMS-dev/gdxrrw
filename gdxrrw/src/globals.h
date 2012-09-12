@@ -133,8 +133,6 @@ sparseToFull(SEXP compVal, SEXP compFullVal, SEXP compUels,
 #define _GDXRRW_EXTERN_
 gdxHandle_t gdxHandle = (gdxHandle_t) 0;
 int gamsoIsUnset = 0;
-/* The version info below changes when this file is updated */
-char ID[GMS_SSSIZE] = "$Id$";
 
 #else
 
