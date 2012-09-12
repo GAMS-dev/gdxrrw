@@ -2140,7 +2140,7 @@ SEXP rgdx (SEXP args)
       error("Dimension of UEL entered does not match with symbol in GDX");
     }
     /* Creating default uel if none entered */
-    if (rSpec->withUel != 1) {
+    if (! rSpec->withUel) {
       PROTECT(compUels = allocVector(VECSXP, symDim));
       alloc++;
       for (defaultIndex = 0; defaultIndex < symDim; defaultIndex++) {
@@ -2381,6 +2381,7 @@ SEXP rgdx (SEXP args)
     /* Converting data into its compressed form. */
     if (rSpec->compress == 1) {
       PROTECT(compUels = allocVector(VECSXP, symDim));
+      alloc++;
       compressData (compVal, UEList, compUels, nUEL, symDim, mrows);
     }
     /* TODO/TEST: create full dimensional string matrix */
