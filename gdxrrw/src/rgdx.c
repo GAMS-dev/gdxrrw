@@ -46,7 +46,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec)
   }
   for (i = 0;  i < nElements;  i++) {
     elmtName = CHAR(STRING_ELT(lstNames, i));
-    /* Checking for valid element names */
+    /* Checking for valid list element names */
     if ( !((0 == strcmp("name", elmtName ))
            || (0 == strcmp("dim", elmtName ))
            || (0 == strcmp("uels", elmtName ))
@@ -63,7 +63,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec)
     }
   }
 
-  /* Checking if field data is for "name" */
+  /* Checking list element "name" */
   for (found = 0, i = 0;  i < nElements;  i++) {
     if (strcmp("name", CHAR(STRING_ELT(lstNames, i))) == 0) {
       found = 1;
@@ -86,7 +86,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec)
     error("Required list element 'name' is missing. Please try again.\n" );
   }
 
-  /* Checking for 'form'. Default it to 'sparse'*/
+  /* Checking for list element 'form'. Default to 'sparse' if not found */
   for (found = 0, i = 0;  i < nElements;  i++) {
     if (strcmp("form", CHAR(STRING_ELT(lstNames, i))) == 0) {
       found = 1;
@@ -115,7 +115,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec)
     }
   }
 
-  /* Checking for 'compress'. Default it to 'false' */
+  /* Checking for list element 'compress'. Default to 'false' if not found */
   for (found = 0, i = 0;  i < nElements;  i++) {
     if (strcmp("compress", CHAR(STRING_ELT(lstNames, i))) == 0) {
       found = 1;
@@ -155,7 +155,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec)
     }
   }
 
-  /* Checking for field.  Default it to 'level' */
+  /* Checking for list element 'field'.  Default to 'level' if not found */
   for (found = 0, i = 0;  i < nElements;  i++) {
     if (strcmp("field", CHAR(STRING_ELT(lstNames, i))) == 0) {
       found = 1;
@@ -194,7 +194,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec)
     }
   }
 
-  /* Checking for ts. Default it to 'false' */
+  /* Checking for list element 'ts'.  Default to 'false' if not found */
   for (found = 0, i = 0;  i < nElements;  i++) {
     if (strcmp("ts", CHAR(STRING_ELT(lstNames, i))) == 0) {
       found = 1;
@@ -230,14 +230,13 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec)
     }
   }
 
-  /* Checking for 'te'. Default it to 'false' */
+  /* Checking for list element 'te'. Default to 'false' if not found */
   for (found = 0, i = 0;  i < nElements;  i++) {
     if (strcmp("te", CHAR(STRING_ELT(lstNames, i))) == 0) {
       found = 1;
       break;
     }
   }
-
   if (found) {
     tmp = VECTOR_ELT(lst, i);
     if (TYPEOF(tmp) == STRSXP ) {
@@ -269,7 +268,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec)
     }
   }
 
-  /* Checking for uels. Used in filtered read */
+  /* Checking for list element 'uels'.  Used in filtered read */
   for (found = 0, i = 0;  i < nElements;  i++) {
     if (strcmp("uels", CHAR(STRING_ELT(lstNames, i))) == 0) {
       found = 1;
@@ -287,7 +286,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec)
       for (j = 0; j < length(tmp); j++) {
         tmpUel = VECTOR_ELT(tmp, j);
         if (tmpUel == R_NilValue) {
-          error("Empty Uel is not allowed ");
+          error("Empty Uel is not allowed");
         }
         else {
           bufferUel = allocVector(STRSXP, length(tmpUel));
@@ -323,7 +322,7 @@ SEXP rgdx (SEXP args)
     compField = R_NilValue,
     compTs = R_NilValue,
     compTe = R_NilValue;
-  SEXP OPListComp, OPList, dimVect, textElement, elVect;
+  SEXP outListNames, outList, dimVect, textElement, elVect;
   FILE    *fin;
   rSpec_t *rSpec;
   gdxUelIndex_t uels;
@@ -351,7 +350,7 @@ SEXP rgdx (SEXP args)
   int nField, defaultIndex, elementIndex, IDum, ndimension, totalElement;
   int *returnedIndex;
   int withList = 0;
-  int outFields = 6;
+  int outElements;
   int mwNElements =0;
   int uelPos;
   Rboolean zeroSqueeze = NA_LOGICAL;
@@ -488,7 +487,8 @@ SEXP rgdx (SEXP args)
     SET_STRING_ELT(UEList, iUEL-1, mkChar(uelName));
   }
 
-  if (withList) {
+  outElements = 6;   /* outList has at least 6 elements, maybe more */
+  if (withList) { /* aa */
     /* Checking dimension of input uel and parameter in GDX file.
      * If they are not equal then error. */
 
@@ -852,9 +852,9 @@ SEXP rgdx (SEXP args)
       }
       } /* switch(symDim) */
     }
-  } /* if (withList) */
+  } /* if (withList) aa */
 
-  if (withList) {
+  if (withList) { /* bb */
     /* Creating string vector for symbol Name */
     PROTECT(compName = allocVector(STRSXP, 1) );
     SET_STRING_ELT(compName, 0, mkChar(symName));
@@ -894,9 +894,9 @@ SEXP rgdx (SEXP args)
     }
 
 
-    /* Create a string vector for symbol  field */
+    /* Create a string vector for symbol field */
     if (symType == dt_var || symType == dt_equ) {
-      outFields++;
+      outElements++;
       PROTECT(compField = allocVector(STRSXP, 1));
       alloc++;
       switch(rSpec->dField) {
@@ -920,90 +920,91 @@ SEXP rgdx (SEXP args)
       }
     }
     if (rSpec->ts) {
-      outFields++;
+      outElements++;
       PROTECT(compTs = allocVector(STRSXP, 1));
       alloc++;
       SET_STRING_ELT(compTs, 0, mkChar(sText));
     }
     if (rSpec->te) {
-      outFields++;
+      outElements++;
     }
-  }
+  } /* if (withList) bb */
 
-  PROTECT(OPListComp = allocVector(STRSXP, outFields));
+  PROTECT(outListNames = allocVector(STRSXP, outElements));
   alloc++;
   /* populating list element names */
-  SET_STRING_ELT(OPListComp, 0, mkChar("name"));
-  SET_STRING_ELT(OPListComp, 1, mkChar("type"));
-  SET_STRING_ELT(OPListComp, 2, mkChar("dim"));
-  SET_STRING_ELT(OPListComp, 3, mkChar("val"));
-  SET_STRING_ELT(OPListComp, 4, mkChar("form"));
-  SET_STRING_ELT(OPListComp, 5, mkChar("uels"));
+  SET_STRING_ELT(outListNames, 0, mkChar("name"));
+  SET_STRING_ELT(outListNames, 1, mkChar("type"));
+  SET_STRING_ELT(outListNames, 2, mkChar("dim"));
+  SET_STRING_ELT(outListNames, 3, mkChar("val"));
+  SET_STRING_ELT(outListNames, 4, mkChar("form"));
+  SET_STRING_ELT(outListNames, 5, mkChar("uels"));
 
   nField = 5;
   if (withList) {
     if (symType == dt_var || symType == dt_equ) {
       nField++;
-      SET_STRING_ELT(OPListComp, nField, mkChar("field"));
+      SET_STRING_ELT(outListNames, nField, mkChar("field"));
     }
     if (rSpec->ts) {
       nField++;
-      SET_STRING_ELT(OPListComp, nField, mkChar("ts"));
+      SET_STRING_ELT(outListNames, nField, mkChar("ts"));
     }
     if (rSpec->te) {
       nField++;
-      SET_STRING_ELT(OPListComp, nField, mkChar("te"));
+      SET_STRING_ELT(outListNames, nField, mkChar("te"));
     }
   }
 
 
-  PROTECT(OPList = allocVector(VECSXP, outFields));
+  PROTECT(outList = allocVector(VECSXP, outElements));
   alloc++;
   if (withList) {
     /* populating list component vector */
-    SET_VECTOR_ELT(OPList, 0, compName);
-    SET_VECTOR_ELT(OPList, 1, compType);
-    SET_VECTOR_ELT(OPList, 2, compDim);
+    SET_VECTOR_ELT(outList, 0, compName);
+    SET_VECTOR_ELT(outList, 1, compType);
+    SET_VECTOR_ELT(outList, 2, compDim);
     if (rSpec->dForm == full) {
-      SET_VECTOR_ELT(OPList, 3, compFullVal);
+      SET_VECTOR_ELT(outList, 3, compFullVal);
     }
     else {
-      SET_VECTOR_ELT(OPList, 3, compVal);
+      SET_VECTOR_ELT(outList, 3, compVal);
     }
-    SET_VECTOR_ELT(OPList, 4, compForm);
+    SET_VECTOR_ELT(outList, 4, compForm);
     if (rSpec->withUel) {
-      SET_VECTOR_ELT(OPList, 5, rSpec->filterUel);
+      SET_VECTOR_ELT(outList, 5, rSpec->filterUel);
     }
     else {
-      SET_VECTOR_ELT(OPList, 5, compUels);
+      SET_VECTOR_ELT(outList, 5, compUels);
     }
 
     nField = 5;
     if (symType == dt_var || symType == dt_equ) {
       nField++;
-      SET_VECTOR_ELT(OPList, nField, compField);
+      SET_VECTOR_ELT(outList, nField, compField);
     }
     if (rSpec->ts) {
       nField++;
-      SET_VECTOR_ELT(OPList, nField, compTs);
+      SET_VECTOR_ELT(outList, nField, compTs);
     }
     if (rSpec->te) {
       nField++;
-      SET_VECTOR_ELT(OPList, nField, compTe);
+      SET_VECTOR_ELT(outList, nField, compTe);
     }
   }
   else {
+    /* no read specifier so return the universe */
     /* entering null values other then UEL */
-    SET_VECTOR_ELT(OPList, 0, R_NilValue);
-    SET_VECTOR_ELT(OPList, 1, R_NilValue);
-    SET_VECTOR_ELT(OPList, 2, R_NilValue);
-    SET_VECTOR_ELT(OPList, 3, R_NilValue);
-    SET_VECTOR_ELT(OPList, 4, R_NilValue);
-    SET_VECTOR_ELT(OPList, 5, UEList);
+    SET_VECTOR_ELT(outList, 0, R_NilValue);
+    SET_VECTOR_ELT(outList, 1, R_NilValue);
+    SET_VECTOR_ELT(outList, 2, R_NilValue);
+    SET_VECTOR_ELT(outList, 3, R_NilValue);
+    SET_VECTOR_ELT(outList, 4, R_NilValue);
+    SET_VECTOR_ELT(outList, 5, UEList);
   }
 
   /* Setting attribute name */
-  setAttrib(OPList, R_NamesSymbol, OPListComp);
+  setAttrib(outList, R_NamesSymbol, outListNames);
   /* Releasing allocated memory */
   free(rSpec);
   if (!gdxDataReadDone (gdxHandle)) {
@@ -1015,5 +1016,5 @@ SEXP rgdx (SEXP args)
   }
   (void) gdxFree (&gdxHandle);
   UNPROTECT(alloc);
-  return OPList;
+  return outList;
 } /* End of rgdx */
