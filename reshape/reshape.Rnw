@@ -59,8 +59,8 @@ crn.rus.y2014 7.14 /;
 
 In order to properly write the data frame \texttt{sample1} to GDX via
 \textit{wgdx.df}, we need to first reshape it.  R provides some help
-here with the \textit{reshape} function but even so, this can be a
-somewhat time-consuming and error-prone process.
+here with the \textit{reshape} or \textit{melt} functions but even so,
+this can be a somewhat time-consuming and error-prone process.
 
 \section{The solution}
 
