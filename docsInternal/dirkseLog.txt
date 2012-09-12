@@ -31,7 +31,7 @@ R CMD build gdxrrw
 # R CMD build gdxrrw --binary {what we want to avoid user compiling}
 
 
-================ Windows (cleveland, Steve's 64-bit Windows 7 desktop) ================
+=========== Windows (adams, Steve's 64-bit Windows 7 desktop at work) ========
 # with .libPaths() set to include C:\\R\\2.12 the -l flag is not necessary
 # R CMD INSTALL -l C:\R\2.12 gdxrrw
 # R CMD REMOVE  -l C:\R\2.12 gdxrrw  {to remove, or undo an install}

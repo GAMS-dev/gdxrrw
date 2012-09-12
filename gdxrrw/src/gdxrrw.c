@@ -26,8 +26,6 @@
   * SEXP STRING_ELT (SEXP x, int i);
   * const char * CHAR (SEXP x);
   *
-  *
-  * TO DO: output=std global should go - no need to have old-style stuff
   */
 
 #include <R.h>
@@ -40,34 +38,9 @@
 
 #include "gdxcc.h"
 #include "gclgms.h"
-
-typedef void (GDX_CALLCONV *gdxGetLoadPath_t) (char *s);
-GDX_FUNCPTR(gdxGetLoadPath);
-
-#if defined(_WIN32)
-# include <windows.h>
-static const char *formatMessage(int errNum);
-#else
-# include <sys/wait.h>
-#endif
-
-#define LINELEN 1024
-#define MAX_STRING 128
-#if defined(__linux__) && defined(__x86_64)
-/* long story: GLIBC hacked up memcpy on my Fedora 15 machine
- * so GLIBC 2.14 is required to use the gdxrrw.so.  That is not acceptable.
- */
-# define MEMCPY memmove
-#else
-# define MEMCPY memcpy
-#endif
+#include "globals.h"
 
 gdxHandle_t gdxHandle = (gdxHandle_t) 0;
-
-typedef char shortStringBuf_t[GMS_SSSIZE];
-
-/* just to shut up some warnings on Linux */
-typedef int (*compareFunc_t) (const void *, const void *);
 
 /* Structure and Enum definition */
 typedef enum dType
@@ -312,6 +285,7 @@ getGDXMsg (void)
 
 #if defined(_WIN32)
 static char lastErrorMsgBuf[128];
+static const char *formatMessage(int errNum);
 
 static const char *
 formatMessage(int errNum)
@@ -627,7 +601,7 @@ getGlobalUEL(SEXP globalUEL,
 SEXP
 getGamsSoln(char *gmsFileName)
 {
-  SEXP  UEList;
+  SEXP UEList;
   SEXP OPListComp, OPList, dimVect;
   SEXP textElement = R_NilValue;
   SEXP compName = R_NilValue,
@@ -800,7 +774,7 @@ getGamsSoln(char *gmsFileName)
     gdxSetSpecialValues (gdxHandle, sVals);
 
     gdxSymbolInfo (gdxHandle, 1, inputData->name, &symDim, &symType);
-    /* checking that symbol is of type parameter/set/equaltion/variable */
+    /* checking that symbol is of type parameter/set/equation/variable */
     if (!(symType == dt_par || symType == dt_set || symType == dt_var || symType == dt_equ)) {
       Rprintf("GDX symbol %s (index=1, symDim=%d, symType=%d)"
               " is not recognized as set, parameter, variable, or equation\n",
@@ -819,7 +793,7 @@ getGamsSoln(char *gmsFileName)
       SET_STRING_ELT(UEList, iUEL-1, mkChar(uelName));
     }
 
-    /* Checking dimension of input uel and paramter in GDX file.
+    /* Checking dimension of input uel and parameter in GDX file.
      * If they are not equal then error. */
 
     if (inputData->withUel == 1 && length(inputData->filterUel) != symDim) {
@@ -1790,6 +1764,9 @@ createElementMatrix(SEXP compVal,
   return compTe;
 } /* End of createElementMatrix */
 
+
+/* just to shut up some warnings on Linux */
+typedef int (*compareFunc_t) (const void *, const void *);
 
 /* This method is to check repetition in Input UEL.
  * It has to be a list of unique elements, without repetition */
@@ -3416,7 +3393,8 @@ SEXP rgdx (SEXP args)
       error("Text elements only exist for set and symbol '%s' is not a set.",
             inputData->name);
     }
-  }
+  } /* if (withList) */
+
   /* Get global UEL from GDX file */
   (void) gdxUMUelInfo (gdxHandle, &nUEL, &highestMappedUEL);
   PROTECT(UEList = allocVector(STRSXP, nUEL));
@@ -3429,7 +3407,7 @@ SEXP rgdx (SEXP args)
   }
 
   if (withList) {
-    /* Checking dimension of input uel and paramter in GDX file.
+    /* Checking dimension of input uel and parameter in GDX file.
      * If they are not equal then error. */
 
     if (inputData->withUel == 1 && length(inputData->filterUel) != symDim) {
