@@ -60,7 +60,7 @@ gdxInfo (SEXP args)
   SEXP retList = R_NilValue;    /* list to return */
   SEXP elt[RETLIST_LEN];        /* list elements */
   SEXP listNames;
-    
+
   int dump, returnList, returnDF;
   int arglen;
   shortStringBuf_t gdxFileName;
@@ -72,7 +72,7 @@ gdxInfo (SEXP args)
   int iDummy;
   int allocCnt = 0;
   int iSym, nSyms;
-  int iSet, nSets; 
+  int iSet, nSets;
   int iPar, nPars;
   int iVar, nVars;
   int iEqu, nEqus;
@@ -90,7 +90,7 @@ gdxInfo (SEXP args)
   SEXP ap, el;
   const char *name;
 
-  Rprintf ("gdxInfo called with %d args\n", length(args)); 
+  Rprintf ("gdxInfo called with %d args\n", length(args));
   for (i = 0, ap = args;  ap != R_NilValue;  i++, ap = CDR(ap)) {
     name = isNull(TAG(ap)) ? "" : CHAR(PRINTNAME(TAG(ap)));
     el = CAR(ap);
@@ -498,7 +498,7 @@ gdxInfo (SEXP args)
     PROTECT(setDoms = allocVector(VECSXP, nSets));
     allocCnt++;
     classgets (setDoms, asIsClass);
-    
+
     PROTECT(parName = allocVector(STRSXP, nPars));
     allocCnt++;
     PROTECT(parIndex = allocVector(INTSXP, nPars));
@@ -512,7 +512,7 @@ gdxInfo (SEXP args)
     PROTECT(parDoms = allocVector(VECSXP, nPars));
     allocCnt++;
     classgets (parDoms, asIsClass);
-    
+
     PROTECT(varName = allocVector(STRSXP, nVars));
     allocCnt++;
     PROTECT(varIndex = allocVector(INTSXP, nVars));
@@ -524,7 +524,7 @@ gdxInfo (SEXP args)
     PROTECT(varDoms = allocVector(VECSXP, nVars));
     allocCnt++;
     classgets (varDoms, asIsClass);
-    
+
     PROTECT(equName = allocVector(STRSXP, nEqus));
     allocCnt++;
     PROTECT(equIndex = allocVector(INTSXP, nEqus));
@@ -536,7 +536,7 @@ gdxInfo (SEXP args)
     PROTECT(equDoms = allocVector(VECSXP, nEqus));
     allocCnt++;
     classgets (equDoms, asIsClass);
-    
+
     PROTECT(aliName = allocVector(STRSXP, nAliases));
     allocCnt++;
     PROTECT(aliIndex = allocVector(INTSXP, nAliases));

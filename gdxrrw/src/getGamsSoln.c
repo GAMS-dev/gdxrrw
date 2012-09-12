@@ -133,7 +133,7 @@ getGamsSoln(const char *gmsFileName)
     compField = R_NilValue,
     compTs = R_NilValue,
     compTe = R_NilValue;
-  rgdxStruct_t *inputData;
+  rSpec_t *rSpec;
   FILE *fp, *fin;
   char line[LINELEN], astring[LINELEN], *s, *array[50], *gdxFile;
   int loop, maxPossibleElements, z;
@@ -161,15 +161,11 @@ getGamsSoln(const char *gmsFileName)
   int outFields = 6;
 
   /* Setting default values */
-  inputData = malloc(sizeof(*inputData));
-
-  inputData->dForm = sparse;
-  inputData->compress = isCompress();
-  inputData->dField = level;
-  inputData->withUel = 0;
-  inputData->ts = 0;
-  inputData->te = 0;
-  inputData->withField = 0;
+  rSpec = malloc(sizeof(*rSpec));
+  memset (rSpec, 0, sizeof(*rSpec));
+  rSpec->dForm = sparse;
+  rSpec->compress = isCompress();
+  rSpec->dField = level;
 
   if ((fp = fopen(gmsFileName,"r")) == NULL) {
     error("Cannot find/open %s file.\n", gmsFileName);
@@ -216,20 +212,20 @@ getGamsSoln(const char *gmsFileName)
   if (loop - 3 > 0) {
     /* This is for global UEL */
     wUEL = 0;
-    inputData->filterUel = getGlobalUEL(inputData->filterUel, inputData->compress);
+    rSpec->filterUel = getGlobalUEL(rSpec->filterUel, rSpec->compress);
     if (wUEL == 0) {
-      inputData->withUel = 0;
+      rSpec->withUel = 0;
     }
     else {
-      inputData->withUel = 1;
+      rSpec->withUel = 1;
     }
     gForm = getGlobalString("form", gsBuf);
     if (gForm != NULL) {
       if (strcmp(gForm,"full") == 0) {
-        inputData->dForm = full;
+        rSpec->dForm = full;
       }
       else if (strcmp(gForm,"sparse") == 0) {
-        inputData->dForm = sparse;
+        rSpec->dForm = sparse;
       }
       else {
         /* else warning message */
@@ -241,19 +237,19 @@ getGamsSoln(const char *gmsFileName)
     field = getGlobalString("field", gsBuf);
     if (field != NULL) {
       if (strcmp(field, "l") == 0) {
-        inputData->dField = level;
+        rSpec->dField = level;
       }
       else if (strcmp(field, "m") == 0) {
-        inputData->dField = marginal;
+        rSpec->dField = marginal;
       }
       else if (strcmp(field, "lo") == 0) {
-        inputData->dField = lower;
+        rSpec->dField = lower;
       }
       else if (strcmp(field, "up") == 0) {
-        inputData->dField = upper;
+        rSpec->dField = upper;
       }
       else if (strcmp(field, "s") == 0) {
-        inputData->dField = scale;
+        rSpec->dField = scale;
       }
       else {
         /* else warning message */
@@ -292,12 +288,12 @@ getGamsSoln(const char *gmsFileName)
     sVals[GMS_SVIDX_MINF] = negInf;
     gdxSetSpecialValues (gdxHandle, sVals);
 
-    gdxSymbolInfo (gdxHandle, 1, inputData->name, &symDim, &symType);
+    gdxSymbolInfo (gdxHandle, 1, rSpec->name, &symDim, &symType);
     /* checking that symbol is of type parameter/set/equation/variable */
     if (!(symType == dt_par || symType == dt_set || symType == dt_var || symType == dt_equ)) {
       Rprintf("GDX symbol %s (index=1, symDim=%d, symType=%d)"
               " is not recognized as set, parameter, variable, or equation\n",
-              inputData->name, symDim, symType);
+              rSpec->name, symDim, symType);
       error("Invalid symbol. Please check listing file.\n");
     }
 
@@ -315,11 +311,11 @@ getGamsSoln(const char *gmsFileName)
     /* Checking dimension of input uel and parameter in GDX file.
      * If they are not equal then error. */
 
-    if (inputData->withUel == 1 && length(inputData->filterUel) != symDim) {
+    if (rSpec->withUel == 1 && length(rSpec->filterUel) != symDim) {
       error("Dimension of UEL entered does not match with symbol in GDX");
     }
     /* Creating default uel if none entered */
-    if (inputData->withUel == 0) {
+    if (rSpec->withUel == 0) {
       PROTECT(compUels = allocVector(VECSXP, symDim));
       gamsAlloc++;
       for (defaultIndex = 0; defaultIndex < symDim; defaultIndex++) {
@@ -345,10 +341,10 @@ getGamsSoln(const char *gmsFileName)
      */
     mwNElements = 0;
 
-    if (inputData->withUel == 1) {
+    if (rSpec->withUel == 1) {
       maxPossibleElements = 1;
       for (z = 0; z < symDim; z++) {
-        mwNElements = length(VECTOR_ELT(inputData->filterUel, z));
+        mwNElements = length(VECTOR_ELT(rSpec->filterUel, z));
         maxPossibleElements = maxPossibleElements*mwNElements;
       }
       mwNElements = 0;
@@ -358,7 +354,7 @@ getGamsSoln(const char *gmsFileName)
         b = 0;
         for (k = 0; k < symDim; k++) {
           uelElementName = CHAR(STRING_ELT(UEList, uels[k]-1));
-          uelPos = findInFilter (k, inputData->filterUel, uelElementName);
+          uelPos = findInFilter (k, rSpec->filterUel, uelElementName);
           if (uelPos > 0) {
             b++;
           }
@@ -377,23 +373,23 @@ getGamsSoln(const char *gmsFileName)
       k = 0;
     }
     /* Allocating memory for 2D sparse matrix */
-    if (inputData->withUel == 1) {
+    if (rSpec->withUel == 1) {
       PROTECT(compVal = allocMatrix(REALSXP, mwNElements, ncols));
       gamsAlloc++;
-      if (inputData->te && symType == dt_set) {
+      if (rSpec->te && symType == dt_set) {
         PROTECT(textElement = allocVector(STRSXP, mwNElements));
         gamsAlloc++;
       }
     }
-    if (inputData->withUel == 0) {
+    if (rSpec->withUel == 0) {
       /* check for non zero elements for variable and equation */
       if (symType == dt_var || symType == dt_equ) {
-        mrows = getNonZeroElements (gdxHandle, 1, inputData->dField);
+        mrows = getNonZeroElements (gdxHandle, 1, rSpec->dField);
       }
       /* Creat 2D sparse R array */
       PROTECT(compVal = allocMatrix(REALSXP, mrows, ncols));
       gamsAlloc++;
-      if (inputData->te && symType == dt_set) {
+      if (rSpec->te && symType == dt_set) {
         PROTECT(textElement = allocVector(STRSXP, mrows));
         gamsAlloc++;
       }
@@ -401,7 +397,7 @@ getGamsSoln(const char *gmsFileName)
 
     p = REAL(compVal);
     /* TODO/TEST: filtered read */
-    if (inputData->withUel == 1) {
+    if (rSpec->withUel == 1) {
       matched = 0;
       gdxDataReadRawStart (gdxHandle, 1, &nRecs);
 
@@ -414,7 +410,7 @@ getGamsSoln(const char *gmsFileName)
         for (k = 0;  k < symDim;  k++) {
           returnedIndex[k] = 0;
           uelElementName = CHAR(STRING_ELT(UEList, uels[k]-1));
-          uelPos = findInFilter (k, inputData->filterUel, uelElementName);
+          uelPos = findInFilter (k, rSpec->filterUel, uelElementName);
           if (uelPos > 0) {
             returnedIndex[k] = uelPos;
             b++;
@@ -431,7 +427,7 @@ getGamsSoln(const char *gmsFileName)
           matched = matched +1;
 
           if (symType != dt_set)
-            p[index] = values[inputData->dField];
+            p[index] = values[rSpec->dField];
         }
         if (matched == maxPossibleElements) {
           break;
@@ -447,7 +443,7 @@ getGamsSoln(const char *gmsFileName)
       for (iRec = 0, kRec = 0;  iRec < nRecs;  iRec++) {
         gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
         if ((dt_set == symType) ||
-            (0 != values[inputData->dField]) ) {
+            (0 != values[rSpec->dField]) ) {
           /* store the value */
           for (kk = 0;  kk < symDim;  kk++) {
             p[kRec + kk*mrows] = uels[kk];
@@ -455,7 +451,7 @@ getGamsSoln(const char *gmsFileName)
           index = kRec + symDim*mrows;
           kRec++;
           if (symType != dt_set)
-            p[index] = values[inputData->dField];
+            p[index] = values[rSpec->dField];
         } /* end of if (set || val != 0) */
       } /* loop over GDX records */
       if (kRec < mrows) {
@@ -480,13 +476,13 @@ getGamsSoln(const char *gmsFileName)
     }
 
     /* Converting data into its compressed form. */
-    if (inputData->compress == 1) {
+    if (rSpec->compress == 1) {
       PROTECT(compUels = allocVector(VECSXP, symDim));
       compressData (compVal, UEList, compUels, nUEL, symDim, mrows);
     }
 
     /* Converting sparse data into full matrix */
-    if (inputData->dForm == full) {
+    if (rSpec->dForm == full) {
       switch (symDim) {
       case 0:
         PROTECT(compFullVal = allocVector(REALSXP, 1));
@@ -503,11 +499,11 @@ getGamsSoln(const char *gmsFileName)
         gamsAlloc++;
         dimVal = REAL(dimVect);
 
-        if (inputData->withUel == 1) {
-          dimVal[0] = length(VECTOR_ELT(inputData->filterUel, 0));
-          PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(inputData->filterUel, 0))));
+        if (rSpec->withUel == 1) {
+          dimVal[0] = length(VECTOR_ELT(rSpec->filterUel, 0));
+          PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(rSpec->filterUel, 0))));
           gamsAlloc++;
-          compFullVal = sparseToFull(compVal, compFullVal, inputData->filterUel, symType, mwNElements, symDim);
+          compFullVal = sparseToFull(compVal, compFullVal, rSpec->filterUel, symType, mwNElements, symDim);
         }
         else {
           dimVal[0] = length(VECTOR_ELT(compUels, 0));
@@ -524,10 +520,10 @@ getGamsSoln(const char *gmsFileName)
         totalElement = 1;
         dimVal = REAL(dimVect);
         ndimension = 0;
-        if (inputData->withUel == 1) {
+        if (rSpec->withUel == 1) {
           for (ndimension = 0; ndimension < symDim; ndimension++) {
-            dimVal[ndimension] = length(VECTOR_ELT(inputData->filterUel, ndimension));
-            totalElement = (totalElement * length(VECTOR_ELT(inputData->filterUel, ndimension)));
+            dimVal[ndimension] = length(VECTOR_ELT(rSpec->filterUel, ndimension));
+            totalElement = (totalElement * length(VECTOR_ELT(rSpec->filterUel, ndimension)));
           }
         }
         else {
@@ -538,13 +534,13 @@ getGamsSoln(const char *gmsFileName)
         }
         PROTECT(compFullVal = allocVector(REALSXP, totalElement));
         gamsAlloc++;
-        if (inputData->withUel ==1) {
-          compFullVal = sparseToFull(compVal, compFullVal, inputData->filterUel, symType, mwNElements, symDim);
+        if (rSpec->withUel ==1) {
+          compFullVal = sparseToFull(compVal, compFullVal, rSpec->filterUel, symType, mwNElements, symDim);
         }
         else {
           compFullVal = sparseToFull(compVal, compFullVal, compUels, symType, mrows, symDim);
         }
-        
+
         setAttrib(compFullVal, R_DimSymbol, dimVect);
         break;
       } /* switch(symDim) */
@@ -554,7 +550,7 @@ getGamsSoln(const char *gmsFileName)
     /* List form */
     /* Creating string vector for symbol Name */
     PROTECT(compName = allocVector(STRSXP, 1) );
-    SET_STRING_ELT(compName, 0, mkChar(inputData->name));
+    SET_STRING_ELT(compName, 0, mkChar(rSpec->name));
     gamsAlloc++;
     /* Creating string vector for symbol type */
     PROTECT(compType = allocVector(STRSXP, 1) );
@@ -583,7 +579,7 @@ getGamsSoln(const char *gmsFileName)
     /* Creating string vector for val data form */
     PROTECT(compForm = allocVector(STRSXP, 1) );
     gamsAlloc++;
-    if (inputData->dForm == full) {
+    if (rSpec->dForm == full) {
       SET_STRING_ELT(compForm, 0, mkChar(forms[0]));
     }
     else {
@@ -595,7 +591,7 @@ getGamsSoln(const char *gmsFileName)
       outFields++;
       PROTECT(compField = allocVector(STRSXP, 1));
       gamsAlloc++;
-      switch(inputData->dField) {
+      switch(rSpec->dField) {
       case level:
         SET_STRING_ELT(compField, 0, mkChar( fields[0] ));
         break;
@@ -632,11 +628,11 @@ getGamsSoln(const char *gmsFileName)
       nField++;
       SET_STRING_ELT(OPListComp, nField, mkChar("field"));
     }
-    if (inputData->ts) {
+    if (rSpec->ts) {
       nField++;
       SET_STRING_ELT(OPListComp, nField, mkChar("ts"));
     }
-    if (inputData->te) {
+    if (rSpec->te) {
       nField++;
       SET_STRING_ELT(OPListComp, nField, mkChar("te"));
     }
@@ -648,15 +644,15 @@ getGamsSoln(const char *gmsFileName)
     SET_VECTOR_ELT(OPList, 0, compName);
     SET_VECTOR_ELT(OPList, 1, compType);
     SET_VECTOR_ELT(OPList, 2, compDim);
-    if (inputData->dForm == full) {
+    if (rSpec->dForm == full) {
       SET_VECTOR_ELT(OPList, 3, compFullVal);
     }
     else {
       SET_VECTOR_ELT(OPList, 3, compVal);
     }
     SET_VECTOR_ELT(OPList, 4, compForm);
-    if (inputData->withUel) {
-      SET_VECTOR_ELT(OPList, 5, inputData->filterUel);
+    if (rSpec->withUel) {
+      SET_VECTOR_ELT(OPList, 5, rSpec->filterUel);
     }
     else {
       SET_VECTOR_ELT(OPList, 5, compUels);
@@ -667,11 +663,11 @@ getGamsSoln(const char *gmsFileName)
       nField++;
       SET_VECTOR_ELT(OPList, nField, compField);
     }
-    if (inputData->ts) {
+    if (rSpec->ts) {
       nField++;
       SET_VECTOR_ELT(OPList, nField, compTs);
     }
-    if (inputData->te) {
+    if (rSpec->te) {
       nField++;
       SET_VECTOR_ELT(OPList, nField, compTe);
     }
@@ -688,6 +684,6 @@ getGamsSoln(const char *gmsFileName)
     }
     (void) gdxFree (&gdxHandle);
   } /* end if loop - 3 > 0 */
-  free(inputData);
+  free(rSpec);
   return OPList;
 } /* getGamsSoln */

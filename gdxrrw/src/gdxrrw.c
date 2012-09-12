@@ -65,18 +65,15 @@ static char strippedID[256];
 
 /* -------------------- Method declaration -----------------------*/
 static void
-checkRgdxList (const SEXP lst, rgdxStruct_t *data);
+checkRgdxList (const SEXP lst, rSpec_t *rSpec);
 
 static void
 unpackWgdxArgs (SEXP *args, int argLen, SEXP **symList,
                 int *symListSiz, int *symListLen, char *zeroSqueeze);
 
 static void
-readWgdxList(const SEXP lst,
-             int iSym,
-             SEXP uelIndex,
-             wgdxStruct_t **wgdxRecPtr,
-             int fromGAMS);
+readWgdxList (const SEXP lst, int iSym, SEXP uelIndex,
+              wSpec_t **wSpecPtr, int fromGAMS);
 
 void
 registerInputUEL(SEXP uelOut,
@@ -849,7 +846,7 @@ unpackWgdxArgs (SEXP *args, int argLen, SEXP **symList,
   Rprintf ("DEBUG: args = %p\n", CAR(a));
   Rprintf ("DEBUG: R_NilValue = %p\n", R_NilValue);
 #endif
-  
+
   *symList = malloc (*symListSiz * sizeof(**symList));
   memset (*symList, 0, *symListSiz * sizeof(**symList));
 
@@ -907,11 +904,8 @@ registerInputUEL(SEXP uelOut,
 /* This function validates the structure of the input lists,
  * sets certain global variables, and constructs the universe of UELs */
 void
-readWgdxList(SEXP structure,
-             int iSym,
-             SEXP uelIndex,
-             wgdxStruct_t **wgdxRecPtr,
-             int fromGAMS)
+readWgdxList (SEXP structure, int iSym, SEXP uelIndex,
+             wSpec_t **wSpecPtr, int fromGAMS)
 {
   SEXP lstName, tmpUel;
   SEXP dimension;
@@ -929,19 +923,16 @@ readWgdxList(SEXP structure,
   const char *tmpName;
   const char *compName;              /* pointers to field names */
   SEXP uelOut, bufferUel;            /* allocating temporary storage place */
-  wgdxStruct_t *inData;
+  wSpec_t *wSpec;
 
   withDim = 0;
   uelOut = R_NilValue;
 
-  inData = (wgdxStruct_t *) malloc(sizeof(*inData));
-  *wgdxRecPtr = inData;
-  inData->dForm = sparse;
-  inData->dType = set;
-  inData->withTs = 0;
-  inData->withVal = 0;
-  inData->withUel = 0;
-  inData->dim = 0;
+  wSpec = (wSpec_t *) malloc(sizeof(*wSpec));
+  *wSpecPtr = wSpec;
+  memset (wSpec, 0, sizeof(*wSpec));
+  wSpec->dForm = sparse;
+  wSpec->dType = set;
 
   /* check maximum number of fields */
   if (7 < length(structure) || length(structure) < 1) {
@@ -998,7 +989,7 @@ readWgdxList(SEXP structure,
   }
   tmpName = CHAR(STRING_ELT(nameExp, 0));
   checkStringLength (tmpName);
-  strcpy (inData->name, tmpName);
+  strcpy (wSpec->name, tmpName);
 
   if (tsExp) {
     if (STRSXP != TYPEOF(tsExp)) {
@@ -1007,7 +998,7 @@ readWgdxList(SEXP structure,
       error ("Input list component 'ts' must be string.\n");
     }
     checkStringLength (CHAR(STRING_ELT(tsExp, 0)));
-    inData->withTs = 1;
+    wSpec->withTs = 1;
   }
 
   if (formExp) {
@@ -1018,10 +1009,10 @@ readWgdxList(SEXP structure,
     }
     tmpName = CHAR(STRING_ELT(formExp, 0));
     if (strcasecmp("full", tmpName) == 0) {
-      inData->dForm = full;
+      wSpec->dForm = full;
     }
     else if (strcasecmp("sparse", tmpName) == 0) {
-      inData->dForm = sparse;
+      wSpec->dForm = sparse;
     }
     else {
       error("Input list component 'form' must be either 'full' or 'sparse'.");
@@ -1036,10 +1027,10 @@ readWgdxList(SEXP structure,
     }
     tmpName = CHAR(STRING_ELT(typeExp, 0));
     if (0 == strcasecmp("set", tmpName) ) {
-      inData->dType = set;
+      wSpec->dType = set;
     }
     else if (0 == strcasecmp("parameter", tmpName) ) {
-      inData->dType = parameter;
+      wSpec->dType = parameter;
     }
     else {
       Rprintf ("type found = %s\n", tmpName);
@@ -1056,7 +1047,7 @@ readWgdxList(SEXP structure,
         error("Negative value is not allowed as valid input for 'dim'.\n");
       }
       withDim = 1;
-      inData->dim = INTEGER(dimExp)[0];
+      wSpec->dim = INTEGER(dimExp)[0];
     }
     else if (REALSXP == TYPEOF(dimExp)) {
       if (length(dimExp) != 1) {
@@ -1066,8 +1057,8 @@ readWgdxList(SEXP structure,
         error("Negative value is not allowed as valid input for 'dim'.\n");
       }
       withDim = 1;
-      inData->dim = (int) REAL(dimExp)[0];
-      if (REAL(dimExp)[0] != inData->dim) {
+      wSpec->dim = (int) REAL(dimExp)[0];
+      if (REAL(dimExp)[0] != wSpec->dim) {
         error("Non-integer value is not allowed as valid input for 'dim'.\n");
       }
     }
@@ -1089,9 +1080,9 @@ readWgdxList(SEXP structure,
     if (0 == dimUels) {
       error ("Empty input list component 'uels' is not allowed.\n");
     }
-    if (withDim && inData->dim != dimUels) {
+    if (withDim && wSpec->dim != dimUels) {
       error ("Inconsistent dimension found: 'dim'=%d  doesn't match '.uels' dimension=%d.\n",
-             inData->dim, dimUels);
+             wSpec->dim, dimUels);
     }
     PROTECT(uelOut = allocVector(VECSXP, dimUels));
     wAlloc++;
@@ -1114,14 +1105,14 @@ readWgdxList(SEXP structure,
         error ("Input uels must be either string vectors or numeric vectors.\n");
       }
     }
-    inData->withUel = 1;
+    wSpec->withUel = 1;
   } /* uelsExp */
 
   if (NULL == valExp) {         /* .val field missing */
-    if (parameter == inData->dType) {
+    if (parameter == wSpec->dType) {
       error ("Missing 'val' is a required list component for parameters.");
     }
-    if (set == inData->dType && 0 == inData->withUel) {
+    if (set == wSpec->dType && 0 == wSpec->withUel) {
       error ("Missing 'val' is a required list component for sets with no UELs.");
     }
   }
@@ -1130,7 +1121,7 @@ readWgdxList(SEXP structure,
       tmpName = CHAR(STRING_ELT(valExp, 0));
       checkStringLength(tmpName);
       strcat(specialCommand, "--");
-      strcat(specialCommand,  inData->name);
+      strcat(specialCommand,  wSpec->name);
       strcat(specialCommand, "=");
       strcat(specialCommand, tmpName);
       strcat(specialCommand, " ");
@@ -1138,7 +1129,7 @@ readWgdxList(SEXP structure,
     }
     dimension = getAttrib(valExp, R_DimSymbol);
     if (TYPEOF(valExp) == REALSXP || TYPEOF(valExp) == INTSXP ) {
-      if (inData->dForm == sparse) {
+      if (wSpec->dForm == sparse) {
         if (length(dimension) != 2) {
           Rprintf("You have entered a %d dimensional matrix.\n", length(dimension));
           error ("Only 2-dimensional '.val' is allowed as valid input in sparse format.");
@@ -1155,7 +1146,7 @@ readWgdxList(SEXP structure,
                  INT_MAX);
         }
         nCoords = sz;
-        if (parameter == inData->dType) {
+        if (parameter == wSpec->dType) {
           nCoords--;
         }
         if (nCoords > GMS_MAX_INDEX_DIM) {
@@ -1163,9 +1154,9 @@ readWgdxList(SEXP structure,
                  GMS_MAX_INDEX_DIM);
         }
         if (withDim) {
-          if (inData->dim != nCoords) {
+          if (wSpec->dim != nCoords) {
             error ("Inconsistent dimensions found: '.dim' = %d doesn't match"
-                   " dimension=%d implied by '.val'\n", inData->dim, nCoords);
+                   " dimension=%d implied by '.val'\n", wSpec->dim, nCoords);
           }
         }
         else if (dimUels > 0) {
@@ -1174,7 +1165,7 @@ readWgdxList(SEXP structure,
                    " '.val' (%d)\n", dimUels, nCoords);
           }
         }
-        inData->withVal = 1;
+        wSpec->withVal = 1;
       } /* if sparse */
       else {
         /* This is for Full/Dense data */
@@ -1184,9 +1175,9 @@ readWgdxList(SEXP structure,
                  GMS_MAX_INDEX_DIM);
         }
         if (withDim) {
-          if (inData->dim != nCoords) {
+          if (wSpec->dim != nCoords) {
             error ("Inconsistent dimensions found: '.dim' = %d doesn't match"
-                   " '.val' dimension %d.\n", inData->dim, nCoords);
+                   " '.val' dimension %d.\n", wSpec->dim, nCoords);
           }
         }
         else if (dimUels > 0) {
@@ -1195,7 +1186,7 @@ readWgdxList(SEXP structure,
                    " '.val' (%d)\n", dimUels, nCoords);
           }
         }
-        inData->withVal = 1;
+        wSpec->withVal = 1;
       }
     }
     else {
@@ -1206,14 +1197,14 @@ readWgdxList(SEXP structure,
   } /* valExp not NULL */
 
 
-  if (inData->withUel == 0 && inData->withVal == 1) {
+  if (wSpec->withUel == 0 && wSpec->withVal == 1) {
     PROTECT(uelOut = allocVector(VECSXP, nCoords));
     wAlloc++;
-    createUelOut (valExp, uelOut, inData->dType, inData->dForm);
+    createUelOut (valExp, uelOut, wSpec->dType, wSpec->dForm);
   }
 
-  if (inData->withVal == 1) {
-    checkForValidData (valExp, uelOut, inData->dType, inData->dForm);
+  if (wSpec->withVal == 1) {
+    checkForValidData (valExp, uelOut, wSpec->dType, wSpec->dForm);
   }
   registerInputUEL (uelOut, iSym, uelIndex);
 } /* readWgdxList */
@@ -1221,7 +1212,7 @@ readWgdxList(SEXP structure,
 
 /* This function check the input list for valid data */
 void
-checkRgdxList (const SEXP lst, rgdxStruct_t *data)
+checkRgdxList (const SEXP lst, rSpec_t *rSpec)
 {
   SEXP lstName, tmp, tmpUel;
   SEXP bufferUel;
@@ -1280,7 +1271,7 @@ checkRgdxList (const SEXP lst, rgdxStruct_t *data)
     tmp = VECTOR_ELT(lst, i);
     if (TYPEOF(tmp) == STRSXP) {
       checkStringLength( CHAR(STRING_ELT(tmp, 0)) );
-      strcpy( data->name, CHAR(STRING_ELT(tmp, 0)) );
+      strcpy (rSpec->name, CHAR(STRING_ELT(tmp, 0)) );
     }
     else {
       Rprintf ("List component 'name' must be a string - found %d instead\n",
@@ -1313,10 +1304,10 @@ checkRgdxList (const SEXP lst, rgdxStruct_t *data)
       error("Input list component 'form' must be either 'full' or 'sparse'.");
     }
     if (0 == strcasecmp("full", tmpName)) {
-      data->dForm = full;
+      rSpec->dForm = full;
     }
     else if (0 == strcasecmp("sparse", tmpName)) {
-      data->dForm = sparse;
+      rSpec->dForm = sparse;
     }
     else {
       error("Input list component 'form' must be either 'full' or 'sparse'.");
@@ -1341,10 +1332,10 @@ checkRgdxList (const SEXP lst, rgdxStruct_t *data)
         error("Input list component 'compress' must be either 'true' or 'false'.");
       }
       if (0 == strcasecmp("true", tmpName)) {
-        data->compress = 1;
+        rSpec->compress = 1;
       }
       else if (0 == strcasecmp("false", tmpName)) {
-        data->compress = 0;
+        rSpec->compress = 0;
       }
       else {
         error("Input list component 'compress' must be either 'true' or 'false'.");
@@ -1353,10 +1344,10 @@ checkRgdxList (const SEXP lst, rgdxStruct_t *data)
     else if (TYPEOF(tmp) == LGLSXP) {
       compress = LOGICAL(tmp)[0];
       if (compress == TRUE) {
-        data->compress = 1;
+        rSpec->compress = 1;
       }
       else {
-        data->compress = 0;
+        rSpec->compress = 0;
       }
     }
     else {
@@ -1387,21 +1378,21 @@ checkRgdxList (const SEXP lst, rgdxStruct_t *data)
     if (strlen(tmpName) == 0) {
       error("Input list component 'field' must be from 'l', 'm', 'lo', 'up' or 's'.");
     }
-    data->withField = 1;
+    rSpec->withField = 1;
     if (0 == strcasecmp("l", tmpName)) {
-      data->dField = level;
+      rSpec->dField = level;
     }
     else if (0 == strcasecmp("m", tmpName)) {
-      data->dField = marginal;
+      rSpec->dField = marginal;
     }
     else if (0 == strcasecmp("lo", tmpName)) {
-      data->dField = lower;
+      rSpec->dField = lower;
     }
     else if (0 == strcasecmp("up", tmpName)) {
-      data->dField = upper;
+      rSpec->dField = upper;
     }
     else if (0 == strcasecmp("s", tmpName)) {
-      data->dField = scale;
+      rSpec->dField = scale;
     }
     else {
       error("Input list component 'field' must be from 'l', 'm', 'lo', 'up' or 's'.");
@@ -1426,10 +1417,10 @@ checkRgdxList (const SEXP lst, rgdxStruct_t *data)
         error("Input list component 'ts' must be either 'true' or 'false'.");
       }
       if (0 == strcasecmp("true", tmpName)) {
-        data->ts = 1;
+        rSpec->ts = 1;
       }
       else if (0 == strcasecmp("false", tmpName)) {
-        data->ts = 0;
+        rSpec->ts = 0;
       }
       else {
         error("Input list component 'ts' must be either 'true' or 'false'.");
@@ -1437,7 +1428,7 @@ checkRgdxList (const SEXP lst, rgdxStruct_t *data)
     }
     else if (TYPEOF(tmp) == LGLSXP) {
       if (LOGICAL(tmp)[0] == TRUE) {
-        data->ts = 1;
+        rSpec->ts = 1;
       }
     }
     else {
@@ -1465,10 +1456,10 @@ checkRgdxList (const SEXP lst, rgdxStruct_t *data)
         error("Input list component 'te' must be either 'true' or 'false'.");
       }
       if (0 == strcasecmp("true", tmpName)) {
-        data->te = 1;
+        rSpec->te = 1;
       }
       else if (0 == strcasecmp("false", tmpName)) {
-        data->te = 0;
+        rSpec->te = 0;
       }
       else {
         error("Input list component 'te' must be either 'true' or 'false'.");
@@ -1476,10 +1467,10 @@ checkRgdxList (const SEXP lst, rgdxStruct_t *data)
     }
     else if (TYPEOF(tmp) == LGLSXP) {
       if (LOGICAL(tmp)[0] == TRUE) {
-        data->te = 1;
+        rSpec->te = 1;
       }
       else {
-        data->te = 0;
+        rSpec->te = 0;
       }
     }
     else {
@@ -1504,7 +1495,7 @@ checkRgdxList (const SEXP lst, rgdxStruct_t *data)
       error("List component 'uels' must be a list.");
     }
     else {
-      PROTECT(data->filterUel = allocVector(VECSXP, length(tmp)));
+      PROTECT(rSpec->filterUel = allocVector(VECSXP, length(tmp)));
       alloc++;
       for (j = 0; j < length(tmp); j++) {
         tmpUel = VECTOR_ELT(tmp, j);
@@ -1515,10 +1506,10 @@ checkRgdxList (const SEXP lst, rgdxStruct_t *data)
           bufferUel = allocVector(STRSXP, length(tmpUel));
           /* Convert to output */
           makeStrVec (bufferUel, tmpUel);
-          SET_VECTOR_ELT(data->filterUel, j, bufferUel);
+          SET_VECTOR_ELT(rSpec->filterUel, j, bufferUel);
         }
       }
-      data->withUel = 1;
+      rSpec->withUel = 1;
     }
   }
 } /* checkRgdxList */
@@ -1553,7 +1544,7 @@ writeGdx(char *gdxFileName,
   FILE *matdata = NULL;
   SEXP uelIndex, compName, valData;
   SEXP mainBuffer, subBuffer;
-  wgdxStruct_t **data;
+  wSpec_t **wSpecPtr;           /* was data */
   gdxUelIndex_t uelIndices;
   gdxValues_t   vals;
   gdxSVals_t sVals;
@@ -1626,7 +1617,7 @@ writeGdx(char *gdxFileName,
   PROTECT(uelIndex = allocVector(VECSXP, symListLen));
   wAlloc++;
 
-  data = (wgdxStruct_t **) malloc (symListLen * sizeof(data[0]));
+  wSpecPtr = (wSpec_t **) malloc (symListLen * sizeof(wSpecPtr[0]));
 
   /* check input list(s) for data validation and to create UEL list */
   for (iSym = 0;  iSym < symListLen;  iSym++) {
@@ -1634,7 +1625,7 @@ writeGdx(char *gdxFileName,
       error("Incorrect type of input encountered. List expected\n");
     }
     else {
-      readWgdxList (symList[iSym], iSym, uelIndex, data+iSym, fromGAMS);
+      readWgdxList (symList[iSym], iSym, uelIndex, wSpecPtr+iSym, fromGAMS);
     }
   }
 
@@ -1671,15 +1662,15 @@ writeGdx(char *gdxFileName,
       mainBuffer = VECTOR_ELT(uelIndex, i);
       if (fromGAMS) {
         if (strcmp(inputTime,"exec") == 0) {
-          fprintf(matdata,"execute_load 'matdata.gdx' %s;\n", data[i]->name);
+          fprintf(matdata,"execute_load 'matdata.gdx' %s;\n", wSpecPtr[i]->name);
         }
         else {
-          fprintf(matdata,"$kill %s\n$load %s\n",  data[i]->name, data[i]->name);
+          fprintf(matdata,"$kill %s\n$load %s\n",  wSpecPtr[i]->name, wSpecPtr[i]->name);
         }
       }
       /* creating value for set that does not have .val */
-      if (data[i]->dType == set) {
-        if (data[i]->withVal == 0 &&  data[i]->withUel == 1) {
+      if (wSpecPtr[i]->dType == set) {
+        if (wSpecPtr[i]->withVal == 0 &&  wSpecPtr[i]->withUel == 1) {
           nColumns = length(mainBuffer);
           PROTECT(dimVect = allocVector(REALSXP, nColumns));
           wAlloc++;
@@ -1699,11 +1690,11 @@ writeGdx(char *gdxFileName,
           }
           setAttrib(valData, R_DimSymbol, dimVect);
           index = 0;
-          data[i]->dForm = full;
+          wSpecPtr[i]->dForm = full;
         }
       }
       (void) CHAR2ShortStr ("R data from GDXRRW", expText);
-      if (data[i]->withTs == 1) {
+      if (wSpecPtr[i]->withTs == 1) {
         /* Looking for 'ts' */
         j = 0;
         found = 0;
@@ -1719,18 +1710,18 @@ writeGdx(char *gdxFileName,
         }
       }
 
-      if (data[i]->dForm == sparse) {
+      if (wSpecPtr[i]->dForm == sparse) {
         dimVect = getAttrib(valData, R_DimSymbol);
         nColumns = INTEGER(dimVect)[1];
         nRows = INTEGER(dimVect)[0];
 
-        if (data[i]->dType == parameter) {
+        if (wSpecPtr[i]->dType == parameter) {
           nColumns--;
-          rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
+          rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
                                      nColumns, GMS_DT_PAR, 0);
         }
         else {
-          rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
+          rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
                                      nColumns, GMS_DT_SET, 0);
           vals[0] = 0;
         }
@@ -1758,7 +1749,7 @@ writeGdx(char *gdxFileName,
             stringUelIndex = CHAR(STRING_ELT(subBuffer, idx-1));
             uelIndices[k] = atoi(stringUelIndex);
           }
-          if (data[i]->dType == parameter) {
+          if (wSpecPtr[i]->dType == parameter) {
             if (pd) {
               vals[0] = pd[nColumns*nRows + j];
             }
@@ -1771,10 +1762,10 @@ writeGdx(char *gdxFileName,
             }
 #endif
           }
-          if ((parameter == data[i]->dType) && 
+          if ((parameter == wSpecPtr[i]->dType) &&
               (0 == vals[0]) && ('e' == zeroSqueeze))
             vals[0] = sVals[GMS_SVIDX_EPS];
-          if ((set == data[i]->dType) ||
+          if ((set == wSpecPtr[i]->dType) ||
               ('n' == zeroSqueeze) ||
               (0 != vals[0])) {
             /* write the value to GDX */
@@ -1794,12 +1785,12 @@ writeGdx(char *gdxFileName,
         dimVect = getAttrib(valData, R_DimSymbol);
         nColumns = length(mainBuffer);
         subscript = malloc(nColumns*sizeof(*subscript));
-        if (data[i]->dType == parameter) {
-          rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
+        if (wSpecPtr[i]->dType == parameter) {
+          rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
                                      nColumns, GMS_DT_PAR, 0);
         }
         else {
-          rc = gdxDataWriteMapStart (gdxHandle, data[i]->name, expText,
+          rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
                                      nColumns, GMS_DT_SET, 0);
           vals[0] = 0;
         }
@@ -1844,24 +1835,24 @@ writeGdx(char *gdxFileName,
           else {
             dt = pi[index];
           }
-          if (data[i]->dType == parameter) {
+          if (wSpecPtr[i]->dType == parameter) {
             vals[0] = dt;
             if (ISNA(vals[0])) {
               vals[0] = sVals[GMS_SVIDX_NA];
             }
           }
-          else if (set == data[i]->dType) {
+          else if (set == wSpecPtr[i]->dType) {
             /* could do the check in checkForValidData but
              * that uses an additional pass through the full matrix */
             if (0 != dt && 1 != dt) {
               error ("Only zero-one values are allowed when specifying sets with form=full\n");
             }
           }
-          if ((parameter == data[i]->dType) && 
+          if ((parameter == wSpecPtr[i]->dType) &&
               (0 == vals[0]) && ('e' == zeroSqueeze))
             vals[0] = sVals[GMS_SVIDX_EPS];
-          if (((set == data[i]->dType) && (0 != dt))  ||
-              ((parameter == data[i]->dType) && 
+          if (((set == wSpecPtr[i]->dType) && (0 != dt))  ||
+              ((parameter == wSpecPtr[i]->dType) &&
                (('n' == zeroSqueeze) ||
                 (0 != vals[0]))) ) {
             /* write the value to GDX */
@@ -1895,7 +1886,7 @@ writeGdx(char *gdxFileName,
   (void) gdxFree (&gdxHandle);
 
   /* free memory */
-  free(data);
+  free(wSpecPtr);
   UNPROTECT(wAlloc);
 } /* writeGdx */
 
@@ -1979,7 +1970,7 @@ SEXP rgdx (SEXP args)
     compTe = R_NilValue;
   SEXP OPListComp, OPList, dimVect, textElement, elVect;
   FILE    *fin;
-  rgdxStruct_t *inputData;
+  rSpec_t *rSpec;
   gdxUelIndex_t uels;
   gdxValues_t values;
   gdxSVals_t sVals;
@@ -2065,19 +2056,14 @@ SEXP rgdx (SEXP args)
   fclose(fin);
   /*-------------------- Checking data for input list ------------*/
   /* Setting default values */
-  inputData = malloc(sizeof(*inputData));
-
-  inputData->dForm = sparse;
-  inputData->compress = 0;
-  inputData->dField = level;
-  inputData->ts = 0;
-  inputData->te = 0;
-  inputData->withUel = 0;
-  inputData->withField = 0;
+  rSpec = malloc(sizeof(*rSpec));
+  memset (rSpec, 0, sizeof(*rSpec));
+  rSpec->dForm = sparse;
+  rSpec->dField = level;
 
   if (withList) {
-    checkRgdxList (requestList, inputData);
-    if (inputData->compress == 1 && inputData->withUel == 1) {
+    checkRgdxList (requestList, rSpec);
+    if (rSpec->compress == 1 && rSpec->withUel == 1) {
       error("Compression is not allowed with input UEL\n");
     }
   }
@@ -2106,15 +2092,15 @@ SEXP rgdx (SEXP args)
   /* read symbol name only if input list is present */
   if (withList) {
     /* start searching for symbol */
-    rc = gdxFindSymbol (gdxHandle, inputData->name, &symIdx);
+    rc = gdxFindSymbol (gdxHandle, rSpec->name, &symIdx);
     if (! rc) {
       sprintf (buf, "GDX file %s contains no symbol named '%s'\n",
                gdxFileName,
-               inputData->name );
+               rSpec->name );
       error (buf);
     }
     gdxSymbolInfo (gdxHandle, symIdx, symName, &symDim, &symType);
-    if (inputData->ts == 1) {
+    if (rSpec->ts == 1) {
       gdxSymbolInfoX(gdxHandle, symIdx, &ACount, &rc, sText);
     }
 
@@ -2122,16 +2108,16 @@ SEXP rgdx (SEXP args)
     if (!(symType == dt_par || symType == dt_set || symType == dt_var || symType == dt_equ)) {
       sprintf(buf, "GDX symbol %s (index=%d, symDim=%d, symType=%d)"
               " is not recognized as set, parameter, variable, or equation\n",
-              inputData->name, symIdx, symDim, symType);
+              rSpec->name, symIdx, symDim, symType);
       error(buf);
     }
-    else if ((symType == dt_par || symType == dt_set) && inputData->withField == 1) {
+    else if ((symType == dt_par || symType == dt_set) && rSpec->withField == 1) {
       error("Symbol '%s' is either set or parameter that can't have field.",
-            inputData->name);
+            rSpec->name);
     }
-    if (inputData->te == 1 && symType != dt_set) {
+    if (rSpec->te == 1 && symType != dt_set) {
       error("Text elements only exist for set and symbol '%s' is not a set.",
-            inputData->name);
+            rSpec->name);
     }
   } /* if (withList) */
 
@@ -2150,11 +2136,11 @@ SEXP rgdx (SEXP args)
     /* Checking dimension of input uel and parameter in GDX file.
      * If they are not equal then error. */
 
-    if (inputData->withUel == 1 && length(inputData->filterUel) != symDim) {
+    if (rSpec->withUel == 1 && length(rSpec->filterUel) != symDim) {
       error("Dimension of UEL entered does not match with symbol in GDX");
     }
     /* Creating default uel if none entered */
-    if (inputData->withUel != 1) {
+    if (rSpec->withUel != 1) {
       PROTECT(compUels = allocVector(VECSXP, symDim));
       alloc++;
       for (defaultIndex = 0; defaultIndex < symDim; defaultIndex++) {
@@ -2180,10 +2166,10 @@ SEXP rgdx (SEXP args)
      */
     mwNElements = 0;
 
-    if (inputData->withUel == 1) {
+    if (rSpec->withUel == 1) {
       maxPossibleElements = 1;
       for (z = 0; z < symDim; z++) {
-        mwNElements = length(VECTOR_ELT(inputData->filterUel, z));
+        mwNElements = length(VECTOR_ELT(rSpec->filterUel, z));
         maxPossibleElements = maxPossibleElements*mwNElements;
       }
       mwNElements = 0;
@@ -2193,7 +2179,7 @@ SEXP rgdx (SEXP args)
         b = 0;
         for (k = 0; k < symDim; k++) {
           uelElementName = CHAR(STRING_ELT(UEList, uels[k]-1));
-          uelPos = findInFilter (k, inputData->filterUel, uelElementName);
+          uelPos = findInFilter (k, rSpec->filterUel, uelElementName);
           /* uel element exists */
           if (uelPos > 0) {
             b++;
@@ -2214,23 +2200,23 @@ SEXP rgdx (SEXP args)
     }
     textElement = R_NilValue;
     /* Allocating memory for 2D sparse matrix */
-    if (inputData->withUel == 1) {
+    if (rSpec->withUel == 1) {
       PROTECT(compVal = allocMatrix(REALSXP, mwNElements, ncols));
       alloc++;
-      if (inputData->te && symType == dt_set) {
+      if (rSpec->te && symType == dt_set) {
         PROTECT(textElement = allocVector(STRSXP, mwNElements));
         alloc++;
       }
     }
-    if (inputData->withUel == 0) {
+    if (rSpec->withUel == 0) {
       /*  check for non zero elements for variable and equation */
       if ((symType == dt_var || symType == dt_equ) && zeroSqueeze) {
-        mrows = getNonZeroElements(gdxHandle, symIdx, inputData->dField);
+        mrows = getNonZeroElements(gdxHandle, symIdx, rSpec->dField);
       }
       /* Creat 2D sparse R array */
       PROTECT(compVal = allocMatrix(REALSXP, mrows, ncols));
       alloc++;
-      if (inputData->te && symType == dt_set) {
+      if (rSpec->te && symType == dt_set) {
         PROTECT(textElement = allocVector(STRSXP, mrows));
         alloc++;
       }
@@ -2238,11 +2224,11 @@ SEXP rgdx (SEXP args)
 
     p = REAL(compVal);
     /* TODO/TEST: filtered read */
-    if (inputData->withUel == 1) {
+    if (rSpec->withUel == 1) {
       matched = 0;
       gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
       /* TODO/TEST: text elements with UEL */
-      if (inputData->te == 1) {
+      if (rSpec->te == 1) {
         returnedIndex = malloc(symDim*sizeof(*returnedIndex));
         for (iRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
@@ -2251,7 +2237,7 @@ SEXP rgdx (SEXP args)
           for (k = 0;  k < symDim;  k++) {
             returnedIndex[k] = 0;
             uelElementName = CHAR(STRING_ELT(UEList, uels[k]-1));
-            uelPos = findInFilter (k, inputData->filterUel, uelElementName);
+            uelPos = findInFilter (k, rSpec->filterUel, uelElementName);
             if (uelPos > 0) {
               returnedIndex[k] = uelPos;
               b++;
@@ -2290,7 +2276,7 @@ SEXP rgdx (SEXP args)
           }
         }
         free(returnedIndex);
-      } /* End of inputData->te == 1 */
+      } /* End of rSpec->te == 1 */
       else {
         returnedIndex = malloc(symDim*sizeof(*returnedIndex));
         for (iRec = 0;  iRec < nRecs;  iRec++) {
@@ -2301,7 +2287,7 @@ SEXP rgdx (SEXP args)
           for (k = 0;  k < symDim;  k++) {
             returnedIndex[k] = 0;
             uelElementName = CHAR(STRING_ELT(UEList, uels[k]-1));
-            uelPos = findInFilter (k, inputData->filterUel, uelElementName);
+            uelPos = findInFilter (k, rSpec->filterUel, uelElementName);
             if (uelPos > 0) {
               returnedIndex[k] = uelPos;
               b++;
@@ -2318,7 +2304,7 @@ SEXP rgdx (SEXP args)
             matched = matched +1;
 
             if (symType != dt_set)
-              p[index] = values[inputData->dField];
+              p[index] = values[rSpec->dField];
           }
           if (matched == maxPossibleElements) {
             break;
@@ -2332,7 +2318,7 @@ SEXP rgdx (SEXP args)
         gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
       }
       /* text elements */
-      if (inputData->te == 1) {
+      if (rSpec->te == 1) {
         for (iRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
           if (values[GMS_VAL_LEVEL]) {
@@ -2361,7 +2347,7 @@ SEXP rgdx (SEXP args)
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
           if ((dt_set == symType) ||
               (! zeroSqueeze) ||
-              (0 != values[inputData->dField])) {
+              (0 != values[rSpec->dField])) {
             /* store the value */
             for (kk = 0;  kk < symDim;  kk++) {
               p[kRec + kk*mrows] = uels[kk];
@@ -2369,7 +2355,7 @@ SEXP rgdx (SEXP args)
             index = kRec + symDim*mrows;
             kRec++;
             if (symType != dt_set)
-              p[index] = values[inputData->dField];
+              p[index] = values[rSpec->dField];
           } /* end of if (set || val != 0) */
         } /* loop over GDX records */
         if (kRec < mrows) {
@@ -2393,12 +2379,12 @@ SEXP rgdx (SEXP args)
     }
 
     /* Converting data into its compressed form. */
-    if (inputData->compress == 1) {
+    if (rSpec->compress == 1) {
       PROTECT(compUels = allocVector(VECSXP, symDim));
       compressData (compVal, UEList, compUels, nUEL, symDim, mrows);
     }
     /* TODO/TEST: create full dimensional string matrix */
-    if (inputData->te == 1) {
+    if (rSpec->te == 1) {
       if (symDim == 1) {
         PROTECT(elVect = allocVector(REALSXP, 2));
         alloc++;
@@ -2419,14 +2405,14 @@ SEXP rgdx (SEXP args)
         alloc++;
         totalElement = 1;
         dimElVect = REAL(elVect);
-        if (inputData->withUel) {
+        if (rSpec->withUel) {
           for (ndimension = 0; ndimension < symDim; ndimension++) {
-            dimElVect[ndimension] = length(VECTOR_ELT(inputData->filterUel, ndimension));
-            totalElement = (totalElement * length(VECTOR_ELT(inputData->filterUel, ndimension)));
+            dimElVect[ndimension] = length(VECTOR_ELT(rSpec->filterUel, ndimension));
+            totalElement = (totalElement * length(VECTOR_ELT(rSpec->filterUel, ndimension)));
           }
           PROTECT(compTe = allocVector(STRSXP, totalElement));
           alloc++;
-          compTe = createElementMatrix(compVal, textElement, compTe, inputData->filterUel, symDim, mwNElements);
+          compTe = createElementMatrix(compVal, textElement, compTe, rSpec->filterUel, symDim, mwNElements);
           setAttrib(compTe, R_DimSymbol, elVect);
         }
         else {
@@ -2443,7 +2429,7 @@ SEXP rgdx (SEXP args)
     }
 
     /* Converting sparse data into full matrix */
-    if (inputData->dForm == full) {
+    if (rSpec->dForm == full) {
       switch (symDim) {
       case 0: {
         PROTECT(compFullVal = allocVector(REALSXP, 1));
@@ -2461,11 +2447,11 @@ SEXP rgdx (SEXP args)
         alloc++;
         dimVal = REAL(dimVect);
 
-        if (inputData->withUel == 1) {
-          dimVal[0] = length(VECTOR_ELT(inputData->filterUel, 0));
-          PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(inputData->filterUel, 0))));
+        if (rSpec->withUel == 1) {
+          dimVal[0] = length(VECTOR_ELT(rSpec->filterUel, 0));
+          PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(rSpec->filterUel, 0))));
           alloc++;
-          compFullVal = sparseToFull(compVal, compFullVal, inputData->filterUel, symType, mwNElements, symDim);
+          compFullVal = sparseToFull(compVal, compFullVal, rSpec->filterUel, symType, mwNElements, symDim);
         }
         else {
           dimVal[0] = length(VECTOR_ELT(compUels, 0));
@@ -2483,10 +2469,10 @@ SEXP rgdx (SEXP args)
         totalElement = 1;
         dimVal = REAL(dimVect);
         ndimension = 0;
-        if (inputData->withUel == 1) {
+        if (rSpec->withUel == 1) {
           for (ndimension = 0; ndimension < symDim; ndimension++) {
-            dimVal[ndimension] = length(VECTOR_ELT(inputData->filterUel, ndimension));
-            totalElement = (totalElement * length(VECTOR_ELT(inputData->filterUel, ndimension)));
+            dimVal[ndimension] = length(VECTOR_ELT(rSpec->filterUel, ndimension));
+            totalElement = (totalElement * length(VECTOR_ELT(rSpec->filterUel, ndimension)));
           }
         }
         else {
@@ -2497,13 +2483,13 @@ SEXP rgdx (SEXP args)
         }
         PROTECT(compFullVal = allocVector(REALSXP, totalElement));
         alloc++;
-        if (inputData->withUel ==1) {
-          compFullVal = sparseToFull(compVal, compFullVal, inputData->filterUel, symType, mwNElements, symDim);
+        if (rSpec->withUel ==1) {
+          compFullVal = sparseToFull(compVal, compFullVal, rSpec->filterUel, symType, mwNElements, symDim);
         }
         else {
           compFullVal = sparseToFull(compVal, compFullVal, compUels, symType, mrows, symDim);
         }
-        
+
         setAttrib(compFullVal, R_DimSymbol, dimVect);
         break;
       }
@@ -2543,7 +2529,7 @@ SEXP rgdx (SEXP args)
     /* Creating string vector for val data form */
     PROTECT(compForm = allocVector(STRSXP, 1) );
     alloc++;
-    if (inputData->dForm == full) {
+    if (rSpec->dForm == full) {
       SET_STRING_ELT(compForm, 0, mkChar(forms[0]));
     }
     else {
@@ -2556,7 +2542,7 @@ SEXP rgdx (SEXP args)
       outFields++;
       PROTECT(compField = allocVector(STRSXP, 1));
       alloc++;
-      switch(inputData->dField) {
+      switch(rSpec->dField) {
       case level:
         SET_STRING_ELT(compField, 0, mkChar( fields[0] ));
         break;
@@ -2576,13 +2562,13 @@ SEXP rgdx (SEXP args)
         error("Unrecognized type of symbol found.");
       }
     }
-    if (inputData->ts) {
+    if (rSpec->ts) {
       outFields++;
       PROTECT(compTs = allocVector(STRSXP, 1));
       alloc++;
       SET_STRING_ELT(compTs, 0, mkChar(sText));
     }
-    if (inputData->te) {
+    if (rSpec->te) {
       outFields++;
     }
   }
@@ -2603,11 +2589,11 @@ SEXP rgdx (SEXP args)
       nField++;
       SET_STRING_ELT(OPListComp, nField, mkChar("field"));
     }
-    if (inputData->ts) {
+    if (rSpec->ts) {
       nField++;
       SET_STRING_ELT(OPListComp, nField, mkChar("ts"));
     }
-    if (inputData->te) {
+    if (rSpec->te) {
       nField++;
       SET_STRING_ELT(OPListComp, nField, mkChar("te"));
     }
@@ -2621,15 +2607,15 @@ SEXP rgdx (SEXP args)
     SET_VECTOR_ELT(OPList, 0, compName);
     SET_VECTOR_ELT(OPList, 1, compType);
     SET_VECTOR_ELT(OPList, 2, compDim);
-    if (inputData->dForm == full) {
+    if (rSpec->dForm == full) {
       SET_VECTOR_ELT(OPList, 3, compFullVal);
     }
     else {
       SET_VECTOR_ELT(OPList, 3, compVal);
     }
     SET_VECTOR_ELT(OPList, 4, compForm);
-    if (inputData->withUel) {
-      SET_VECTOR_ELT(OPList, 5, inputData->filterUel);
+    if (rSpec->withUel) {
+      SET_VECTOR_ELT(OPList, 5, rSpec->filterUel);
     }
     else {
       SET_VECTOR_ELT(OPList, 5, compUels);
@@ -2640,11 +2626,11 @@ SEXP rgdx (SEXP args)
       nField++;
       SET_VECTOR_ELT(OPList, nField, compField);
     }
-    if (inputData->ts) {
+    if (rSpec->ts) {
       nField++;
       SET_VECTOR_ELT(OPList, nField, compTs);
     }
-    if (inputData->te) {
+    if (rSpec->te) {
       nField++;
       SET_VECTOR_ELT(OPList, nField, compTe);
     }
@@ -2662,7 +2648,7 @@ SEXP rgdx (SEXP args)
   /* Setting attribute name */
   setAttrib(OPList, R_NamesSymbol, OPListComp);
   /* Releasing allocated memory */
-  free(inputData);
+  free(rSpec);
   if (!gdxDataReadDone (gdxHandle)) {
     error ("Could not gdxDataReadDone");
   }

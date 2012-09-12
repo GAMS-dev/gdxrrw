@@ -42,7 +42,7 @@ typedef enum dField {
   scale = GMS_VAL_SCALE,
   max = GMS_VAL_MAX
 } dField_t;
-typedef struct rgdxStruct {
+typedef struct rSpec {          /* rgdx read specifier */
   char name[1024];
   dForm_t dForm;
   dField_t dField;
@@ -52,8 +52,8 @@ typedef struct rgdxStruct {
   int te;
   int withUel;
   SEXP filterUel;
-} rgdxStruct_t;
-typedef struct wgdxStruct {
+} rSpec_t;
+typedef struct wSpec {
   char name[1024];
   dForm_t dForm;
   dType_t dType;
@@ -61,7 +61,7 @@ typedef struct wgdxStruct {
   int withTs;
   int withUel;
   int dim;
-} wgdxStruct_t;
+} wSpec_t;
 typedef unsigned long long int uint64_t;
 typedef union d64 {
   double x;
