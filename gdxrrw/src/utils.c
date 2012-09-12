@@ -168,6 +168,38 @@ compressData (SEXP data, SEXP globalUEL, SEXP uelOut,
   return;
 } /* compressData */
 
+/* create text element Matrix from sparse data and element vector */
+SEXP
+createElementMatrix(SEXP compVal, SEXP textElement, SEXP compTe,
+                    SEXP compUels, int symbolDim, int nRec)
+{
+  int i, j, iRec, index, totNumber;
+  double *p;
+  int  nCols;
+
+  /* Step 1: loop over full matrix and set every value as empty string */
+
+  for (j = 0; j < length(compTe); j++) {
+    SET_STRING_ELT(compTe, j, mkChar(""));
+  }
+
+  /* Step 2: loop over each row of sparse matrix and populate full matrix */
+  nCols = symbolDim;
+  p = REAL(compVal);
+
+  for (iRec = 0; iRec < nRec; iRec++) {
+    index = 0;
+    totNumber = 1;
+    for (i = 0; i < nCols; i++) {
+      index = index + ((int)p[iRec + nRec*i] - 1)*totNumber;
+      totNumber = (totNumber)*length(VECTOR_ELT(compUels, i));
+    }
+    SET_STRING_ELT(compTe, index, duplicate(STRING_ELT(textElement, iRec)) );
+  }
+
+  return compTe;
+} /* createElementMatrix */
+
 /* findInFilter: find the position of uelName in filterList[k]
  * returns:
  *   0   if uelName was not found
@@ -256,6 +288,64 @@ getNonZeroElements (gdxHandle_t h, int symIdx, dField_t dField)
   }
   return cnt;
 } /* getNonZeroElements */
+
+/* interpret the squeeze arg for rgdx as a logical/boolean */
+Rboolean
+getSqueezeArgRead (SEXP squeeze)
+{
+  const char *s;
+
+  switch (TYPEOF(squeeze)) {
+  case LGLSXP:
+    return LOGICAL(squeeze)[0];
+    break;
+  case INTSXP:
+    return INTEGER(squeeze)[0];
+    break;
+  case REALSXP:
+    if (0.0 == REAL(squeeze)[0])
+      return FALSE;
+    else
+      return TRUE;
+    break;
+  case STRSXP:
+    s = CHAR(STRING_ELT(squeeze, 0));
+    if ('\0' == s[1])
+      switch (s[0]) {
+      case 'T':
+      case 't':
+      case 'Y':
+      case 'y':
+      case '1':
+        return TRUE;
+      case 'F':
+      case 'f':
+      case 'N':
+      case 'n':
+      case '0':
+        return FALSE;
+      default:
+        return NA_LOGICAL;
+      }
+    if (0 == strcmp("TRUE",s)) return TRUE;
+    if (0 == strcmp("True",s)) return TRUE;
+    if (0 == strcmp("true",s)) return TRUE;
+    if (0 == strcmp("YES",s)) return TRUE;
+    if (0 == strcmp("Yes",s)) return TRUE;
+    if (0 == strcmp("yes",s)) return TRUE;
+
+    if (0 == strcmp("FALSE",s)) return FALSE;
+    if (0 == strcmp("False",s)) return FALSE;
+    if (0 == strcmp("false",s)) return FALSE;
+    if (0 == strcmp("NO",s)) return FALSE;
+    if (0 == strcmp("No",s)) return FALSE;
+    if (0 == strcmp("no",s)) return FALSE;
+
+    return NA_LOGICAL;
+    break;
+  }
+  return NA_LOGICAL;
+} /* getSqueezeArgRead */
 
 /* this method for global input "compress" */
 int isCompress (void)

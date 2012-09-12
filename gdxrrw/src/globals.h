@@ -78,8 +78,6 @@ gdxInfo (SEXP args);
 
 /* ********** functions in gdxrrw.c **************** */
 SEXP
-rgdx (SEXP args);
-SEXP
 wgdx (SEXP args);
 SEXP
 igdx (SEXP args);
@@ -92,6 +90,11 @@ SEXP
 getGamsSoln (const char *gmsFileName);
 
 
+/* ********** functions in rgdx.c *********************** */
+SEXP
+rgdx (SEXP args);
+
+
 /* ********** functions in utils.c ********************** */
 char *
 CHAR2ShortStr (const char *from, shortStringBuf_t to);
@@ -102,12 +105,17 @@ checkStringLength (const char *str);
 void
 compressData (SEXP data, SEXP globalUEL, SEXP uelOut,
               int numberOfUel, int symbolDim, int nRec);
+SEXP
+createElementMatrix(SEXP compVal, SEXP textElement, SEXP compTe,
+                    SEXP compUels, int symbolDim, int nRec);
 int
 findInFilter (int k, SEXP filterList, const char *uelName);
 char *
 getGlobalString (const char *globName, shortStringBuf_t result);
 int
 getNonZeroElements (gdxHandle_t h, int symIdx, dField_t dField);
+Rboolean
+getSqueezeArgRead (SEXP squeeze);
 int
 isCompress (void);
 void
@@ -121,13 +129,20 @@ sparseToFull(SEXP compVal, SEXP compFullVal, SEXP compUels,
 
 /* ****** global variables ****** */
 #if defined(_GDXRRW_MAIN_)
+
 #define _GDXRRW_EXTERN_
 gdxHandle_t gdxHandle = (gdxHandle_t) 0;
 int gamsoIsUnset = 0;
+/* The version info below changes when this file is updated */
+char ID[GMS_SSSIZE] = "$Id$";
+
 #else
+
 #define _GDXRRW_EXTERN_ extern
 extern gdxHandle_t gdxHandle;
 extern int gamsoIsUnset;
+extern char ID[GMS_SSSIZE];
+
 #endif  /* defined(_GDXRRW_MAIN_) */
 
 _GDXRRW_EXTERN_ int alloc;
