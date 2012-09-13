@@ -8,6 +8,14 @@ tests <- c("tReadSparse1", "tReadFull1",
            "tWrap",
            "tInfo1", "tInfo2",
            "tLS")
+f <- find('interact',mode='logical')
+doPrompt <- TRUE
+if (length(f) > 0) {
+  doPrompt <- interact
+} else {
+  doPrompt <- interactive()
+}
+
 nRuns <- 0
 nFails  <- 0
 for (t in tests) {
@@ -20,8 +28,10 @@ for (t in tests) {
     nFails  <- nFails + 1
   }
   nRuns  <- nRuns + 1
-  ans <- readline("Hit enter to continue ")
-  print ("")
+  if (doPrompt) {
+    ans <- readline("Hit enter to continue ")
+    print ("")
+  }
 }
 if (nFails) {
   print (paste("Tests complete. ", nRuns,"tests run,",nFails,"tests FAILED"))
