@@ -312,8 +312,8 @@ SEXP rgdx (SEXP args)
 {
   const char *funcName = "rgdx";
   SEXP fileName, requestList, squeeze, UEList;
-  SEXP compName = R_NilValue,
-    compType = R_NilValue,
+  SEXP outName = R_NilValue,
+    outType = R_NilValue,
     compDim = R_NilValue,
     compVal = R_NilValue,
     compFullVal = R_NilValue,
@@ -855,25 +855,25 @@ SEXP rgdx (SEXP args)
   } /* if (withList) aa */
 
   if (withList) { /* bb */
-    /* Creating string vector for symbol Name */
-    PROTECT(compName = allocVector(STRSXP, 1) );
-    SET_STRING_ELT(compName, 0, mkChar(symName));
+    /* Creating output string for symbol name */
+    PROTECT(outName = allocVector(STRSXP, 1) );
+    SET_STRING_ELT(outName, 0, mkChar(symName));
     alloc++;
-    /* Creating string vector for symbol type */
-    PROTECT(compType = allocVector(STRSXP, 1) );
+    /* Creating output string for symbol type */
+    PROTECT(outType = allocVector(STRSXP, 1) );
     alloc++;
     switch (symType) {
     case dt_set:
-      SET_STRING_ELT( compType, 0, mkChar(types[0]) );
+      SET_STRING_ELT(outType, 0, mkChar(types[0]) );
       break;
     case dt_par:
-      SET_STRING_ELT( compType, 0, mkChar(types[1]) );
+      SET_STRING_ELT(outType, 0, mkChar(types[1]) );
       break;
     case dt_var:
-      SET_STRING_ELT( compType, 0, mkChar(types[2]) );
+      SET_STRING_ELT(outType, 0, mkChar(types[2]) );
       break;
     case dt_equ:
-      SET_STRING_ELT( compType, 0, mkChar(types[3]) );
+      SET_STRING_ELT(outType, 0, mkChar(types[3]) );
       break;
     default:
       error("Unrecognized type of symbol found.");
@@ -929,6 +929,16 @@ SEXP rgdx (SEXP args)
       outElements++;
     }
   } /* if (withList) bb */
+  else {
+    /* Creating output string symbol name */
+    PROTECT(outName = allocVector(STRSXP, 1));
+    SET_STRING_ELT(outName, 0, mkChar("*"));
+    alloc++;
+    /* Creating output string for symbol type */
+    PROTECT(outType = allocVector(STRSXP, 1));
+    alloc++;
+    SET_STRING_ELT(outType, 0, mkChar(types[0]));
+  }
 
   PROTECT(outListNames = allocVector(STRSXP, outElements));
   alloc++;
@@ -956,13 +966,13 @@ SEXP rgdx (SEXP args)
     }
   }
 
-
   PROTECT(outList = allocVector(VECSXP, outElements));
   alloc++;
+
+  /* populating list component vector */
+  SET_VECTOR_ELT(outList, 0, outName);
+  SET_VECTOR_ELT(outList, 1, outType);
   if (withList) {
-    /* populating list component vector */
-    SET_VECTOR_ELT(outList, 0, compName);
-    SET_VECTOR_ELT(outList, 1, compType);
     SET_VECTOR_ELT(outList, 2, compDim);
     if (rSpec->dForm == full) {
       SET_VECTOR_ELT(outList, 3, compFullVal);
@@ -994,9 +1004,7 @@ SEXP rgdx (SEXP args)
   }
   else {
     /* no read specifier so return the universe */
-    /* entering null values other then UEL */
-    SET_VECTOR_ELT(outList, 0, R_NilValue);
-    SET_VECTOR_ELT(outList, 1, R_NilValue);
+    /* entering null values if nothing else makes sense */
     SET_VECTOR_ELT(outList, 2, R_NilValue);
     SET_VECTOR_ELT(outList, 3, R_NilValue);
     SET_VECTOR_ELT(outList, 4, R_NilValue);
