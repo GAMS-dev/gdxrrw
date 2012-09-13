@@ -489,40 +489,64 @@ makeStrVec (SEXP outExp, SEXP inExp)
   return;
 } /* makeStrVec */
 
-/* This method converts sparse data into full data */
-SEXP
-sparseToFull(SEXP compVal, SEXP compFullVal, SEXP compUels,
-             int type, int nRec, int symbolDim)
+/* sparseToFull: from input data in sparse for, create output data in full form
+ * spVal: input .val matrix in sparse form
+ * uelLists: .uels for symbol
+ * fullVal: output .val matrix in full form
+ */
+void
+sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
+             int symType, int nRec, int symDim)
 {
-  int i,j, iRec,  nCols;
-  double *p, *pVal;
-  int index = 0;
-  int totNumber = 1;
+  int k, iRec;
+  int card[GLOBAL_MAX_INDEX_DIM];
+  double *p, *pFull;
+  int index;
+#if 1
+  int ii;
+#else
+  int stride;
+#endif
 
-  /* Step 1: loop over full matrix and set every value as 0 */
-  pVal = REAL(compFullVal);
-  for (j = 0; j < length(compFullVal); j++) {
-    pVal[j] = 0;
+  /* step 1: loop over full matrix and set every value as 0 */
+  pFull = REAL(fullVal);
+#if 0
+  for (k = 0;  k < length(fullVal);  k++) {
+    pFull[k] = 0;
   }
-  i = 0;
-  /* Step 2: loop over each row of sparse matrix and populate full matrix */
-  p = REAL(compVal);
-  nCols = symbolDim;
+#else
+  (void) memset (pFull, 0, length(fullVal) * sizeof(*pFull));
+#endif
 
-  for (iRec = 0; iRec < nRec; iRec++) {
+  /* N.B.: R stores matrices column-wise, i.e. left index moving fastest */
+  /* step 2: loop over each row/nonzero of sparse matrix to populate full matrix */
+  p = REAL(spVal);
+  for (k = 0;  k < symDim;  k++) {
+    card[k] = length(VECTOR_ELT(uelLists, k)); /* number of elements in dim k */
+  }
+
+  for (iRec = 0;  iRec < nRec;  iRec++) {
+#if 0
     index = 0;
-    totNumber = 1;
-    for (i = 0; i < nCols; i++) {
-      index = index + (p[iRec + nRec*i] - 1)*totNumber;
-      totNumber = (totNumber)*length(VECTOR_ELT(compUels, i));
+    stride = 1;              /* something like Horner's method here */
+    for (k = 0; k < symDim; k++) {
+      index = index + (p[iRec + nRec*k] - 1)*stride;
+      stride *= card[k];
     }
-    if (type != dt_set) {
-      pVal[index] = p[iRec + nRec*symbolDim];
+#else
+    ii = iRec + nRec*(symDim-1);
+    for (index = p[ii]-1, k = symDim-2;  k >= 0;  k--) {
+      ii -= nRec;
+      index = (index * card[k]) + p[ii] - 1;
+    }
+#endif
+    if (symType != dt_set) {
+      pFull[index] = p[iRec + nRec*symDim];
     }
     else {
-      pVal[index] = 1;
+      pFull[index] = 1;
     }
   }
-  return compFullVal;
+  return;
 } /* sparseToFull */
 

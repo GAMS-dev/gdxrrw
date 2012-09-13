@@ -122,9 +122,9 @@ void
 loadGDX (void);
 void
 makeStrVec (SEXP outExp, SEXP inExp);
-SEXP
-sparseToFull(SEXP compVal, SEXP compFullVal, SEXP compUels,
-             int type, int nRec, int symbolDim);
+void
+sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
+              int symType, int nRec, int symDim);
 
 
 /* ****** global variables ****** */

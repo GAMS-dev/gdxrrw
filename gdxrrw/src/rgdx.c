@@ -810,13 +810,13 @@ SEXP rgdx (SEXP args)
           dimVal[0] = length(VECTOR_ELT(rSpec->filterUel, 0));
           PROTECT(outFullVal = allocVector(REALSXP, length(VECTOR_ELT(rSpec->filterUel, 0))));
           rgdxAlloc++;
-          outFullVal = sparseToFull(outVal, outFullVal, rSpec->filterUel, symType, mwNElements, symDim);
+          sparseToFull (outVal, outFullVal, rSpec->filterUel, symType, mwNElements, symDim);
         }
         else {
           dimVal[0] = length(VECTOR_ELT(outUels, 0));
           PROTECT(outFullVal = allocVector(REALSXP, length(VECTOR_ELT(outUels, 0))));
           rgdxAlloc++;
-          outFullVal = sparseToFull(outVal, outFullVal, outUels, symType, mrows, symDim);
+          sparseToFull (outVal, outFullVal, outUels, symType, mrows, symDim);
         }
         dimVal[1] = 1;
         setAttrib(outFullVal, R_DimSymbol, dimVect);
@@ -843,10 +843,10 @@ SEXP rgdx (SEXP args)
         PROTECT(outFullVal = allocVector(REALSXP, totalElement));
         rgdxAlloc++;
         if (rSpec->withUel ==1) {
-          outFullVal = sparseToFull(outVal, outFullVal, rSpec->filterUel, symType, mwNElements, symDim);
+          sparseToFull (outVal, outFullVal, rSpec->filterUel, symType, mwNElements, symDim);
         }
         else {
-          outFullVal = sparseToFull(outVal, outFullVal, outUels, symType, mrows, symDim);
+          sparseToFull (outVal, outFullVal, outUels, symType, mrows, symDim);
         }
 
         setAttrib(outFullVal, R_DimSymbol, dimVect);

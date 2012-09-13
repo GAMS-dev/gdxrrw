@@ -504,13 +504,13 @@ getGamsSoln(const char *gmsFileName)
           dimVal[0] = length(VECTOR_ELT(rSpec->filterUel, 0));
           PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(rSpec->filterUel, 0))));
           gamsAlloc++;
-          compFullVal = sparseToFull(compVal, compFullVal, rSpec->filterUel, symType, mwNElements, symDim);
+          sparseToFull (compVal, compFullVal, rSpec->filterUel, symType, mwNElements, symDim);
         }
         else {
           dimVal[0] = length(VECTOR_ELT(compUels, 0));
           PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(compUels, 0))));
           gamsAlloc++;
-          compFullVal = sparseToFull(compVal, compFullVal, compUels, symType, mrows, symDim);
+          sparseToFull (compVal, compFullVal, compUels, symType, mrows, symDim);
         }
         dimVal[1] = 1;
         setAttrib(compFullVal, R_DimSymbol, dimVect);
@@ -536,10 +536,10 @@ getGamsSoln(const char *gmsFileName)
         PROTECT(compFullVal = allocVector(REALSXP, totalElement));
         gamsAlloc++;
         if (rSpec->withUel ==1) {
-          compFullVal = sparseToFull(compVal, compFullVal, rSpec->filterUel, symType, mwNElements, symDim);
+          sparseToFull (compVal, compFullVal, rSpec->filterUel, symType, mwNElements, symDim);
         }
         else {
-          compFullVal = sparseToFull(compVal, compFullVal, compUels, symType, mrows, symDim);
+          sparseToFull (compVal, compFullVal, compUels, symType, mrows, symDim);
         }
 
         setAttrib(compFullVal, R_DimSymbol, dimVect);
