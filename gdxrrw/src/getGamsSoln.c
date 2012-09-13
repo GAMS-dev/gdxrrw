@@ -15,6 +15,8 @@
 #include "gclgms.h"
 #include "globals.h"
 
+static int haveGlobalUels;
+
 /* Delete single character from string */
 static char *
 deleteChar (char *src, char c, int len)
@@ -45,17 +47,17 @@ deleteChar (char *src, char c, int len)
 } /* deleteChar */
 
 static SEXP
-getGlobalUEL (SEXP globalUEL, int withCompress)
+getGlobalUEL (int withCompress, int *protectCnt)
 {
-  SEXP gamso, tmp, lstName, tmpUel, bufferUel;
-  int i, j, infields, found;
-  found = 0;
+  SEXP gamso, uels, lstName, tmpUel, bufferUel;
+  SEXP globalUEL = R_NilValue;  /* result value */
+  int i, j, infields, found, nUels;
 
   gamso = findVar( install("gamso"), R_GlobalEnv );
 
   if (gamso == NULL || TYPEOF(gamso) == NILSXP  ||  TYPEOF(gamso) == SYMSXP) {
     globalGams = 0;
-    wUEL = 0;
+    haveGlobalUels = 0;
     return R_NilValue;
   }
 
@@ -72,49 +74,48 @@ getGlobalUEL (SEXP globalUEL, int withCompress)
     i=0;
     infields = length(gamso);
     if (infields == 0) {
-      wUEL = 0;
+      haveGlobalUels = 0;
     }
     /* Checking if field data is for "name" */
-    for (i = 0; i < infields; i++) {
+    for (found = 0, i = 0; i < infields; i++) {
       if (strcmp("uels", CHAR(STRING_ELT(lstName, i))) == 0) {
         found = 1;
         break;
       }
     }
 
-    if (found == 1 && globalGams == 1) {
-      tmp = VECTOR_ELT(gamso, i);
-      if (tmp != NULL) {
+    if (found && globalGams == 1) {
+      uels = VECTOR_ELT(gamso, i);
+      if (uels != NULL) {
         if (withCompress == 1) {
           error("Compression is not allowed with Input UEL.");
         }
-        if (TYPEOF(tmp) != VECSXP) {
-          Rprintf ("List element 'uels'  must be a list - found %d instead.\n",TYPEOF(tmp));
-          error("Input list element 'uels' must be a list.");
+        if (TYPEOF(uels) != VECSXP) {
+          Rprintf ("gamso list element 'uels' must be a list - found %d instead.\n",TYPEOF(uels));
+          error("gamso list element 'uels' must be a list.");
         }
-        else {
-          PROTECT(globalUEL = allocVector(VECSXP, length(tmp)));
-          gamsAlloc++;
-          for (j = 0; j < length(tmp); j++) {
-            tmpUel = VECTOR_ELT(tmp, j);
-            if (tmpUel == R_NilValue) {
-              error("Empty Uel is not allowed ");
-            }
-            else {
-              bufferUel = allocVector(STRSXP, length(tmpUel));
-              /* Convert to output */
-              makeStrVec (bufferUel, tmpUel);
-              SET_VECTOR_ELT(globalUEL, j, bufferUel);
-              wUEL = 1;
-            }
+        PROTECT(globalUEL = allocVector(VECSXP, length(uels)));
+        ++*protectCnt;
+        nUels = length(uels);
+        for (j = 0;  j < nUels;  j++) {
+          tmpUel = VECTOR_ELT(uels, j);
+          if (tmpUel == R_NilValue) {
+            error("Empty uel in gamso is not allowed ");
           }
-        }
+          else {
+            PROTECT(bufferUel = allocVector(STRSXP, length(tmpUel)));
+            /* Convert to output */
+            makeStrVec (bufferUel, tmpUel);
+            SET_VECTOR_ELT(globalUEL, j, bufferUel);
+            UNPROTECT(1);
+          }
+        } /* loop over global UEL list */
+        haveGlobalUels = 1;
       }
     }
   }
   return globalUEL;
 }  /* getGlobalUEL */
-
 
 
 SEXP
@@ -139,6 +140,7 @@ getGamsSoln(const char *gmsFileName)
   int loop, maxPossibleElements, z;
   const char *uelElementName;
   int rc, errNum, symDim, symType, mrows, ncols, nRecs, iRec, changeIdx, index, k, kk, kRec;
+  int nAllocs;
   shortStringBuf_t msgBuf, uelName;
   char buf[3*sizeof(shortStringBuf_t)];
   int nUEL, iUEL, defaultIndex,  UELUserMapping, highestMappedUEL, ndimension;
@@ -189,6 +191,8 @@ getGamsSoln(const char *gmsFileName)
   maxPossibleElements = 0;
   OPList = R_NilValue;
 
+  nAllocs = 0;
+
   if (astring != NULL && strcmp(astring, "") != 0) {
     array[0]=strtok(line," ");
     if (array[0]==NULL) {
@@ -211,9 +215,9 @@ getGamsSoln(const char *gmsFileName)
   /* At least one element is there in GDX file */
   if (loop - 3 > 0) {
     /* This is for global UEL */
-    wUEL = 0;
-    rSpec->filterUel = getGlobalUEL(rSpec->filterUel, rSpec->compress);
-    if (wUEL == 0) {
+    haveGlobalUels = 0;
+    rSpec->filterUel = getGlobalUEL(rSpec->compress, &nAllocs);
+    if (0 == haveGlobalUels) {
       rSpec->withUel = 0;
     }
     else {
@@ -300,7 +304,7 @@ getGamsSoln(const char *gmsFileName)
     /* Get global UEL from GDX file */
     (void) gdxUMUelInfo (gdxHandle, &nUEL, &highestMappedUEL);
     PROTECT(UEList = allocVector(STRSXP, nUEL));
-    gamsAlloc++;
+    nAllocs++;
     for (iUEL = 1;  iUEL <= nUEL;  iUEL++) {
       if (!gdxUMUelGet (gdxHandle, iUEL, uelName, &UELUserMapping)) {
         error("Could not gdxUMUelGet");
@@ -317,7 +321,7 @@ getGamsSoln(const char *gmsFileName)
     /* Creating default uel if none entered */
     if (rSpec->withUel == 0) {
       PROTECT(compUels = allocVector(VECSXP, symDim));
-      gamsAlloc++;
+      nAllocs++;
       for (defaultIndex = 0; defaultIndex < symDim; defaultIndex++) {
         SET_VECTOR_ELT(compUels, defaultIndex, UEList);
       }
@@ -375,10 +379,10 @@ getGamsSoln(const char *gmsFileName)
     /* Allocating memory for 2D sparse matrix */
     if (rSpec->withUel == 1) {
       PROTECT(compVal = allocMatrix(REALSXP, mwNElements, ncols));
-      gamsAlloc++;
+      nAllocs++;
       if (rSpec->te && symType == dt_set) {
         PROTECT(textElement = allocVector(STRSXP, mwNElements));
-        gamsAlloc++;
+        nAllocs++;
       }
     }
     if (rSpec->withUel == 0) {
@@ -388,10 +392,10 @@ getGamsSoln(const char *gmsFileName)
       }
       /* Creat 2D sparse R array */
       PROTECT(compVal = allocMatrix(REALSXP, mrows, ncols));
-      gamsAlloc++;
+      nAllocs++;
       if (rSpec->te && symType == dt_set) {
         PROTECT(textElement = allocVector(STRSXP, mrows));
-        gamsAlloc++;
+        nAllocs++;
       }
     }
 
@@ -478,7 +482,7 @@ getGamsSoln(const char *gmsFileName)
     /* Converting data into its compressed form. */
     if (rSpec->compress == 1) {
       PROTECT(compUels = allocVector(VECSXP, symDim));
-      gamsAlloc++;
+      nAllocs++;
       compressData (compVal, UEList, compUels, nUEL, symDim, mrows);
     }
 
@@ -487,7 +491,7 @@ getGamsSoln(const char *gmsFileName)
       switch (symDim) {
       case 0:
         PROTECT(compFullVal = allocVector(REALSXP, 1));
-        gamsAlloc++;
+        nAllocs++;
         if (compVal != R_NilValue && REAL(compVal) != NULL) {
           REAL(compFullVal)[0] = REAL(compVal)[0];
         }
@@ -497,19 +501,19 @@ getGamsSoln(const char *gmsFileName)
         break;
       case 1:
         PROTECT(dimVect = allocVector(REALSXP, 2));
-        gamsAlloc++;
+        nAllocs++;
         dimVal = REAL(dimVect);
 
         if (rSpec->withUel == 1) {
           dimVal[0] = length(VECTOR_ELT(rSpec->filterUel, 0));
           PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(rSpec->filterUel, 0))));
-          gamsAlloc++;
+          nAllocs++;
           sparseToFull (compVal, compFullVal, rSpec->filterUel, symType, mwNElements, symDim);
         }
         else {
           dimVal[0] = length(VECTOR_ELT(compUels, 0));
           PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(compUels, 0))));
-          gamsAlloc++;
+          nAllocs++;
           sparseToFull (compVal, compFullVal, compUels, symType, mrows, symDim);
         }
         dimVal[1] = 1;
@@ -517,7 +521,7 @@ getGamsSoln(const char *gmsFileName)
         break;
       default:
         PROTECT(dimVect = allocVector(REALSXP, symDim));
-        gamsAlloc++;
+        nAllocs++;
         totalElement = 1;
         dimVal = REAL(dimVect);
         ndimension = 0;
@@ -534,7 +538,7 @@ getGamsSoln(const char *gmsFileName)
           }
         }
         PROTECT(compFullVal = allocVector(REALSXP, totalElement));
-        gamsAlloc++;
+        nAllocs++;
         if (rSpec->withUel ==1) {
           sparseToFull (compVal, compFullVal, rSpec->filterUel, symType, mwNElements, symDim);
         }
@@ -552,10 +556,10 @@ getGamsSoln(const char *gmsFileName)
     /* Creating string vector for symbol Name */
     PROTECT(compName = allocVector(STRSXP, 1) );
     SET_STRING_ELT(compName, 0, mkChar(rSpec->name));
-    gamsAlloc++;
+    nAllocs++;
     /* Creating string vector for symbol type */
     PROTECT(compType = allocVector(STRSXP, 1) );
-    gamsAlloc++;
+    nAllocs++;
     switch (symType) {
     case dt_set:
       SET_STRING_ELT( compType, 0, mkChar(types[0]) );
@@ -576,10 +580,10 @@ getGamsSoln(const char *gmsFileName)
     /* Creating int vector for symbol Dim */
     PROTECT(compDim = allocVector(INTSXP, 1) );
     INTEGER(compDim)[0] = symDim;
-    gamsAlloc++;
+    nAllocs++;
     /* Creating string vector for val data form */
     PROTECT(compForm = allocVector(STRSXP, 1) );
-    gamsAlloc++;
+    nAllocs++;
     if (rSpec->dForm == full) {
       SET_STRING_ELT(compForm, 0, mkChar(forms[0]));
     }
@@ -591,7 +595,7 @@ getGamsSoln(const char *gmsFileName)
     if (symType == dt_var || symType == dt_equ) {
       outFields++;
       PROTECT(compField = allocVector(STRSXP, 1));
-      gamsAlloc++;
+      nAllocs++;
       switch(rSpec->dField) {
       case level:
         SET_STRING_ELT(compField, 0, mkChar( fields[0] ));
@@ -614,7 +618,7 @@ getGamsSoln(const char *gmsFileName)
     }
 
     PROTECT(OPListComp = allocVector(STRSXP, outFields));
-    gamsAlloc++;
+    nAllocs++;
     /* populating list component names */
     SET_STRING_ELT(OPListComp, 0, mkChar("name"));
     SET_STRING_ELT(OPListComp, 1, mkChar("type"));
@@ -639,7 +643,7 @@ getGamsSoln(const char *gmsFileName)
     }
 
     PROTECT(OPList = allocVector(VECSXP, outFields));
-    gamsAlloc++;
+    nAllocs++;
 
     /* populating list component vector */
     SET_VECTOR_ELT(OPList, 0, compName);
@@ -686,5 +690,6 @@ getGamsSoln(const char *gmsFileName)
     (void) gdxFree (&gdxHandle);
   } /* end if loop - 3 > 0 */
   free(rSpec);
+  UNPROTECT(nAllocs);
   return OPList;
 } /* getGamsSoln */

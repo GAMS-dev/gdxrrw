@@ -1601,7 +1601,6 @@ SEXP gams (SEXP args)
   char strippedID[GMS_SSSIZE];
 
   writeData = 1;
-  gamsAlloc = 0;
   globalGams = 1;
   arglen = length(args);
 
@@ -1681,7 +1680,7 @@ SEXP gams (SEXP args)
   }
   /* read only first element from GDX file */
   result = getGamsSoln (gmsFileName);
-  UNPROTECT(gamsAlloc);
+  /* return right after getGamsSoln, so our result is not garbage-collected! */
   return result;
 } /* gams */
 
