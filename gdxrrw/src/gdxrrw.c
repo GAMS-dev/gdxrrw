@@ -382,13 +382,13 @@ createUelOut(SEXP val,
              dType_t dType,
              dForm_t dForm)
 {
-  SEXP  dims, bufferUel;
+  SEXP dims, bufferUel;
   int i, j, k;
   double *P;
   int *intVal;
   char buffer [256];
   int ncols, nrows, ndims;
-  int max = 0;
+  int max;
 
   dims = getAttrib(val, R_DimSymbol);
   if (dForm == sparse) {
@@ -401,39 +401,41 @@ createUelOut(SEXP val,
     if (TYPEOF(val) == REALSXP) {
       P = REAL(val);
       for (i = 0; i < ncols; i++) {
+        max = 0;
         for (j = 0; j < nrows; j++) {
           if (P[j + i*nrows] > max) {
             max = (int) P[j + i*nrows];
           }
         }
-        bufferUel = allocVector(STRSXP, max);
+        PROTECT(bufferUel = allocVector(STRSXP, max));
         for (k = 1; k <= max; k++) {
           sprintf(buffer, "%d", k);
           SET_STRING_ELT(bufferUel, k-1, mkChar(buffer));
         }
-        SET_VECTOR_ELT(uelOut, i, duplicate(bufferUel));
-        max = 0;
+        SET_VECTOR_ELT(uelOut, i, bufferUel);
+        UNPROTECT(1);
       }
     }
     else if (TYPEOF(val) == INTSXP) {
       intVal = INTEGER(val);
 
       for (i = 0; i < ncols; i++) {
+        max = 0;
         for (j = 0; j < nrows; j++) {
           if (intVal[j + i*nrows] > max) {
-            max =  intVal[j + i*nrows];
+            max = intVal[j + i*nrows];
           }
         }
-        bufferUel = allocVector(STRSXP, max);
+        PROTECT(bufferUel = allocVector(STRSXP, max));
         for (k = 1; k <= max; k++) {
           sprintf(buffer, "%d", k);
           SET_STRING_ELT(bufferUel, k-1, mkChar(buffer));
         }
         SET_VECTOR_ELT(uelOut, i, duplicate(bufferUel));
-        max = 0;
+        UNPROTECT(1);
       }
     }
-  }
+  } /* if sparse */
   else {
     /*
      * Create default uel.
@@ -442,15 +444,16 @@ createUelOut(SEXP val,
      */
     ndims = length(uelOut);
     for (i = 0; i < ndims; i++) {
-      bufferUel = allocVector(STRSXP, INTEGER(dims)[i]);
+      PROTECT(bufferUel = allocVector(STRSXP, INTEGER(dims)[i]));
 
       for (k = 1; k <= INTEGER(dims)[i]; k++) {
         sprintf(buffer, "%d", k);
         SET_STRING_ELT(bufferUel, k-1, mkChar(buffer));
       }
       SET_VECTOR_ELT(uelOut, i, bufferUel);
+      UNPROTECT(1);
     }
-  }
+  } /* if sparse .. else .. */
 } /* createUelOut */
 
 
@@ -822,7 +825,7 @@ registerInputUEL(SEXP uelOut,
 
     nSubElements = length(dummy);
 
-    subBuffer = allocVector(STRSXP, nSubElements);
+    PROTECT(subBuffer = allocVector(STRSXP, nSubElements));
 
     for (j = 0; j < nSubElements; j++) {
       /* get string and register to gdx */
@@ -838,6 +841,7 @@ registerInputUEL(SEXP uelOut,
     }
 
     SET_VECTOR_ELT(mainBuffer, i, subBuffer);
+    UNPROTECT(1);
   }
   SET_VECTOR_ELT(uelIndex, k, mainBuffer);
 } /* registerInputUEL */
