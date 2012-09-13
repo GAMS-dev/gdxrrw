@@ -147,7 +147,7 @@ compressData (SEXP data, SEXP globalUEL, SEXP uelOut,
     }
     /* step 3: create cellArray with size = total, fill in UEL if mask[] = 1 */
     /* step 4: step through 1's at mask and create sum */
-    bufferUel = allocVector(STRSXP, total);
+    PROTECT(bufferUel = allocVector(STRSXP, total));
     elements = 0;
     for (l = 0; l < numberOfUel; l++) {
       if (mask[l] == 1) {
@@ -162,9 +162,9 @@ compressData (SEXP data, SEXP globalUEL, SEXP uelOut,
       col[l + nRec*i] = mask[(int)col[l + nRec*i] - 1];
     }
     SET_VECTOR_ELT(uelOut, i, bufferUel);
+    UNPROTECT(1);
   }
   free(mask);
-  alloc++;
   return;
 } /* compressData */
 

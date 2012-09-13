@@ -478,6 +478,7 @@ getGamsSoln(const char *gmsFileName)
     /* Converting data into its compressed form. */
     if (rSpec->compress == 1) {
       PROTECT(compUels = allocVector(VECSXP, symDim));
+      gamsAlloc++;
       compressData (compVal, UEList, compUels, nUEL, symDim, mrows);
     }
 

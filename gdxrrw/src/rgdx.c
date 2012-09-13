@@ -314,7 +314,7 @@ SEXP rgdx (SEXP args)
   SEXP fileName, requestList, squeeze, UEList;
   SEXP outName = R_NilValue,
     outType = R_NilValue,
-    compDim = R_NilValue,
+    outDim = R_NilValue,
     compVal = R_NilValue,
     compFullVal = R_NilValue,
     compForm = R_NilValue,
@@ -879,9 +879,9 @@ SEXP rgdx (SEXP args)
       error("Unrecognized type of symbol found.");
     }
 
-    /* Creating int vector for symbol Dim */
-    PROTECT(compDim = allocVector(INTSXP, 1) );
-    INTEGER(compDim)[0] = symDim;
+    /* Creating int vector for symbol dim */
+    PROTECT(outDim = allocVector(INTSXP, 1) );
+    INTEGER(outDim)[0] = symDim;
     alloc++;
     /* Creating string vector for val data form */
     PROTECT(compForm = allocVector(STRSXP, 1) );
@@ -930,6 +930,7 @@ SEXP rgdx (SEXP args)
     }
   } /* if (withList) bb */
   else {
+    /* no requestList was input, so returning universe */
     /* Creating output string symbol name */
     PROTECT(outName = allocVector(STRSXP, 1));
     SET_STRING_ELT(outName, 0, mkChar("*"));
@@ -938,6 +939,10 @@ SEXP rgdx (SEXP args)
     PROTECT(outType = allocVector(STRSXP, 1));
     alloc++;
     SET_STRING_ELT(outType, 0, mkChar(types[0]));
+    /* Creating int vector for symbol dim */
+    PROTECT(outDim = allocVector(INTSXP, 1));
+    INTEGER(outDim)[0] = 1;
+    alloc++;
   }
 
   PROTECT(outListNames = allocVector(STRSXP, outElements));
@@ -972,8 +977,8 @@ SEXP rgdx (SEXP args)
   /* populating list component vector */
   SET_VECTOR_ELT(outList, 0, outName);
   SET_VECTOR_ELT(outList, 1, outType);
+  SET_VECTOR_ELT(outList, 2, outDim);
   if (withList) {
-    SET_VECTOR_ELT(outList, 2, compDim);
     if (rSpec->dForm == full) {
       SET_VECTOR_ELT(outList, 3, compFullVal);
     }
@@ -1005,7 +1010,6 @@ SEXP rgdx (SEXP args)
   else {
     /* no read specifier so return the universe */
     /* entering null values if nothing else makes sense */
-    SET_VECTOR_ELT(outList, 2, R_NilValue);
     SET_VECTOR_ELT(outList, 3, R_NilValue);
     SET_VECTOR_ELT(outList, 4, R_NilValue);
     SET_VECTOR_ELT(outList, 5, UEList);
