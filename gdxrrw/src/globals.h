@@ -143,7 +143,6 @@ extern char ID[GMS_SSSIZE];
 
 #endif  /* defined(_GDXRRW_MAIN_) */
 
-_GDXRRW_EXTERN_ int alloc;
 _GDXRRW_EXTERN_ int gamsAlloc;
 _GDXRRW_EXTERN_ int globalGams;
 _GDXRRW_EXTERN_ int wUEL;

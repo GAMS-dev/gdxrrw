@@ -21,7 +21,7 @@
  * and updates the read specifier
  */
 static void
-checkRgdxList (const SEXP lst, rSpec_t *rSpec)
+checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
 {
   SEXP lstNames, tmp, tmpUel;
   SEXP bufferUel;
@@ -282,17 +282,18 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec)
     }
     else {
       PROTECT(rSpec->filterUel = allocVector(VECSXP, length(tmp)));
-      alloc++;
+      ++*protectCnt;
       for (j = 0; j < length(tmp); j++) {
         tmpUel = VECTOR_ELT(tmp, j);
         if (tmpUel == R_NilValue) {
           error("Empty Uel is not allowed");
         }
         else {
-          bufferUel = allocVector(STRSXP, length(tmpUel));
+          PROTECT(bufferUel = allocVector(STRSXP, length(tmpUel)));
           /* Convert to output */
           makeStrVec (bufferUel, tmpUel);
           SET_VECTOR_ELT(rSpec->filterUel, j, bufferUel);
+          UNPROTECT(1);         /* bufferUel */
         }
       }
       rSpec->withUel = 1;
@@ -337,6 +338,7 @@ SEXP rgdx (SEXP args)
   int symIdx, symDim, symType;
   int rc, errNum, ACount, mrows, ncols, nUEL, iUEL;
   int  k, kk, iRec, nRecs, index, changeIdx, kRec;
+  int rgdxAlloc;                /* PROTECT count: undo this many on exit */
   int UELUserMapping, highestMappedUEL;
   int arglen,  maxPossibleElements, z, b, matched, sparesIndex;
   double *p, *dimVal, *dimElVect;
@@ -357,7 +359,7 @@ SEXP rgdx (SEXP args)
 
   /* setting intial values */
   kRec = 0;
-  alloc = 0;
+  rgdxAlloc = 0;
   maxPossibleElements = 0; /* this just to shut up compiler warnings */
 
   /* first arg is function name - ignore it */
@@ -417,7 +419,7 @@ SEXP rgdx (SEXP args)
   rSpec->dField = level;
 
   if (withList) {
-    checkRgdxList (requestList, rSpec);
+    checkRgdxList (requestList, rSpec, &rgdxAlloc);
     if (rSpec->compress == 1 && rSpec->withUel == 1) {
       error("Compression is not allowed with input UEL\n");
     }
@@ -479,7 +481,7 @@ SEXP rgdx (SEXP args)
   /* Get global UEL from GDX file */
   (void) gdxUMUelInfo (gdxHandle, &nUEL, &highestMappedUEL);
   PROTECT(UEList = allocVector(STRSXP, nUEL));
-  alloc++;
+  rgdxAlloc++;
   for (iUEL = 1;  iUEL <= nUEL;  iUEL++) {
     if (!gdxUMUelGet (gdxHandle, iUEL, uelName, &UELUserMapping)) {
       error("Could not gdxUMUelGet");
@@ -498,7 +500,7 @@ SEXP rgdx (SEXP args)
     /* Creating default uel if none entered */
     if (! rSpec->withUel) {
       PROTECT(compUels = allocVector(VECSXP, symDim));
-      alloc++;
+      rgdxAlloc++;
       for (defaultIndex = 0; defaultIndex < symDim; defaultIndex++) {
         SET_VECTOR_ELT(compUels, defaultIndex, UEList);
       }
@@ -558,10 +560,10 @@ SEXP rgdx (SEXP args)
     /* Allocating memory for 2D sparse matrix */
     if (rSpec->withUel == 1) {
       PROTECT(compVal = allocMatrix(REALSXP, mwNElements, ncols));
-      alloc++;
+      rgdxAlloc++;
       if (rSpec->te && symType == dt_set) {
         PROTECT(textElement = allocVector(STRSXP, mwNElements));
-        alloc++;
+        rgdxAlloc++;
       }
     }
     if (rSpec->withUel == 0) {
@@ -571,10 +573,10 @@ SEXP rgdx (SEXP args)
       }
       /* Creat 2D sparse R array */
       PROTECT(compVal = allocMatrix(REALSXP, mrows, ncols));
-      alloc++;
+      rgdxAlloc++;
       if (rSpec->te && symType == dt_set) {
         PROTECT(textElement = allocVector(STRSXP, mrows));
-        alloc++;
+        rgdxAlloc++;
       }
     }
 
@@ -737,21 +739,21 @@ SEXP rgdx (SEXP args)
     /* Converting data into its compressed form. */
     if (rSpec->compress == 1) {
       PROTECT(compUels = allocVector(VECSXP, symDim));
-      alloc++;
+      rgdxAlloc++;
       compressData (compVal, UEList, compUels, nUEL, symDim, mrows);
     }
     /* TODO/TEST: create full dimensional string matrix */
     if (rSpec->te == 1) {
       if (symDim == 1) {
         PROTECT(elVect = allocVector(REALSXP, 2));
-        alloc++;
+        rgdxAlloc++;
 
         dimElVect = REAL(elVect);
         dimElVect[0] = length(VECTOR_ELT(compUels, 0));
         dimElVect[1] = 1;
 
         PROTECT(compTe = allocVector(STRSXP, length(VECTOR_ELT(compUels, 0)) ));
-        alloc++;
+        rgdxAlloc++;
 
         compTe = createElementMatrix(compVal, textElement, compTe, compUels, symDim, mrows);
         setAttrib(compTe, R_DimSymbol, elVect);
@@ -759,7 +761,7 @@ SEXP rgdx (SEXP args)
       else {
         ndimension = 0;
         PROTECT(elVect = allocVector(REALSXP, symDim));
-        alloc++;
+        rgdxAlloc++;
         totalElement = 1;
         dimElVect = REAL(elVect);
         if (rSpec->withUel) {
@@ -768,7 +770,7 @@ SEXP rgdx (SEXP args)
             totalElement = (totalElement * length(VECTOR_ELT(rSpec->filterUel, ndimension)));
           }
           PROTECT(compTe = allocVector(STRSXP, totalElement));
-          alloc++;
+          rgdxAlloc++;
           compTe = createElementMatrix(compVal, textElement, compTe, rSpec->filterUel, symDim, mwNElements);
           setAttrib(compTe, R_DimSymbol, elVect);
         }
@@ -778,7 +780,7 @@ SEXP rgdx (SEXP args)
             totalElement = (totalElement * length(VECTOR_ELT(compUels, ndimension)));
           }
           PROTECT(compTe = allocVector(STRSXP, totalElement));
-          alloc++;
+          rgdxAlloc++;
           compTe = createElementMatrix(compVal, textElement, compTe, compUels, symDim, mrows);
           setAttrib(compTe, R_DimSymbol, elVect);
         }
@@ -790,7 +792,7 @@ SEXP rgdx (SEXP args)
       switch (symDim) {
       case 0: {
         PROTECT(compFullVal = allocVector(REALSXP, 1));
-        alloc++;
+        rgdxAlloc++;
         if (compVal != R_NilValue && REAL(compVal) != NULL) {
           REAL(compFullVal)[0] = REAL(compVal)[0];
         }
@@ -801,19 +803,19 @@ SEXP rgdx (SEXP args)
       }
       case 1: {
         PROTECT(dimVect = allocVector(REALSXP, 2));
-        alloc++;
+        rgdxAlloc++;
         dimVal = REAL(dimVect);
 
         if (rSpec->withUel == 1) {
           dimVal[0] = length(VECTOR_ELT(rSpec->filterUel, 0));
           PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(rSpec->filterUel, 0))));
-          alloc++;
+          rgdxAlloc++;
           compFullVal = sparseToFull(compVal, compFullVal, rSpec->filterUel, symType, mwNElements, symDim);
         }
         else {
           dimVal[0] = length(VECTOR_ELT(compUels, 0));
           PROTECT(compFullVal = allocVector(REALSXP, length(VECTOR_ELT(compUels, 0))));
-          alloc++;
+          rgdxAlloc++;
           compFullVal = sparseToFull(compVal, compFullVal, compUels, symType, mrows, symDim);
         }
         dimVal[1] = 1;
@@ -822,7 +824,7 @@ SEXP rgdx (SEXP args)
       }
       default: {
         PROTECT(dimVect = allocVector(REALSXP, symDim));
-        alloc++;
+        rgdxAlloc++;
         totalElement = 1;
         dimVal = REAL(dimVect);
         ndimension = 0;
@@ -839,7 +841,7 @@ SEXP rgdx (SEXP args)
           }
         }
         PROTECT(compFullVal = allocVector(REALSXP, totalElement));
-        alloc++;
+        rgdxAlloc++;
         if (rSpec->withUel ==1) {
           compFullVal = sparseToFull(compVal, compFullVal, rSpec->filterUel, symType, mwNElements, symDim);
         }
@@ -858,10 +860,10 @@ SEXP rgdx (SEXP args)
     /* Creating output string for symbol name */
     PROTECT(outName = allocVector(STRSXP, 1) );
     SET_STRING_ELT(outName, 0, mkChar(symName));
-    alloc++;
+    rgdxAlloc++;
     /* Creating output string for symbol type */
     PROTECT(outType = allocVector(STRSXP, 1) );
-    alloc++;
+    rgdxAlloc++;
     switch (symType) {
     case dt_set:
       SET_STRING_ELT(outType, 0, mkChar(types[0]) );
@@ -882,10 +884,10 @@ SEXP rgdx (SEXP args)
     /* Creating int vector for symbol dim */
     PROTECT(outDim = allocVector(INTSXP, 1) );
     INTEGER(outDim)[0] = symDim;
-    alloc++;
+    rgdxAlloc++;
     /* Creating string vector for val data form */
     PROTECT(compForm = allocVector(STRSXP, 1) );
-    alloc++;
+    rgdxAlloc++;
     if (rSpec->dForm == full) {
       SET_STRING_ELT(compForm, 0, mkChar(forms[0]));
     }
@@ -898,7 +900,7 @@ SEXP rgdx (SEXP args)
     if (symType == dt_var || symType == dt_equ) {
       outElements++;
       PROTECT(compField = allocVector(STRSXP, 1));
-      alloc++;
+      rgdxAlloc++;
       switch(rSpec->dField) {
       case level:
         SET_STRING_ELT(compField, 0, mkChar( fields[0] ));
@@ -922,7 +924,7 @@ SEXP rgdx (SEXP args)
     if (rSpec->ts) {
       outElements++;
       PROTECT(compTs = allocVector(STRSXP, 1));
-      alloc++;
+      rgdxAlloc++;
       SET_STRING_ELT(compTs, 0, mkChar(sText));
     }
     if (rSpec->te) {
@@ -934,19 +936,19 @@ SEXP rgdx (SEXP args)
     /* Creating output string symbol name */
     PROTECT(outName = allocVector(STRSXP, 1));
     SET_STRING_ELT(outName, 0, mkChar("*"));
-    alloc++;
+    rgdxAlloc++;
     /* Creating output string for symbol type */
     PROTECT(outType = allocVector(STRSXP, 1));
-    alloc++;
+    rgdxAlloc++;
     SET_STRING_ELT(outType, 0, mkChar(types[0]));
     /* Creating int vector for symbol dim */
     PROTECT(outDim = allocVector(INTSXP, 1));
     INTEGER(outDim)[0] = 1;
-    alloc++;
+    rgdxAlloc++;
   }
 
   PROTECT(outListNames = allocVector(STRSXP, outElements));
-  alloc++;
+  rgdxAlloc++;
   /* populating list element names */
   SET_STRING_ELT(outListNames, 0, mkChar("name"));
   SET_STRING_ELT(outListNames, 1, mkChar("type"));
@@ -972,7 +974,7 @@ SEXP rgdx (SEXP args)
   }
 
   PROTECT(outList = allocVector(VECSXP, outElements));
-  alloc++;
+  rgdxAlloc++;
 
   /* populating list component vector */
   SET_VECTOR_ELT(outList, 0, outName);
@@ -1027,6 +1029,6 @@ SEXP rgdx (SEXP args)
     error("Errors detected when closing gdx file");
   }
   (void) gdxFree (&gdxHandle);
-  UNPROTECT(alloc);
+  UNPROTECT(rgdxAlloc);
   return outList;
 } /* End of rgdx */
