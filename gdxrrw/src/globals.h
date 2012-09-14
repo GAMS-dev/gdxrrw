@@ -51,6 +51,7 @@ typedef struct rSpec {          /* rgdx read specifier */
   int ts;
   int te;
   int withUel;
+  int dim;
   SEXP filterUel;
 } rSpec_t;
 typedef struct wSpec {
@@ -105,9 +106,9 @@ checkStringLength (const char *str);
 void
 compressData (SEXP data, SEXP globalUEL, SEXP uelOut,
               int numberOfUel, int symbolDim, int nRec);
-SEXP
-createElementMatrix(SEXP compVal, SEXP textElement, SEXP compTe,
-                    SEXP compUels, int symbolDim, int nRec);
+void
+createElementMatrix (SEXP compVal, SEXP textElement, SEXP compTe,
+                     SEXP compUels, int symDim, int nRec);
 int
 findInFilter (int k, SEXP filterList, const char *uelName);
 char *

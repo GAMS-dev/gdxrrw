@@ -17,15 +17,23 @@
 
 
 
-/* checkRgdxList: checks the input requestList for valid data
+/* checkRgdxList: checks the input request list for valid data
  * and updates the read specifier
  */
 static void
 checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
 {
-  SEXP lstNames, tmp, tmpUel;
+  SEXP lstNames, tmpUel;
   SEXP bufferUel;
-  int i, j, found;
+  SEXP compressExp = NULL;      /* from input requestList */
+  SEXP dimExp = NULL;           /* from input requestList */
+  SEXP fieldExp = NULL;         /* from input requestList */
+  SEXP formExp = NULL;          /* from input requestList */
+  SEXP nameExp = NULL;          /* from input requestList */
+  SEXP teExp = NULL;            /* from input requestList */
+  SEXP tsExp = NULL;            /* from input requestList */
+  SEXP uelsExp = NULL;          /* from input requestList */
+  int i, j;
   int nElements;                /* number of elements in lst */
   const char *tmpName;
   const char *elmtName;         /* list element name */
@@ -44,91 +52,49 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
     Rprintf("Valid names are: 'name', 'dim', 'uels', 'form', 'compress', 'field', 'te', 'ts'.\n");
     error("Please try again with named input list.\n");
   }
+
+  /* first, check that all names are recognized, reject o/w
+   * in the process, store the symbol for direct access later
+   */
   for (i = 0;  i < nElements;  i++) {
     elmtName = CHAR(STRING_ELT(lstNames, i));
-    /* Checking for valid list element names */
-    if ( !((0 == strcmp("name", elmtName ))
-           || (0 == strcmp("dim", elmtName ))
-           || (0 == strcmp("uels", elmtName ))
-           || (0 == strcmp("form", elmtName ))
-           || (0 == strcmp("compress", elmtName ))
-           || (0 == strcmp("field", elmtName ))
-           || (0 == strcmp("te", elmtName ))
-           || (0 == strcmp("ts", elmtName ))
-           ) ) {
-      Rprintf ("Input list elements must be according to this specification:\n");
+    if      (strcmp("compress", elmtName) == 0) {
+      compressExp = VECTOR_ELT(lst, i);
+    }
+    else if (strcmp("dim", elmtName) == 0) {
+      dimExp = VECTOR_ELT(lst, i);
+    }
+    else if (strcmp("field", elmtName) == 0) {
+      fieldExp = VECTOR_ELT(lst, i);
+    }
+    else if (strcmp("form", elmtName) == 0) {
+      formExp = VECTOR_ELT(lst, i);
+    }
+    else if (strcmp("name", elmtName) == 0) {
+      nameExp = VECTOR_ELT(lst, i);
+    }
+    else if (strcmp("te", elmtName) == 0) {
+      teExp = VECTOR_ELT(lst, i);
+    }
+    else if (strcmp("ts", elmtName) == 0) {
+      tsExp = VECTOR_ELT(lst, i);
+    }
+    else if (strcmp("uels", elmtName) == 0) {
+      uelsExp = VECTOR_ELT(lst, i);
+    }
+    else {
+      Rprintf ("Input list elements for rgdx must be according to this specification:\n");
       Rprintf ("'name', 'dim', 'uels', 'form', 'compress', 'field', 'te', 'ts'.\n");
-      error("Incorrect type of input list element '%s' specified.",
+      error("Incorrect type of rgdx input list element '%s' specified.",
             elmtName);
     }
   }
 
-  /* Checking list element "name" */
-  for (found = 0, i = 0;  i < nElements;  i++) {
-    if (strcmp("name", CHAR(STRING_ELT(lstNames, i))) == 0) {
-      found = 1;
-      break;
-    }
-  }
-  if (found) {
-    tmp = VECTOR_ELT(lst, i);
-    if (TYPEOF(tmp) == STRSXP) {
-      checkStringLength( CHAR(STRING_ELT(tmp, 0)) );
-      strcpy (rSpec->name, CHAR(STRING_ELT(tmp, 0)) );
-    }
-    else {
-      Rprintf ("List element 'name' must be a string - found %d instead\n",
-               TYPEOF(tmp) );
-      error("Input list element 'name' must be string.\n");
-    }
-  }
-  else {
-    error("Required list element 'name' is missing. Please try again.\n" );
-  }
+  /* now process the fields provided */
 
-  /* Checking for list element 'form'. Default to 'sparse' if not found */
-  for (found = 0, i = 0;  i < nElements;  i++) {
-    if (strcmp("form", CHAR(STRING_ELT(lstNames, i))) == 0) {
-      found = 1;
-      break;
-    }
-  }
-  if (found) {
-    tmp = VECTOR_ELT(lst, i);
-    if (TYPEOF(tmp) != STRSXP ) {
-      Rprintf ("List element 'form' must be a string - found %d instead\n",
-               TYPEOF(tmp) );
-      error("Input list element 'form' must be string");
-    }
-    tmpName = CHAR(STRING_ELT(tmp, 0));
-    if (strlen(tmpName) == 0) {
-      error("Input list element 'form' must be either 'full' or 'sparse'.");
-    }
-    if (0 == strcasecmp("full", tmpName)) {
-      rSpec->dForm = full;
-    }
-    else if (0 == strcasecmp("sparse", tmpName)) {
-      rSpec->dForm = sparse;
-    }
-    else {
-      error("Input list element 'form' must be either 'full' or 'sparse'.");
-    }
-  }
-
-  /* Checking for list element 'compress'. Default to 'false' if not found */
-  for (found = 0, i = 0;  i < nElements;  i++) {
-    if (strcmp("compress", CHAR(STRING_ELT(lstNames, i))) == 0) {
-      found = 1;
-      break;
-    }
-  }
-  if (found) {
-    tmp = VECTOR_ELT(lst, i);
-    if (TYPEOF(tmp) == STRSXP) {
-      tmpName = CHAR(STRING_ELT(tmp, 0));
-      if (strlen(tmpName) == 0) {
-        error("Input list element 'compress' must be either 'true' or 'false'.");
-      }
+  if (compressExp) {
+    if (TYPEOF(compressExp) == STRSXP) {
+      tmpName = CHAR(STRING_ELT(compressExp, 0));
       if (0 == strcasecmp("true", tmpName)) {
         rSpec->compress = 1;
       }
@@ -139,8 +105,8 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
         error("Input list element 'compress' must be either 'true' or 'false'.");
       }
     }
-    else if (TYPEOF(tmp) == LGLSXP) {
-      compress = LOGICAL(tmp)[0];
+    else if (TYPEOF(compressExp) == LGLSXP) {
+      compress = LOGICAL(compressExp)[0];
       if (compress == TRUE) {
         rSpec->compress = 1;
       }
@@ -150,31 +116,52 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
     }
     else {
       Rprintf ("List element 'compress' must be either string or logical - found %d instead\n",
-               TYPEOF(tmp) );
+               TYPEOF(compressExp));
       error("Input list element 'compress' must be either string or logical");
     }
-  }
+  } /* if compressExp */
 
-  /* Checking for list element 'field'.  Default to 'level' if not found */
-  for (found = 0, i = 0;  i < nElements;  i++) {
-    if (strcmp("field", CHAR(STRING_ELT(lstNames, i))) == 0) {
-      found = 1;
-      break;
+  if (dimExp) {
+    if (INTSXP == TYPEOF(dimExp)) {
+      if (length(dimExp) != 1) {
+        error ("Optional input list element 'dim' must have only one element.\n");
+      }
+      if (INTEGER(dimExp)[0] < 0) {
+        error("Negative value is not allowed as valid input for 'dim'.\n");
+      }
+      rSpec->dim = INTEGER(dimExp)[0];
     }
-  }
-  if (found) {
-    tmp = VECTOR_ELT(lst, i);
-    if (TYPEOF(tmp) != STRSXP ) {
+    else if (REALSXP == TYPEOF(dimExp)) {
+      if (length(dimExp) != 1) {
+        error ("Optional input list element 'dim' must have only one element.\n");
+      }
+      if (REAL(dimExp)[0] < 0) {
+        error("Negative value is not allowed as valid input for 'dim'.\n");
+      }
+      rSpec->dim = (int) REAL(dimExp)[0];
+      if (REAL(dimExp)[0] != rSpec->dim) {
+        error("Non-integer value is not allowed as valid input for 'dim'.\n");
+      }
+    }
+    else {
+      Rprintf ("List element 'dim' must be numeric - found %d instead\n",
+               TYPEOF(dimExp));
+      error ("Optional input list element 'dim' must be numeric.\n");
+    }
+  } /* dimExp */
+
+  if (fieldExp) {
+    if (TYPEOF(fieldExp) != STRSXP ) {
       Rprintf ("List element 'field' must be a string - found %d instead\n",
-               TYPEOF(tmp) );
+               TYPEOF(fieldExp));
       error("Input list element 'field' must be string");
     }
-    tmpName = CHAR(STRING_ELT(tmp, 0));
+    tmpName = CHAR(STRING_ELT(fieldExp, 0));
     if (strlen(tmpName) == 0) {
-      error("Input list element 'field' must be from 'l', 'm', 'lo', 'up' or 's'.");
+      error("Input list element 'field' must be in ['l','m','lo','up','s'].");
     }
     rSpec->withField = 1;
-    if (0 == strcasecmp("l", tmpName)) {
+    if      (0 == strcasecmp("l", tmpName)) {
       rSpec->dField = level;
     }
     else if (0 == strcasecmp("m", tmpName)) {
@@ -192,22 +179,67 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
     else {
       error("Input list element 'field' must be from 'l', 'm', 'lo', 'up' or 's'.");
     }
-  }
+  } /* if fieldExp */
 
-  /* Checking for list element 'ts'.  Default to 'false' if not found */
-  for (found = 0, i = 0;  i < nElements;  i++) {
-    if (strcmp("ts", CHAR(STRING_ELT(lstNames, i))) == 0) {
-      found = 1;
-      break;
+  if (formExp) {
+    if (STRSXP != TYPEOF(formExp)) {
+      Rprintf ("List element 'form' must be a string - found %d instead\n",
+               TYPEOF(formExp));
+      error ("Input list element 'form' must be string");
     }
+    tmpName = CHAR(STRING_ELT(formExp, 0));
+    if (strcasecmp("full", tmpName) == 0) {
+      rSpec->dForm = full;
+    }
+    else if (strcasecmp("sparse", tmpName) == 0) {
+      rSpec->dForm = sparse;
+    }
+    else {
+      error("Input list element 'form' must be either 'full' or 'sparse'.");
+    }
+  } /* formExp */
+
+  if (NULL == nameExp)
+    error ("Required list element 'name' is missing. Please try again.\n" );
+  if (TYPEOF(nameExp) != STRSXP) {
+    Rprintf ("List element 'name' must be a string - found %d instead\n",
+             TYPEOF(nameExp));
+    error("Input list element 'name' must be string.\n");
   }
-  if (found) {
-    tmp = VECTOR_ELT(lst, i);
-    if (TYPEOF(tmp) == STRSXP ) {
-      tmpName = CHAR(STRING_ELT(tmp, 0));
+  tmpName = CHAR(STRING_ELT(nameExp, 0));
+  checkStringLength (tmpName);
+  strcpy (rSpec->name, tmpName);
+
+  if (teExp) {
+    if (TYPEOF(teExp) == STRSXP ) {
+      tmpName = CHAR(STRING_ELT(teExp, 0));
       if (strlen(tmpName) == 0) {
-        error("Input list element 'ts' must be either 'true' or 'false'.");
+        error("Input list element 'te' must be either 'true' or 'false'.");
       }
+      if (0 == strcasecmp("true", tmpName)) {
+        rSpec->te = 1;
+      }
+      else if (0 == strcasecmp("false", tmpName)) {
+        rSpec->te = 0;
+      }
+      else {
+        error("Input list element 'te' must be either 'true' or 'false'.");
+      }
+    }
+    else if (TYPEOF(teExp) == LGLSXP) {
+      if (LOGICAL(teExp)[0] == TRUE) {
+        rSpec->te = 1;
+      }
+    }
+    else {
+      error("Input list element 'te' must be either string or logical"
+            " - found %d instead\n", TYPEOF(teExp));
+    }
+  } /* teExp */
+
+  if (tsExp) {
+    if (TYPEOF(tsExp) == STRSXP ) {
+      tmpName = CHAR(STRING_ELT(tsExp, 0));
       if (0 == strcasecmp("true", tmpName)) {
         rSpec->ts = 1;
       }
@@ -218,73 +250,27 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
         error("Input list element 'ts' must be either 'true' or 'false'.");
       }
     }
-    else if (TYPEOF(tmp) == LGLSXP) {
-      if (LOGICAL(tmp)[0] == TRUE) {
+    else if (TYPEOF(tsExp) == LGLSXP) {
+      if (LOGICAL(tsExp)[0] == TRUE) {
         rSpec->ts = 1;
       }
     }
     else {
-      Rprintf ("List element 'ts' must be either string or logical - found %d instead\n",
-               TYPEOF(tmp) );
+      Rprintf ("List element 'ts' must be either string or logical"
+               " - found %d instead\n", TYPEOF(tsExp));
       error("Input list element 'ts' must be either string or logical");
     }
-  }
+  } /* tsExp */
 
-  /* Checking for list element 'te'. Default to 'false' if not found */
-  for (found = 0, i = 0;  i < nElements;  i++) {
-    if (strcmp("te", CHAR(STRING_ELT(lstNames, i))) == 0) {
-      found = 1;
-      break;
-    }
-  }
-  if (found) {
-    tmp = VECTOR_ELT(lst, i);
-    if (TYPEOF(tmp) == STRSXP ) {
-      tmpName = CHAR(STRING_ELT(tmp, 0));
-      if (strlen(tmpName) == 0) {
-        error("Input list element 'te' must be either 'true' or 'false'.");
-      }
-      if (0 == strcasecmp("true", tmpName)) {
-        rSpec->te = 1;
-      }
-      else if (0 == strcasecmp("false", tmpName)) {
-        rSpec->te = 0;
-      }
-      else {
-        error("Input list element 'te' must be either 'true' or 'false'.");
-      }
-    }
-    else if (TYPEOF(tmp) == LGLSXP) {
-      if (LOGICAL(tmp)[0] == TRUE) {
-        rSpec->te = 1;
-      }
-      else {
-        rSpec->te = 0;
-      }
-    }
-    else {
-      error("Input list element 'te' must be either string or logical"
-            " - found %d instead\n", TYPEOF(tmp));
-    }
-  }
-
-  /* Checking for list element 'uels'.  Used in filtered read */
-  for (found = 0, i = 0;  i < nElements;  i++) {
-    if (strcmp("uels", CHAR(STRING_ELT(lstNames, i))) == 0) {
-      found = 1;
-      break;
-    }
-  }
-  if (found) {
-    tmp = VECTOR_ELT(lst, i);
-    if (TYPEOF(tmp) != VECSXP) {
+  if (uelsExp) {
+    if (TYPEOF(uelsExp) != VECSXP) {
       error("List element 'uels' must be a list.");
     }
     else {
-      PROTECT(rSpec->filterUel = allocVector(VECSXP, length(tmp)));
+      PROTECT(rSpec->filterUel = allocVector(VECSXP, length(uelsExp)));
       ++*protectCnt;
-      for (j = 0; j < length(tmp); j++) {
-        tmpUel = VECTOR_ELT(tmp, j);
+      for (j = 0; j < length(uelsExp); j++) {
+        tmpUel = VECTOR_ELT(uelsExp, j);
         if (tmpUel == R_NilValue) {
           error("Empty Uel is not allowed");
         }
@@ -298,7 +284,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
       }
       rSpec->withUel = 1;
     }
-  }
+  } /* uelsExp */
 } /* checkRgdxList */
 
 
@@ -699,7 +685,7 @@ SEXP rgdx (SEXP args)
             p[iRec+kk*mrows] = uels[kk];
           }
         }  /* loop over GDX records */
-      }    /* inputdata->te = 1: must be a set */
+      }    /* rSpec->te = 1: must be a set */
       else {
         for (iRec = 0, kRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
@@ -755,7 +741,7 @@ SEXP rgdx (SEXP args)
         PROTECT(outTe = allocVector(STRSXP, length(VECTOR_ELT(outUels, 0)) ));
         rgdxAlloc++;
 
-        outTe = createElementMatrix(outVal, textElement, outTe, outUels, symDim, mrows);
+        createElementMatrix (outVal, textElement, outTe, outUels, symDim, mrows);
         setAttrib(outTe, R_DimSymbol, elVect);
       }
       else {
@@ -771,7 +757,7 @@ SEXP rgdx (SEXP args)
           }
           PROTECT(outTe = allocVector(STRSXP, totalElement));
           rgdxAlloc++;
-          outTe = createElementMatrix(outVal, textElement, outTe, rSpec->filterUel, symDim, mwNElements);
+          createElementMatrix (outVal, textElement, outTe, rSpec->filterUel, symDim, mwNElements);
           setAttrib(outTe, R_DimSymbol, elVect);
         }
         else {
@@ -781,7 +767,7 @@ SEXP rgdx (SEXP args)
           }
           PROTECT(outTe = allocVector(STRSXP, totalElement));
           rgdxAlloc++;
-          outTe = createElementMatrix(outVal, textElement, outTe, outUels, symDim, mrows);
+          createElementMatrix (outVal, textElement, outTe, outUels, symDim, mrows);
           setAttrib(outTe, R_DimSymbol, elVect);
         }
       }

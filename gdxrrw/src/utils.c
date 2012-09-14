@@ -168,36 +168,35 @@ compressData (SEXP data, SEXP globalUEL, SEXP uelOut,
   return;
 } /* compressData */
 
-/* create text element Matrix from sparse data and element vector */
-SEXP
-createElementMatrix(SEXP compVal, SEXP textElement, SEXP compTe,
-                    SEXP compUels, int symbolDim, int nRec)
+/* createElementMatrix: what does this do?
+ * create text element Matrix from sparse data and element vector
+ */
+void
+createElementMatrix (SEXP compVal, SEXP textElement, SEXP compTe,
+                     SEXP compUels, int symDim, int nRec)
 {
   int i, j, iRec, index, totNumber;
   double *p;
-  int  nCols;
 
   /* Step 1: loop over full matrix and set every value as empty string */
-
   for (j = 0; j < length(compTe); j++) {
     SET_STRING_ELT(compTe, j, mkChar(""));
   }
 
   /* Step 2: loop over each row of sparse matrix and populate full matrix */
-  nCols = symbolDim;
   p = REAL(compVal);
 
   for (iRec = 0; iRec < nRec; iRec++) {
     index = 0;
     totNumber = 1;
-    for (i = 0; i < nCols; i++) {
+    for (i = 0;  i < symDim;  i++) {
       index = index + ((int)p[iRec + nRec*i] - 1)*totNumber;
       totNumber = (totNumber)*length(VECTOR_ELT(compUels, i));
     }
     SET_STRING_ELT(compTe, index, duplicate(STRING_ELT(textElement, iRec)) );
   }
 
-  return compTe;
+  return;
 } /* createElementMatrix */
 
 /* findInFilter: find the position of uelName in filterList[k]
@@ -496,7 +495,7 @@ makeStrVec (SEXP outExp, SEXP inExp)
  */
 void
 sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
-             int symType, int nRec, int symDim)
+              int symType, int nRec, int symDim)
 {
   int k, iRec;
   int card[GLOBAL_MAX_INDEX_DIM];
