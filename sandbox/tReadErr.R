@@ -8,12 +8,15 @@ tryCatch({
   if (! file_test ('-f', fnIn)) {
     stop (paste("FAIL: File", fnIn, "does not exist"))
   }
-  foundErr <- FALSE
-  tcr <- tryCatch({IJ <- rgdx(fnIn,list(name='IJ',form='FFfull',compress=TRUE)) ; return(TRUE)},
-                  error = function(e) { print(e); foundErr <- TRUE; print("Done with inner") ; return (FALSE)})
-  print(paste("foundErr =", foundErr))
-  print(tcr)
-#  IJ <- rgdx(fnIn,list(name='IJ',form='FFfull',compress=TRUE))
+  tcr <- tryCatch({
+    IJ <- rgdx(fnIn,list(name='IJ',form='FFfull_invalid',compress=TRUE)) ; return(FALSE)
+    },
+    error = function(e) { print(e) ; return (TRUE) }
+  )
+  print(paste("bad call detected error:", tcr))
+  if (! tcr) {
+    return (FALSE)
+  }
 
   return (TRUE)
 },
