@@ -8,18 +8,37 @@ tryCatch({
   if (! file_test ('-f', fnIn)) {
     stop (paste("FAIL: File", fnIn, "does not exist"))
   }
+
+  msg <- "rgdx test with bogus form specifier"
   tcr <- tryCatch({
-    IJ <- rgdx(fnIn,list(name='IJ',form='FFfull_invalid',compress=TRUE)) ; return(FALSE)
+    IJ <- rgdx(fnIn,list(name='IJ',form='invalidForm',compress=TRUE)) ; FALSE
     },
-    error = function(e) { print(e) ; return (TRUE) }
+    error = function(e) { print(paste(' Caught error: msg =',e)) ; TRUE }
   )
-  print(paste("bad call detected error:", tcr))
-  if (! tcr) {
-    return (FALSE)
+  if (tcr) {
+    print(paste(msg,": passed",sep=""))
+  }
+  else {
+    stop (paste(msg, ": failed",sep=""))
   }
 
-  return (TRUE)
+  msg <- "rgdx test with bogus dim specifier"
+  tcr <- tryCatch({
+    IJ <- rgdx(fnIn,list(name='IJ',dim=4,form='sparsejj')) ; FALSE
+    },
+    error = function(e) { print(paste(' Caught error: msg =',e)) ; TRUE }
+  )
+  if (tcr) {
+    print(paste(msg,": passed",sep=""))
+  }
+  else {
+    stop (paste(msg, ": failed",sep=""))
+  }
+
+  ## all tests passed: return TRUE
+  print ("test of rgdx error handling: all passed")
+  TRUE
 },
 
-error = function(ex) { print(ex) ; return (FALSE) }
+error = function(ex) { print ("test of rgdx error handling failed"); print(ex) ; FALSE }
 )
