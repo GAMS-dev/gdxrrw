@@ -126,3 +126,20 @@ chkFrames <- function(s, f1, f2) {
   }
   return (TRUE)
 } # chkFrames
+
+# compare the character vectors v1 and v2, return TRUE if the same, FALSE o/w
+chkSameVec <- function(s, v1,v2) {
+  if (! is.vector(v1,mode="character"))   return (FALSE)
+  if (! is.vector(v2,mode="character"))   return (FALSE)
+  n <- length(v1)
+  if (n != length(v2))     return (FALSE)
+  if (n == 0)              return (TRUE)
+  for (k in c(1:n)) {
+    if (v1[k] != v2[k]) {
+      print (paste("checking", s, ": item", k, "is wrong"))
+      return (FALSE)
+    }
+  }
+  return (TRUE)
+}  # chkSameVec
+

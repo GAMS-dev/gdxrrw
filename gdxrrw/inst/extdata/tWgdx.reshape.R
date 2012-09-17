@@ -1,6 +1,6 @@
 ### Test wgdx.reshape
 
-source ("chkFrames.R")
+source ("chkSame.R")
 
 tryCatch({
   print ("test wgdx.reshape")
