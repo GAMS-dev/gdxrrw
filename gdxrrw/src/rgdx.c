@@ -50,7 +50,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
   if (lstNames == R_NilValue) {
     Rprintf("Input list must be named\n");
     Rprintf("Valid names are: 'name', 'dim', 'uels', 'form', 'compress', 'field', 'te', 'ts'.\n");
-    error("Please try again with named input list.\n");
+    error("Please try again with named input list.");
   }
 
   /* first, check that all names are recognized, reject o/w
@@ -124,29 +124,29 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
   if (dimExp) {
     if (INTSXP == TYPEOF(dimExp)) {
       if (length(dimExp) != 1) {
-        error ("Optional input list element 'dim' must have only one element.\n");
+        error ("Optional input list element 'dim' must have only one element.");
       }
       if (INTEGER(dimExp)[0] < 0) {
-        error("Negative value is not allowed as valid input for 'dim'.\n");
+        error("Negative value is not allowed as valid input for 'dim'.");
       }
       rSpec->dim = INTEGER(dimExp)[0];
     }
     else if (REALSXP == TYPEOF(dimExp)) {
       if (length(dimExp) != 1) {
-        error ("Optional input list element 'dim' must have only one element.\n");
+        error ("Optional input list element 'dim' must have only one element.");
       }
       if (REAL(dimExp)[0] < 0) {
-        error("Negative value is not allowed as valid input for 'dim'.\n");
+        error("Negative value is not allowed as valid input for 'dim'.");
       }
       rSpec->dim = (int) REAL(dimExp)[0];
       if (REAL(dimExp)[0] != rSpec->dim) {
-        error("Non-integer value is not allowed as valid input for 'dim'.\n");
+        error("Non-integer value is not allowed as valid input for 'dim'.");
       }
     }
     else {
       Rprintf ("List element 'dim' must be numeric - found %d instead\n",
                TYPEOF(dimExp));
-      error ("Optional input list element 'dim' must be numeric.\n");
+      error ("Optional input list element 'dim' must be numeric.");
     }
   } /* dimExp */
 
@@ -200,11 +200,11 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
   } /* formExp */
 
   if (NULL == nameExp)
-    error ("Required list element 'name' is missing. Please try again.\n" );
+    error ("Required list element 'name' is missing. Please try again." );
   if (TYPEOF(nameExp) != STRSXP) {
     Rprintf ("List element 'name' must be a string - found %d instead\n",
              TYPEOF(nameExp));
-    error("Input list element 'name' must be string.\n");
+    error("Input list element 'name' must be string.");
   }
   tmpName = CHAR(STRING_ELT(nameExp, 0));
   checkStringLength (tmpName);
@@ -233,7 +233,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
     }
     else {
       error("Input list element 'te' must be either string or logical"
-            " - found %d instead\n", TYPEOF(teExp));
+            " - found %d instead", TYPEOF(teExp));
     }
   } /* teExp */
 
@@ -394,7 +394,7 @@ SEXP rgdx (SEXP args)
   checkFileExtension (gdxFileName);
   fin = fopen (gdxFileName, "r");
   if (fin==NULL) {
-    error ("GDX file '%s' not found\n", gdxFileName);
+    error ("GDX file '%s' not found", gdxFileName);
   }
   fclose(fin);
   /*-------------------- Checking data for input list ------------*/
@@ -403,11 +403,12 @@ SEXP rgdx (SEXP args)
   memset (rSpec, 0, sizeof(*rSpec));
   rSpec->dForm = sparse;
   rSpec->dField = level;
+  rSpec->dim = -1;              /* negative indicates NA */
 
   if (withList) {
     checkRgdxList (requestList, rSpec, &rgdxAlloc);
     if (rSpec->compress == 1 && rSpec->withUel == 1) {
-      error("Compression is not allowed with input UEL\n");
+      error("Compression is not allowed with input UEL");
     }
   }
 
@@ -437,7 +438,7 @@ SEXP rgdx (SEXP args)
     /* start searching for symbol */
     rc = gdxFindSymbol (gdxHandle, rSpec->name, &symIdx);
     if (! rc) {
-      sprintf (buf, "GDX file %s contains no symbol named '%s'\n",
+      sprintf (buf, "GDX file %s contains no symbol named '%s'",
                gdxFileName,
                rSpec->name );
       error (buf);
@@ -447,20 +448,28 @@ SEXP rgdx (SEXP args)
       gdxSymbolInfoX(gdxHandle, symIdx, &ACount, &rc, sText);
     }
 
-    /* checking that symbol is of type parameter/set/equaltion/variable */
+    /* checking that symbol is of type parameter/set/equation/variable */
     if (!(symType == dt_par || symType == dt_set || symType == dt_var || symType == dt_equ)) {
       sprintf(buf, "GDX symbol %s (index=%d, symDim=%d, symType=%d)"
-              " is not recognized as set, parameter, variable, or equation\n",
+              " is not recognized as set, parameter, variable, or equation",
               rSpec->name, symIdx, symDim, symType);
       error(buf);
     }
     else if ((symType == dt_par || symType == dt_set) && rSpec->withField == 1) {
-      error("Symbol '%s' is either set or parameter that can't have field.",
+      error("Symbol '%s' is either set or parameter that cannot have field.",
             rSpec->name);
     }
     if (rSpec->te == 1 && symType != dt_set) {
-      error("Text elements only exist for set and symbol '%s' is not a set.",
+      error("Text elements only exist for sets and symbol '%s' is not a set.",
             rSpec->name);
+    }
+    if (rSpec->dim >= 0) {
+      /* check that symbol dim agrees with expected dim */
+      if (rSpec->dim != symDim) {
+        sprintf(buf, "Symbol %s has dimension %d but you specifed dim=%d",
+                rSpec->name, symDim, rSpec->dim);
+        error(buf);
+      }
     }
   } /* if (withList) */
 
