@@ -302,14 +302,15 @@ SEXP rgdx (SEXP args)
   SEXP outName = R_NilValue,
     outType = R_NilValue,
     outDim = R_NilValue,
-    outVal = R_NilValue,
-    outFullVal = R_NilValue,
+    outValSp = R_NilValue,      /* output .val, sparse form */
+    outValFull = R_NilValue,    /* output .val, full form */
     outForm = R_NilValue,
     outUels = R_NilValue,
     outField = R_NilValue,
     outTs = R_NilValue,
-    outTe = R_NilValue;
-  SEXP outListNames, outList, dimVect, textElement, elVect;
+    outTeSp = R_NilValue,       /* output .te, sparse form */
+    outTeFull = R_NilValue;     /* output .te, full form */
+  SEXP outListNames, outList, dimVect, elVect;
   FILE    *fin;
   rSpec_t *rSpec;
   gdxUelIndex_t uels;
@@ -551,13 +552,13 @@ SEXP rgdx (SEXP args)
       iRec = 0;
       k = 0;
     }
-    textElement = R_NilValue;
+    outTeSp = R_NilValue;
     /* Allocating memory for 2D sparse matrix */
     if (rSpec->withUel == 1) {
-      PROTECT(outVal = allocMatrix(REALSXP, mwNElements, ncols));
+      PROTECT(outValSp = allocMatrix(REALSXP, mwNElements, ncols));
       rgdxAlloc++;
       if (rSpec->te && symType == dt_set) {
-        PROTECT(textElement = allocVector(STRSXP, mwNElements));
+        PROTECT(outTeSp = allocVector(STRSXP, mwNElements));
         rgdxAlloc++;
       }
     }
@@ -567,15 +568,15 @@ SEXP rgdx (SEXP args)
         mrows = getNonZeroElements(gdxHandle, symIdx, rSpec->dField);
       }
       /* Creat 2D sparse R array */
-      PROTECT(outVal = allocMatrix(REALSXP, mrows, ncols));
+      PROTECT(outValSp = allocMatrix(REALSXP, mrows, ncols));
       rgdxAlloc++;
       if (rSpec->te && symType == dt_set) {
-        PROTECT(textElement = allocVector(STRSXP, mrows));
+        PROTECT(outTeSp = allocVector(STRSXP, mrows));
         rgdxAlloc++;
       }
     }
 
-    p = REAL(outVal);
+    p = REAL(outValSp);
     /* TODO/TEST: filtered read */
     if (rSpec->withUel == 1) {
       matched = 0;
@@ -609,7 +610,7 @@ SEXP rgdx (SEXP args)
             if (values[GMS_VAL_LEVEL]) {
               elementIndex = (int) values[GMS_VAL_LEVEL];
               gdxGetElemText(gdxHandle, elementIndex, msg, &IDum);
-              SET_STRING_ELT(textElement, matched, mkChar(msg));
+              SET_STRING_ELT(outTeSp, matched, mkChar(msg));
             }
             else {
               strcpy(stringEle, "");
@@ -619,7 +620,7 @@ SEXP rgdx (SEXP args)
                   strcat(stringEle, ".");
                 }
               }
-              SET_STRING_ELT(textElement, matched, mkChar(stringEle));
+              SET_STRING_ELT(outTeSp, matched, mkChar(stringEle));
             }
             matched = matched +1;
           }
@@ -676,7 +677,7 @@ SEXP rgdx (SEXP args)
           if (values[GMS_VAL_LEVEL]) {
             elementIndex = (int) values[GMS_VAL_LEVEL];
             gdxGetElemText(gdxHandle, elementIndex, msg, &IDum);
-            SET_STRING_ELT(textElement, iRec, mkChar(msg));
+            SET_STRING_ELT(outTeSp, iRec, mkChar(msg));
           }
           else {
             strcpy(stringEle, "");
@@ -686,7 +687,7 @@ SEXP rgdx (SEXP args)
                 strcat(stringEle, ".");
               }
             }
-            SET_STRING_ELT(textElement, iRec, mkChar(stringEle));
+            SET_STRING_ELT(outTeSp, iRec, mkChar(stringEle));
           }
           for (kk = 0;  kk < symDim;  kk++) {
             p[iRec+kk*mrows] = uels[kk];
@@ -721,8 +722,8 @@ SEXP rgdx (SEXP args)
             to   = newp + kk*kRec;
             MEMCPY (to, from, sizeof(*p)*kRec);
           }
-          tmp = outVal;
-          outVal = newCV;
+          tmp = outValSp;
+          outValSp = newCV;
           UNPROTECT_PTR(tmp);
           mrows = kRec;
         }
@@ -733,7 +734,7 @@ SEXP rgdx (SEXP args)
     if (rSpec->compress == 1) {
       PROTECT(outUels = allocVector(VECSXP, symDim));
       rgdxAlloc++;
-      compressData (outVal, UEList, outUels, nUEL, symDim, mrows);
+      compressData (outValSp, UEList, outUels, nUEL, symDim, mrows);
     }
     /* TODO/TEST: create full dimensional string matrix */
     if (rSpec->te == 1) {
@@ -748,11 +749,11 @@ SEXP rgdx (SEXP args)
         dimElVect[0] = length(VECTOR_ELT(outUels, 0));
         dimElVect[1] = 1;
 
-        PROTECT(outTe = allocVector(STRSXP, length(VECTOR_ELT(outUels, 0)) ));
+        PROTECT(outTeFull = allocVector(STRSXP, length(VECTOR_ELT(outUels, 0)) ));
         rgdxAlloc++;
 
-        createElementMatrix (outVal, textElement, outTe, outUels, symDim, mrows);
-        setAttrib(outTe, R_DimSymbol, elVect);
+        createElementMatrix (outValSp, outTeSp, outTeFull, outUels, symDim, mrows);
+        setAttrib(outTeFull, R_DimSymbol, elVect);
       }
       else {
         ndimension = 0;
@@ -765,20 +766,20 @@ SEXP rgdx (SEXP args)
             dimElVect[ndimension] = length(VECTOR_ELT(rSpec->filterUel, ndimension));
             totalElement = (totalElement * length(VECTOR_ELT(rSpec->filterUel, ndimension)));
           }
-          PROTECT(outTe = allocVector(STRSXP, totalElement));
+          PROTECT(outTeFull = allocVector(STRSXP, totalElement));
           rgdxAlloc++;
-          createElementMatrix (outVal, textElement, outTe, rSpec->filterUel, symDim, mwNElements);
-          setAttrib(outTe, R_DimSymbol, elVect);
+          createElementMatrix (outValSp, outTeSp, outTeFull, rSpec->filterUel, symDim, mwNElements);
+          setAttrib(outTeFull, R_DimSymbol, elVect);
         }
         else {
           for (ndimension = 0; ndimension < symDim; ndimension++) {
             dimElVect[ndimension] = length(VECTOR_ELT(outUels, ndimension));
             totalElement = (totalElement * length(VECTOR_ELT(outUels, ndimension)));
           }
-          PROTECT(outTe = allocVector(STRSXP, totalElement));
+          PROTECT(outTeFull = allocVector(STRSXP, totalElement));
           rgdxAlloc++;
-          createElementMatrix (outVal, textElement, outTe, outUels, symDim, mrows);
-          setAttrib(outTe, R_DimSymbol, elVect);
+          createElementMatrix (outValSp, outTeSp, outTeFull, outUels, symDim, mrows);
+          setAttrib(outTeFull, R_DimSymbol, elVect);
         }
       }
     }
@@ -787,13 +788,13 @@ SEXP rgdx (SEXP args)
     if (rSpec->dForm == full) {
       switch (symDim) {
       case 0: {
-        PROTECT(outFullVal = allocVector(REALSXP, 1));
+        PROTECT(outValFull = allocVector(REALSXP, 1));
         rgdxAlloc++;
-        if (outVal != R_NilValue && REAL(outVal) != NULL) {
-          REAL(outFullVal)[0] = REAL(outVal)[0];
+        if (outValSp != R_NilValue && REAL(outValSp) != NULL) {
+          REAL(outValFull)[0] = REAL(outValSp)[0];
         }
         else {
-          REAL(outFullVal)[0] = 0;
+          REAL(outValFull)[0] = 0;
         }
         break;
       }
@@ -804,18 +805,18 @@ SEXP rgdx (SEXP args)
 
         if (rSpec->withUel == 1) {
           dimVal[0] = length(VECTOR_ELT(rSpec->filterUel, 0));
-          PROTECT(outFullVal = allocVector(REALSXP, length(VECTOR_ELT(rSpec->filterUel, 0))));
+          PROTECT(outValFull = allocVector(REALSXP, length(VECTOR_ELT(rSpec->filterUel, 0))));
           rgdxAlloc++;
-          sparseToFull (outVal, outFullVal, rSpec->filterUel, symType, mwNElements, symDim);
+          sparseToFull (outValSp, outValFull, rSpec->filterUel, symType, mwNElements, symDim);
         }
         else {
           dimVal[0] = length(VECTOR_ELT(outUels, 0));
-          PROTECT(outFullVal = allocVector(REALSXP, length(VECTOR_ELT(outUels, 0))));
+          PROTECT(outValFull = allocVector(REALSXP, length(VECTOR_ELT(outUels, 0))));
           rgdxAlloc++;
-          sparseToFull (outVal, outFullVal, outUels, symType, mrows, symDim);
+          sparseToFull (outValSp, outValFull, outUels, symType, mrows, symDim);
         }
         dimVal[1] = 1;
-        setAttrib(outFullVal, R_DimSymbol, dimVect);
+        setAttrib(outValFull, R_DimSymbol, dimVect);
         break;
       }
       default: {
@@ -836,16 +837,16 @@ SEXP rgdx (SEXP args)
             totalElement = (totalElement * length(VECTOR_ELT(outUels, ndimension)));
           }
         }
-        PROTECT(outFullVal = allocVector(REALSXP, totalElement));
+        PROTECT(outValFull = allocVector(REALSXP, totalElement));
         rgdxAlloc++;
         if (rSpec->withUel ==1) {
-          sparseToFull (outVal, outFullVal, rSpec->filterUel, symType, mwNElements, symDim);
+          sparseToFull (outValSp, outValFull, rSpec->filterUel, symType, mwNElements, symDim);
         }
         else {
-          sparseToFull (outVal, outFullVal, outUels, symType, mrows, symDim);
+          sparseToFull (outValSp, outValFull, outUels, symType, mrows, symDim);
         }
 
-        setAttrib(outFullVal, R_DimSymbol, dimVect);
+        setAttrib(outValFull, R_DimSymbol, dimVect);
         break;
       }
       } /* switch(symDim) */
@@ -978,10 +979,10 @@ SEXP rgdx (SEXP args)
   SET_VECTOR_ELT(outList, 2, outDim);
   if (withList) {
     if (rSpec->dForm == full) {
-      SET_VECTOR_ELT(outList, 3, outFullVal);
+      SET_VECTOR_ELT(outList, 3, outValFull);
     }
     else {
-      SET_VECTOR_ELT(outList, 3, outVal);
+      SET_VECTOR_ELT(outList, 3, outValSp);
     }
     SET_VECTOR_ELT(outList, 4, outForm);
     if (rSpec->withUel) {
@@ -1002,7 +1003,7 @@ SEXP rgdx (SEXP args)
     }
     if (rSpec->te) {
       nField++;
-      SET_VECTOR_ELT(outList, nField, outTe);
+      SET_VECTOR_ELT(outList, nField, outTeFull);
     }
   }
   else {
