@@ -7,9 +7,9 @@ tryCatch({
 
   # start with a dataframe as you might read it with read.delim
   df <-
-structure(list(hdrA = structure(c(2L, 2L, 2L, 1L, 1L, 1L), .Label = c("crn", 
-"wht"), class = "factor"), hdrB = c(100, 200, 300, 400, 500, 
-600), hdrC = c(1, 2, 3, 4, 5, 6), hdrD = c(1.4, 2.4, 3.4, 
+structure(list(hdrA = structure(c(2L, 2L, 2L, 1L, 1L, 1L), .Label = c("crn",
+"wht"), class = "factor"), hdrB = c(100, 200, 300, 400, 500,
+600), hdrC = c(1, 2, 3, 4, 5, 6), hdrD = c(1.4, 2.4, 3.4,
 4.4, 5.4, 6.4), hdrE = c(1.5, 2.5, 3.5, 4.5, 5.5, 6.5)),
 .Names = c("hdrA", "hdrB", "hdrC", "hdrD", "hdrE"),
 row.names = c(NA, -6L), class = "data.frame", symName = "defName")
@@ -19,11 +19,11 @@ row.names = c(NA, -6L), class = "data.frame", symName = "defName")
   # The final columns are double and will be data columns.  So this
   # could be a 2-, 3-, or 4-dimensional parameter
 
-  lstA <- structure(list(name = "hdrA", type = "set", uels = list(c("crn", 
+  lstA <- structure(list(name = "hdrA", type = "set", uels = list(c("crn",
 "wht"))), .Names = c("name", "type", "uels"))
-  lstB <- structure(list(name = "hdrB", type = "set", uels = list(c("100", 
+  lstB <- structure(list(name = "hdrB", type = "set", uels = list(c("100",
 "200","300","400","500","600"))), .Names = c("name", "type", "uels"))
-  lstC <- structure(list(name = "hdrC", type = "set", uels = list(c("1", 
+  lstC <- structure(list(name = "hdrC", type = "set", uels = list(c("1",
 "2","3","4","5","6"))), .Names = c("name", "type", "uels"))
 
   ## -----------------------------------------------------------------------------
@@ -37,14 +37,14 @@ row.names = c(NA, -6L), class = "data.frame", symName = "defName")
                      .Names = c("name", "type", "uels"))
   if (! chkLists ("test1 index 2(time agg)", lst1[[2]], lstT1))
     stop ("test1: index set 2 'time' failed check");
-  df1_ <- structure(list(hdrA = structure(c(2L, 2L, 2L, 1L, 1L, 1L, 2L, 
-2L, 2L, 1L, 1L, 1L, 2L, 2L, 2L, 1L, 1L, 1L, 2L, 2L, 2L, 1L, 1L, 
-1L), class = "factor", .Label = c("crn", "wht")), time = structure(c(1L, 
-1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L, 3L, 3L, 
-3L, 4L, 4L, 4L, 4L, 4L, 4L), .Label = c("hdrB", "hdrC", "hdrD", 
-"hdrE"), class = "factor"), value = c(100, 200, 300, 400, 500, 
-600, 1, 2, 3, 4, 5, 6, 1.4, 2.4, 3.4, 4.4, 5.4, 6.4, 1.5, 2.5, 
-3.5, 4.5, 5.5, 6.5)), .Names = c("hdrA", "time", "value"), row.names = c(NA, 
+  df1_ <- structure(list(hdrA = structure(c(2L, 2L, 2L, 1L, 1L, 1L, 2L,
+2L, 2L, 1L, 1L, 1L, 2L, 2L, 2L, 1L, 1L, 1L, 2L, 2L, 2L, 1L, 1L,
+1L), class = "factor", .Label = c("crn", "wht")), time = structure(c(1L,
+1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L, 3L, 3L,
+3L, 4L, 4L, 4L, 4L, 4L, 4L), .Label = c("hdrB", "hdrC", "hdrD",
+"hdrE"), class = "factor"), value = c(100, 200, 300, 400, 500,
+600, 1, 2, 3, 4, 5, 6, 1.4, 2.4, 3.4, 4.4, 5.4, 6.4, 1.5, 2.5,
+3.5, 4.5, 5.5, 6.5)), .Names = c("hdrA", "time", "value"), row.names = c(NA,
 -24L), class = "data.frame", symName = "defName")
   if (! chkFrames ("test1 df", lst1[[3]], df1_))
     stop ("test1: data frame failed check");
@@ -64,15 +64,15 @@ row.names = c(NA, -6L), class = "data.frame", symName = "defName")
   if (! chkLists ("test2 index 3(time agg)", lst2[[3]], lstT2))
     stop ("test2: index set 3 'time' failed check");
 df2_ <-
-structure(list(hdrA = structure(c(2L, 2L, 2L, 1L, 1L, 1L, 2L, 
-2L, 2L, 1L, 1L, 1L, 2L, 2L, 2L, 1L, 1L, 1L), class = "factor", .Label = c("crn", 
-"wht")), hdrB = structure(c(1L, 2L, 3L, 4L, 5L, 6L, 1L, 2L, 3L, 
-4L, 5L, 6L, 1L, 2L, 3L, 4L, 5L, 6L), class = "factor", .Label = c("100", 
-"200", "300", "400", "500", "600")), time = structure(c(1L, 1L, 
+structure(list(hdrA = structure(c(2L, 2L, 2L, 1L, 1L, 1L, 2L,
+2L, 2L, 1L, 1L, 1L, 2L, 2L, 2L, 1L, 1L, 1L), class = "factor", .Label = c("crn",
+"wht")), hdrB = structure(c(1L, 2L, 3L, 4L, 5L, 6L, 1L, 2L, 3L,
+4L, 5L, 6L, 1L, 2L, 3L, 4L, 5L, 6L), class = "factor", .Label = c("100",
+"200", "300", "400", "500", "600")), time = structure(c(1L, 1L,
 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L, 3L, 3L, 3L
-), .Label = c("hdrC", "hdrD", "hdrE"), class = "factor"), value = c(1, 
-2, 3, 4, 5, 6, 1.4, 2.4, 3.4, 4.4, 5.4, 6.4, 1.5, 2.5, 3.5, 4.5, 
-5.5, 6.5)), .Names = c("hdrA", "hdrB", "time", "value"), row.names = c(NA, 
+), .Label = c("hdrC", "hdrD", "hdrE"), class = "factor"), value = c(1,
+2, 3, 4, 5, 6, 1.4, 2.4, 3.4, 4.4, 5.4, 6.4, 1.5, 2.5, 3.5, 4.5,
+5.5, 6.5)), .Names = c("hdrA", "hdrB", "time", "value"), row.names = c(NA,
 -18L), class = "data.frame", symName = "defName")
   if (! chkFrames ("test2 df", lst2[[4]], df2_))
     stop ("test2: data frame failed check");
@@ -94,15 +94,15 @@ structure(list(hdrA = structure(c(2L, 2L, 2L, 1L, 1L, 1L, 2L,
   if (! chkLists ("test3 index 4(time agg)", lst3[[4]], lstT3))
     stop ("test3: index set 4 'time' failed check");
 df3_ <-
-structure(list(hdrA = structure(c(2L, 2L, 2L, 1L, 1L, 1L, 2L, 
+structure(list(hdrA = structure(c(2L, 2L, 2L, 1L, 1L, 1L, 2L,
 2L, 2L, 1L, 1L, 1L), class = "factor", .Label = c("crn", "wht"
-)), hdrB = structure(c(1L, 2L, 3L, 4L, 5L, 6L, 1L, 2L, 3L, 4L, 
-5L, 6L), class = "factor", .Label = c("100", "200", "300", "400", 
-"500", "600")), hdrC = structure(c(1L, 2L, 3L, 4L, 5L, 6L, 1L, 
-2L, 3L, 4L, 5L, 6L), class = "factor", .Label = c("1", "2", "3", 
-"4", "5", "6")), time = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 2L, 
-2L, 2L, 2L, 2L, 2L), .Label = c("hdrD", "hdrE"), class = "factor"), 
-    value = c(1.4, 2.4, 3.4, 4.4, 5.4, 6.4, 1.5, 2.5, 3.5, 4.5, 
+)), hdrB = structure(c(1L, 2L, 3L, 4L, 5L, 6L, 1L, 2L, 3L, 4L,
+5L, 6L), class = "factor", .Label = c("100", "200", "300", "400",
+"500", "600")), hdrC = structure(c(1L, 2L, 3L, 4L, 5L, 6L, 1L,
+2L, 3L, 4L, 5L, 6L), class = "factor", .Label = c("1", "2", "3",
+"4", "5", "6")), time = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 2L,
+2L, 2L, 2L, 2L, 2L), .Label = c("hdrD", "hdrE"), class = "factor"),
+    value = c(1.4, 2.4, 3.4, 4.4, 5.4, 6.4, 1.5, 2.5, 3.5, 4.5,
     5.5, 6.5)), .Names = c("hdrA", "hdrB", "hdrC", "time", "value"
 ), row.names = c(NA, -12L), class = "data.frame", symName = "defName")
   if (! chkFrames ("test3 df", lst3[[5]], df3_))
@@ -127,7 +127,7 @@ structure(list(hdrA = structure(c(2L, 2L, 2L, 1L, 1L, 1L, 2L,
   names(df4_)[[4]] <- 'leftovers'
   if (! chkFrames ("test4 df", lst4[[5]], df4_))
     stop ("test4: data frame failed check");
-  
+
 
   ## -----------------------------------------------------------------------------
   ## test5: use optional arg setsToo=FALSE
@@ -140,7 +140,7 @@ structure(list(hdrA = structure(c(2L, 2L, 2L, 1L, 1L, 1L, 2L,
 
 
   ## -----------------------------------------------------------------------------
-  ## test6: use optional arg setNames and attribute "ts", 
+  ## test6: use optional arg setNames and attribute "ts",
   dfts <- df
   attr(dfts,"ts") <- 'explanatory text for parameter'
   lst6 <- wgdx.reshape (dfts, 4, setNames = c("column A","column B","column C", "aggregated index"))
@@ -195,15 +195,15 @@ structure(list(hdrA = structure(c(2L, 2L, 2L, 1L, 1L, 1L, 2L,
   if (! chkLists ("test8 index 3(time agg)", lst8[[3]], lstT8))
     stop ("test8: index set 3 'time' failed check");
 df8_ <-
-structure(list(hdrA = structure(c(2L, 2L, 2L, 1L, 1L, 1L, 
-2L, 2L, 2L, 1L, 1L, 1L, 2L, 2L, 2L, 1L, 1L, 1L), class = "factor", .Label = c("crn", 
-"wht")), hdrC = structure(c(1L, 2L, 3L, 4L, 5L, 6L, 1L, 2L, 3L, 
-4L, 5L, 6L, 1L, 2L, 3L, 4L, 5L, 6L), class = "factor", .Label = c("1", 
-"2", "3", "4", "5", "6")), time = structure(c(1L, 1L, 1L, 1L, 
-1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L, 3L, 3L, 3L), .Label = c("hdrB", 
-"hdrD", "hdrE"), class = "factor"), value = c(100, 200, 300, 
-400, 500, 600, 1.4, 2.4, 3.4, 4.4, 5.4, 6.4, 1.5, 2.5, 3.5, 4.5, 
-5.5, 6.5)), .Names = c("hdrA", "hdrC", "time", "value"), row.names = c(NA, 
+structure(list(hdrA = structure(c(2L, 2L, 2L, 1L, 1L, 1L,
+2L, 2L, 2L, 1L, 1L, 1L, 2L, 2L, 2L, 1L, 1L, 1L), class = "factor", .Label = c("crn",
+"wht")), hdrC = structure(c(1L, 2L, 3L, 4L, 5L, 6L, 1L, 2L, 3L,
+4L, 5L, 6L, 1L, 2L, 3L, 4L, 5L, 6L), class = "factor", .Label = c("1",
+"2", "3", "4", "5", "6")), time = structure(c(1L, 1L, 1L, 1L,
+1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L, 3L, 3L, 3L), .Label = c("hdrB",
+"hdrD", "hdrE"), class = "factor"), value = c(100, 200, 300,
+400, 500, 600, 1.4, 2.4, 3.4, 4.4, 5.4, 6.4, 1.5, 2.5, 3.5, 4.5,
+5.5, 6.5)), .Names = c("hdrA", "hdrC", "time", "value"), row.names = c(NA,
 -18L), class = "data.frame", symName = "defName")
   if (! chkFrames ("test8 df", lst8[[4]], df8_))
     stop ("test8: data frame failed check");
@@ -219,15 +219,15 @@ structure(list(hdrA = structure(c(2L, 2L, 2L, 1L, 1L, 1L,
   if (! chkLists ("test9 index 3(time agg)", lst9[[3]], lstT8))
     stop ("test9: index set 3 'time' failed check");
 df9_ <-
-structure(list(hdrC = structure(c(1L, 2L, 3L, 4L, 5L, 6L, 1L, 
-2L, 3L, 4L, 5L, 6L, 1L, 2L, 3L, 4L, 5L, 6L), class = "factor", .Label = c("1", 
-"2", "3", "4", "5", "6")), hdrA = structure(c(2L, 2L, 2L, 1L, 
-1L, 1L, 2L, 2L, 2L, 1L, 1L, 1L, 2L, 2L, 2L, 1L, 1L, 1L), class = "factor", .Label = c("crn", 
-"wht")), time = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 
-2L, 2L, 2L, 3L, 3L, 3L, 3L, 3L, 3L), .Label = c("hdrB", "hdrD", 
-"hdrE"), class = "factor"), value = c(100, 200, 300, 400, 500, 
+structure(list(hdrC = structure(c(1L, 2L, 3L, 4L, 5L, 6L, 1L,
+2L, 3L, 4L, 5L, 6L, 1L, 2L, 3L, 4L, 5L, 6L), class = "factor", .Label = c("1",
+"2", "3", "4", "5", "6")), hdrA = structure(c(2L, 2L, 2L, 1L,
+1L, 1L, 2L, 2L, 2L, 1L, 1L, 1L, 2L, 2L, 2L, 1L, 1L, 1L), class = "factor", .Label = c("crn",
+"wht")), time = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L,
+2L, 2L, 2L, 3L, 3L, 3L, 3L, 3L, 3L), .Label = c("hdrB", "hdrD",
+"hdrE"), class = "factor"), value = c(100, 200, 300, 400, 500,
 600, 1.4, 2.4, 3.4, 4.4, 5.4, 6.4, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5
-)), .Names = c("hdrC", "hdrA", "time", "value"), row.names = c(NA, 
+)), .Names = c("hdrC", "hdrA", "time", "value"), row.names = c(NA,
 -18L), class = "data.frame", symName = "defName")
   if (! chkFrames ("test9 df", lst9[[4]], df9_))
     stop ("test9: data frame failed check");
