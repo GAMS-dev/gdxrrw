@@ -143,3 +143,90 @@ chkSameVec <- function(s, v1,v2) {
   return (TRUE)
 }  # chkSameVec
 
+
+# compare the lists f1 and f2, return TRUE if the same, FALSE o/w
+## this test is intended to compare the results of rgdx() calls and
+## assumes a certain ordering of the list elements
+## it is not really necessary that they be ordered in this way but it
+## makes the test easier to implement
+chkRgdxRes <- function(f1, f2) {
+  r <- list(same=FALSE,msg="not lists")
+  if (! is.list(f1))   return (r)
+  if (! is.list(f2))   return (r)
+  r$msg <- "bogus lengths"
+  n     <- length(f1)
+  if (n != length(f2))     return (r)
+  if (n < 3)     return (r)
+
+  f1Names <- names(f1)
+  f2Names <- names(f2)
+
+  r$msg <- "element 1 (name) error"
+  ## element 1: symbol name
+  if (! is.character(f1[[1]]))   return (r)
+  if (! is.character(f2[[1]]))   return (r)
+  if ("name"       != f2Names[[1]])   return (r)
+  if (f1Names[[1]] != f2Names[[1]])   return (r)
+  if (f1[[1]] != f2[[1]])        return (r)
+
+  r$msg <- "element 2 (type) error"
+  ## element 2: symbol type
+  if (! is.character(f1[[2]]))   return (r)
+  if (! is.character(f2[[2]]))   return (r)
+  if ("type"       != f2Names[[2]])   return (r)
+  if (f1Names[[2]] != f2Names[[2]])   return (r)
+  if (f1[[2]] != f2[[2]])        return (r)
+
+  for (k in 3:n) {
+    r$msg <- paste("element",k,"error")
+    if (f1Names[[k]] != f2Names[[k]])  return (r)
+    if      ("dim" == f2Names[[k]]) {
+      if (! is.numeric(f1[[k]]))   return (r)
+      if (! is.numeric(f2[[k]]))   return (r)
+      if (f1[[k]] != f2[[k]])      return (r)
+    }
+    else if ("val" == f2Names[[k]]) {
+      if (! is.numeric(f1[[k]]))   return (r)
+      if (! is.numeric(f2[[k]]))   return (r)
+      if (! is.matrix(f1[[k]]))    return (r)
+      if (! is.matrix(f2[[k]]))    return (r)
+      ## assume 2-dim for now
+      dims1 <- dim(f1[[k]])
+      dims2 <- dim(f2[[k]])
+      if (length(dims1) != 2)      return (r)
+      if (length(dims2) != 2)      return (r)
+      for (i in 1:2) {
+        if (dims1[i] != dims2[i])  return (r)
+      }
+      for (i in 1:dims1[1]) {
+        for (j in 1:dims1[2]) {
+          if (f1[[k]][i][j] != f2[[k]][i][j])  return (r)
+        }
+      }
+    }
+    else if ("form" == f2Names[[k]]) {
+      if (! is.character(f1[[k]]))   return (r)
+      if (! is.character(f2[[k]]))   return (r)
+      if (f1[[k]] != f2[[k]])        return (r)
+    }
+    else if ("uels" == f2Names[[k]]) {
+      if (! is.list(f1[[k]]))   return (r)
+      if (! is.list(f2[[k]]))   return (r)
+      n1 <- length(f1[[k]])
+      if (n1 != length(f2[[k]]))  return (r)
+      for (i in 1:n1) {
+        if (! chkSameVec ("", f1[[k]][[i]], f2[[k]][[i]])) return (r)
+      }
+    }
+    else if ("te" == f2Names[[k]]) {
+      if (! chkSameVec ("", f1[[k]], f2[[k]])) return (r)
+    }
+    else {
+      return (r)
+    }
+  }
+
+  r$msg <- ''
+  r$same <- TRUE
+  return (r)
+} # chkRgdxRes
