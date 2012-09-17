@@ -620,7 +620,6 @@ SEXP rgdx (SEXP args)
                 }
               }
               SET_STRING_ELT(textElement, matched, mkChar(stringEle));
-              kk = 0;
             }
             matched = matched +1;
           }
@@ -688,7 +687,6 @@ SEXP rgdx (SEXP args)
               }
             }
             SET_STRING_ELT(textElement, iRec, mkChar(stringEle));
-            kk = 0;
           }
           for (kk = 0;  kk < symDim;  kk++) {
             p[iRec+kk*mrows] = uels[kk];
@@ -739,6 +737,9 @@ SEXP rgdx (SEXP args)
     }
     /* TODO/TEST: create full dimensional string matrix */
     if (rSpec->te == 1) {
+      if (rSpec->dForm != full) {
+        error ("Internal error: why create a full matrix of text elements here?");
+      }
       if (symDim == 1) {
         PROTECT(elVect = allocVector(REALSXP, 2));
         rgdxAlloc++;
