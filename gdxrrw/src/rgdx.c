@@ -460,7 +460,7 @@ SEXP rgdx (SEXP args)
       error("Symbol '%s' is either set or parameter that cannot have field.",
             rSpec->name);
     }
-    if (rSpec->te == 1 && symType != dt_set) {
+    if (rSpec->te && symType != dt_set) {
       error("Text elements only exist for sets and symbol '%s' is not a set.",
             rSpec->name);
     }
@@ -582,7 +582,7 @@ SEXP rgdx (SEXP args)
       matched = 0;
       gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
       /* TODO/TEST: text elements with UEL */
-      if (rSpec->te == 1) {
+      if (rSpec->te) {
         returnedIndex = malloc(symDim*sizeof(*returnedIndex));
         for (iRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
@@ -629,7 +629,7 @@ SEXP rgdx (SEXP args)
           }
         }
         free(returnedIndex);
-      } /* End of rSpec->te == 1 */
+      } /* if rSpec->te */
       else {
         returnedIndex = malloc(symDim*sizeof(*returnedIndex));
         for (iRec = 0;  iRec < nRecs;  iRec++) {
@@ -671,7 +671,7 @@ SEXP rgdx (SEXP args)
         gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
       }
       /* text elements */
-      if (rSpec->te == 1) {
+      if (rSpec->te) {
         for (iRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
           if (values[GMS_VAL_LEVEL]) {
@@ -693,7 +693,7 @@ SEXP rgdx (SEXP args)
             p[iRec+kk*mrows] = uels[kk];
           }
         }  /* loop over GDX records */
-      }    /* rSpec->te = 1: must be a set */
+      }    /* rSpec->te: must be a set */
       else {
         for (iRec = 0, kRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
@@ -736,58 +736,11 @@ SEXP rgdx (SEXP args)
       rgdxAlloc++;
       compressData (outValSp, UEList, outUels, nUEL, symDim, mrows);
     }
-    /* TODO/TEST: create full dimensional string matrix */
-    if (rSpec->te == 1) {
-      if (rSpec->dForm != full) {
-        error ("Internal error: why create a full matrix of text elements here?");
-      }
-      if (symDim == 1) {
-        PROTECT(elVect = allocVector(REALSXP, 2));
-        rgdxAlloc++;
-
-        dimElVect = REAL(elVect);
-        dimElVect[0] = length(VECTOR_ELT(outUels, 0));
-        dimElVect[1] = 1;
-
-        PROTECT(outTeFull = allocVector(STRSXP, length(VECTOR_ELT(outUels, 0)) ));
-        rgdxAlloc++;
-
-        createElementMatrix (outValSp, outTeSp, outTeFull, outUels, symDim, mrows);
-        setAttrib(outTeFull, R_DimSymbol, elVect);
-      }
-      else {
-        ndimension = 0;
-        PROTECT(elVect = allocVector(REALSXP, symDim));
-        rgdxAlloc++;
-        totalElement = 1;
-        dimElVect = REAL(elVect);
-        if (rSpec->withUel) {
-          for (ndimension = 0; ndimension < symDim; ndimension++) {
-            dimElVect[ndimension] = length(VECTOR_ELT(rSpec->filterUel, ndimension));
-            totalElement = (totalElement * length(VECTOR_ELT(rSpec->filterUel, ndimension)));
-          }
-          PROTECT(outTeFull = allocVector(STRSXP, totalElement));
-          rgdxAlloc++;
-          createElementMatrix (outValSp, outTeSp, outTeFull, rSpec->filterUel, symDim, mwNElements);
-          setAttrib(outTeFull, R_DimSymbol, elVect);
-        }
-        else {
-          for (ndimension = 0; ndimension < symDim; ndimension++) {
-            dimElVect[ndimension] = length(VECTOR_ELT(outUels, ndimension));
-            totalElement = (totalElement * length(VECTOR_ELT(outUels, ndimension)));
-          }
-          PROTECT(outTeFull = allocVector(STRSXP, totalElement));
-          rgdxAlloc++;
-          createElementMatrix (outValSp, outTeSp, outTeFull, outUels, symDim, mrows);
-          setAttrib(outTeFull, R_DimSymbol, elVect);
-        }
-      }
-    }
 
     /* Converting sparse data into full matrix */
     if (rSpec->dForm == full) {
       switch (symDim) {
-      case 0: {
+      case 0:
         PROTECT(outValFull = allocVector(REALSXP, 1));
         rgdxAlloc++;
         if (outValSp != R_NilValue && REAL(outValSp) != NULL) {
@@ -796,9 +749,10 @@ SEXP rgdx (SEXP args)
         else {
           REAL(outValFull)[0] = 0;
         }
+        /* sets cannot have symDim 0, so skip conversion of set text */
         break;
-      }
-      case 1: {
+
+      case 1:
         PROTECT(dimVect = allocVector(REALSXP, 2));
         rgdxAlloc++;
         dimVal = REAL(dimVect);
@@ -817,9 +771,23 @@ SEXP rgdx (SEXP args)
         }
         dimVal[1] = 1;
         setAttrib(outValFull, R_DimSymbol, dimVect);
+        if (rSpec->te) {   /* create full dimensional string matrix */
+          PROTECT(elVect = allocVector(REALSXP, 2));
+          rgdxAlloc++;
+
+          dimElVect = REAL(elVect);
+          dimElVect[0] = length(VECTOR_ELT(outUels, 0));
+          dimElVect[1] = 1;
+
+          PROTECT(outTeFull = allocVector(STRSXP, length(VECTOR_ELT(outUels, 0)) ));
+          rgdxAlloc++;
+
+          createElementMatrix (outValSp, outTeSp, outTeFull, outUels, symDim, mrows);
+          setAttrib(outTeFull, R_DimSymbol, elVect);
+        } /* if rSpec->te */
         break;
-      }
-      default: {
+
+      default:
         PROTECT(dimVect = allocVector(REALSXP, symDim));
         rgdxAlloc++;
         totalElement = 1;
@@ -845,10 +813,36 @@ SEXP rgdx (SEXP args)
         else {
           sparseToFull (outValSp, outValFull, outUels, symType, mrows, symDim);
         }
-
         setAttrib(outValFull, R_DimSymbol, dimVect);
+
+        if (rSpec->te) {   /* create full dimensional string matrix */
+          ndimension = 0;
+          PROTECT(elVect = allocVector(REALSXP, symDim));
+          rgdxAlloc++;
+          totalElement = 1;
+          dimElVect = REAL(elVect);
+          if (rSpec->withUel) {
+            for (ndimension = 0; ndimension < symDim; ndimension++) {
+              dimElVect[ndimension] = length(VECTOR_ELT(rSpec->filterUel, ndimension));
+              totalElement = (totalElement * length(VECTOR_ELT(rSpec->filterUel, ndimension)));
+            }
+            PROTECT(outTeFull = allocVector(STRSXP, totalElement));
+            rgdxAlloc++;
+            createElementMatrix (outValSp, outTeSp, outTeFull, rSpec->filterUel, symDim, mwNElements);
+            setAttrib(outTeFull, R_DimSymbol, elVect);
+          }
+          else {
+            for (ndimension = 0; ndimension < symDim; ndimension++) {
+              dimElVect[ndimension] = length(VECTOR_ELT(outUels, ndimension));
+              totalElement = (totalElement * length(VECTOR_ELT(outUels, ndimension)));
+            }
+            PROTECT(outTeFull = allocVector(STRSXP, totalElement));
+            rgdxAlloc++;
+            createElementMatrix (outValSp, outTeSp, outTeFull, outUels, symDim, mrows);
+            setAttrib(outTeFull, R_DimSymbol, elVect);
+          }
+        } /* if rSpec->te */
         break;
-      }
       } /* switch(symDim) */
     }
   } /* if (withList) aa */
@@ -1003,7 +997,12 @@ SEXP rgdx (SEXP args)
     }
     if (rSpec->te) {
       nField++;
-      SET_VECTOR_ELT(outList, nField, outTeFull);
+      if (rSpec->dForm == full) {
+        SET_VECTOR_ELT(outList, nField, outTeFull);
+      }
+      else {
+        SET_VECTOR_ELT(outList, nField, outTeSp);
+      }
     }
   }
   else {
