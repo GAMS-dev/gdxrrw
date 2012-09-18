@@ -150,6 +150,8 @@ chkSameVec <- function(s, v1,v2) {
 ## it is not really necessary that they be ordered in this way but it
 ## makes the test easier to implement
 chkRgdxRes <- function(f1, f2) {
+  isSparse <- TRUE
+
   r <- list(same=FALSE,msg="not lists")
   if (! is.list(f1))   return (r)
   if (! is.list(f2))   return (r)
@@ -160,6 +162,22 @@ chkRgdxRes <- function(f1, f2) {
 
   f1Names <- names(f1)
   f2Names <- names(f2)
+
+  r$msg <- "invalid/missing 'form' element"
+  if (is.null(f1$form)) return (r)
+  if (is.null(f2$form)) return (r)
+  if (! is.character(f1$form))   return (r)
+  if (! is.character(f2$form))   return (r)
+  if (f1$form != f2$form)        return (r)
+  if ('sparse' == f2$form) {
+    isSparse <- TRUE
+  }
+  else if ('full' == f2$form) {
+    isSparse <- FALSE
+  }
+  else {
+    return (r)
+  }
 
   r$msg <- "element 1 (name) error"
   ## element 1: symbol name
@@ -224,7 +242,12 @@ chkRgdxRes <- function(f1, f2) {
       if (f1[[k]] != f2[[k]])        return (r)
     }
     else if ("te" == f2Names[[k]]) {
-      if (! chkSameVec ("", f1[[k]], f2[[k]])) return (r)
+      if (isSparse) {
+        if (! chkSameVec ("", f1[[k]], f2[[k]])) return (r)
+      }
+      else {
+        if (! chkSameArray (f1[[k]], f2[[k]])) return (r)
+      }
     }
     else {
       return (r)
@@ -235,3 +258,47 @@ chkRgdxRes <- function(f1, f2) {
   r$same <- TRUE
   return (r)
 } # chkRgdxRes
+
+# compare the arrays v1 and v2, return TRUE if the same, FALSE o/w
+chkSameArray <- function (v1,v2) {
+  if ("character" == mode(v1)) {
+    if ("character" != mode(v2)) return (FALSE)
+    if (! is.array(v1))   return (FALSE)
+    if (! is.array(v2))   return (FALSE)
+    dims1 <- dim(v1)
+    dims2 <- dim(v2)
+    nd <- length(dims1)
+    if (nd != length(dims2))    return (FALSE)
+    last <- 1
+    for (d in 1:nd) {
+      if (dims1[d] != dims2[d]) return (FALSE)
+      last <- last * dims1[d]
+    }
+    for (k in 1:last) {
+      if (v1[[k]] != v2[[k]])   return (FALSE)
+    }
+  }
+  else if ("numeric" == mode(v1)) {
+    if ("numeric" != mode(v2)) return (FALSE)
+    if (! is.array(v1))   return (FALSE)
+    if (! is.array(v2))   return (FALSE)
+    dims1 <- dim(v1)
+    dims2 <- dim(v2)
+    nd <- length(dims1)
+    if (nd != length(dims2))    return (FALSE)
+    last <- 1
+    for (d in 1:nd) {
+      if (dims1[d] != dims2[d]) return (FALSE)
+      last <- last * dims1[d]
+    }
+    for (k in 1:last) {
+      if (v1[[k]] != v2[[k]])   return (FALSE)
+    }
+  }
+  else {
+    return (FALSE)
+  }
+
+  return (TRUE)
+}  # chkSameArray
+
