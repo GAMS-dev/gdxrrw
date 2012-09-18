@@ -13,12 +13,14 @@ tryCatch({
     stop (paste("FAIL: File", fnIn, "does not exist"))
   }
   iuels <- c("i1", "i2", "i3", "i4")
+  icard <- length(iuels)
   itext <- iuels                        # since no text is in GDX
   juels <- c("j1", "j2", "j3")
   jtext <- c("j1 text", "j2 text", "j3 text")
   cuels <- c("berlin", "paris", "vienna")
   ctext <- c("city of airport delays", "city of light", "city of dreams")
   u <- c(iuels, juels, cuels)
+  ucard <- length(u)
 
 
   ## ---------- reading form=sparse, no filter, no compress
@@ -177,18 +179,39 @@ tryCatch({
   }
 
   ijcwant <- list(name="IJc", type="set", dim=3,
-                  val=matrix(c(1,5,8, 1,7,8, 2,6,9, 2,7,9, 3,7,10),
-                             nrow=5, ncol=3, byrow=TRUE),
+                  val=matrix(c(1,2,9, 2,2,10),
+                             nrow=2, ncol=3, byrow=TRUE),
                   form="sparse",
                   uels=list(iuels[2:4],juels[c(1,3)],u),
-                  te=c("eins eins tempelhof", "eins drei tempelhof", "deux deux orly",
-                    "deux trois orly", "drei drei schwechat"))
+                  te=c("deux trois orly", "drei drei schwechat"))
   ijc <- rgdx(fnIn,list(name='ijc',form='sparse',uels=list(iuels[2:4],juels[c(1,3)],u),te=TRUE))
   chk <- chkRgdxRes (ijc, ijcwant)
   if (!chk$same) {
-    stop (paste("test rgdx(ijc,unfiltered,uncompressed) failed",chk$msg))
+    stop (paste("test rgdx(ijc,filtered,uncompressed) failed",chk$msg))
   }
 
+  ## ---------- reading form=full, no filter, no compress
+  ## still to do
+
+  v <- array(0,c(ucard,1))
+  v[(1:icard)] = 1
+  te <- array("",c(ucard,1))
+  te[(1:icard)] = itext
+  iwant <- list(name="I", type="set", dim=1,
+                val=v,
+                form="full",
+                uels=list(u), te=te)
+  i <- rgdx(fnIn,list(name='i',form='full',te=TRUE))
+  chk <- chkRgdxRes (i, iwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(i,full,unfiltered,uncompressed) failed",chk$msg))
+  }
+
+  ## ---------- reading form=full, no filter, compress=TRUE
+  ## still to do
+
+  ## ---------- reading form=full, filtered, no compress
+  ## still to do
 
   print ("test of rgdx set text handling passed")
   TRUE   ## all tests passed: return TRUE
