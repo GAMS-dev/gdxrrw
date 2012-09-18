@@ -200,7 +200,7 @@ chkRgdxRes <- function(f1, f2) {
       }
       for (i in 1:dims1[1]) {
         for (j in 1:dims1[2]) {
-          if (f1[[k]][i][j] != f2[[k]][i][j])  return (r)
+          if (f1[[k]][i,j] != f2[[k]][i,j])  return (r)
         }
       }
     }
@@ -217,6 +217,11 @@ chkRgdxRes <- function(f1, f2) {
       for (i in 1:n1) {
         if (! chkSameVec ("", f1[[k]][[i]], f2[[k]][[i]])) return (r)
       }
+    }
+    else if ("ts" == f2Names[[k]]) {
+      if (! is.character(f1[[k]]))   return (r)
+      if (! is.character(f2[[k]]))   return (r)
+      if (f1[[k]] != f2[[k]])        return (r)
     }
     else if ("te" == f2Names[[k]]) {
       if (! chkSameVec ("", f1[[k]], f2[[k]])) return (r)
