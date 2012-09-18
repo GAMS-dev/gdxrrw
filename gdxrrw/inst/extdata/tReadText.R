@@ -16,8 +16,10 @@ tryCatch({
   icard <- length(iuels)
   itext <- iuels                        # since no text is in GDX
   juels <- c("j1", "j2", "j3")
+  jcard <- length(juels)
   jtext <- c("j1 text", "j2 text", "j3 text")
   cuels <- c("berlin", "paris", "vienna")
+  ccard <- length(cuels)
   ctext <- c("city of airport delays", "city of light", "city of dreams")
   u <- c(iuels, juels, cuels)
   ucard <- length(u)
@@ -205,6 +207,85 @@ tryCatch({
   chk <- chkRgdxRes (i, iwant)
   if (!chk$same) {
     stop (paste("test rgdx(i,full,unfiltered,uncompressed) failed",chk$msg))
+  }
+
+  jblock <- icard + (1:jcard)
+  v <- array(0,c(ucard,1))
+  v[jblock] = 1
+  te <- array("",c(ucard,1))
+  te[jblock] = jtext
+  jwant <- list(name="J", type="set", dim=1,
+                val=v,
+                form="full",
+                uels=list(u), te=te)
+  j <- rgdx(fnIn,list(name='j',form='full',te=TRUE))
+  chk <- chkRgdxRes (j, jwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(j,full,unfiltered,uncompressed) failed",chk$msg))
+  }
+
+  cblock <- icard + jcard + (1:ccard)
+  v <- array(0,c(ucard,1))
+  v[cblock] = 1
+  te <- array("",c(ucard,1))
+  te[cblock] = ctext
+  cwant <- list(name="c", type="set", dim=1,
+                val=v,
+                form="full",
+                uels=list(u), te=te)
+  c <- rgdx(fnIn,list(name='c',form='full',te=TRUE))
+  chk <- chkRgdxRes (c, cwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(c,full,unfiltered,uncompressed) failed",chk$msg))
+  }
+
+  ## it is helpful to put the names with the array
+  ## we should consider doing this with the return $val!!
+  v <- array(0,c(ucard,ucard),dimnames=list(u,u))
+  v['i1','j1'] = 1;
+  v['i1','j3'] = 1;
+  v['i2','j2'] = 1;
+  v['i2','j3'] = 1;
+  v['i3','j3'] = 1;
+  te <- array("",c(ucard,ucard),dimnames=list(u,u))
+  te['i1','j1'] = "one.one";
+  te['i1','j3'] = "one.three";
+  te['i2','j2'] = "two.two";
+  te['i2','j3'] = "two.three";
+  te['i3','j3'] = "three.three";
+  ijwant <- list(name="IJ", type="set", dim=2,
+                 val=v,
+                 form="full",
+                 uels=list(u,u),
+                 ts='',
+                 te=te)
+  ij <- rgdx(fnIn,list(name='ij',form='full',te=TRUE,ts=TRUE))
+  chk <- chkRgdxRes (ij, ijwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(ij,full,unfiltered,uncompressed) failed",chk$msg))
+  }
+
+  v <- array(0,c(ucard,ucard,ucard),dimnames=list(u,u,u))
+  v['i1','j1','berlin'] = 1;
+  v['i1','j3','berlin'] = 1;
+  v['i2','j2','paris' ] = 1;
+  v['i2','j3','paris' ] = 1;
+  v['i3','j3','vienna'] = 1;
+  te <- array("",c(ucard,ucard,ucard),dimnames=list(u,u,u))
+  te['i1','j1','berlin'] = "eins eins tempelhof";
+  te['i1','j3','berlin'] = "eins drei tempelhof";
+  te['i2','j2','paris' ] = "deux deux orly";
+  te['i2','j3','paris' ] = "deux trois orly";
+  te['i3','j3','vienna'] = "drei drei schwechat";
+  ijcwant <- list(name="IJc", type="set", dim=3,
+                  val=v,
+                  form="full",
+                  uels=list(u,u,u),
+                  te=te)
+  ijc <- rgdx(fnIn,list(name='ijc',form='full',te=TRUE))
+  chk <- chkRgdxRes (ijc, ijcwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(ijc,full,unfiltered,uncompressed) failed",chk$msg))
   }
 
   ## ---------- reading form=full, no filter, compress=TRUE
