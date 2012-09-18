@@ -206,20 +206,19 @@ chkRgdxRes <- function(f1, f2) {
     else if ("val" == f2Names[[k]]) {
       if (! is.numeric(f1[[k]]))   return (r)
       if (! is.numeric(f2[[k]]))   return (r)
-      if (! is.matrix(f1[[k]]))    return (r)
-      if (! is.matrix(f2[[k]]))    return (r)
-      ## assume 2-dim for now
+      if (! is.array(f1[[k]]))     return (r)
+      if (! is.array(f2[[k]]))     return (r)
       dims1 <- dim(f1[[k]])
       dims2 <- dim(f2[[k]])
-      if (length(dims1) != 2)      return (r)
-      if (length(dims2) != 2)      return (r)
-      for (i in 1:2) {
-        if (dims1[i] != dims2[i])  return (r)
+      nd <- length(dims2)
+      if (length(dims1) != nd)     return (r)
+      last <- 1
+      for (d in 1:nd) {
+        if (dims1[d] != dims2[d])  return (r)
+        last <- last * dims1[d]
       }
-      for (i in 1:dims1[1]) {
-        for (j in 1:dims1[2]) {
-          if (f1[[k]][i,j] != f2[[k]][i,j])  return (r)
-        }
+      for (kk in 1:last) {
+        if (f1[[k]][kk] != f2[[k]][kk])  return (r)
       }
     }
     else if ("form" == f2Names[[k]]) {
