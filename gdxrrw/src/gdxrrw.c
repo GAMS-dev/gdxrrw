@@ -114,11 +114,8 @@ int
 getNonZeroElements (gdxHandle_t h, int symIdx, dField_t dField);
 
 static void
-writeGdx(char *fileName,
-         int symListLen,
-         SEXP *symList,
-         int fromGAMS,
-         char zeroSqueeze);
+writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
+          int fromGAMS, char zeroSqueeze);
 
 
 
@@ -307,12 +304,8 @@ callGams (const char *gamsFile)
     return 1;
   }
 
-  if (0 != rc) {
-    error("Abnormal GAMS termination running '%s': Check listing file.\n", cmdLine);
-    return 1;
-  }
   free(cmdLine);
-  return 0;
+  return rc;
 } /* callGams */
 
 
@@ -1173,23 +1166,20 @@ msgInit (void) {
 
 
 /* This method is intended to be used by both wgdx and gams call
-   fileName = name of GDX file to be writen
+   fileName = name of GDX file to be written
    symList = vector of symList's entered by user
    fromGAMS = 1 if this method is called from GAMS otherwise 0
 */
 static void
-writeGdx(char *gdxFileName,
-         int symListLen,
-         SEXP *symList,
-         int fromGAMS,
-         char zeroSqueeze)
+writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
+          int fromGAMS, char zeroSqueeze)
 {
   FILE *matdata = NULL;
   SEXP uelIndex, compName, valData;
   SEXP mainBuffer, subBuffer;
   wSpec_t **wSpecPtr;           /* was data */
   gdxUelIndex_t uelIndices;
-  gdxValues_t   vals;
+  gdxValues_t vals;
   gdxSVals_t sVals;
   d64_t d64;
   shortStringBuf_t msgBuf;
@@ -1589,46 +1579,40 @@ SEXP wgdx (SEXP args)
 SEXP gams (SEXP args)
 {
   SEXP firstArg;
-  SEXP *symList, result = R_NilValue;
-  int symListLen = 0;
+  SEXP result = R_NilValue;
   FILE *fp;
   const char *argStr;
-  char *writeDataStr, *fileExt, *p;
+  char *fileExt, *p;
   shortStringBuf_t input;
   shortStringBuf_t gmsFileName;
-  shortStringBuf_t gsBuf;
-  int writeData, rc, i, arglen;
+  int rc, arglen;
   char strippedID[GMS_SSSIZE];
 
-  writeData = 1;
   globalGams = 1;
   arglen = length(args);
 
-  if (arglen == 1) {
-    error("No input is entered. Please enter valid input\n");
+  if (2 != arglen) {
+    Rprintf("usage: gams('args').\n");
+    error("usage: gams('args')");
   }
 
   args = CDR(args); firstArg = CAR(args);
 
-  /* Checking that first argument is of type string
-   * and second argument is of type list
-   */
+  /* checking that first argument is of type string */
   if (TYPEOF(firstArg) != STRSXP ) {
-    Rprintf("The GAMS filename (first argument) must be of type string.\n");
-    error("Wrong Argument Type");
+    Rprintf ("The argument must be of type string.\n");
+    error ("Wrong argument type");
   }
 
   argStr = CHAR(STRING_ELT(firstArg, 0));
 
-  if (2 == arglen) {
-    if (0 == strcmp("?", argStr)) {
-      int n = (int)strlen (ID);
-      memcpy (strippedID, ID+1, n-2);
-      strippedID[n-2] = '\0';
-      warning("R-file source info: %s", strippedID);
-      return R_NilValue;
-    } /* if audit run */
-  } /* if one arg, of character type */
+  if (0 == strcmp("?", argStr)) {
+    int n = (int)strlen (ID);
+    memcpy (strippedID, ID+1, n-2);
+    strippedID[n-2] = '\0';
+    Rprintf ("R-file source info: %s\n", strippedID);
+    return R_NilValue;
+  } /* if audit run */
 
   checkStringLength(argStr);
   (void) CHAR2ShortStr (argStr, input);
@@ -1649,38 +1633,11 @@ SEXP gams (SEXP args)
   /* specialCommand always starts with a blank */
   strcpy(specialCommand, " ");
 
-  if (arglen > 2) {
-    writeDataStr = getGlobalString("write_data", gsBuf);
-    if (writeDataStr != NULL) {
-      if (0 == strncmp(writeDataStr,"n",1) || 0 == strncmp(writeDataStr,"N",1)) {
-        writeData = 0;
-      }
-      else {
-        warning("To change default behavior of 'write_data', please enter it as 'n' or 'N'\n" );
-        Rprintf("You entered it as %s.\n", writeDataStr);
-      }
-    }
-  }
-
   msgInit ();
-  if (1 == writeData) {
-    symListLen = arglen - 2;
-    symList = malloc (symListLen * sizeof(*symList));
-    /* get the pointer of input argument and store it locally for better access */
-    for (i = 0;  i < arglen-2;  i++) {
-      args = CDR(args); symList[i] = CAR(args);
-    }
-    writeGdx (gmsFileName, symListLen, symList, 1, 'y');
-    /* free memory */
-    free(symList);
-  }
   rc = callGams(argStr);
-  if (rc) {
-    error("GAMS run failed: rc = %d.\n", rc);
-  }
-  /* read only first element from GDX file */
-  result = getGamsSoln (gmsFileName);
-  /* return right after getGamsSoln, so our result is not garbage-collected! */
+  PROTECT(result = allocVector(INTSXP, 1));
+  INTEGER(result)[0] = rc;
+  UNPROTECT(1);
   return result;
 } /* gams */
 
