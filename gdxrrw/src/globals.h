@@ -86,11 +86,6 @@ SEXP
 gams (SEXP args);
 
 
-/* ********** functions in getGamsSoln.c **************** */
-SEXP
-getGamsSoln (const char *gmsFileName);
-
-
 /* ********** functions in rgdx.c *********************** */
 SEXP
 rgdx (SEXP args);
