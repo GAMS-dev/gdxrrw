@@ -15,6 +15,8 @@ tryCatch({
   iuels <- c("i1", "i2", "i3", "i4")
   icard <- length(iuels)
   itext <- iuels                        # since no text is in GDX
+  i2uels <- iuels[1:3]                  # uels from i that appear in ij
+  i2card <- length(i2uels)
   juels <- c("j1", "j2", "j3")
   jcard <- length(juels)
   jtext <- c("j1 text", "j2 text", "j3 text")
@@ -111,7 +113,7 @@ tryCatch({
   ijwant <- list(name="IJ", type="set", dim=2,
                  val=matrix(c(1,1, 1,3, 2,2, 2,3, 3,3), nrow=5, ncol=2, byrow=TRUE),
                  form="sparse",
-                 uels=list(iuels[1:3],juels), # i4 is compressed out
+                 uels=list(i2uels,juels), # i4 is compressed out
                  ts='',
                  te=c("one.one", "one.three", "two.two", "two.three", "three.three"))
   ij <- rgdx(fnIn,list(name='ij',form='sparse',te=TRUE,ts=TRUE,compress=TRUE))
@@ -193,12 +195,11 @@ tryCatch({
   }
 
   ## ---------- reading form=full, no filter, no compress
-  ## still to do
 
   v <- array(0,c(ucard,1))
-  v[(1:icard)] = 1
+  v[(1:icard)] <- 1
   te <- array("",c(ucard,1))
-  te[(1:icard)] = itext
+  te[(1:icard)] <- itext
   iwant <- list(name="I", type="set", dim=1,
                 val=v,
                 form="full",
@@ -211,9 +212,9 @@ tryCatch({
 
   jblock <- icard + (1:jcard)
   v <- array(0,c(ucard,1))
-  v[jblock] = 1
+  v[jblock] <- 1
   te <- array("",c(ucard,1))
-  te[jblock] = jtext
+  te[jblock] <- jtext
   jwant <- list(name="J", type="set", dim=1,
                 val=v,
                 form="full",
@@ -226,9 +227,9 @@ tryCatch({
 
   cblock <- icard + jcard + (1:ccard)
   v <- array(0,c(ucard,1))
-  v[cblock] = 1
+  v[cblock] <- 1
   te <- array("",c(ucard,1))
-  te[cblock] = ctext
+  te[cblock] <- ctext
   cwant <- list(name="c", type="set", dim=1,
                 val=v,
                 form="full",
@@ -242,17 +243,17 @@ tryCatch({
   ## it is helpful to put the names with the array
   ## we should consider doing this with the return $val!!
   v <- array(0,c(ucard,ucard),dimnames=list(u,u))
-  v['i1','j1'] = 1;
-  v['i1','j3'] = 1;
-  v['i2','j2'] = 1;
-  v['i2','j3'] = 1;
-  v['i3','j3'] = 1;
+  v['i1','j1'] <- 1;
+  v['i1','j3'] <- 1;
+  v['i2','j2'] <- 1;
+  v['i2','j3'] <- 1;
+  v['i3','j3'] <- 1;
   te <- array("",c(ucard,ucard),dimnames=list(u,u))
-  te['i1','j1'] = "one.one";
-  te['i1','j3'] = "one.three";
-  te['i2','j2'] = "two.two";
-  te['i2','j3'] = "two.three";
-  te['i3','j3'] = "three.three";
+  te['i1','j1'] <- "one.one";
+  te['i1','j3'] <- "one.three";
+  te['i2','j2'] <- "two.two";
+  te['i2','j3'] <- "two.three";
+  te['i3','j3'] <- "three.three";
   ijwant <- list(name="IJ", type="set", dim=2,
                  val=v,
                  form="full",
@@ -266,17 +267,17 @@ tryCatch({
   }
 
   v <- array(0,c(ucard,ucard,ucard),dimnames=list(u,u,u))
-  v['i1','j1','berlin'] = 1;
-  v['i1','j3','berlin'] = 1;
-  v['i2','j2','paris' ] = 1;
-  v['i2','j3','paris' ] = 1;
-  v['i3','j3','vienna'] = 1;
+  v['i1','j1','berlin'] <- 1;
+  v['i1','j3','berlin'] <- 1;
+  v['i2','j2','paris' ] <- 1;
+  v['i2','j3','paris' ] <- 1;
+  v['i3','j3','vienna'] <- 1;
   te <- array("",c(ucard,ucard,ucard),dimnames=list(u,u,u))
-  te['i1','j1','berlin'] = "eins eins tempelhof";
-  te['i1','j3','berlin'] = "eins drei tempelhof";
-  te['i2','j2','paris' ] = "deux deux orly";
-  te['i2','j3','paris' ] = "deux trois orly";
-  te['i3','j3','vienna'] = "drei drei schwechat";
+  te['i1','j1','berlin'] <- "eins eins tempelhof";
+  te['i1','j3','berlin'] <- "eins drei tempelhof";
+  te['i2','j2','paris' ] <- "deux deux orly";
+  te['i2','j3','paris' ] <- "deux trois orly";
+  te['i3','j3','vienna'] <- "drei drei schwechat";
   ijcwant <- list(name="IJc", type="set", dim=3,
                   val=v,
                   form="full",
@@ -289,7 +290,80 @@ tryCatch({
   }
 
   ## ---------- reading form=full, no filter, compress=TRUE
-  ## still to do
+
+  v <- array(1,c(icard,1))
+  te <- array("",c(icard,1))
+  te[(1:icard)] <- itext
+  iwant <- list(name="I", type="set", dim=1,
+                val=v,
+                form="full",
+                uels=list(iuels), te=te)
+  i <- rgdx(fnIn,list(name='i',form='full',te=TRUE,compress=TRUE))
+  chk <- chkRgdxRes (i, iwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(i,full,unfiltered,compressed) failed",chk$msg))
+  }
+
+  v <- array(1,c(jcard,1))
+  te <- array("",c(jcard,1))
+  te[(1:jcard)] <- jtext
+  jwant <- list(name="J", type="set", dim=1,
+                val=v,
+                form="full",
+                uels=list(juels),
+                te=te)
+  j <- rgdx(fnIn,list(name='j',form='full',te=TRUE,compress=TRUE))
+  chk <- chkRgdxRes (j, jwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(j,full,unfiltered,compressed) failed",chk$msg))
+  }
+
+  v <- array(0,c(i2card,jcard),dimnames=list(i2uels,juels))
+  v['i1','j1'] <- 1;
+  v['i1','j3'] <- 1;
+  v['i2','j2'] <- 1;
+  v['i2','j3'] <- 1;
+  v['i3','j3'] <- 1;
+  te <- array("",c(i2card,jcard),dimnames=list(i2uels,juels))
+  te['i1','j1'] <- "one.one";
+  te['i1','j3'] <- "one.three";
+  te['i2','j2'] <- "two.two";
+  te['i2','j3'] <- "two.three";
+  te['i3','j3'] <- "three.three";
+  ijwant <- list(name="IJ", type="set", dim=2,
+                 val=v,
+                 form="full",
+                 uels=list(i2uels,juels),
+                 ts='',
+                 te=te)
+  ij <- rgdx(fnIn,list(name='ij',form='full',te=TRUE,ts=TRUE,compress=TRUE))
+  chk <- chkRgdxRes (ij, ijwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(ij,full,unfiltered,compressed) failed",chk$msg))
+  }
+
+  v <- array(0,c(i2card,jcard,ccard),dimnames=list(i2uels,juels,cuels))
+  v['i1','j1','berlin'] <- 1;
+  v['i1','j3','berlin'] <- 1;
+  v['i2','j2','paris' ] <- 1;
+  v['i2','j3','paris' ] <- 1;
+  v['i3','j3','vienna'] <- 1;
+  te <- array("",c(i2card,jcard,ccard),dimnames=list(i2uels,juels,cuels))
+  te['i1','j1','berlin'] <- "eins eins tempelhof";
+  te['i1','j3','berlin'] <- "eins drei tempelhof";
+  te['i2','j2','paris' ] <- "deux deux orly";
+  te['i2','j3','paris' ] <- "deux trois orly";
+  te['i3','j3','vienna'] <- "drei drei schwechat";
+  ijcwant <- list(name="IJc", type="set", dim=3,
+                  val=v,
+                  form="full",
+                  uels=list(i2uels,juels,cuels),
+                  te=te)
+  ijc <- rgdx(fnIn,list(name='ijc',form='full',te=TRUE,compress=TRUE))
+  chk <- chkRgdxRes (ijc, ijcwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(ijc,full,unfiltered,uncompressed) failed",chk$msg))
+  }
 
   ## ---------- reading form=full, filtered, no compress
   ## still to do
