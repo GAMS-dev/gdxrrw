@@ -310,7 +310,7 @@ SEXP rgdx (SEXP args)
     outTs = R_NilValue,
     outTeSp = R_NilValue,       /* output .te, sparse form */
     outTeFull = R_NilValue;     /* output .te, full form */
-  SEXP outListNames, outList, dimVect;
+  SEXP outListNames, outList, dimVect, dimNames;
   FILE    *fin;
   rSpec_t *rSpec;
   gdxUelIndex_t uels;
@@ -756,21 +756,29 @@ SEXP rgdx (SEXP args)
         PROTECT(dimVect = allocVector(REALSXP, 2));
         rgdxAlloc++;
         dimVal = REAL(dimVect);
+        dimVal[1] = 1;
+        PROTECT(dimNames = allocVector(VECSXP, 2)); /* for one-dim symbol, val is 2-dim */
+        rgdxAlloc++;
+        SET_VECTOR_ELT(dimNames, 1, R_NilValue); /* no names for 2nd dimension */
 
         if (rSpec->withUel == 1) {
           dimVal[0] = length(VECTOR_ELT(rSpec->filterUel, 0));
           PROTECT(outValFull = allocVector(REALSXP, dimVal[0]));
           rgdxAlloc++;
           sparseToFull (outValSp, outValFull, rSpec->filterUel, symType, mwNElements, symDim);
+          setAttrib(outValFull, R_DimSymbol, dimVect);
+          SET_VECTOR_ELT(dimNames, 0, VECTOR_ELT(rSpec->filterUel, 0));
+          setAttrib(outValFull, R_DimNamesSymbol, dimNames);
         }
         else {
           dimVal[0] = length(VECTOR_ELT(outUels, 0));
           PROTECT(outValFull = allocVector(REALSXP, dimVal[0]));
           rgdxAlloc++;
           sparseToFull (outValSp, outValFull, outUels, symType, mrows, symDim);
+          setAttrib(outValFull, R_DimSymbol, dimVect);
+          SET_VECTOR_ELT(dimNames, 0, VECTOR_ELT(outUels, 0));
+          setAttrib(outValFull, R_DimNamesSymbol, dimNames);
         }
-        dimVal[1] = 1;
-        setAttrib(outValFull, R_DimSymbol, dimVect);
 
         if (rSpec->te) {   /* create full dimensional string matrix */
           PROTECT(outTeFull = allocVector(STRSXP, dimVal[0]));
@@ -782,6 +790,7 @@ SEXP rgdx (SEXP args)
             createElementMatrix (outValSp, outTeSp, outTeFull, outUels, symDim, mrows);
           }
           setAttrib(outTeFull, R_DimSymbol, dimVect); /* .te has same dimension as .val */
+          setAttrib(outTeFull, R_DimNamesSymbol, dimNames);
         } /* if rSpec->te */
         break;
 
@@ -806,22 +815,28 @@ SEXP rgdx (SEXP args)
         rgdxAlloc++;
         if (rSpec->withUel ==1) {
           sparseToFull (outValSp, outValFull, rSpec->filterUel, symType, mwNElements, symDim);
+          setAttrib(outValFull, R_DimSymbol, dimVect);
+          setAttrib(outValFull, R_DimNamesSymbol, rSpec->filterUel);
         }
         else {
           sparseToFull (outValSp, outValFull, outUels, symType, mrows, symDim);
+          setAttrib(outValFull, R_DimSymbol, dimVect);
+          setAttrib(outValFull, R_DimNamesSymbol, outUels);
         }
-        setAttrib(outValFull, R_DimSymbol, dimVect);
 
         if (rSpec->te) {   /* create full dimensional string matrix */
           PROTECT(outTeFull = allocVector(STRSXP, totalElement));
           rgdxAlloc++;
           if (rSpec->withUel) {
             createElementMatrix (outValSp, outTeSp, outTeFull, rSpec->filterUel, symDim, mwNElements);
+            setAttrib(outTeFull, R_DimSymbol, dimVect);
+            setAttrib(outTeFull, R_DimNamesSymbol, rSpec->filterUel);
           }
           else {
             createElementMatrix (outValSp, outTeSp, outTeFull, outUels, symDim, mrows);
+            setAttrib(outTeFull, R_DimSymbol, dimVect);
+            setAttrib(outTeFull, R_DimNamesSymbol, outUels);
           }
-          setAttrib(outTeFull, R_DimSymbol, dimVect);
         } /* if rSpec->te */
         break;
       } /* switch(symDim) */
