@@ -91,6 +91,11 @@ SEXP
 rgdx (SEXP args);
 
 
+/* ********** functions in wgdx.c *********************** */
+SEXP
+wgdx (SEXP args);
+
+
 /* ********** functions in utils.c ********************** */
 char *
 CHAR2ShortStr (const char *from, shortStringBuf_t to);
