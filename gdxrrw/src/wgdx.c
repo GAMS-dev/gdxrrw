@@ -192,7 +192,7 @@ createUelOut(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
           sprintf(buffer, "%d", k);
           SET_STRING_ELT(bufferUel, k-1, mkChar(buffer));
         }
-        SET_VECTOR_ELT(uelOut, i, duplicate(bufferUel));
+        SET_VECTOR_ELT(uelOut, i, bufferUel);
         UNPROTECT(1);
       }
     }
@@ -390,8 +390,8 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
   int dimUels;
   int nCoords = 0, sz, withDim;
   const char *tmpName;
-  const char *compName;              /* pointers to field names */
-  SEXP uelOut, bufferUel;            /* allocating temporary storage place */
+  const char *eltName;        /* list element name */
+  SEXP uelOut, bufferUel;     /* allocating temporary storage place */
   wSpec_t *wSpec;
 
   withDim = 0;
@@ -418,33 +418,33 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
    * in the process, store the symbol for direct access later
    */
   for (i = 0;  i < nElements;  i++) {
-    compName = CHAR(STRING_ELT(lstNames, i));
-    if (0 == strcmp("name", compName)) {
+    eltName = CHAR(STRING_ELT(lstNames, i));
+    if (0 == strcmp("name", eltName)) {
       nameExp = VECTOR_ELT(lst, i);
     }
-    else if (0 == strcmp("type", compName)) {
+    else if (0 == strcmp("type", eltName)) {
       typeExp = VECTOR_ELT(lst, i);
     }
-    else if (0 == strcmp("val", compName)) {
+    else if (0 == strcmp("val", eltName)) {
       valExp = VECTOR_ELT(lst, i);
     }
-    else if (0 == strcmp("uels", compName)) {
+    else if (0 == strcmp("uels", eltName)) {
       uelsExp = VECTOR_ELT(lst, i);
     }
-    else if (0 == strcmp("form", compName)) {
+    else if (0 == strcmp("form", eltName)) {
       formExp = VECTOR_ELT(lst, i);
     }
-    else if (0 == strcmp("dim", compName)) {
+    else if (0 == strcmp("dim", eltName)) {
       dimExp = VECTOR_ELT(lst, i);
     }
-    else if (0 == strcmp("ts", compName)) {
+    else if (0 == strcmp("ts", eltName)) {
       tsExp = VECTOR_ELT(lst, i);
     }
     else {
       Rprintf ("Input list elements must be according to this specification:\n");
       Rprintf ("'name', 'type', 'val', 'uels', 'form', 'dim', 'ts'.\n");
-      error ("Incorrect type of input list element '%s' specified.",
-             compName);
+      error ("Invalid input list element '%s' specified.",
+             eltName);
     }
   }
 
@@ -802,7 +802,7 @@ static void
 writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 	  char zeroSqueeze)
 {
-  SEXP uelIndex, compName, valData;
+  SEXP uelIndex, lstNames, valData;
   SEXP mainBuffer, subBuffer;
   wSpec_t **wSpecPtr;           /* was data */
   gdxUelIndex_t uelIndices;
@@ -813,7 +813,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   shortStringBuf_t expText;
   const char *stringUelIndex;
   int rc, errNum;
-  int i, j, k, found;
+  int i, j, k;
   int iSym;
   int idx;
   SEXP dimVect;
@@ -881,26 +881,18 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   i=0;
   /* write data in GDX file */
   for (i = 0;  i < symListLen;  i++) {
-    /*
-     *  Looking for 'val'
-     *  This is the glitch that i am worried about
-     */
-    compName = getAttrib(symList[i], R_NamesSymbol);
-    for (found = 0, j = 0; j < length(symList[i]); j++) {
-      if (strcmp("val", CHAR(STRING_ELT(compName, j))) == 0) {
-        found = 1;
+    lstNames = getAttrib(symList[i], R_NamesSymbol);
+    valData = NULL;
+    for (j = 0; j < length(symList[i]); j++) {
+      if (strcmp("val", CHAR(STRING_ELT(lstNames, j))) == 0) {
+        valData = VECTOR_ELT(symList[i], j);
         break;
       }
     }
-
-    if (1 == found) {
-      valData = VECTOR_ELT(symList[i], j);
-    }
-
     mainBuffer = VECTOR_ELT(uelIndex, i);
-    /* creating value for set that does not have .val */
     if (wSpecPtr[i]->dType == set) {
-      if (wSpecPtr[i]->withVal == 0 &&  wSpecPtr[i]->withUel == 1) {
+      if (wSpecPtr[i]->withVal == 0 && wSpecPtr[i]->withUel == 1) {
+        /* creating value for set that does not have .val */
 	nColumns = length(mainBuffer);
 	PROTECT(dimVect = allocVector(REALSXP, nColumns));
 	wgdxAlloc++;
@@ -926,17 +918,11 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
     (void) CHAR2ShortStr ("R data from GDXRRW", expText);
     if (wSpecPtr[i]->withTs == 1) {
       /* Looking for 'ts' */
-      j = 0;
-      found = 0;
-      for (j = 0; j < length(symList[i]); j++) {
-	if (strcmp("ts", CHAR(STRING_ELT(compName, j))) == 0) {
-	  found = 1;
+      for (j = 0;  j < length(symList[i]);  j++) {
+	if (strcmp("ts", CHAR(STRING_ELT(lstNames, j))) == 0) {
+          (void) CHAR2ShortStr (CHAR(STRING_ELT( VECTOR_ELT(symList[i], j), 0)), expText);
 	  break;
 	}
-      }
-
-      if (found == 1) {
-	(void) CHAR2ShortStr (CHAR(STRING_ELT( VECTOR_ELT(symList[i], j), 0)), expText);
       }
     }
 
