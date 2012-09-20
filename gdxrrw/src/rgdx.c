@@ -298,7 +298,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
 SEXP rgdx (SEXP args)
 {
   const char *funcName = "rgdx";
-  SEXP fileName, requestList, squeeze, UEList;
+  SEXP fileName, requestList, squeeze, universe;
   SEXP outName = R_NilValue,
     outType = R_NilValue,
     outDim = R_NilValue,
@@ -474,15 +474,15 @@ SEXP rgdx (SEXP args)
     }
   } /* if (withList) */
 
-  /* Get global UEL from GDX file */
+  /* Get UEL universe from GDX file */
   (void) gdxUMUelInfo (gdxHandle, &nUEL, &highestMappedUEL);
-  PROTECT(UEList = allocVector(STRSXP, nUEL));
+  PROTECT(universe = allocVector(STRSXP, nUEL));
   rgdxAlloc++;
   for (iUEL = 1;  iUEL <= nUEL;  iUEL++) {
     if (!gdxUMUelGet (gdxHandle, iUEL, uelName, &UELUserMapping)) {
       error("Could not gdxUMUelGet");
     }
-    SET_STRING_ELT(UEList, iUEL-1, mkChar(uelName));
+    SET_STRING_ELT(universe, iUEL-1, mkChar(uelName));
   }
 
   outElements = 6;   /* outList has at least 6 elements, maybe more */
@@ -491,14 +491,16 @@ SEXP rgdx (SEXP args)
      * If they are not equal then error. */
 
     if (rSpec->withUel == 1 && length(rSpec->filterUel) != symDim) {
-      error("Dimension of UEL entered does not match with symbol in GDX");
+      error("Dimension of UEL filter entered does not match with symbol in GDX");
     }
     /* Creating default uel if none entered */
+    /* this should probably be delayed:
+     * we construct outUels in the compressed case, e.g. */
     if (! rSpec->withUel) {
       PROTECT(outUels = allocVector(VECSXP, symDim));
       rgdxAlloc++;
       for (defaultIndex = 0; defaultIndex < symDim; defaultIndex++) {
-        SET_VECTOR_ELT(outUels, defaultIndex, UEList);
+        SET_VECTOR_ELT(outUels, defaultIndex, universe);
       }
     }
 
@@ -532,7 +534,7 @@ SEXP rgdx (SEXP args)
         gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
         b = 0;
         for (k = 0; k < symDim; k++) {
-          uelElementName = CHAR(STRING_ELT(UEList, uels[k]-1));
+          uelElementName = CHAR(STRING_ELT(universe, uels[k]-1));
           uelPos = findInFilter (k, rSpec->filterUel, uelElementName);
           /* uel element exists */
           if (uelPos > 0) {
@@ -590,7 +592,7 @@ SEXP rgdx (SEXP args)
           b = 0;
           for (k = 0;  k < symDim;  k++) {
             returnedIndex[k] = 0;
-            uelElementName = CHAR(STRING_ELT(UEList, uels[k]-1));
+            uelElementName = CHAR(STRING_ELT(universe, uels[k]-1));
             uelPos = findInFilter (k, rSpec->filterUel, uelElementName);
             if (uelPos > 0) {
               returnedIndex[k] = uelPos;
@@ -615,7 +617,7 @@ SEXP rgdx (SEXP args)
             else {
               strcpy(stringEle, "");
               for (kk = 0;  kk < symDim;  kk++) {
-                strcat(stringEle, CHAR(STRING_ELT(UEList, uels[kk]-1))  );
+                strcat(stringEle, CHAR(STRING_ELT(universe, uels[kk]-1))  );
                 if (kk != symDim-1) {
                   strcat(stringEle, ".");
                 }
@@ -639,7 +641,7 @@ SEXP rgdx (SEXP args)
 
           for (k = 0;  k < symDim;  k++) {
             returnedIndex[k] = 0;
-            uelElementName = CHAR(STRING_ELT(UEList, uels[k]-1));
+            uelElementName = CHAR(STRING_ELT(universe, uels[k]-1));
             uelPos = findInFilter (k, rSpec->filterUel, uelElementName);
             if (uelPos > 0) {
               returnedIndex[k] = uelPos;
@@ -682,7 +684,7 @@ SEXP rgdx (SEXP args)
           else {
             strcpy(stringEle, "");
             for (kk = 0;  kk < symDim;  kk++) {
-              strcat(stringEle, CHAR(STRING_ELT(UEList, uels[kk]-1))  );
+              strcat(stringEle, CHAR(STRING_ELT(universe, uels[kk]-1))  );
               if (kk != symDim-1) {
                 strcat(stringEle, ".");
               }
@@ -734,7 +736,7 @@ SEXP rgdx (SEXP args)
     if (rSpec->compress == 1) {
       PROTECT(outUels = allocVector(VECSXP, symDim));
       rgdxAlloc++;
-      compressData (outValSp, UEList, outUels, nUEL, symDim, mrows);
+      compressData (outValSp, universe, outUels, nUEL, symDim, mrows);
     }
 
     /* Converting sparse data into full matrix */
@@ -1006,7 +1008,7 @@ SEXP rgdx (SEXP args)
     /* entering null values if nothing else makes sense */
     SET_VECTOR_ELT(outList, 3, R_NilValue);
     SET_VECTOR_ELT(outList, 4, R_NilValue);
-    SET_VECTOR_ELT(outList, 5, UEList);
+    SET_VECTOR_ELT(outList, 5, universe);
   }
 
   /* Setting attribute name */
