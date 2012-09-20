@@ -43,6 +43,7 @@ R CMD build gdxrrw
 # do these from a normal command prompt, not one started from the
 # Visual Studio menu.
 R CMD INSTALL gdxrrw
+R --no-init-file CMD INSTALL gdxrrw
 R CMD REMOVE  gdxrrw    {to remove, or undo an install}
 R CMD INSTALL gdxrrw --build   {creates gdxrrw_X.Y-Z.zip for distribution}
 

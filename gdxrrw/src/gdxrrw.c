@@ -69,7 +69,7 @@ unpackWgdxArgs (SEXP *args, int argLen, SEXP **symList,
 
 static void
 readWgdxList (const SEXP lst, int iSym, SEXP uelIndex,
-              wSpec_t **wSpecPtr, int fromGAMS);
+              wSpec_t **wSpecPtr);
 
 void
 registerInputUEL(SEXP uelOut,
@@ -115,7 +115,7 @@ getNonZeroElements (gdxHandle_t h, int symIdx, dField_t dField);
 
 static void
 writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
-          int fromGAMS, char zeroSqueeze);
+	  char zeroSqueeze);
 
 
 
@@ -846,7 +846,7 @@ registerInputUEL(SEXP uelOut,
  */
 void
 readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
-              wSpec_t **wSpecPtr, int fromGAMS)
+              wSpec_t **wSpecPtr)
 {
   SEXP lstNames, tmpUel;
   SEXP dimension;
@@ -1058,16 +1058,6 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
     }
   }
   else {
-    if (fromGAMS == 1 && TYPEOF(valExp) == STRSXP) {
-      tmpName = CHAR(STRING_ELT(valExp, 0));
-      checkStringLength(tmpName);
-      strcat(specialCommand, "--");
-      strcat(specialCommand,  wSpec->name);
-      strcat(specialCommand, "=");
-      strcat(specialCommand, tmpName);
-      strcat(specialCommand, " ");
-      return;
-    }
     dimension = getAttrib(valExp, R_DimSymbol);
     if (TYPEOF(valExp) == REALSXP || TYPEOF(valExp) == INTSXP ) {
       if (wSpec->dForm == sparse) {
@@ -1168,13 +1158,11 @@ msgInit (void) {
 /* This method is intended to be used by both wgdx and gams call
    fileName = name of GDX file to be written
    symList = vector of symList's entered by user
-   fromGAMS = 1 if this method is called from GAMS otherwise 0
 */
 static void
 writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
-          int fromGAMS, char zeroSqueeze)
+	  char zeroSqueeze)
 {
-  FILE *matdata = NULL;
   SEXP uelIndex, compName, valData;
   SEXP mainBuffer, subBuffer;
   wSpec_t **wSpecPtr;           /* was data */
@@ -1184,7 +1172,6 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   d64_t d64;
   shortStringBuf_t msgBuf;
   shortStringBuf_t expText;
-  shortStringBuf_t gsBuf;
   const char *stringUelIndex;
   int rc, errNum;
   int i, j, k, found;
@@ -1196,35 +1183,17 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   double *dimVal, *pd, dt, posInf, negInf;
   int *pi;
   int *subscript;
-  const char *inputTime;
 
   /* shut up compiler warnings */
   valData = NULL;
 
   total = 1;
   wAlloc = 0;
-  inputTime = "compile";
-  if (fromGAMS == 1) {
-    /* Open files for interface data */
-    inputTime = getGlobalString("input", gsBuf);
-    if (NULL == inputTime)
-      inputTime = "compile";
-
-    if ((matdata = fopen("matdata.gms","w")) == NULL)
-      error("Cannot write 'matdata.gms' file.");
-    if (strcmp(inputTime,"exec") != 0) {
-      fprintf(matdata,"$gdxin matdata.gdx\n");
-    }
-  }
 
   loadGDX();
   rc = gdxCreate (&gdxHandle, msgBuf, sizeof(msgBuf));
   if (0 == rc)
     error ("Error creating GDX object: %s", msgBuf);
-
-  if (fromGAMS == 1) {
-    gdxFileName = "matdata.gdx";
-  }
 
   rc = gdxOpenWrite (gdxHandle, gdxFileName, "GDXRRW:wgdx", &errNum);
   if (errNum || 0 == rc) {
@@ -1258,7 +1227,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
       error("Incorrect type of input encountered. List expected\n");
     }
     else {
-      readWgdxList (symList[iSym], iSym, uelIndex, wSpecPtr+iSym, fromGAMS);
+      readWgdxList (symList[iSym], iSym, uelIndex, wSpecPtr+iSym);
     }
   }
 
@@ -1288,226 +1257,208 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
     if (1 == found) {
       valData = VECTOR_ELT(symList[i], j);
     }
-    /* This is special check */
-    if (fromGAMS == 0
-        || (fromGAMS == 1
-             && (found == 0 || TYPEOF(valData) != STRSXP))) {
-      mainBuffer = VECTOR_ELT(uelIndex, i);
-      if (fromGAMS) {
-        if (strcmp(inputTime,"exec") == 0) {
-          fprintf(matdata,"execute_load 'matdata.gdx' %s;\n", wSpecPtr[i]->name);
-        }
-        else {
-          fprintf(matdata,"$kill %s\n$load %s\n",  wSpecPtr[i]->name, wSpecPtr[i]->name);
-        }
-      }
-      /* creating value for set that does not have .val */
-      if (wSpecPtr[i]->dType == set) {
-        if (wSpecPtr[i]->withVal == 0 &&  wSpecPtr[i]->withUel == 1) {
-          nColumns = length(mainBuffer);
-          PROTECT(dimVect = allocVector(REALSXP, nColumns));
-          wAlloc++;
-          totalElement = 1;
-          dimVal = REAL(dimVect);
-          ndimension = 0;
 
-          for (ndimension = 0; ndimension < (int)nColumns; ndimension++) {
-            dimVal[ndimension] = length(VECTOR_ELT(mainBuffer, ndimension));
-            totalElement = (totalElement * length(VECTOR_ELT(mainBuffer, ndimension)));
-          }
-          PROTECT(valData = allocVector(REALSXP, totalElement));
-          wAlloc++;
-          pd = REAL(valData);
-          for (index = 0; index < totalElement; index++) {
-            pd[index] = 1;
-          }
-          setAttrib(valData, R_DimSymbol, dimVect);
-          index = 0;
-          wSpecPtr[i]->dForm = full;
-        }
-      }
-      (void) CHAR2ShortStr ("R data from GDXRRW", expText);
-      if (wSpecPtr[i]->withTs == 1) {
-        /* Looking for 'ts' */
-        j = 0;
-        found = 0;
-        for (j = 0; j < length(symList[i]); j++) {
-          if (strcmp("ts", CHAR(STRING_ELT(compName, j))) == 0) {
-            found = 1;
-            break;
-          }
-        }
+    mainBuffer = VECTOR_ELT(uelIndex, i);
+    /* creating value for set that does not have .val */
+    if (wSpecPtr[i]->dType == set) {
+      if (wSpecPtr[i]->withVal == 0 &&  wSpecPtr[i]->withUel == 1) {
+	nColumns = length(mainBuffer);
+	PROTECT(dimVect = allocVector(REALSXP, nColumns));
+	wAlloc++;
+	totalElement = 1;
+	dimVal = REAL(dimVect);
+	ndimension = 0;
 
-        if (found == 1) {
-          (void) CHAR2ShortStr (CHAR(STRING_ELT( VECTOR_ELT(symList[i], j), 0)), expText);
-        }
+	for (ndimension = 0; ndimension < (int)nColumns; ndimension++) {
+	  dimVal[ndimension] = length(VECTOR_ELT(mainBuffer, ndimension));
+	  totalElement = (totalElement * length(VECTOR_ELT(mainBuffer, ndimension)));
+	}
+	PROTECT(valData = allocVector(REALSXP, totalElement));
+	wAlloc++;
+	pd = REAL(valData);
+	for (index = 0; index < totalElement; index++) {
+	  pd[index] = 1;
+	}
+	setAttrib(valData, R_DimSymbol, dimVect);
+	index = 0;
+	wSpecPtr[i]->dForm = full;
+      }
+    }
+    (void) CHAR2ShortStr ("R data from GDXRRW", expText);
+    if (wSpecPtr[i]->withTs == 1) {
+      /* Looking for 'ts' */
+      j = 0;
+      found = 0;
+      for (j = 0; j < length(symList[i]); j++) {
+	if (strcmp("ts", CHAR(STRING_ELT(compName, j))) == 0) {
+	  found = 1;
+	  break;
+	}
       }
 
-      if (wSpecPtr[i]->dForm == sparse) {
-        dimVect = getAttrib(valData, R_DimSymbol);
-        nColumns = INTEGER(dimVect)[1];
-        nRows = INTEGER(dimVect)[0];
+      if (found == 1) {
+	(void) CHAR2ShortStr (CHAR(STRING_ELT( VECTOR_ELT(symList[i], j), 0)), expText);
+      }
+    }
 
-        if (wSpecPtr[i]->dType == parameter) {
-          nColumns--;
-          rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
-                                     nColumns, GMS_DT_PAR, 0);
-        }
-        else {
-          rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
-                                     nColumns, GMS_DT_SET, 0);
-          vals[0] = 0;
-        }
-        if (!rc) {
-          error("Could not write data with gdxDataWriteMapStart");
-        }
+    if (wSpecPtr[i]->dForm == sparse) {
+      dimVect = getAttrib(valData, R_DimSymbol);
+      nColumns = INTEGER(dimVect)[1];
+      nRows = INTEGER(dimVect)[0];
 
-        pd = NULL;
-        pi = NULL;
-        if (TYPEOF(valData) == REALSXP) {
-          pd = REAL(valData);
-        }
-        else if (TYPEOF(valData) == INTSXP) {
-          pi = INTEGER(valData);
-        }
-        for (j = 0; j < nRows; j++) {
-          for (k = 0; k < nColumns; k++) {
-            subBuffer = VECTOR_ELT(mainBuffer, k);
-            if (pd) {
-              idx = (int) pd[k*nRows + j];
-            }
-            else {
-              idx = pi[k*nRows + j];
-            }
-            stringUelIndex = CHAR(STRING_ELT(subBuffer, idx-1));
-            uelIndices[k] = atoi(stringUelIndex);
-          }
-          if (wSpecPtr[i]->dType == parameter) {
-            if (pd) {
-              vals[0] = pd[nColumns*nRows + j];
-            }
-            else {
-              vals[0] = pi[nColumns*nRows + j];
-            }
+      if (wSpecPtr[i]->dType == parameter) {
+	nColumns--;
+	rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
+				   nColumns, GMS_DT_PAR, 0);
+      }
+      else {
+	rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
+				   nColumns, GMS_DT_SET, 0);
+	vals[0] = 0;
+      }
+      if (!rc) {
+	error("Could not write data with gdxDataWriteMapStart");
+      }
+
+      pd = NULL;
+      pi = NULL;
+      if (TYPEOF(valData) == REALSXP) {
+	pd = REAL(valData);
+      }
+      else if (TYPEOF(valData) == INTSXP) {
+	pi = INTEGER(valData);
+      }
+      for (j = 0; j < nRows; j++) {
+	for (k = 0; k < nColumns; k++) {
+	  subBuffer = VECTOR_ELT(mainBuffer, k);
+	  if (pd) {
+	    idx = (int) pd[k*nRows + j];
+	  }
+	  else {
+	    idx = pi[k*nRows + j];
+	  }
+	  stringUelIndex = CHAR(STRING_ELT(subBuffer, idx-1));
+	  uelIndices[k] = atoi(stringUelIndex);
+	}
+	if (wSpecPtr[i]->dType == parameter) {
+	  if (pd) {
+	    vals[0] = pd[nColumns*nRows + j];
+	  }
+	  else {
+	    vals[0] = pi[nColumns*nRows + j];
+	  }
 #if 1
-            if (ISNA(vals[0])) {
-              vals[0] = sVals[GMS_SVIDX_NA];
-            }
+	  if (ISNA(vals[0])) {
+	    vals[0] = sVals[GMS_SVIDX_NA];
+	  }
 #endif
-          }
-          if ((parameter == wSpecPtr[i]->dType) &&
-              (0 == vals[0]) && ('e' == zeroSqueeze))
-            vals[0] = sVals[GMS_SVIDX_EPS];
-          if ((set == wSpecPtr[i]->dType) ||
-              ('n' == zeroSqueeze) ||
-              (0 != vals[0])) {
-            /* write the value to GDX */
-            rc = gdxDataWriteMap (gdxHandle, uelIndices, vals);
-            if (!rc) {
-              error("Could not write parameter MAP with gdxDataWriteMap");
-            }
-          }
-        }
+	}
+	if ((parameter == wSpecPtr[i]->dType) &&
+	    (0 == vals[0]) && ('e' == zeroSqueeze))
+	  vals[0] = sVals[GMS_SVIDX_EPS];
+	if ((set == wSpecPtr[i]->dType) ||
+	    ('n' == zeroSqueeze) ||
+	    (0 != vals[0])) {
+	  /* write the value to GDX */
+	  rc = gdxDataWriteMap (gdxHandle, uelIndices, vals);
+	  if (!rc) {
+	    error("Could not write parameter MAP with gdxDataWriteMap");
+	  }
+	}
+      }
 
-        if (!gdxDataWriteDone(gdxHandle)) {
-          error ("Could not end writing parameter with gdxDataWriteMapStart");
-        }
-      } /* if sparse */
-      else {                    /* form = full */
-        total_num_of_elements = length(valData);
-        dimVect = getAttrib(valData, R_DimSymbol);
-        nColumns = length(mainBuffer);
-        subscript = malloc(nColumns*sizeof(*subscript));
-        if (wSpecPtr[i]->dType == parameter) {
-          rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
-                                     nColumns, GMS_DT_PAR, 0);
-        }
-        else {
-          rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
-                                     nColumns, GMS_DT_SET, 0);
-          vals[0] = 0;
-        }
-        if (!rc) {
-          error("Could not write data with gdxDataWriteMapStart");
-        }
-        pd = NULL;
-        pi = NULL;
-        if (TYPEOF(valData) == REALSXP) {
-          pd = REAL(valData);
-        }
-        else if (TYPEOF(valData) == INTSXP) {
-          pi = INTEGER(valData);
-        }
-        else {
-          error ("internal error: unrecognized valData type");
-        }
-        for (index = 0; index < total_num_of_elements; index++) {
-          subindex = index;
-          if (nColumns > 0) {
-            for (d = nColumns-1; ; d--) {
-              subBuffer = VECTOR_ELT(mainBuffer, d);
-              for (total=1, inner=0; inner<d; inner++) {
-                total *= INTEGER(dimVect)[inner];
-              }
-              subscript[d] = subindex / total;
+      if (!gdxDataWriteDone(gdxHandle)) {
+	error ("Could not end writing parameter with gdxDataWriteMapStart");
+      }
+    } /* if sparse */
+    else {                    /* form = full */
+      total_num_of_elements = length(valData);
+      dimVect = getAttrib(valData, R_DimSymbol);
+      nColumns = length(mainBuffer);
+      subscript = malloc(nColumns*sizeof(*subscript));
+      if (wSpecPtr[i]->dType == parameter) {
+	rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
+				   nColumns, GMS_DT_PAR, 0);
+      }
+      else {
+	rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
+				   nColumns, GMS_DT_SET, 0);
+	vals[0] = 0;
+      }
+      if (!rc) {
+	error("Could not write data with gdxDataWriteMapStart");
+      }
+      pd = NULL;
+      pi = NULL;
+      if (TYPEOF(valData) == REALSXP) {
+	pd = REAL(valData);
+      }
+      else if (TYPEOF(valData) == INTSXP) {
+	pi = INTEGER(valData);
+      }
+      else {
+	error ("internal error: unrecognized valData type");
+      }
+      for (index = 0; index < total_num_of_elements; index++) {
+	subindex = index;
+	if (nColumns > 0) {
+	  for (d = nColumns-1; ; d--) {
+	    subBuffer = VECTOR_ELT(mainBuffer, d);
+	    for (total=1, inner=0; inner<d; inner++) {
+	      total *= INTEGER(dimVect)[inner];
+	    }
+	    subscript[d] = subindex / total;
 
-              stringUelIndex = CHAR(STRING_ELT(subBuffer, subscript[d]));
+	    stringUelIndex = CHAR(STRING_ELT(subBuffer, subscript[d]));
 
-              uelIndices[d] = atoi(stringUelIndex);
+	    uelIndices[d] = atoi(stringUelIndex);
 
-              subindex = subindex % total;
-              if (d == 0) {
-                break;
-              }
-            } /* for loop over "d" */
-          }
+	    subindex = subindex % total;
+	    if (d == 0) {
+	      break;
+	    }
+	  } /* for loop over "d" */
+	}
 
-          if (pd) {
-            dt = pd[index];
-          }
-          else {
-            dt = pi[index];
-          }
-          if (wSpecPtr[i]->dType == parameter) {
-            vals[0] = dt;
-            if (ISNA(vals[0])) {
-              vals[0] = sVals[GMS_SVIDX_NA];
-            }
-          }
-          else if (set == wSpecPtr[i]->dType) {
-            /* could do the check in checkForValidData but
-             * that uses an additional pass through the full matrix */
-            if (0 != dt && 1 != dt) {
-              error ("Only zero-one values are allowed when specifying sets with form=full\n");
-            }
-          }
-          if ((parameter == wSpecPtr[i]->dType) &&
-              (0 == vals[0]) && ('e' == zeroSqueeze))
-            vals[0] = sVals[GMS_SVIDX_EPS];
-          if (((set == wSpecPtr[i]->dType) && (0 != dt))  ||
-              ((parameter == wSpecPtr[i]->dType) &&
-               (('n' == zeroSqueeze) ||
-                (0 != vals[0]))) ) {
-            /* write the value to GDX */
-            rc = gdxDataWriteMap(gdxHandle, uelIndices, vals);
-            if (!rc) {
-              error("Could not write parameter MAP with gdxDataWriteMap");
-            }
-          }
-        } /* for loop over "index" */
-        if (!gdxDataWriteDone(gdxHandle)) {
-          error("Could not end writing data with gdxDataWriteMapStart");
-        }
-      } /* end of writing full data */
-    }
-  }    /* End of for(i) loop */
+	if (pd) {
+	  dt = pd[index];
+	}
+	else {
+	  dt = pi[index];
+	}
+	if (wSpecPtr[i]->dType == parameter) {
+	  vals[0] = dt;
+	  if (ISNA(vals[0])) {
+	    vals[0] = sVals[GMS_SVIDX_NA];
+	  }
+	}
+	else if (set == wSpecPtr[i]->dType) {
+	  /* could do the check in checkForValidData but
+	   * that uses an additional pass through the full matrix */
+	  if (0 != dt && 1 != dt) {
+	    error ("Only zero-one values are allowed when specifying sets with form=full\n");
+	  }
+	}
+	if ((parameter == wSpecPtr[i]->dType) &&
+	    (0 == vals[0]) && ('e' == zeroSqueeze))
+	  vals[0] = sVals[GMS_SVIDX_EPS];
+	if (((set == wSpecPtr[i]->dType) && (0 != dt))  ||
+	    ((parameter == wSpecPtr[i]->dType) &&
+	     (('n' == zeroSqueeze) ||
+	      (0 != vals[0]))) ) {
+	  /* write the value to GDX */
+	  rc = gdxDataWriteMap(gdxHandle, uelIndices, vals);
+	  if (!rc) {
+	    error("Could not write parameter MAP with gdxDataWriteMap");
+	  }
+	}
+      } /* for loop over "index" */
+      if (!gdxDataWriteDone(gdxHandle)) {
+	error("Could not end writing data with gdxDataWriteMapStart");
+      }
+    } /* end of writing full data */
+  } /* for (i) loop over symbols */
 
-  if (fromGAMS) {
-    if (strcmp(inputTime,"exec") != 0) {
-      fprintf(matdata,"$gdxin\n");
-    }
-    fclose(matdata);
-  }
   /* Close GDX file */
   errNum = gdxClose (gdxHandle);
   if (errNum != 0) {
@@ -1569,7 +1520,7 @@ SEXP wgdx (SEXP args)
   unpackWgdxArgs (&args, arglen, &symList, &symListSiz, &symListLen, &zeroSqueeze);
 
   /* check and write data to gdxfile */
-  writeGdx (gdxFileName, symListLen, symList, 0, zeroSqueeze);
+  writeGdx (gdxFileName, symListLen, symList, zeroSqueeze);
   free (symList);
   return R_NilValue;
 } /* wgdx */
