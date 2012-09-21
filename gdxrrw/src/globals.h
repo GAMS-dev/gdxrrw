@@ -68,6 +68,18 @@ typedef union d64 {
   double x;
   uint64_t u64;
 } d64_t;
+typedef enum filterType {             /* filter types */
+  unset = 0,
+  identity,
+  integer,
+} filterType_t;
+typedef struct hpFilter {       /* high-performance filter */
+  filterType_t fType;
+  int n;                        /* number of elements in filter */
+  int isOrdered;                /* is the data ordered? */
+  int prevPos;                  /* previous position of successful search */
+  int *idx;                     /* actual data: uel indices to select */
+} hpFilter_t;
 
 GDX_FUNCPTR(gdxGetLoadPath);
 
@@ -111,6 +123,11 @@ createElementMatrix (SEXP compVal, SEXP textElement, SEXP compTe,
                      SEXP compUels, int symDim, int nRec);
 int
 findInFilter (int k, SEXP filterList, const char *uelName);
+void
+prepHPFilter (int symDim, hpFilter_t filterList[]);
+int
+findInHPFilter (int symDim, const int inUels[], hpFilter_t filterList[],
+                int outIdx[]);
 char *
 getGlobalString (const char *globName, shortStringBuf_t result);
 int

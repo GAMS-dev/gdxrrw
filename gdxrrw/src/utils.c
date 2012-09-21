@@ -221,6 +221,85 @@ int findInFilter (int k, SEXP filterList, const char *uelName)
   return 0;
 } /* findInFilter */
 
+/* prepHPFilter: prep/check a high-performance filter prior to use
+ * This is not initializing data, just initializing prevPos
+ * and perhaps some debugging-type checks on consistency
+ */
+void
+prepHPFilter (int symDim, hpFilter_t filterList[])
+{
+  int iDim;
+  hpFilter_t *hpf;
+
+  if (NULL == filterList)
+    error ("internal error: NULL hpFilter");
+  for (iDim = 0;  iDim < symDim;  iDim++) {
+    hpf = filterList + iDim;
+    switch (hpf->fType) {
+    case unset:
+      error ("internal error: hpFilter type unset");
+      break;
+    case identity:
+      error ("internal error: just sanity checking");
+      break;
+    case integer:
+      if (hpf->n <= 0)
+        error ("internal error: integer hpFilter must be nonempty"); /* really? */
+      hpf->prevPos = 0;
+      error ("internal error: just sanity checking");
+      break;
+    default:
+      error ("internal error: unknown hpFilter type");
+    }
+  } /* loop over symbol dimensions */
+} /* prepHPFilter */
+
+/* findInHPFilter: search for inUels in filterList,
+ * storing the index where found in outIdx
+ * as a side effect, updates previous search info in filterList
+ * return:
+ *   1     if found,
+ *   0     otherwise
+ */
+int
+findInHPFilter (int symDim, const int inUels[], hpFilter_t filterList[],
+                int outIdx[])
+{
+  int iDim, k, targetUel, found;
+  const int *idx;
+  hpFilter_t *hpf;
+
+  if (NULL == filterList)
+    error ("internal error: NULL hpFilter");
+  for (iDim = 0;  iDim < symDim;  iDim++) {
+    hpf = filterList + iDim;
+    switch (hpf->fType) {
+    case unset:
+      error ("internal error: hpFilter type unset");
+      break;
+    case identity:
+      outIdx[iDim] = inUels[iDim];
+      break;
+    case integer:
+      idx = hpf->idx;
+      targetUel = inUels[iDim];
+      for (found = 0, k = 0;  k < hpf->n; k++) {
+        if (idx[k] == targetUel) {
+          outIdx[iDim] = hpf->prevPos = k;
+          found = 1;
+          break;
+        }
+      }
+      if (! found)
+        return 0;
+      break;
+    default:
+      error ("internal error: unknown hpFilter type");
+    }
+  } /* loop over symbol dimensions */
+  return 1;                     /* found */
+} /* findInHPFilter */
+
 /* This method will read variable "gamso" from R workspace */
 char *getGlobalString (const char *globName, shortStringBuf_t result)
 {
