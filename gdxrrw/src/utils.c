@@ -221,6 +221,19 @@ int findInFilter (int k, SEXP filterList, const char *uelName)
   return 0;
 } /* findInFilter */
 
+/* mkIntFilter: construct an integer filter from the user-supplied string uels
+ * ufilter: user-supplied filter - $uels[k]
+ * hpf: high-performance filter for internal use
+ */
+void
+mkIntFilter (SEXP uFilter, hpFilter_t *hpf)
+{
+  int n;
+
+  n = length(uFilter);
+  return;
+} /* mkIntFilter */
+
 /* prepHPFilter: prep/check a high-performance filter prior to use
  * This is not initializing data, just initializing prevPos
  * and perhaps some debugging-type checks on consistency

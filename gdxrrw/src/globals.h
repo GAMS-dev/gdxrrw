@@ -124,6 +124,8 @@ createElementMatrix (SEXP compVal, SEXP textElement, SEXP compTe,
 int
 findInFilter (int k, SEXP filterList, const char *uelName);
 void
+mkIntFilter (SEXP uFilter, hpFilter_t *hpf);
+void
 prepHPFilter (int symDim, hpFilter_t filterList[]);
 int
 findInHPFilter (int symDim, const int inUels[], hpFilter_t filterList[],

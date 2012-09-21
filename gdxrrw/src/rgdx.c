@@ -311,6 +311,7 @@ SEXP rgdx (SEXP args)
     outTeSp = R_NilValue,       /* output .te, sparse form */
     outTeFull = R_NilValue;     /* output .te, full form */
   SEXP outListNames, outList, dimVect, dimNames;
+  hpFilter_t hpFilter[GMS_MAX_INDEX_DIM];
   FILE    *fin;
   rSpec_t *rSpec;
   gdxUelIndex_t uels;
@@ -323,6 +324,7 @@ SEXP rgdx (SEXP args)
   const char *uelElementName;
   shortStringBuf_t gdxFileName;
   int symIdx, symDim, symType;
+  int iDim;
   int rc, errNum, ACount, mrows, ncols, nUEL, iUEL;
   int  k, kk, iRec, nRecs, index, changeIdx, kRec;
   int rgdxAlloc;                /* PROTECT count: undo this many on exit */
@@ -405,6 +407,9 @@ SEXP rgdx (SEXP args)
   rSpec->dForm = sparse;
   rSpec->dField = level;
   rSpec->dim = -1;              /* negative indicates NA */
+
+  memset (hpFilter, 0, sizeof(hpFilter));
+  Rprintf ("DEBUG info: sizeof(hpFilter) = %d\n", (int) sizeof(hpFilter));
 
   if (withList) {
     checkRgdxList (requestList, rSpec, &rgdxAlloc);
@@ -504,6 +509,11 @@ SEXP rgdx (SEXP args)
       }
     }
 
+    /* initialize hpFilter to use a universe filter for each dimension */
+    for (iDim = 0;  iDim < symDim;  iDim++) {
+      hpFilter[iDim].fType = identity;
+    }
+
     /* Start reading data */
     gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
     /* if it is a parameter, add 1 to the dimension */
@@ -523,6 +533,13 @@ SEXP rgdx (SEXP args)
     mwNElements = 0;
 
     if (rSpec->withUel == 1) {
+      /* create integer filters */
+      for (iDim = 0;  iDim < symDim;  iDim++) {
+        mkIntFilter (VECTOR_ELT(rSpec->filterUel, iDim), hpFilter + iDim);
+        hpFilter[iDim].fType = integer;
+      }
+
+
       maxPossibleElements = 1;
       for (z = 0; z < symDim; z++) {
         mwNElements = length(VECTOR_ELT(rSpec->filterUel, z));
