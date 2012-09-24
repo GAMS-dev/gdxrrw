@@ -312,6 +312,7 @@ SEXP rgdx (SEXP args)
     outTeFull = R_NilValue;     /* output .te, full form */
   SEXP outListNames, outList, dimVect, dimNames;
   hpFilter_t hpFilter[GMS_MAX_INDEX_DIM];
+  int outIdx[GMS_MAX_INDEX_DIM];
   FILE    *fin;
   rSpec_t *rSpec;
   gdxUelIndex_t uels;
@@ -329,7 +330,8 @@ SEXP rgdx (SEXP args)
   int  k, kk, iRec, nRecs, index, changeIdx, kRec;
   int rgdxAlloc;                /* PROTECT count: undo this many on exit */
   int UELUserMapping, highestMappedUEL;
-  int arglen,  maxPossibleElements, z, b, matched, sparesIndex;
+  int foundTuple;
+  int arglen, maxPossibleElements, z, b, matched, sparesIndex;
   double *p, *dimVal;
   char buf[3*sizeof(shortStringBuf_t)];
   char strippedID[GMS_SSSIZE];
@@ -409,7 +411,6 @@ SEXP rgdx (SEXP args)
   rSpec->dim = -1;              /* negative indicates NA */
 
   memset (hpFilter, 0, sizeof(hpFilter));
-  Rprintf ("DEBUG info: sizeof(hpFilter) = %d\n", (int) sizeof(hpFilter));
 
   if (withList) {
     checkRgdxList (requestList, rSpec, &rgdxAlloc);
@@ -535,10 +536,9 @@ SEXP rgdx (SEXP args)
     if (rSpec->withUel == 1) {
       /* create integer filters */
       for (iDim = 0;  iDim < symDim;  iDim++) {
+        /* Rprintf ("DEBUG: making filter dim %d\n", iDim); */
         mkIntFilter (VECTOR_ELT(rSpec->filterUel, iDim), hpFilter + iDim);
-        hpFilter[iDim].fType = integer;
       }
-
 
       maxPossibleElements = 1;
       for (z = 0; z < symDim; z++) {
@@ -547,6 +547,7 @@ SEXP rgdx (SEXP args)
       }
       mwNElements = 0;
 
+      prepHPFilter (symDim, hpFilter);
       for (iRec = 0;  iRec < nRecs;  iRec++) {
         gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
         b = 0;
@@ -560,6 +561,11 @@ SEXP rgdx (SEXP args)
           else {
             break;
           }
+        }
+        foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
+        if (foundTuple != (b == symDim)) {
+          error ("Testing findInHPFilter: new = %d  old = %d",
+                 foundTuple, (b == symDim));
         }
         if (b == symDim) {
           mwNElements++;

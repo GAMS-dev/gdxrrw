@@ -228,9 +228,42 @@ int findInFilter (int k, SEXP filterList, const char *uelName)
 void
 mkIntFilter (SEXP uFilter, hpFilter_t *hpf)
 {
-  int n;
+  int k, n;
+  int *idx;
+  const char *uelString;
+  int isOrdered = 1;
+  int dummy, uelInt, lastUelInt;
+  int allFound = 1;    /* all strings from the filter found in GDX? */
+  int found;
 
-  n = length(uFilter);
+  hpf->fType = integer;
+  hpf->n = n = length(uFilter);
+  /* Rprintf ("  mkIntFilter: n = %d\n", n); */
+  hpf->prevPos = 0;
+  hpf->idx = idx =  malloc(n * sizeof(*idx));
+  if (NULL == idx)
+    error ("memory exhaustion error: could not allocate index for hpFilter");
+  for (lastUelInt = 0, k = 0;  k < n;  k++) {
+    uelString = CHAR(STRING_ELT(uFilter, k));
+    found = gdxUMFindUEL (gdxHandle, uelString, &uelInt, &dummy);
+    /* Rprintf ("       k = %2d:  %s  %d  %d\n", k, uelString, uelInt, dummy); */
+    if (! found) {                /* not found */
+      allFound = 0;
+      isOrdered = 0;            /* for now insist all are found to be ordered */
+    }
+    else if (isOrdered) {
+      if (uelInt > lastUelInt)
+        lastUelInt = uelInt;
+      else
+        isOrdered = 0;
+    }
+    idx[k] = uelInt;
+  }
+  hpf->isOrdered = isOrdered;
+  if (! isOrdered) {
+    checkForDuplicates (uFilter);
+  }
+  /* Rprintf ("  mkIntFilter: isOrdered = %d  allFound = %d\n", isOrdered, allFound); */
   return;
 } /* mkIntFilter */
 
@@ -259,7 +292,6 @@ prepHPFilter (int symDim, hpFilter_t filterList[])
       if (hpf->n <= 0)
         error ("internal error: integer hpFilter must be nonempty"); /* really? */
       hpf->prevPos = 0;
-      error ("internal error: just sanity checking");
       break;
     default:
       error ("internal error: unknown hpFilter type");
