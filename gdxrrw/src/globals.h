@@ -74,11 +74,11 @@ typedef enum filterType {             /* filter types */
   integer,
 } filterType_t;
 typedef struct hpFilter {       /* high-performance filter */
-  filterType_t fType;
+  int *idx;                     /* actual data: uel indices to select */
   int n;                        /* number of elements in filter */
   int isOrdered;                /* is the data ordered? */
   int prevPos;                  /* previous position of successful search */
-  int *idx;                     /* actual data: uel indices to select */
+  filterType_t fType;
 } hpFilter_t;
 
 GDX_FUNCPTR(gdxGetLoadPath);
