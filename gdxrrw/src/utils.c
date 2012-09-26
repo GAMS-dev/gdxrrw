@@ -300,7 +300,7 @@ prepHPFilter (int symDim, hpFilter_t filterList[])
 } /* prepHPFilter */
 
 /* findInHPFilter: search for inUels in filterList,
- * storing the index where found in outIdx
+ * storing 1 + the index where found in outIdx[k], i.e. index in [1,filterList[k].n]
  * as a side effect, updates previous search info in filterList
  * return:
  *   1     if found,
@@ -330,7 +330,8 @@ findInHPFilter (int symDim, const int inUels[], hpFilter_t filterList[],
       targetUel = inUels[iDim];
       for (found = 0, k = 0;  k < hpf->n; k++) {
         if (idx[k] == targetUel) {
-          outIdx[iDim] = hpf->prevPos = k;
+          hpf->prevPos = k;
+          outIdx[iDim] = k + 1;
           found = 1;
           break;
         }
