@@ -561,10 +561,10 @@ SEXP rgdx (SEXP args)
           else {
             break;
           }
-        }
+        } /* loop over indices */
         foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
         if (foundTuple != (b == symDim)) {
-          error ("Testing findInHPFilter: new = %d  old = %d",
+          error ("Testing 000 findInHPFilter: new = %d  old = %d",
                  foundTuple, (b == symDim));
         }
         if (b == symDim) {
@@ -605,10 +605,18 @@ SEXP rgdx (SEXP args)
     /* TODO/TEST: filtered read */
     if (rSpec->withUel == 1) {
       matched = 0;
+
+      /* create integer filters */
+      for (iDim = 0;  iDim < symDim;  iDim++) {
+        /* Rprintf ("DEBUG: making filter dim %d\n", iDim); */
+        mkIntFilter (VECTOR_ELT(rSpec->filterUel, iDim), hpFilter + iDim);
+      }
+
       gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
       /* TODO/TEST: text elements with UEL */
       if (rSpec->te) {
         returnedIndex = malloc(symDim*sizeof(*returnedIndex));
+        prepHPFilter (symDim, hpFilter);
         for (iRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
           index = 0;
@@ -624,6 +632,11 @@ SEXP rgdx (SEXP args)
             else {
               break;
             }
+          } /* loop over indices */
+          foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
+          if (foundTuple != (b == symDim)) {
+            error ("Testing 100 findInHPFilter: new = %d  old = %d",
+                   foundTuple, (b == symDim));
           }
           if (b == symDim) {
             for (sparesIndex = 0; sparesIndex < symDim; sparesIndex++ ) {
@@ -657,6 +670,7 @@ SEXP rgdx (SEXP args)
       } /* if rSpec->te */
       else {
         returnedIndex = malloc(symDim*sizeof(*returnedIndex));
+        prepHPFilter (symDim, hpFilter);
         for (iRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
           index = 0;
@@ -673,6 +687,11 @@ SEXP rgdx (SEXP args)
             else {
               break;
             }
+          } /* loop over indices */
+          foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
+          if (foundTuple != (b == symDim)) {
+            error ("Testing 200 findInHPFilter: new = %d  old = %d",
+                   foundTuple, (b == symDim));
           }
           if (b == symDim) {
             for (sparesIndex = 0; sparesIndex < symDim; sparesIndex++ ) {
