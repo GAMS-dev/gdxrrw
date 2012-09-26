@@ -288,7 +288,7 @@ int
 findInHPFilter (int symDim, const int inUels[], hpFilter_t filterList[],
                 int outIdx[])
 {
-  int iDim, k, targetUel, found;
+  int iDim, k, targetUel, found, isOrdered;
   const int *idx;
   hpFilter_t *hpf;
 
@@ -305,15 +305,44 @@ findInHPFilter (int symDim, const int inUels[], hpFilter_t filterList[],
       break;
     case integer:
       idx = hpf->idx;
+      isOrdered = hpf->isOrdered;
       targetUel = inUels[iDim];
-      for (found = 0, k = 0;  k < hpf->n; k++) {
-        if (idx[k] == targetUel) {
-          hpf->prevPos = k;
-          outIdx[iDim] = k + 1;
-          found = 1;
-          break;
+      found = 0;
+      if (isOrdered) {
+        /* search starting with previous found position */
+        for (k = hpf->prevPos;  k < hpf->n;  k++) {
+          if (idx[k] == targetUel) {
+            hpf->prevPos = k;
+            outIdx[iDim] = k + 1;
+            found = 1;
+            break;
+          }
+          else if (idx[k] > targetUel)
+            break;
+        } /* loop over filter elements */
+        if (! found) {          /* search from the beginning */
+          for (k = 0;  k < hpf->n;  k++) {
+            if (idx[k] == targetUel) {
+              hpf->prevPos = k;
+              outIdx[iDim] = k + 1;
+              found = 1;
+              break;
+            }
+            else if (idx[k] > targetUel)
+              break;
+          } /* loop over filter elements */
         }
-      }
+      } /* if (isOrdered) */
+      else {
+        for (k = 0;  k < hpf->n;  k++) {
+          if (idx[k] == targetUel) {
+            hpf->prevPos = k;
+            outIdx[iDim] = k + 1;
+            found = 1;
+            break;
+          }
+        } /* loop over filter elements */
+      } /* if (isOrdered) .. else .. */
       if (! found)
         return 0;
       break;
