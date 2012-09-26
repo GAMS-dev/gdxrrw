@@ -322,16 +322,15 @@ SEXP rgdx (SEXP args)
   double dt, posInf, negInf;
   shortStringBuf_t msgBuf;
   shortStringBuf_t uelName;
-  const char *uelElementName;
   shortStringBuf_t gdxFileName;
   int symIdx, symDim, symType;
   int iDim;
   int rc, errNum, ACount, mrows, ncols, nUEL, iUEL;
-  int  k, kk, iRec, nRecs, index, changeIdx, kRec;
+  int kk, iRec, nRecs, index, changeIdx, kRec;
   int rgdxAlloc;                /* PROTECT count: undo this many on exit */
   int UELUserMapping, highestMappedUEL;
   int foundTuple;
-  int arglen, maxPossibleElements, z, b, matched, sparesIndex;
+  int arglen, maxPossibleElements, z, matched;
   double *p, *dimVal;
   char buf[3*sizeof(shortStringBuf_t)];
   char strippedID[GMS_SSSIZE];
@@ -341,11 +340,9 @@ SEXP rgdx (SEXP args)
   char *forms[] = {"full", "sparse"};
   char *fields[] = {"l", "m", "up", "lo", "s"};
   int nField, defaultIndex, elementIndex, IDum, ndimension, totalElement;
-  int *returnedIndex;
   int withList = 0;
   int outElements;
   int mwNElements =0;
-  int uelPos;
   Rboolean zeroSqueeze = NA_LOGICAL;
 
   /* setting intial values */
@@ -631,33 +628,13 @@ SEXP rgdx (SEXP args)
         }
       } /* if rSpec->te */
       else {
-        returnedIndex = malloc(symDim*sizeof(*returnedIndex));
         prepHPFilter (symDim, hpFilter);
         for (iRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-          index = 0;
-          b = 0;
-
-          for (k = 0;  k < symDim;  k++) {
-            returnedIndex[k] = 0;
-            uelElementName = CHAR(STRING_ELT(universe, uels[k]-1));
-            uelPos = findInFilter (k, rSpec->filterUel, uelElementName);
-            if (uelPos > 0) {
-              returnedIndex[k] = uelPos;
-              b++;
-            }
-            else {
-              break;
-            }
-          } /* loop over indices */
           foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
-          if (foundTuple != (b == symDim)) {
-            error ("Testing 200 findInHPFilter: new = %d  old = %d",
-                   foundTuple, (b == symDim));
-          }
-          if (b == symDim) {
-            for (sparesIndex = 0; sparesIndex < symDim; sparesIndex++ ) {
-              p[matched + sparesIndex*mwNElements] = returnedIndex[sparesIndex];
+          if (foundTuple) {
+            for (iDim = 0;  iDim < symDim;  iDim++) {
+              p[matched + iDim*mwNElements] = outIdx[iDim];
             }
             index = matched + symDim*(int)mwNElements;
             matched = matched +1;
@@ -669,7 +646,6 @@ SEXP rgdx (SEXP args)
             break;
           }
         }
-        free(returnedIndex);
       } /* End of else of if (te) */
     } /* End of with uels */
     else {
