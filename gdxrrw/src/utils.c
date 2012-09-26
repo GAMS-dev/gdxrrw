@@ -199,28 +199,6 @@ createElementMatrix (SEXP compVal, SEXP textElement, SEXP compTe,
   return;
 } /* createElementMatrix */
 
-/* findInFilter: find the position of uelName in filterList[k]
- * returns:
- *   0   if uelName was not found
- *   i+1 otherwise, where i is the position of uelName in filterList[k]
- */
-int findInFilter (int k, SEXP filterList, const char *uelName)
-{
-  SEXP filter;
-  int i, n;
-  const char *uelString;
-
-  filter = VECTOR_ELT(filterList, k);
-  n = length(filter);
-  for (i = 0;  i < n;  i++) {
-    uelString = CHAR(STRING_ELT(filter, i));
-    if (0 == strcmp(uelString, uelName)) {
-      return i+1;
-    }
-  }
-  return 0;
-} /* findInFilter */
-
 /* mkIntFilter: construct an integer filter from the user-supplied string uels
  * ufilter: user-supplied filter - $uels[k]
  * hpf: high-performance filter for internal use

@@ -121,8 +121,6 @@ compressData (SEXP data, SEXP globalUEL, SEXP uelOut,
 void
 createElementMatrix (SEXP compVal, SEXP textElement, SEXP compTe,
                      SEXP compUels, int symDim, int nRec);
-int
-findInFilter (int k, SEXP filterList, const char *uelName);
 void
 mkIntFilter (SEXP uFilter, hpFilter_t *hpf);
 void
