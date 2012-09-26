@@ -550,32 +550,14 @@ SEXP rgdx (SEXP args)
       prepHPFilter (symDim, hpFilter);
       for (iRec = 0;  iRec < nRecs;  iRec++) {
         gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-        b = 0;
-        for (k = 0; k < symDim; k++) {
-          uelElementName = CHAR(STRING_ELT(universe, uels[k]-1));
-          uelPos = findInFilter (k, rSpec->filterUel, uelElementName);
-          /* uel element exists */
-          if (uelPos > 0) {
-            b++;
-          }
-          else {
-            break;
-          }
-        } /* loop over indices */
         foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
-        if (foundTuple != (b == symDim)) {
-          error ("Testing 000 findInHPFilter: new = %d  old = %d",
-                 foundTuple, (b == symDim));
-        }
-        if (b == symDim) {
+        if (foundTuple) {
           mwNElements++;
           if (mwNElements == maxPossibleElements) {
             break;
           }
         }
-      }
-      iRec = 0;
-      k = 0;
+      } /* loop over gdx records */
     }
     outTeSp = R_NilValue;
     /* Allocating memory for 2D sparse matrix */
@@ -615,32 +597,13 @@ SEXP rgdx (SEXP args)
       gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
       /* TODO/TEST: text elements with UEL */
       if (rSpec->te) {
-        returnedIndex = malloc(symDim*sizeof(*returnedIndex));
         prepHPFilter (symDim, hpFilter);
         for (iRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-          index = 0;
-          b = 0;
-          for (k = 0;  k < symDim;  k++) {
-            returnedIndex[k] = 0;
-            uelElementName = CHAR(STRING_ELT(universe, uels[k]-1));
-            uelPos = findInFilter (k, rSpec->filterUel, uelElementName);
-            if (uelPos > 0) {
-              returnedIndex[k] = uelPos;
-              b++;
-            }
-            else {
-              break;
-            }
-          } /* loop over indices */
           foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
-          if (foundTuple != (b == symDim)) {
-            error ("Testing 100 findInHPFilter: new = %d  old = %d",
-                   foundTuple, (b == symDim));
-          }
-          if (b == symDim) {
-            for (sparesIndex = 0; sparesIndex < symDim; sparesIndex++ ) {
-              p[matched + sparesIndex*mwNElements] = returnedIndex[sparesIndex];
+          if (foundTuple) {
+            for (iDim = 0;  iDim < symDim;  iDim++) {
+              p[matched + iDim*mwNElements] = outIdx[iDim];
             }
 
             index = matched + symDim*(int)mwNElements;
@@ -652,9 +615,9 @@ SEXP rgdx (SEXP args)
             }
             else {
               strcpy(stringEle, "");
-              for (kk = 0;  kk < symDim;  kk++) {
-                strcat(stringEle, CHAR(STRING_ELT(universe, uels[kk]-1))  );
-                if (kk != symDim-1) {
+              for (iDim = 0;  iDim < symDim;  iDim++) {
+                strcat(stringEle, CHAR(STRING_ELT(universe, uels[iDim]-1)));
+                if (iDim != symDim-1) {
                   strcat(stringEle, ".");
                 }
               }
@@ -666,7 +629,6 @@ SEXP rgdx (SEXP args)
             break;
           }
         }
-        free(returnedIndex);
       } /* if rSpec->te */
       else {
         returnedIndex = malloc(symDim*sizeof(*returnedIndex));
