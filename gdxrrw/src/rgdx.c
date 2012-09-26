@@ -330,7 +330,7 @@ SEXP rgdx (SEXP args)
   int rgdxAlloc;                /* PROTECT count: undo this many on exit */
   int UELUserMapping, highestMappedUEL;
   int foundTuple;
-  int arglen, maxPossibleElements, z, matched;
+  int arglen, matched;
   double *p, *dimVal;
   char buf[3*sizeof(shortStringBuf_t)];
   char strippedID[GMS_SSSIZE];
@@ -342,13 +342,13 @@ SEXP rgdx (SEXP args)
   int nField, defaultIndex, elementIndex, IDum, ndimension, totalElement;
   int withList = 0;
   int outElements;
-  int mwNElements =0;
+  int nnz;         /* symbol cardinality, i.e. nonzero count */
+  int nnzMax;      /* maximum possible nnz for this symbol */
   Rboolean zeroSqueeze = NA_LOGICAL;
 
   /* setting intial values */
   kRec = 0;
   rgdxAlloc = 0;
-  maxPossibleElements = 0; /* this just to shut up compiler warnings */
 
   /* first arg is function name - ignore it */
   arglen = length(args);
@@ -411,8 +411,8 @@ SEXP rgdx (SEXP args)
 
   if (withList) {
     checkRgdxList (requestList, rSpec, &rgdxAlloc);
-    if (rSpec->compress == 1 && rSpec->withUel == 1) {
-      error("Compression is not allowed with input UEL");
+    if (rSpec->compress == 1 && rSpec->withUel) {
+      error("Compression is not allowed with input UELs");
     }
   }
 
@@ -493,7 +493,7 @@ SEXP rgdx (SEXP args)
     /* Checking dimension of input uel and parameter in GDX file.
      * If they are not equal then error. */
 
-    if (rSpec->withUel == 1 && length(rSpec->filterUel) != symDim) {
+    if (rSpec->withUel && length(rSpec->filterUel) != symDim) {
       error("Dimension of UEL filter entered does not match with symbol in GDX");
     }
     /* Creating default uel if none entered */
@@ -523,87 +523,57 @@ SEXP rgdx (SEXP args)
       ncols = symDim;
     }
 
-    /* TODO: filter UEL */
-    /* this is to check total number of elements that matches
-     * in Input UEL. Then create a 2D double matrix for sparse format.
-     * compute total number of elements matched in Input UEL.
+    /* here we check the cardinality of the symbol we are reading,
+     * i.e. the number of nonzeros, i.e. the number of elements that match
+     * in uel filter.  Given this value,
+     * we can create a 2D double matrix for sparse format.
      */
-    mwNElements = 0;
-
-    if (rSpec->withUel == 1) {
+    outTeSp = R_NilValue;
+    nnz = 0;
+    if (rSpec->withUel) {
       /* create integer filters */
       for (iDim = 0;  iDim < symDim;  iDim++) {
         /* Rprintf ("DEBUG: making filter dim %d\n", iDim); */
         mkIntFilter (VECTOR_ELT(rSpec->filterUel, iDim), hpFilter + iDim);
       }
 
-      maxPossibleElements = 1;
-      for (z = 0; z < symDim; z++) {
-        mwNElements = length(VECTOR_ELT(rSpec->filterUel, z));
-        maxPossibleElements = maxPossibleElements*mwNElements;
+      for (nnzMax = 1, iDim = 0;  iDim < symDim;  iDim++) {
+        nnzMax *=  length(VECTOR_ELT(rSpec->filterUel, iDim));
       }
-      mwNElements = 0;
 
       prepHPFilter (symDim, hpFilter);
       for (iRec = 0;  iRec < nRecs;  iRec++) {
         gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
         foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
         if (foundTuple) {
-          mwNElements++;
-          if (mwNElements == maxPossibleElements) {
+          nnz++;
+          if (nnz >= nnzMax) {
             break;
           }
         }
       } /* loop over gdx records */
-    }
-    outTeSp = R_NilValue;
-    /* Allocating memory for 2D sparse matrix */
-    if (rSpec->withUel == 1) {
-      PROTECT(outValSp = allocMatrix(REALSXP, mwNElements, ncols));
+
+      /* Allocating memory for 2D sparse matrix */
+      PROTECT(outValSp = allocMatrix(REALSXP, nnz, ncols));
       rgdxAlloc++;
+      p = REAL(outValSp);
       if (rSpec->te && symType == dt_set) {
-        PROTECT(outTeSp = allocVector(STRSXP, mwNElements));
+        PROTECT(outTeSp = allocVector(STRSXP, nnz));
         rgdxAlloc++;
       }
-    }
-    if (rSpec->withUel == 0) {
-      /*  check for non zero elements for variable and equation */
-      if ((symType == dt_var || symType == dt_equ) && zeroSqueeze) {
-        mrows = getNonZeroElements(gdxHandle, symIdx, rSpec->dField);
-      }
-      /* Creat 2D sparse R array */
-      PROTECT(outValSp = allocMatrix(REALSXP, mrows, ncols));
-      rgdxAlloc++;
-      if (rSpec->te && symType == dt_set) {
-        PROTECT(outTeSp = allocVector(STRSXP, mrows));
-        rgdxAlloc++;
-      }
-    }
-
-    p = REAL(outValSp);
-    /* TODO/TEST: filtered read */
-    if (rSpec->withUel == 1) {
-      matched = 0;
-
-      /* create integer filters */
-      for (iDim = 0;  iDim < symDim;  iDim++) {
-        /* Rprintf ("DEBUG: making filter dim %d\n", iDim); */
-        mkIntFilter (VECTOR_ELT(rSpec->filterUel, iDim), hpFilter + iDim);
-      }
-
       gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
-      /* TODO/TEST: text elements with UEL */
-      if (rSpec->te) {
+
+      if (rSpec->te) { /* read set elements with their text, using filter */
         prepHPFilter (symDim, hpFilter);
-        for (iRec = 0;  iRec < nRecs;  iRec++) {
+        for (matched = 0, iRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
           foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
           if (foundTuple) {
             for (iDim = 0;  iDim < symDim;  iDim++) {
-              p[matched + iDim*mwNElements] = outIdx[iDim];
+              p[matched + iDim*nnz] = outIdx[iDim];
             }
 
-            index = matched + symDim*(int)mwNElements;
+            index = matched + symDim * nnz;
 
             if (values[GMS_VAL_LEVEL]) {
               elementIndex = (int) values[GMS_VAL_LEVEL];
@@ -620,35 +590,47 @@ SEXP rgdx (SEXP args)
               }
               SET_STRING_ELT(outTeSp, matched, mkChar(stringEle));
             }
-            matched = matched +1;
+            matched++;
           }
-          if (matched == maxPossibleElements) {
+          if (matched == nnz) {
             break;
           }
         }
       } /* if rSpec->te */
       else {
         prepHPFilter (symDim, hpFilter);
-        for (iRec = 0;  iRec < nRecs;  iRec++) {
+        for (matched = 0, iRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
           foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
           if (foundTuple) {
             for (iDim = 0;  iDim < symDim;  iDim++) {
-              p[matched + iDim*mwNElements] = outIdx[iDim];
+              p[matched + iDim*nnz] = outIdx[iDim];
             }
-            index = matched + symDim*(int)mwNElements;
-            matched = matched +1;
+            index = matched + symDim * nnz;
+            matched++;
 
             if (symType != dt_set)
               p[index] = values[rSpec->dField];
           }
-          if (matched == maxPossibleElements) {
+          if (matched == nnz) {
             break;
           }
         }
       } /* End of else of if (te) */
-    } /* End of with uels */
+    }
     else {
+      /*  check for non zero elements for variable and equation */
+      if ((symType == dt_var || symType == dt_equ) && zeroSqueeze) {
+        mrows = getNonZeroElements(gdxHandle, symIdx, rSpec->dField);
+      }
+      /* Creat 2D sparse R array */
+      PROTECT(outValSp = allocMatrix(REALSXP, mrows, ncols));
+      rgdxAlloc++;
+      p = REAL(outValSp);
+      if (rSpec->te && symType == dt_set) {
+        PROTECT(outTeSp = allocVector(STRSXP, mrows));
+        rgdxAlloc++;
+      }
       if (symType == dt_var || symType == dt_equ ) {
         gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
       }
@@ -710,7 +692,7 @@ SEXP rgdx (SEXP args)
           mrows = kRec;
         }
       }
-    }
+    } /* if (withUel .. else .. ) */
 
     /* Converting data into its compressed form. */
     if (rSpec->compress == 1) {
@@ -743,11 +725,11 @@ SEXP rgdx (SEXP args)
         rgdxAlloc++;
         SET_VECTOR_ELT(dimNames, 1, R_NilValue); /* no names for 2nd dimension */
 
-        if (rSpec->withUel == 1) {
+        if (rSpec->withUel) {
           dimVal[0] = length(VECTOR_ELT(rSpec->filterUel, 0));
           PROTECT(outValFull = allocVector(REALSXP, dimVal[0]));
           rgdxAlloc++;
-          sparseToFull (outValSp, outValFull, rSpec->filterUel, symType, mwNElements, symDim);
+          sparseToFull (outValSp, outValFull, rSpec->filterUel, symType, nnz, symDim);
           setAttrib(outValFull, R_DimSymbol, dimVect);
           SET_VECTOR_ELT(dimNames, 0, VECTOR_ELT(rSpec->filterUel, 0));
           setAttrib(outValFull, R_DimNamesSymbol, dimNames);
@@ -766,7 +748,7 @@ SEXP rgdx (SEXP args)
           PROTECT(outTeFull = allocVector(STRSXP, dimVal[0]));
           rgdxAlloc++;
           if (rSpec->withUel) {
-            createElementMatrix (outValSp, outTeSp, outTeFull, rSpec->filterUel, symDim, mwNElements);
+            createElementMatrix (outValSp, outTeSp, outTeFull, rSpec->filterUel, symDim, nnz);
           }
           else {
             createElementMatrix (outValSp, outTeSp, outTeFull, outUels, symDim, mrows);
@@ -781,7 +763,7 @@ SEXP rgdx (SEXP args)
         rgdxAlloc++;
         totalElement = 1;
         dimVal = REAL(dimVect);
-        if (rSpec->withUel == 1) {
+        if (rSpec->withUel) {
           for (ndimension = 0; ndimension < symDim; ndimension++) {
             dimVal[ndimension] = length(VECTOR_ELT(rSpec->filterUel, ndimension));
             totalElement *= dimVal[ndimension];
@@ -795,8 +777,8 @@ SEXP rgdx (SEXP args)
         }
         PROTECT(outValFull = allocVector(REALSXP, totalElement));
         rgdxAlloc++;
-        if (rSpec->withUel ==1) {
-          sparseToFull (outValSp, outValFull, rSpec->filterUel, symType, mwNElements, symDim);
+        if (rSpec->withUel) {
+          sparseToFull (outValSp, outValFull, rSpec->filterUel, symType, nnz, symDim);
           setAttrib(outValFull, R_DimSymbol, dimVect);
           setAttrib(outValFull, R_DimNamesSymbol, rSpec->filterUel);
         }
@@ -810,7 +792,7 @@ SEXP rgdx (SEXP args)
           PROTECT(outTeFull = allocVector(STRSXP, totalElement));
           rgdxAlloc++;
           if (rSpec->withUel) {
-            createElementMatrix (outValSp, outTeSp, outTeFull, rSpec->filterUel, symDim, mwNElements);
+            createElementMatrix (outValSp, outTeSp, outTeFull, rSpec->filterUel, symDim, nnz);
             setAttrib(outTeFull, R_DimSymbol, dimVect);
             setAttrib(outTeFull, R_DimNamesSymbol, rSpec->filterUel);
           }
