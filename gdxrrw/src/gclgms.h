@@ -83,6 +83,11 @@ enum gdxSyType {
 #define GMS_SV_ACR   10.0E300   /* potential/real acronym   */
 #define GMS_SV_NAINT 2100000000 /* not available/applicable for integers */
 
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 typedef double gdxSVals_t[GMS_SVIDX_MAX];
 typedef double gdxValues_t[GMS_VAL_MAX];
 typedef char gdxStrIndex_t[GMS_MAX_INDEX_DIM][GMS_SSSIZE];
@@ -97,5 +102,9 @@ extern const char *gmsSVText[GMS_SVIDX_MAX];
 
 extern const double gmsDefRecVar[GMS_VARTYPE_MAX][GMS_VAL_MAX];
 extern const double gmsDefRecEqu[GMS_EQUTYPE_MAX][GMS_VAL_MAX];
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif /* if ! defined(_GCLGMS_H_) */
