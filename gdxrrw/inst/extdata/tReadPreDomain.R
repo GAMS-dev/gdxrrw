@@ -379,6 +379,38 @@ tryCatch({
     stop (paste("test rgdx(ijc,full,unfiltered,uncompressed) failed",chk$msg))
   }
 
+  v <- array(0,c(uCard,uCard),dimnames=list(u,u))
+  v['i1','berlin'] <- 11;
+  v['i1','paris' ] <- 12;
+  v['i2','paris' ] <- 22;
+  v['i2','vienna'] <- 23;
+  v['i3','vienna'] <- 33;
+  aicwant <- list(name="AIc", type="parameter", dim=2,
+                  val=v,
+                  form="full",
+                  uels=list(u,u))
+  aic <- rgdx(fnIn,list(name='aic',form='full'))
+  chk <- chkRgdxRes (aic, aicwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(aic,full,unfiltered,uncompressed) failed",chk$msg))
+  }
+
+  v <- array(0,c(uCard,uCard,uCard),dimnames=list(u,u,u))
+  v['i1','j1','berlin'] <- 111;
+  v['i1','j3','berlin'] <- 131;
+  v['i2','j2','paris' ] <- 222;
+  v['i2','j3','paris' ] <- 232;
+  v['i3','j3','vienna'] <- 333;
+  aijcwant <- list(name="AIJc", type="parameter", dim=3,
+                  val=v,
+                  form="full",
+                  uels=list(u,u,u))
+  aijc <- rgdx(fnIn,list(name='aijc',form='full'))
+  chk <- chkRgdxRes (aijc, aijcwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(aijc,full,unfiltered,uncompressed) failed",chk$msg))
+  }
+
   ## ---------- reading form=full, no filter, compress=TRUE
 
   v <- array(1,c(iCard,1))
@@ -452,7 +484,40 @@ tryCatch({
   ijc <- rgdx(fnIn,list(name='ijc',form='full',te=TRUE,compress=TRUE))
   chk <- chkRgdxRes (ijc, ijcwant)
   if (!chk$same) {
-    stop (paste("test rgdx(ijc,full,unfiltered,uncompressed) failed",chk$msg))
+    stop (paste("test rgdx(ijc,full,unfiltered,compressed) failed",chk$msg))
+  }
+
+  v <- array(0,c(i2card,cCard),dimnames=list(i2uels,cUels))
+  v['i1','berlin'] <- 11;
+  v['i1','paris' ] <- 12;
+  v['i2','paris' ] <- 22;
+  v['i2','vienna'] <- 23;
+  v['i3','vienna'] <- 33;
+  aicwant <- list(name="AIc", type="parameter", dim=2,
+                  val=v,
+                  form="full",
+                  uels=list(i2uels,cUels),
+                  ts='')
+  aic <- rgdx(fnIn,list(name='aic',form='full',ts=TRUE,compress=TRUE))
+  chk <- chkRgdxRes (aic, aicwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(aic,full,unfiltered,compressed) failed",chk$msg))
+  }
+
+  v <- array(0,c(i2card,jCard,cCard),dimnames=list(i2uels,jUels,cUels))
+  v['i1','j1','berlin'] <- 111;
+  v['i1','j3','berlin'] <- 131;
+  v['i2','j2','paris' ] <- 222;
+  v['i2','j3','paris' ] <- 232;
+  v['i3','j3','vienna'] <- 333;
+  aijcwant <- list(name="AIJc", type="parameter", dim=3,
+                  val=v,
+                  form="full",
+                  uels=list(i2uels,jUels,cUels))
+  aijc <- rgdx(fnIn,list(name='aijc',form='full',compress=TRUE))
+  chk <- chkRgdxRes (aijc, aijcwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(aijc,full,unfiltered,compressed) failed",chk$msg))
   }
 
   ## ---------- reading form=full, filtered, no compress
@@ -540,10 +605,40 @@ tryCatch({
     stop (paste("test rgdx(ijc,full,filtered,uncompressed) failed",chk$msg))
   }
 
+  v <- array(0,c(ifCard,uCard),dimnames=list(ifUels,u))
+  v['i2','paris' ] <- 22;
+  v['i2','vienna'] <- 23;
+  v['i3','vienna'] <- 33;
+  aicwant <- list(name="AIc", type="parameter", dim=2,
+                  val=v,
+                  form="full",
+                  uels=list(ifUels,u),
+                  ts='')
+  aic <- rgdx(fnIn,list(name='aic',form='full',ts=TRUE,uels=list(ifUels,u)))
+  chk <- chkRgdxRes (aic, aicwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(aic,full,filtered,uncompressed) failed",chk$msg))
+  }
 
-  print ("test of rgdx set text handling passed")
+  v <- array(0,c(ifCard,jfCard,cCard),dimnames=list(ifUels,jfUels,cUels))
+  v['i2','j2','paris' ] <- 222;
+  v['i2','j3','paris' ] <- 232;
+  v['i3','j3','vienna'] <- 333;
+  aijcwant <- list(name="AIJc", type="parameter", dim=3,
+                  val=v,
+                  form="full",
+                  uels=list(ifUels,jfUels,cUels),
+                  ts='')
+  aijc <- rgdx(fnIn,list(name='aijc',form='full',ts=TRUE,uels=list(ifUels,jfUels,cUels)))
+  chk <- chkRgdxRes (aijc, aijcwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(aijc,full,filtered,uncompressed) failed",chk$msg))
+  }
+
+
+  print ("test of rgdx on pre-domain-info GDX file passed")
   TRUE   ## all tests passed: return TRUE
 },
 
-error = function(ex) { print ("test of rgdx set text handling failed"); print(ex) ; FALSE }
+error = function(ex) { print ("test of rgdx on pre-domain-info GDX file failed"); print(ex) ; FALSE }
 )
