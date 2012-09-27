@@ -199,12 +199,12 @@ createElementMatrix (SEXP compVal, SEXP textElement, SEXP compTe,
   return;
 } /* createElementMatrix */
 
-/* mkIntFilter: construct an integer filter from the user-supplied string uels
+/* mkHPFilter: construct an integer filter from the user-supplied string uels
  * ufilter: user-supplied filter - $uels[k]
  * hpf: high-performance filter for internal use
  */
 void
-mkIntFilter (SEXP uFilter, hpFilter_t *hpf)
+mkHPFilter (SEXP uFilter, hpFilter_t *hpf)
 {
   int k, n;
   int *idx;
@@ -216,7 +216,7 @@ mkIntFilter (SEXP uFilter, hpFilter_t *hpf)
 
   hpf->fType = integer;
   hpf->n = n = length(uFilter);
-  /* Rprintf ("  mkIntFilter: n = %d\n", n); */
+  /* Rprintf ("  mkHPFilter: n = %d\n", n); */
   hpf->prevPos = 0;
   hpf->idx = idx =  malloc(n * sizeof(*idx));
   if (NULL == idx)
@@ -241,9 +241,71 @@ mkIntFilter (SEXP uFilter, hpFilter_t *hpf)
   if (! isOrdered) {
     checkForDuplicates (uFilter);
   }
-  /* Rprintf ("  mkIntFilter: isOrdered = %d  allFound = %d\n", isOrdered, allFound); */
+  /* Rprintf ("  mkHPFilter: isOrdered = %d  allFound = %d\n", isOrdered, allFound); */
   return;
-} /* mkIntFilter */
+} /* mkHPFilter */
+
+/* mkXPFilters: construct XPfilter from what?
+ * symIdx: of symbol to construct filter for
+ * xpf: high-performance filter for internal use
+ */
+void
+mkXPFilter (int symIdx, xpFilter_t *filterList)
+{
+  int rc, iRec, nRecs, changeIdx;
+  int kSym, kDim, kType;        /* for loop over index sets */
+  int iDim, symDim, symType;
+  int *idx;
+  shortStringBuf_t symName, kName;
+  gdxUelIndex_t symDoms;
+  gdxUelIndex_t uels;
+  gdxValues_t values;
+  xpFilter_t *xpf;
+
+  rc = gdxSymbolInfo (gdxHandle, symIdx, symName, &symDim, &symType);
+  if (! rc) 
+    error ("bad return from gdxSymbolInfo in mkXPFilter");
+  if (symDim <= 0)
+    return;                     /* skip scalars */
+  switch (symType) {
+  case GMS_DT_PAR:
+    rc = gdxSymbolGetDomain (gdxHandle, symIdx, symDoms);
+    if (rc) {                   /* full domain info available */
+      for (iDim = 0;  iDim < symDim;  iDim++) {
+        kSym = symDoms[iDim];
+        rc = gdxSymbolInfo (gdxHandle, kSym, kName, &kDim, &kType);
+        if (! rc)
+          error ("bad return from gdxSymbolInfo in mkXPFilter");
+        if ((1 != kDim) || (GMS_DT_SET != kType))
+          error ("non-domain-set data from gdxSymbolInfo in mkXPFilter");
+        xpf = filterList + iDim;
+        xpf->domType = regular;
+        xpf->fType = integer;
+        xpf->prevPos = 0;
+        gdxDataReadRawStart (gdxHandle, kSym, &nRecs);
+        xpf->n = nRecs;
+        xpf->idx = idx =  malloc(nRecs * sizeof(*idx));
+        for (iRec = 0;  iRec < nRecs;  iRec++) {
+          gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+          idx[iRec] = uels[0];
+        } /* loop over GDX records */
+        if (!gdxDataReadDone (gdxHandle)) {
+          error ("Could not gdxDataReadDone");
+        }
+      } /* loop over domain sets */
+    }
+    else {
+      error ("bad return from gdxSymbolGetDomain: expected full info");
+    }
+    break;
+  case GMS_DT_SET:
+  default:
+    error ("mkXPFilter: symbol %s has type %d (%s): unimplemented\n",
+           symName, symType, gmsGdxTypeText[symType]);
+  } /* switch (symType) */
+
+  return;
+} /* mkXPFilter */
 
 /* prepHPFilter: prep/check a high-performance filter prior to use
  * This is not initializing data, just initializing prevPos
@@ -353,24 +415,131 @@ findInHPFilter (int symDim, const int inUels[], hpFilter_t filterList[],
   return 1;                     /* found */
 } /* findInHPFilter */
 
-/* mapToDomInfo
- * set up symbol info as if it were filtered on the domains
- * valSp: $vals
- * uni: UEL universe
- * uels: $uels
- * nUEL: number of UELS in universe
+/* findInXPFilter: search for inUels in filterList,
+ * storing 1 + the index where found in outIdx[k], i.e. index in [1,filterList[k].n]
+ * as a side effect, updates previous search info in filterList
+ * return:
+ *   0     if found,
+ *   iDim  otherwise, where iDim in [1..symDim] is the leftmost bad index pos
+ * similar to findInHPFilter, but XPFilter assumes
+ * the filters and the inputs are ordered
  */
-void
-mapToDomInfo (SEXP valSp, SEXP uni, SEXP uels, int nUEL, int symDim, int mrows)
+int
+findInXPFilter (int symDim, const int inUels[], xpFilter_t filterList[],
+                int outIdx[])
 {
-  int iDim;
+  int iDim, k, targetUel, stop;
+  const int *idx;
+  xpFilter_t *xpf;
+  int reset = 0;                /* the left-most first moving index
+                                 * resets all searches to the right */
 
-  /* quick hack: just leave in the universe */
+  if (NULL == filterList)
+    error ("internal error: NULL xpFilter");
   for (iDim = 0;  iDim < symDim;  iDim++) {
-    SET_VECTOR_ELT(uels, iDim, uni);
+    xpf = filterList + iDim;
+    switch (xpf->fType) {
+    case unset:
+      error ("internal error: xpFilter type unset");
+      break;
+    case identity:
+      outIdx[iDim] = inUels[iDim];
+      if (reset) {
+        xpf->prevPos = inUels[iDim];
+      }
+      else {
+        if      (xpf->prevPos < inUels[iDim]) {
+          /* advanced in this index position */
+          reset = 1;
+          xpf->prevPos = inUels[iDim];
+        }
+        else if (xpf->prevPos == inUels[iDim])
+          ;                     /* no change */
+        else {
+          /* moving back in this index position */
+          return iDim + 1;
+        }
+      }
+      break;
+    case integer:
+      idx = xpf->idx;
+      targetUel = inUels[iDim];
+      if (! reset) {
+        /* optimize for the easy & common case: a repeat */
+        if (idx[xpf->prevPos] == targetUel) {
+          outIdx[iDim] = xpf->prevPos + 1;
+          break;                /* from switch */
+        }
+        reset = 1;
+        /* search starting one past the previous found position */
+        for (k = xpf->prevPos + 1, stop = xpf->n;  k < stop;  k++) {
+          if (idx[k] == targetUel) {
+            xpf->prevPos = k;
+            outIdx[iDim] = k + 1;
+            break;              /* from for loop */
+          }
+          else if (idx[k] > targetUel) {
+            return iDim + 1;
+          }
+        } /* loop over filter elements */
+        if (k < stop)
+          break;                /* from switch stmt */
+        return iDim + 1;        /* not found??  bad! */
+      }
+      else {
+        /* search was reset, must start from the beginning */
+        ;
+        for (k = 0, stop = xpf->n;  k < stop;  k++) {
+          if (idx[k] == targetUel) {
+            xpf->prevPos = k;
+            outIdx[iDim] = k + 1;
+            break;              /* from for loop */
+          }
+          else if (idx[k] > targetUel)
+            return iDim + 1;
+        } /* loop over filter elements */
+        if (k < stop)
+          break;                /* from switch stmt */
+        return iDim + 1;        /* not found??  bad! */
+      }
+      break;
+    default:
+      error ("internal error: unknown hpFilter type");
+    }
+  } /* loop over symbol dimensions */
+  return 0;                     /* found */
+} /* findInXPFilter */
+
+/* xpFilterToUels
+ * create output uels (i.e. $uels) for an xpFilter
+ */
+
+void
+xpFilterToUels (int symDim, xpFilter_t filterList[], SEXP uels)
+{
+  int UELUserMapping;
+  int iDim, n, k, iUEL;
+  shortStringBuf_t uelName;
+  SEXP s;
+  xpFilter_t *xpf;
+
+  for (iDim = 0;  iDim < symDim;  iDim++) {
+    xpf = filterList + iDim;
+    n = xpf->n;
+    PROTECT(s = allocVector(STRSXP, n));
+    for (k = 0;  k < n;  k++) {
+      iUEL = xpf->idx[k];
+      if (!gdxUMUelGet (gdxHandle, iUEL, uelName, &UELUserMapping)) {
+        error("xpFilterToUels: could not gdxUMUelGet");
+      }
+      SET_STRING_ELT(s, k, mkChar(uelName));
+    } /* loop over filter elements */
+    
+    SET_VECTOR_ELT(uels, iDim, s);
+    UNPROTECT(1);
   }
   return;
-} /* mapToDomInfo */
+} /* xpFilterToUels */
 
 /* This method will read variable "gamso" from R workspace */
 char *getGlobalString (const char *globName, shortStringBuf_t result)

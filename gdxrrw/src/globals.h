@@ -71,8 +71,13 @@ typedef union d64 {
 typedef enum filterType {             /* filter types */
   unset = 0,
   identity,
-  integer,
+  integer
 } filterType_t;
+typedef enum domainType {
+  none = 0,
+  relaxed,
+  regular
+} domainType_t;
 typedef struct hpFilter {       /* high-performance filter */
   int *idx;                     /* actual data: uel indices to select */
   int n;                        /* number of elements in filter */
@@ -80,6 +85,13 @@ typedef struct hpFilter {       /* high-performance filter */
   int prevPos;                  /* previous position of successful search */
   filterType_t fType;
 } hpFilter_t;
+typedef struct xpFilter {       /* xtreme-performance filter */
+  int *idx;                     /* actual data: uel indices to select */
+  int n;                        /* number of elements in filter */
+  int prevPos;                  /* previous position of successful search */
+  filterType_t fType;
+  domainType_t domType;         /* what type of domain info was the source? */
+} xpFilter_t;
 
 GDX_FUNCPTR(gdxGetLoadPath);
 
@@ -122,14 +134,19 @@ void
 createElementMatrix (SEXP compVal, SEXP textElement, SEXP compTe,
                      SEXP compUels, int symDim, int nRec);
 void
-mkIntFilter (SEXP uFilter, hpFilter_t *hpf);
+mkHPFilter (SEXP uFilter, hpFilter_t *hpf);
+void
+mkXPFilter (int symIdx, xpFilter_t *filterList);
 void
 prepHPFilter (int symDim, hpFilter_t filterList[]);
 int
 findInHPFilter (int symDim, const int inUels[], hpFilter_t filterList[],
                 int outIdx[]);
+int
+findInXPFilter (int symDim, const int inUels[], xpFilter_t filterList[],
+                int outIdx[]);
 void
-mapToDomInfo (SEXP valSp, SEXP uni, SEXP uels, int nUEL, int symDim, int mrows);
+xpFilterToUels (int symDim, xpFilter_t filterList[], SEXP uels);
 char *
 getGlobalString (const char *globName, shortStringBuf_t result);
 int

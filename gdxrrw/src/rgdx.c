@@ -312,6 +312,7 @@ SEXP rgdx (SEXP args)
     outTeFull = R_NilValue;     /* output .te, full form */
   SEXP outListNames, outList, dimVect, dimNames;
   hpFilter_t hpFilter[GMS_MAX_INDEX_DIM];
+  xpFilter_t xpFilter[GMS_MAX_INDEX_DIM];
   int outIdx[GMS_MAX_INDEX_DIM];
   FILE    *fin;
   rSpec_t *rSpec;
@@ -325,7 +326,7 @@ SEXP rgdx (SEXP args)
   shortStringBuf_t gdxFileName;
   int symIdx, symDim, symType, symNNZ, symUser;
   int iDim;
-  int rc, errNum, mrows = 0, ncols, nUEL, iUEL;
+  int rc, findrc, errNum, mrows = 0, ncols, nUEL, iUEL;
   int kk, iRec, nRecs, index, changeIdx, kRec;
   int rgdxAlloc;                /* PROTECT count: undo this many on exit */
   int UELUserMapping, highestMappedUEL;
@@ -408,6 +409,7 @@ SEXP rgdx (SEXP args)
   rSpec->dim = -1;              /* negative indicates NA */
 
   memset (hpFilter, 0, sizeof(hpFilter));
+  memset (xpFilter, 0, sizeof(xpFilter));
 
   if (withList) {
     checkRgdxList (requestList, rSpec, &rgdxAlloc);
@@ -517,8 +519,7 @@ SEXP rgdx (SEXP args)
        */
       /* create integer filters */
       for (iDim = 0;  iDim < symDim;  iDim++) {
-        /* Rprintf ("DEBUG: making filter dim %d\n", iDim); */
-        mkIntFilter (VECTOR_ELT(rSpec->filterUel, iDim), hpFilter + iDim);
+        mkHPFilter (VECTOR_ELT(rSpec->filterUel, iDim), hpFilter + iDim);
       }
       for (nnzMax = 1, iDim = 0;  iDim < symDim;  iDim++) {
         nnzMax *=  length(VECTOR_ELT(rSpec->filterUel, iDim));
@@ -614,6 +615,7 @@ SEXP rgdx (SEXP args)
       } /* if (te) .. else .. */
     }   /* if withUel */
     else {
+      /* read without user UEL filter: use domain info to filter if possible */
       mrows = symNNZ;
       /*  check for non zero elements for variable and equation */
       if ((symType == dt_var || symType == dt_equ) && zeroSqueeze) {
@@ -627,6 +629,8 @@ SEXP rgdx (SEXP args)
         PROTECT(outTeSp = allocVector(STRSXP, mrows));
         rgdxAlloc++;
       }
+
+      mkXPFilter (symIdx, xpFilter);
 
       if (rSpec->te) {          /* text elements */
         gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
@@ -659,12 +663,20 @@ SEXP rgdx (SEXP args)
         gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
         for (iRec = 0, kRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+          findrc = findInXPFilter (symDim, uels, xpFilter, outIdx);
+          if (findrc) {
+            error ("DEBUG 00: findrc = %d is unhandled", findrc);
+          }
           if ((dt_set == symType) ||
               (! zeroSqueeze) ||
               (0 != values[rSpec->dField])) {
             /* store the value */
             for (kk = 0;  kk < symDim;  kk++) {
+#if 0
               p[kRec + kk*mrows] = uels[kk];
+#else
+              p[kRec + kk*mrows] = outIdx[kk]; /* from the xpFilter */
+#endif
             }
             index = kRec + symDim*mrows;
             kRec++;
@@ -699,6 +711,8 @@ SEXP rgdx (SEXP args)
     if (rSpec->compress == 1) {
       PROTECT(outUels = allocVector(VECSXP, symDim));
       rgdxAlloc++;
+      /* might make sense to use the domain info as the start point,
+       * not the universe: could be much faster */
       compressData (outValSp, universe, outUels, nUEL, symDim, mrows);
     }
     /* Creating outUels if none entered */
@@ -710,7 +724,7 @@ SEXP rgdx (SEXP args)
         SET_VECTOR_ELT(outUels, iDim, universe);
       }
 #else
-      mapToDomInfo (outValSp, universe, outUels, nUEL, symDim, mrows);
+      xpFilterToUels (symDim, xpFilter, outUels);
 #endif
     }
 
