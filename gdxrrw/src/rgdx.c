@@ -339,7 +339,7 @@ SEXP rgdx (SEXP args)
   char *types[] = {"set", "parameter", "variable", "equation"};
   char *forms[] = {"full", "sparse"};
   char *fields[] = {"l", "m", "up", "lo", "s"};
-  int nField, defaultIndex, elementIndex, IDum, ndimension, totalElement;
+  int nField, elementIndex, IDum, ndimension, totalElement;
   int withList = 0;
   int outElements;
   int nnz;         /* symbol cardinality, i.e. nonzero count */
@@ -502,8 +502,8 @@ SEXP rgdx (SEXP args)
     if (! rSpec->withUel) {
       PROTECT(outUels = allocVector(VECSXP, symDim));
       rgdxAlloc++;
-      for (defaultIndex = 0; defaultIndex < symDim; defaultIndex++) {
-        SET_VECTOR_ELT(outUels, defaultIndex, universe);
+      for (iDim = 0;  iDim < symDim;  iDim++) {
+        SET_VECTOR_ELT(outUels, iDim, universe);
       }
     }
 
@@ -616,8 +616,8 @@ SEXP rgdx (SEXP args)
             break;
           }
         }
-      } /* End of else of if (te) */
-    }
+      } /* if (te) .. else .. */
+    }   /* if withUel */
     else {
       /*  check for non zero elements for variable and equation */
       if ((symType == dt_var || symType == dt_equ) && zeroSqueeze) {
