@@ -1,4 +1,4 @@
-#### test rgdx and reading set text data, i.e. I.te(I) in gams
+#### test rgdx with a file generated prior to domain info in GDX
 #### test form=['sparse','full'] X [filtered,unfiltered] X compress=[T,F]
 
 #### wanted lists produced with    dump("listName",file="")
@@ -8,7 +8,7 @@ source ("chkSame.R")
 tryCatch({
   print ("testing rgdx handling of set text")
   rgdx('?')
-  fnIn <- "teTest.gdx"
+  fnIn <- "teTestPreDomain.gdx"
   if (! file_test ('-f', fnIn)) {
     stop (paste("FAIL: File", fnIn, "does not exist"))
   }
@@ -93,6 +93,34 @@ tryCatch({
     stop (paste("test rgdx(ijc,unfiltered,uncompressed) failed",chk$msg))
   }
 
+  aicwant <- list(name="AIc", type="parameter", dim=2,
+                  val=matrix(c(1,8,11, 1,9,12, 2,9,22, 2,10,23, 3,10,33),
+                             nrow=5, ncol=3, byrow=TRUE),
+                  form="sparse",
+                  uels=list(u,u)
+                  )
+  aic <- rgdx(fnIn,list(name='aic',form='sparse'))
+  chk <- chkRgdxRes (aic, aicwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(aic,unfiltered,uncompressed) failed",chk$msg))
+  }
+
+  aijcwant <- list(name="AIJc", type="parameter", dim=3,
+                   val=matrix(c(1,5,8 ,111,
+                                1,7,8 ,131,
+                                2,6,9 ,222,
+                                2,7,9 ,232,
+                                3,7,10,333),
+                     nrow=5, ncol=4, byrow=TRUE),
+                  form="sparse",
+                  uels=list(u,u,u)
+                  )
+  aijc <- rgdx(fnIn,list(name='aijc',form='sparse'))
+  chk <- chkRgdxRes (aijc, aijcwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(aijc,unfiltered,uncompressed) failed",chk$msg))
+  }
+
   ## ---------- reading form=sparse, no filter, compress=TRUE
 
   iwant <- list(name="I", type="set", dim=1,
@@ -139,6 +167,36 @@ tryCatch({
   chk <- chkRgdxRes (ijc, ijcwant)
   if (!chk$same) {
     stop (paste("test rgdx(ijc,unfiltered,compressed) failed",chk$msg))
+  }
+
+  aicwant <- list(name="AIc", type="parameter", dim=2,
+                  val=matrix(c(1,1,11,
+                               1,2,12,
+                               2,2,22,
+                               2,3,23,
+                               3,3,33),
+                    nrow=5, ncol=3, byrow=TRUE),
+                  form="sparse",
+                  uels=list(iUels[1:3],cUels) )
+  aic <- rgdx(fnIn,list(name='aic',form='sparse',compress=TRUE))
+  chk <- chkRgdxRes (aic, aicwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(aic,unfiltered,compressed) failed",chk$msg))
+  }
+
+  aijcwant <- list(name="AIJc", type="parameter", dim=3,
+                   val=matrix(c(1,1,1,111,
+                                1,3,1,131,
+                                2,2,2,222,
+                                2,3,2,232,
+                                3,3,3,333),
+                    nrow=5, ncol=4, byrow=TRUE),
+                  form="sparse",
+                  uels=list(iUels[1:3],jUels,cUels) )
+  aijc <- rgdx(fnIn,list(name='aijc',form='sparse',compress=TRUE))
+  chk <- chkRgdxRes (aijc, aijcwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(aijc,unfiltered,compressed) failed",chk$msg))
   }
 
   ## ---------- reading form=sparse, filtered, no compress
@@ -198,6 +256,32 @@ tryCatch({
   chk <- chkRgdxRes (ijc, ijcwant)
   if (!chk$same) {
     stop (paste("test rgdx(ijc,filtered,uncompressed) failed",chk$msg))
+  }
+
+  aicwant <- list(name="AIc", type="parameter", dim=2,
+                   val=matrix(c(1, 9,22,
+                                1,10,23,
+                                2,10,33),
+                             nrow=3, ncol=3, byrow=TRUE),
+                  form="sparse",
+                  uels=list(ifUels,u) )
+  aic <- rgdx(fnIn,list(name='aic',form='sparse',uels=list(ifUels,u)))
+  chk <- chkRgdxRes (aic, aicwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(aic,filtered,uncompressed) failed",chk$msg))
+  }
+
+  aijcwant <- list(name="AIJc", type="parameter", dim=3,
+                   val=matrix(c(1,2,9,222,
+                                1,3,9,232,
+                                2,3,10,333),
+                             nrow=3, ncol=4, byrow=TRUE),
+                  form="sparse",
+                  uels=list(ifUels,jfUels,u) )
+  aijc <- rgdx(fnIn,list(name='aijc',form='sparse',uels=list(ifUels,jfUels,u)))
+  chk <- chkRgdxRes (aijc, aijcwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(aijc,filtered,uncompressed) failed",chk$msg))
   }
 
   ## ---------- reading form=full, no filter, no compress
