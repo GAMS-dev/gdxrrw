@@ -128,6 +128,8 @@ prepHPFilter (int symDim, hpFilter_t filterList[]);
 int
 findInHPFilter (int symDim, const int inUels[], hpFilter_t filterList[],
                 int outIdx[]);
+void
+mapToDomInfo (SEXP valSp, SEXP uni, SEXP uels, int nUEL, int symDim, int mrows);
 char *
 getGlobalString (const char *globName, shortStringBuf_t result);
 int

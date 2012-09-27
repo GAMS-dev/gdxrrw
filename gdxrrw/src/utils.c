@@ -353,6 +353,25 @@ findInHPFilter (int symDim, const int inUels[], hpFilter_t filterList[],
   return 1;                     /* found */
 } /* findInHPFilter */
 
+/* mapToDomInfo
+ * set up symbol info as if it were filtered on the domains
+ * valSp: $vals
+ * uni: UEL universe
+ * uels: $uels
+ * nUEL: number of UELS in universe
+ */
+void
+mapToDomInfo (SEXP valSp, SEXP uni, SEXP uels, int nUEL, int symDim, int mrows)
+{
+  int iDim;
+
+  /* quick hack: just leave in the universe */
+  for (iDim = 0;  iDim < symDim;  iDim++) {
+    SET_VECTOR_ELT(uels, iDim, uni);
+  }
+  return;
+} /* mapToDomInfo */
+
 /* This method will read variable "gamso" from R workspace */
 char *getGlobalString (const char *globName, shortStringBuf_t result)
 {

@@ -496,16 +496,6 @@ SEXP rgdx (SEXP args)
     if (rSpec->withUel && length(rSpec->filterUel) != symDim) {
       error("Dimension of UEL filter entered does not match with symbol in GDX");
     }
-    /* Creating default uel if none entered */
-    /* this should probably be delayed:
-     * we construct outUels in the compressed case, e.g. */
-    if (! rSpec->withUel) {
-      PROTECT(outUels = allocVector(VECSXP, symDim));
-      rgdxAlloc++;
-      for (iDim = 0;  iDim < symDim;  iDim++) {
-        SET_VECTOR_ELT(outUels, iDim, universe);
-      }
-    }
 
     /* initialize hpFilter to use a universe filter for each dimension */
     for (iDim = 0;  iDim < symDim;  iDim++) {
@@ -699,6 +689,18 @@ SEXP rgdx (SEXP args)
       PROTECT(outUels = allocVector(VECSXP, symDim));
       rgdxAlloc++;
       compressData (outValSp, universe, outUels, nUEL, symDim, mrows);
+    }
+    /* Creating outUels if none entered */
+    else if (! rSpec->withUel) {
+      PROTECT(outUels = allocVector(VECSXP, symDim));
+      rgdxAlloc++;
+#if 0
+      for (iDim = 0;  iDim < symDim;  iDim++) {
+        SET_VECTOR_ELT(outUels, iDim, universe);
+      }
+#else
+      mapToDomInfo (outValSp, universe, outUels, nUEL, symDim, mrows);
+#endif
     }
 
     /* Converting sparse data into full matrix */
