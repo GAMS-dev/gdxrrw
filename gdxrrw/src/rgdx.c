@@ -323,9 +323,9 @@ SEXP rgdx (SEXP args)
   shortStringBuf_t msgBuf;
   shortStringBuf_t uelName;
   shortStringBuf_t gdxFileName;
-  int symIdx, symDim, symType;
+  int symIdx, symDim, symType, symNNZ, symUser;
   int iDim;
-  int rc, errNum, ACount, mrows, ncols, nUEL, iUEL;
+  int rc, errNum, mrows = 0, ncols, nUEL, iUEL;
   int kk, iRec, nRecs, index, changeIdx, kRec;
   int rgdxAlloc;                /* PROTECT count: undo this many on exit */
   int UELUserMapping, highestMappedUEL;
@@ -448,9 +448,8 @@ SEXP rgdx (SEXP args)
       error (buf);
     }
     gdxSymbolInfo (gdxHandle, symIdx, symName, &symDim, &symType);
-    if (rSpec->ts == 1) {
-      gdxSymbolInfoX(gdxHandle, symIdx, &ACount, &rc, sText);
-    }
+    gdxSymbolInfoX (gdxHandle, symIdx, &symNNZ, &symUser, sText);
+    /* symNNZ aka nRecs: count of nonzeros/records in symbol */
 
     /* checking that symbol is of type parameter/set/equation/variable */
     if (!(symType == dt_par || symType == dt_set || symType == dt_var || symType == dt_equ)) {
@@ -492,20 +491,15 @@ SEXP rgdx (SEXP args)
   if (withList) { /* aa */
     /* Checking dimension of input uel and parameter in GDX file.
      * If they are not equal then error. */
-
     if (rSpec->withUel && length(rSpec->filterUel) != symDim) {
       error("Dimension of UEL filter entered does not match with symbol in GDX");
     }
-
     /* initialize hpFilter to use a universe filter for each dimension */
     for (iDim = 0;  iDim < symDim;  iDim++) {
       hpFilter[iDim].fType = identity;
     }
 
-    /* Start reading data */
-    gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
     /* if it is a parameter, add 1 to the dimension */
-    mrows = nRecs;
     if (symType != dt_set) {
       ncols = symDim+1;
     }
@@ -513,24 +507,25 @@ SEXP rgdx (SEXP args)
       ncols = symDim;
     }
 
-    /* here we check the cardinality of the symbol we are reading,
-     * i.e. the number of nonzeros, i.e. the number of elements that match
-     * in uel filter.  Given this value,
-     * we can create a 2D double matrix for sparse format.
-     */
     outTeSp = R_NilValue;
     nnz = 0;
     if (rSpec->withUel) {
+      /* here we check the cardinality of the symbol we are reading,
+       * i.e. the number of nonzeros, i.e. the number of elements that match
+       * in uel filter.  Given this value,
+       * we can create a 2D double matrix for sparse format.
+       */
       /* create integer filters */
       for (iDim = 0;  iDim < symDim;  iDim++) {
         /* Rprintf ("DEBUG: making filter dim %d\n", iDim); */
         mkIntFilter (VECTOR_ELT(rSpec->filterUel, iDim), hpFilter + iDim);
       }
-
       for (nnzMax = 1, iDim = 0;  iDim < symDim;  iDim++) {
         nnzMax *=  length(VECTOR_ELT(rSpec->filterUel, iDim));
       }
 
+      /* Start reading data */
+      gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
       prepHPFilter (symDim, hpFilter);
       for (iRec = 0;  iRec < nRecs;  iRec++) {
         gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
@@ -542,6 +537,9 @@ SEXP rgdx (SEXP args)
           }
         }
       } /* loop over gdx records */
+      if (!gdxDataReadDone (gdxHandle)) {
+        error ("Could not gdxDataReadDone");
+      }
 
       /* Allocating memory for 2D sparse matrix */
       PROTECT(outValSp = allocMatrix(REALSXP, nnz, ncols));
@@ -551,9 +549,9 @@ SEXP rgdx (SEXP args)
         PROTECT(outTeSp = allocVector(STRSXP, nnz));
         rgdxAlloc++;
       }
-      gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
 
       if (rSpec->te) { /* read set elements with their text, using filter */
+        gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
         prepHPFilter (symDim, hpFilter);
         for (matched = 0, iRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
@@ -585,9 +583,13 @@ SEXP rgdx (SEXP args)
           if (matched == nnz) {
             break;
           }
+        }  /* loop over GDX records */
+        if (!gdxDataReadDone (gdxHandle)) {
+          error ("Could not gdxDataReadDone");
         }
       } /* if rSpec->te */
       else {
+        gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
         prepHPFilter (symDim, hpFilter);
         for (matched = 0, iRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
@@ -605,15 +607,19 @@ SEXP rgdx (SEXP args)
           if (matched == nnz) {
             break;
           }
+        } /* loop over GDX records */
+        if (!gdxDataReadDone (gdxHandle)) {
+          error ("Could not gdxDataReadDone");
         }
       } /* if (te) .. else .. */
     }   /* if withUel */
     else {
+      mrows = symNNZ;
       /*  check for non zero elements for variable and equation */
       if ((symType == dt_var || symType == dt_equ) && zeroSqueeze) {
         mrows = getNonZeroElements(gdxHandle, symIdx, rSpec->dField);
       }
-      /* Creat 2D sparse R array */
+      /* Create 2D sparse R array */
       PROTECT(outValSp = allocMatrix(REALSXP, mrows, ncols));
       rgdxAlloc++;
       p = REAL(outValSp);
@@ -621,11 +627,9 @@ SEXP rgdx (SEXP args)
         PROTECT(outTeSp = allocVector(STRSXP, mrows));
         rgdxAlloc++;
       }
-      if (symType == dt_var || symType == dt_equ ) {
+
+      if (rSpec->te) {          /* text elements */
         gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
-      }
-      /* text elements */
-      if (rSpec->te) {
         for (iRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
           if (values[GMS_VAL_LEVEL]) {
@@ -647,8 +651,12 @@ SEXP rgdx (SEXP args)
             p[iRec+kk*mrows] = uels[kk];
           }
         }  /* loop over GDX records */
+        if (!gdxDataReadDone (gdxHandle)) {
+          error ("Could not gdxDataReadDone");
+        }
       }    /* rSpec->te: must be a set */
       else {
+        gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
         for (iRec = 0, kRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
           if ((dt_set == symType) ||
@@ -664,6 +672,9 @@ SEXP rgdx (SEXP args)
               p[index] = values[rSpec->dField];
           } /* end of if (set || val != 0) */
         } /* loop over GDX records */
+        if (!gdxDataReadDone (gdxHandle)) {
+          error ("Could not gdxDataReadDone");
+        }
         if (kRec < mrows) {
           SEXP newCV, tmp;
           double *newp;
@@ -807,9 +818,7 @@ SEXP rgdx (SEXP args)
         break;
       } /* switch(symDim) */
     }
-  } /* if (withList) aa */
 
-  if (withList) { /* bb */
     /* Creating output string for symbol name */
     PROTECT(outName = allocVector(STRSXP, 1) );
     SET_STRING_ELT(outName, 0, mkChar(symName));
@@ -883,7 +892,7 @@ SEXP rgdx (SEXP args)
     if (rSpec->te) {
       outElements++;
     }
-  } /* if (withList) bb */
+  } /* if (withList) aa */
   else {
     /* no requestList was input, so returning universe */
     /* Creating output string symbol name */
@@ -979,9 +988,11 @@ SEXP rgdx (SEXP args)
   setAttrib(outList, R_NamesSymbol, outListNames);
   /* Releasing allocated memory */
   free(rSpec);
+#if 0
   if (!gdxDataReadDone (gdxHandle)) {
     error ("Could not gdxDataReadDone");
   }
+#endif
   errNum = gdxClose (gdxHandle);
   if (errNum != 0) {
     error("Errors detected when closing gdx file");
