@@ -1,11 +1,14 @@
-### Test rgdx
-# We read all the transport data using full reads and no filter
+### Test rgdx on all the transport data using full reads and no filter
+### N.B.  This test depends on the domain info in the GDX file
+### wanted lists produced with    dump("listName",file="")
+
+source ("chkSame.R")
 
 # compare the set s to the universe, return TRUE if the same, FALSE o/w
 chkUni <- function(uni,s) {
   if (! is.vector(s))     return (FALSE)
   if (! is.vector(uni))   return (FALSE)
-  n <- length(uni)    
+  n <- length(uni)
   if (n != length(s))     return (FALSE)
   for (k in c(1:n)) {
     if (uni[k] != s[k]) {
@@ -91,79 +94,41 @@ tryCatch({
     stop ("Expected f$uels to be empty")
   print ("Done reading scalar f")
 
-  lst <- list(name='a',form='full')
-  a <- rgdx('trnsport',lst)
-  if (a$name != 'a')
-    stop ("Expected a$name to be 'a', got ", a$name)
-  if (a$type != "parameter")
-    stop ("Expected a$type to be 'parameter', got ", a$type)
-  if (a$dim != 1)
-    stop ("Expected a$dim to be 1, got ", a$dim)
-  if (a$form != "full")
-    stop ("Expected a$form to be 'full', got ", a$form)
-  if (! is.matrix(a$val))
-    stop ("Expected a$val to be a matrix")
-  av <- matrix(c(350,600,0,0,0), c(5,1))
-  dd <- av == a$val
-  if (! prod(dd)) {
-    stop ("Bad data in a$val: ", dd)
-  }
-  if (length(a$uels) != 1)
-    stop ("Expected length of a$uels to be 1, got ", length(a$uels))
-  if (! chkUni(u$uels,a$uels[[1]])) {
-    stop ("Expected universe in dim 1 of a$uels")
+  a <- rgdx('trnsport',list(name='a',form='full'))
+  av <- matrix(c(350,600), c(2,1))
+  awant <- list(name="a", type="parameter", dim=1,
+                val=av,
+                form="full",
+                uels=list(c("seattle","san-diego")))
+  chk <- chkRgdxRes (a, awant)
+  if (!chk$same) {
+    stop (paste("test rgdx(a,form='full') failed",chk$msg))
   }
   print ("Done reading parameter a")
 
-  lst <- list(name='b',form='full')
-  b <- rgdx('trnsport',lst)
-  if (b$name != 'b')
-    stop ("Expected b$name to be 'b', got ", b$name)
-  if (b$type != "parameter")
-    stop ("Expected b$type to be 'parameter', got ", b$type)
-  if (b$dim != 1)
-    stop ("Expected b$dim to be 1, got ", b$dim)
-  if (b$form != "full")
-    stop ("Expected b$form to be 'full', got ", b$form)
-  if (! is.matrix(b$val))
-    stop ("Expected b$val to be a matrix")
-  bv <- matrix(c(0,0,325,300,275), c(5,1))
-  dd <- bv == b$val
-  if (! prod(dd)) {
-    stop ("Bad data in b$val: ", dd)
-  }
-  if (length(b$uels) != 1)
-    stop ("Expected length of b$uels to be 1, got ", length(b$uels))
-  if (! chkUni(u$uels,b$uels[[1]])) {
-    stop ("Expected universe in dim 1 of b$uels")
+  b <- rgdx('trnsport',list(name='b',form='full'))
+  bv <- matrix(c(325,300,275), c(3,1))
+  bwant <- list(name="b", type="parameter", dim=1,
+                val=bv,
+                form="full",
+                uels=list(c("new-york","chicago","topeka")))
+  chk <- chkRgdxRes (b, bwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(b,form='full') failed",chk$msg))
   }
   print ("Done reading parameter b")
 
-  lst <- list(name='c',form='full')
-  c <- rgdx('trnsport',lst)
-  if (c$name != 'c')
-    stop ("Expected c$name to be 'c', got ", c$name)
-  if (c$type != "parameter")
-    stop ("Expected c$type to be 'parameter', got ", c$type)
-  if (c$dim != 2)
-    stop ("Expected c$dim to be 2, got ", c$dim)
-  if (c$form != "full")
-    stop ("Expected c$form to be 'full', got ", c$form)
-  if (length(dim(c$val)) != 2)
-    stop ("Expected c$val to be a matrix")
-  dv <- matrix(0,nrow=5,ncol=5)
-  dvp <- matrix(c(2.5, 1.7, 1.8,
-                  2.5, 1.8, 1.4),  c(2,3), byrow=TRUE)
-  dv[(1:2),(3:5)] <- dvp
+  c <- rgdx('trnsport',list(name='c',form='full'))
+  dv <- matrix(c(2.5, 1.7, 1.8,
+                 2.5, 1.8, 1.4),  c(2,3), byrow=TRUE)
   cv <- dv * 90 / 1000
-  dd <- abs(cv - c$val) < 1e-13
-  if (! prod(dd)) {
-    stop ("Bad data in c$val: ", dd)
-  }
-  for (k in c(1:length(c$uels))) {
-    if (! chkUni(u$uels,c$uels[[k]])) {
-      stop ("Expected universe in dim ", k, " of c$uels")
-    }
+  cwant <- list(name="c", type="parameter", dim=2,
+                val=cv,
+                form="full",
+                uels=list(c("seattle","san-diego"),c("new-york","chicago","topeka")))
+  chk <- chkRgdxRes (c, cwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(c,form='full') failed",chk$msg))
   }
   print ("Done reading parameter c")
 
