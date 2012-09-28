@@ -254,14 +254,17 @@ mkXPFilter (int symIdx, xpFilter_t *filterList)
 {
   int rc, iRec, nRecs, changeIdx;
   int kSym, kDim, kType;        /* for loop over index sets */
-  int iDim, symDim, symType;
+  int iDim, symDim, symType, symNNZ, symUser;
   int *idx;
-  shortStringBuf_t symName, kName;
+  shortStringBuf_t symName, kName, sText;
+  gdxStrIndex_t domNames;
+  gdxStrIndexPtrs_t domPtrs;
   gdxUelIndex_t symDoms;
   gdxUelIndex_t uels;
   gdxValues_t values;
   xpFilter_t *xpf;
 
+  GDXSTRINDEXPTRS_INIT (domNames, domPtrs);
   rc = gdxSymbolInfo (gdxHandle, symIdx, symName, &symDim, &symType);
   if (! rc) 
     error ("bad return from gdxSymbolInfo in mkXPFilter");
@@ -269,13 +272,35 @@ mkXPFilter (int symIdx, xpFilter_t *filterList)
     return;                     /* skip scalars */
   switch (symType) {
   case GMS_DT_PAR:
-    rc = gdxSymbolGetDomain (gdxHandle, symIdx, symDoms);
-    if (rc) {                   /* full domain info available */
+  case GMS_DT_SET:
+    rc = gdxSymbolGetDomainX (gdxHandle, symIdx, domPtrs);
+    switch (rc) {
+    case 1:                   /* NA: no domain info */
+      for (iDim = 0;  iDim < symDim;  iDim++) {
+        xpf = filterList + iDim;
+        xpf->domType = none;
+        xpf->fType = identity;
+      } /* end loop over dims */
+      break;
+    case 2:                   /* relaxed domain info */
+      error ("mkXPFilter: relaxed domain info for set.  Unimplemented");
+      break;
+    case 3:                   /* full domain info */
+      rc = gdxSymbolGetDomain (gdxHandle, symIdx, symDoms);
+      if (! rc)
+        error ("error calling gdxSymbolGetDomain");
       for (iDim = 0;  iDim < symDim;  iDim++) {
         kSym = symDoms[iDim];
         rc = gdxSymbolInfo (gdxHandle, kSym, kName, &kDim, &kType);
         if (! rc)
           error ("bad return from gdxSymbolInfo in mkXPFilter");
+        if (GMS_DT_ALIAS == kType) {
+          gdxSymbolInfoX (gdxHandle, kSym, &symNNZ, &symUser, sText);
+          kSym = symUser;
+          rc = gdxSymbolInfo (gdxHandle, kSym, kName, &kDim, &kType);
+          if (! rc)
+            error ("bad return from gdxSymbolInfo in mkXPFilter");
+        }
         if ((1 != kDim) || (GMS_DT_SET != kType))
           error ("non-domain-set data from gdxSymbolInfo in mkXPFilter");
         xpf = filterList + iDim;
@@ -293,12 +318,12 @@ mkXPFilter (int symIdx, xpFilter_t *filterList)
           error ("Could not gdxDataReadDone");
         }
       } /* loop over domain sets */
-    }
-    else {
-      error ("bad return from gdxSymbolGetDomain: expected full info");
-    }
+      break;
+    case 0:                   /* bad input */
+    default:
+      error ("unexpected return (%d) from gdxSymbolGetDomainX", rc);
+    } /* switch */
     break;
-  case GMS_DT_SET:
   default:
     error ("mkXPFilter: symbol %s has type %d (%s): unimplemented\n",
            symName, symType, gmsGdxTypeText[symType]);
@@ -515,7 +540,7 @@ findInXPFilter (int symDim, const int inUels[], xpFilter_t filterList[],
  */
 
 void
-xpFilterToUels (int symDim, xpFilter_t filterList[], SEXP uels)
+xpFilterToUels (int symDim, xpFilter_t filterList[], SEXP uni, SEXP uels)
 {
   int UELUserMapping;
   int iDim, n, k, iUEL;
@@ -525,19 +550,27 @@ xpFilterToUels (int symDim, xpFilter_t filterList[], SEXP uels)
 
   for (iDim = 0;  iDim < symDim;  iDim++) {
     xpf = filterList + iDim;
-    n = xpf->n;
-    PROTECT(s = allocVector(STRSXP, n));
-    for (k = 0;  k < n;  k++) {
-      iUEL = xpf->idx[k];
-      if (!gdxUMUelGet (gdxHandle, iUEL, uelName, &UELUserMapping)) {
-        error("xpFilterToUels: could not gdxUMUelGet");
-      }
-      SET_STRING_ELT(s, k, mkChar(uelName));
-    } /* loop over filter elements */
-    
-    SET_VECTOR_ELT(uels, iDim, s);
-    UNPROTECT(1);
-  }
+    switch (xpf->fType) {
+    case identity:
+      SET_VECTOR_ELT(uels, iDim, uni);
+      break;
+    case integer:
+      n = xpf->n;
+      PROTECT(s = allocVector(STRSXP, n));
+      for (k = 0;  k < n;  k++) {
+        iUEL = xpf->idx[k];
+        if (!gdxUMUelGet (gdxHandle, iUEL, uelName, &UELUserMapping)) {
+          error("xpFilterToUels: could not gdxUMUelGet");
+        }
+        SET_STRING_ELT(s, k, mkChar(uelName));
+      } /* loop over filter elements */
+      SET_VECTOR_ELT(uels, iDim, s);
+      UNPROTECT(1);
+      break;
+    default:
+      error ("internal error creating output uels");
+    }
+  } /* loop over indices */
   return;
 } /* xpFilterToUels */
 

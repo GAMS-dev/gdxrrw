@@ -724,7 +724,7 @@ SEXP rgdx (SEXP args)
         SET_VECTOR_ELT(outUels, iDim, universe);
       }
 #else
-      xpFilterToUels (symDim, xpFilter, outUels);
+      xpFilterToUels (symDim, xpFilter, universe, outUels);
 #endif
     }
 

@@ -146,7 +146,7 @@ int
 findInXPFilter (int symDim, const int inUels[], xpFilter_t filterList[],
                 int outIdx[]);
 void
-xpFilterToUels (int symDim, xpFilter_t filterList[], SEXP uels);
+xpFilterToUels (int symDim, xpFilter_t filterList[], SEXP uni, SEXP uels);
 char *
 getGlobalString (const char *globName, shortStringBuf_t result);
 int
