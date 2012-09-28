@@ -265,8 +265,13 @@ mkXPFilter (int symIdx, xpFilter_t *filterList)
   xpFilter_t *xpf;
 
   GDXSTRINDEXPTRS_INIT (domNames, domPtrs);
+  /* gdxSymbolGetDomainX is/was buggy and might not write the domain names
+   * set to '*' to work around that */
+  for (iDim = 0;  iDim < GLOBAL_MAX_INDEX_DIM;  iDim++)
+    strcpy (domPtrs[iDim], "*");
+
   rc = gdxSymbolInfo (gdxHandle, symIdx, symName, &symDim, &symType);
-  if (! rc) 
+  if (! rc)
     error ("bad return from gdxSymbolInfo in mkXPFilter");
   if (symDim <= 0)
     return;                     /* skip scalars */
@@ -283,7 +288,49 @@ mkXPFilter (int symIdx, xpFilter_t *filterList)
       } /* end loop over dims */
       break;
     case 2:                   /* relaxed domain info */
-      error ("mkXPFilter: relaxed domain info for set.  Unimplemented");
+      for (iDim = 0;  iDim < symDim;  iDim++) {
+        xpf = filterList + iDim;
+        Rprintf ("  index %d : symbol %s\n", iDim, domPtrs[iDim]);
+        if (0 == strcmp(domPtrs[iDim],"*")) { /* not available: use the universe */
+          xpf->domType = none;
+          xpf->fType = identity;
+          continue;
+        }
+        rc = gdxFindSymbol (gdxHandle, domPtrs[iDim], &kSym);
+        if (! rc) {             /* not available: use the universe */
+          xpf->domType = none;
+          xpf->fType = identity;
+          continue;
+        }
+        /* now we have the nice case: set symbol is in GDX */
+        rc = gdxSymbolInfo (gdxHandle, kSym, kName, &kDim, &kType);
+        if (! rc)
+          error ("bad return from gdxSymbolInfo in mkXPFilter");
+        if (0 != strcmp(domPtrs[iDim],kName))
+          error ("bad domain lookup: %s <> %s", domPtrs[iDim], kName);
+        if (GMS_DT_ALIAS == kType) {
+          gdxSymbolInfoX (gdxHandle, kSym, &symNNZ, &symUser, symText);
+          kSym = symUser;
+          rc = gdxSymbolInfo (gdxHandle, kSym, kName, &kDim, &kType);
+          if (! rc)
+            error ("bad return from gdxSymbolInfo in mkXPFilter");
+        }
+        if ((1 != kDim) || (GMS_DT_SET != kType))
+          error ("non-domain-set data from gdxSymbolInfo in mkXPFilter");
+        xpf->domType = relaxed;
+        xpf->fType = integer;
+        xpf->prevPos = 0;
+        gdxDataReadRawStart (gdxHandle, kSym, &nRecs);
+        xpf->n = nRecs;
+        xpf->idx = idx =  malloc(nRecs * sizeof(*idx));
+        for (iRec = 0;  iRec < nRecs;  iRec++) {
+          gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+          idx[iRec] = uels[0];
+        } /* loop over GDX records */
+        if (!gdxDataReadDone (gdxHandle)) {
+          error ("Could not gdxDataReadDone");
+        }
+      } /* end loop over dims */
       break;
     case 3:                   /* full domain info */
       rc = gdxSymbolGetDomain (gdxHandle, symIdx, symDoms);
