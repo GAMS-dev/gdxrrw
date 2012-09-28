@@ -257,17 +257,18 @@ gdxInfo (SEXP args)
       else {
         Rprintf(" %s", symName);
         if (symDim > 0) {
+          /* should probably use gdxSymbolGetDomainX instead */
           gdxSymbolGetDomain (gdxHandle, i, Keys);
           Rprintf ("(");
           for (j = 0;  j < symDim;  j++) {
             if (Keys[j]==0)
-              strcpy (symName,"*");
+              strcpy (symName2,"*");
             else
               gdxSymbolInfo (gdxHandle, Keys[j], symName2, &symUser2, &symType2);
             if (j < symDim-1)
-              Rprintf ("%s,", symName);
+              Rprintf ("%s,", symName2);
             else
-              Rprintf ("%s)", symName);
+              Rprintf ("%s)", symName2);
           }
         }
         if (strlen(sText))
@@ -324,8 +325,8 @@ gdxInfo (SEXP args)
             Rprintf (" )\n");
           }
         }
-      }
-      Rprintf ("/;\n");
+        Rprintf ("/;\n");
+      } /* if 0 == symCount .. else .. */
       j = 1;
       while (gdxSymbolGetComment (gdxHandle, i, j++, msg))
         Rprintf ("* %s\n", msg);
