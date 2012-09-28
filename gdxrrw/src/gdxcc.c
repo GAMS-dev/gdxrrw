@@ -83,7 +83,7 @@ typedef void (GDX_CALLCONV *gdxGetLoadPath_t) (char *s);
 GDX_FUNCPTR(gdxGetLoadPath);
 
 #define printNoReturn(f,nargs) {}
-#define printAndReturn(f,nargs,rtype) { return (rtype) 0; }
+#define printAndReturn(f,nargs,rtype) { return (rtype) d_s[0]; }
 
 int  GDX_CALLCONV d_gdxAcronymAdd (gdxHandle_t pgdx, const char *AName, const char *Txt, int AIndx)
 { int d_s[]={3,11,11,3}; printAndReturn(gdxAcronymAdd,3,int ) }
