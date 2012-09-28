@@ -1,0 +1,14 @@
+set I / i1 * i5 /;
+set J / j1 * j5 /;
+set JJ(J) / j1 * j3 /;
+alias (j,jhat);
+alias (jhat,j2);
+set j3(j2) / j4, j5 /;
+parameter A(I,J);
+parameter A2(I,J2);
+A(I,J) = 1;
+A2(I,J2) = 1;
+* execute_unload 'aIJ';
+execute_unload 'aBare', A, JJ, j2, j3;
+execute_unload 'aRelaxed', A, I, J, JJ, j2, j3;
+execute_unload 'aFull';
