@@ -250,7 +250,7 @@ mkHPFilter (SEXP uFilter, hpFilter_t *hpf)
  * xpf: high-performance filter for internal use
  */
 void
-mkXPFilter (int symIdx, xpFilter_t *filterList)
+mkXPFilter (int symIdx, Rboolean useDomInfo, xpFilter_t filterList[])
 {
   int rc, iRec, nRecs, changeIdx;
   int kSym, kDim, kType;        /* for loop over index sets */
@@ -280,7 +280,10 @@ mkXPFilter (int symIdx, xpFilter_t *filterList)
   case GMS_DT_SET:
   case GMS_DT_VAR:
   case GMS_DT_EQU:
-    rc = gdxSymbolGetDomainX (gdxHandle, symIdx, domPtrs);
+    if (useDomInfo)
+      rc = gdxSymbolGetDomainX (gdxHandle, symIdx, domPtrs);
+    else
+      rc = 1;                   /* no domain info available */
     switch (rc) {
     case 1:                   /* NA: no domain info */
       for (iDim = 0;  iDim < symDim;  iDim++) {

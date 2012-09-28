@@ -653,7 +653,7 @@ SEXP rgdx (SEXP args)
         rgdxAlloc++;
       }
 
-      mkXPFilter (symIdx, xpFilter);
+      mkXPFilter (symIdx, useDomInfo, xpFilter);
 
       if (rSpec->te) {          /* text elements */
         gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
