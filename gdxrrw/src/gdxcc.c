@@ -82,19 +82,8 @@ GDX_FUNCPTR(gdxSetLoadPath);
 typedef void (GDX_CALLCONV *gdxGetLoadPath_t) (char *s);
 GDX_FUNCPTR(gdxGetLoadPath);
 
-#define printNoReturn(f,nargs) { \
-  char d_msgBuf[256]; \
-  strcpy(d_msgBuf,#f " could not be loaded: "); \
-  XCheck(#f,nargs,d_s,d_msgBuf+strlen(d_msgBuf)); \
-  gdxErrorHandling(d_msgBuf); \
-}
-#define printAndReturn(f,nargs,rtype) { \
-  char d_msgBuf[256]; \
-  strcpy(d_msgBuf,#f " could not be loaded: "); \
-  XCheck(#f,nargs,d_s,d_msgBuf+strlen(d_msgBuf)); \
-  gdxErrorHandling(d_msgBuf); \
-  return (rtype) 0; \
-}
+#define printNoReturn(f,nargs) {}
+#define printAndReturn(f,nargs,rtype) { return (rtype) 0; }
 
 int  GDX_CALLCONV d_gdxAcronymAdd (gdxHandle_t pgdx, const char *AName, const char *Txt, int AIndx)
 { int d_s[]={3,11,11,3}; printAndReturn(gdxAcronymAdd,3,int ) }
@@ -607,7 +596,7 @@ XLibraryLoad (const char *dllName, char *errBuf, int errBufSize)
   LOADIT_ERR_OK(gdxGetLoadPath, "CgdxGetLoadPath");
 #define CheckAndLoad(f,nargs,prefix) \
   if (!XCheck(#f,nargs,s,errBuf)) \
-    f = &d_##f; \
+    {f = &d_##f; goto symMissing;} \
   else { \
     LOADIT(f,prefix #f); \
   }
@@ -985,6 +974,7 @@ void gdxSetAPIErrorCount(int ecnt)
   APIErrorCount = ecnt;
 }
 
+#if 0
 void gdxErrorHandling(const char *msg)
 {
   APIErrorCount++;
@@ -996,4 +986,4 @@ void gdxErrorHandling(const char *msg)
   assert(!ExceptionIndicator);
   if (ExitIndicator) exit(123);
 }
-
+#endif
