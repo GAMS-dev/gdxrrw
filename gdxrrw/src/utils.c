@@ -256,7 +256,7 @@ mkXPFilter (int symIdx, xpFilter_t *filterList)
   int kSym, kDim, kType;        /* for loop over index sets */
   int iDim, symDim, symType, symNNZ, symUser;
   int *idx;
-  shortStringBuf_t symName, kName, sText;
+  shortStringBuf_t symName, kName, symText;
   gdxStrIndex_t domNames;
   gdxStrIndexPtrs_t domPtrs;
   gdxUelIndex_t symDoms;
@@ -295,7 +295,7 @@ mkXPFilter (int symIdx, xpFilter_t *filterList)
         if (! rc)
           error ("bad return from gdxSymbolInfo in mkXPFilter");
         if (GMS_DT_ALIAS == kType) {
-          gdxSymbolInfoX (gdxHandle, kSym, &symNNZ, &symUser, sText);
+          gdxSymbolInfoX (gdxHandle, kSym, &symNNZ, &symUser, symText);
           kSym = symUser;
           rc = gdxSymbolInfo (gdxHandle, kSym, kName, &kDim, &kType);
           if (! rc)
@@ -892,7 +892,7 @@ sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
       index = (index * card[k]) + p[ii] - 1;
     }
 #endif
-    if (symType != dt_set) {
+    if (symType != GMS_DT_SET) {
       pFull[index] = p[iRec + nRec*symDim];
     }
     else {

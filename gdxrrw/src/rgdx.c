@@ -336,7 +336,7 @@ SEXP rgdx (SEXP args)
   char buf[3*sizeof(shortStringBuf_t)];
   char strippedID[GMS_SSSIZE];
   char symName[GMS_SSSIZE];
-  char sText[GMS_SSSIZE], msg[GMS_SSSIZE], stringEle[GMS_SSSIZE];
+  char symText[GMS_SSSIZE], msg[GMS_SSSIZE], stringEle[GMS_SSSIZE];
   char *types[] = {"set", "parameter", "variable", "equation"};
   char *forms[] = {"full", "sparse"};
   char *fields[] = {"l", "m", "up", "lo", "s"};
@@ -450,21 +450,37 @@ SEXP rgdx (SEXP args)
       error (buf);
     }
     gdxSymbolInfo (gdxHandle, symIdx, symName, &symDim, &symType);
-    gdxSymbolInfoX (gdxHandle, symIdx, &symNNZ, &symUser, sText);
+    gdxSymbolInfoX (gdxHandle, symIdx, &symNNZ, &symUser, symText);
     /* symNNZ aka nRecs: count of nonzeros/records in symbol */
 
-    /* checking that symbol is of type parameter/set/equation/variable */
-    if (!(symType == dt_par || symType == dt_set || symType == dt_var || symType == dt_equ)) {
+    switch (symType) {
+    case GMS_DT_SET:
+      if (rSpec->withField)
+        error("Bad read specifier for set symbol '%s': 'field' not allowed.",
+              rSpec->name);
+      break;
+    case GMS_DT_PAR:
+      if (rSpec->withField)
+        error("Bad read specifier for parameter symbol '%s': 'field' not allowed.",
+              rSpec->name);
+      break;
+    case GMS_DT_VAR:
+    case GMS_DT_EQU:
+      /* no checks necessary */
+      break;
+    case GMS_DT_ALIAS:          /* follow link to actual set */
+      symIdx = symUser;
+      gdxSymbolInfo (gdxHandle, symIdx, symName, &symDim, &symType);
+      gdxSymbolInfoX (gdxHandle, symIdx, &symNNZ, &symUser, symText);
+      break;
+    default:
       sprintf(buf, "GDX symbol %s (index=%d, symDim=%d, symType=%d)"
               " is not recognized as set, parameter, variable, or equation",
               rSpec->name, symIdx, symDim, symType);
       error(buf);
-    }
-    else if ((symType == dt_par || symType == dt_set) && rSpec->withField == 1) {
-      error("Symbol '%s' is either set or parameter that cannot have field.",
-            rSpec->name);
-    }
-    if (rSpec->te && symType != dt_set) {
+    } /* end switch */
+
+    if (rSpec->te && symType != GMS_DT_SET) {
       error("Text elements only exist for sets and symbol '%s' is not a set.",
             rSpec->name);
     }
@@ -502,7 +518,7 @@ SEXP rgdx (SEXP args)
     }
 
     /* if it is a parameter, add 1 to the dimension */
-    if (symType != dt_set) {
+    if (symType != GMS_DT_SET) {
       ncols = symDim+1;
     }
     else {
@@ -546,7 +562,7 @@ SEXP rgdx (SEXP args)
       PROTECT(outValSp = allocMatrix(REALSXP, nnz, ncols));
       rgdxAlloc++;
       p = REAL(outValSp);
-      if (rSpec->te && symType == dt_set) {
+      if (rSpec->te && symType == GMS_DT_SET) {
         PROTECT(outTeSp = allocVector(STRSXP, nnz));
         rgdxAlloc++;
       }
@@ -602,7 +618,7 @@ SEXP rgdx (SEXP args)
             index = matched + symDim * nnz;
             matched++;
 
-            if (symType != dt_set)
+            if (symType != GMS_DT_SET)
               p[index] = values[rSpec->dField];
           }
           if (matched == nnz) {
@@ -618,14 +634,14 @@ SEXP rgdx (SEXP args)
       /* read without user UEL filter: use domain info to filter if possible */
       mrows = symNNZ;
       /*  check for non zero elements for variable and equation */
-      if ((symType == dt_var || symType == dt_equ) && zeroSqueeze) {
+      if ((symType == GMS_DT_VAR || symType == GMS_DT_EQU) && zeroSqueeze) {
         mrows = getNonZeroElements(gdxHandle, symIdx, rSpec->dField);
       }
       /* Create 2D sparse R array */
       PROTECT(outValSp = allocMatrix(REALSXP, mrows, ncols));
       rgdxAlloc++;
       p = REAL(outValSp);
-      if (rSpec->te && symType == dt_set) {
+      if (rSpec->te && symType == GMS_DT_SET) {
         PROTECT(outTeSp = allocVector(STRSXP, mrows));
         rgdxAlloc++;
       }
@@ -667,7 +683,7 @@ SEXP rgdx (SEXP args)
           if (findrc) {
             error ("DEBUG 00: findrc = %d is unhandled", findrc);
           }
-          if ((dt_set == symType) ||
+          if ((GMS_DT_SET == symType) ||
               (! zeroSqueeze) ||
               (0 != values[rSpec->dField])) {
             /* store the value */
@@ -680,7 +696,7 @@ SEXP rgdx (SEXP args)
             }
             index = kRec + symDim*mrows;
             kRec++;
-            if (symType != dt_set)
+            if (symType != GMS_DT_SET)
               p[index] = values[rSpec->dField];
           } /* end of if (set || val != 0) */
         } /* loop over GDX records */
@@ -841,16 +857,16 @@ SEXP rgdx (SEXP args)
     PROTECT(outType = allocVector(STRSXP, 1) );
     rgdxAlloc++;
     switch (symType) {
-    case dt_set:
+    case GMS_DT_SET:
       SET_STRING_ELT(outType, 0, mkChar(types[0]) );
       break;
-    case dt_par:
+    case GMS_DT_PAR:
       SET_STRING_ELT(outType, 0, mkChar(types[1]) );
       break;
-    case dt_var:
+    case GMS_DT_VAR:
       SET_STRING_ELT(outType, 0, mkChar(types[2]) );
       break;
-    case dt_equ:
+    case GMS_DT_EQU:
       SET_STRING_ELT(outType, 0, mkChar(types[3]) );
       break;
     default:
@@ -873,7 +889,7 @@ SEXP rgdx (SEXP args)
 
 
     /* Create a string vector for symbol field */
-    if (symType == dt_var || symType == dt_equ) {
+    if (symType == GMS_DT_VAR || symType == GMS_DT_EQU) {
       outElements++;
       PROTECT(outField = allocVector(STRSXP, 1));
       rgdxAlloc++;
@@ -901,7 +917,7 @@ SEXP rgdx (SEXP args)
       outElements++;
       PROTECT(outTs = allocVector(STRSXP, 1));
       rgdxAlloc++;
-      SET_STRING_ELT(outTs, 0, mkChar(sText));
+      SET_STRING_ELT(outTs, 0, mkChar(symText));
     }
     if (rSpec->te) {
       outElements++;
@@ -935,7 +951,7 @@ SEXP rgdx (SEXP args)
 
   nField = 5;
   if (withList) {
-    if (symType == dt_var || symType == dt_equ) {
+    if (symType == GMS_DT_VAR || symType == GMS_DT_EQU) {
       nField++;
       SET_STRING_ELT(outListNames, nField, mkChar("field"));
     }
@@ -972,7 +988,7 @@ SEXP rgdx (SEXP args)
     }
 
     nField = 5;
-    if (symType == dt_var || symType == dt_equ) {
+    if (symType == GMS_DT_VAR || symType == GMS_DT_EQU) {
       nField++;
       SET_VECTOR_ELT(outList, nField, outField);
     }
