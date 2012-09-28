@@ -1,12 +1,13 @@
 
-rgdx <- function(gdxName, requestList = NULL, squeeze=TRUE)
+rgdx <- function(gdxName, requestList = NULL, squeeze=TRUE, useDomInfo=TRUE)
 {
   if (is.null(requestList) && (gdxName == '?')) {
     invisible(.External("rgdx", gdxName=gdxName, requestList=NULL,
-                        squeeze=squeeze, PACKAGE="gdxrrw"))
+                        squeeze=squeeze, useDomInfo=useDomInfo, PACKAGE="gdxrrw"))
   }
   else {
-    .External("rgdx", gdxName=gdxName, requestList=requestList, squeeze=squeeze, PACKAGE="gdxrrw")
+    .External("rgdx", gdxName=gdxName, requestList=requestList,
+              squeeze=squeeze, useDomInfo=useDomInfo, PACKAGE="gdxrrw")
   }
 }
 
@@ -50,9 +51,9 @@ igdx <- function(gamsSysDir = NULL, silent = FALSE)
   invisible(.External("igdx", gamsSysDir, silent=silent, PACKAGE="gdxrrw"))
 }
 
-rgdx.param <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, squeeze=TRUE)
+rgdx.param <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, squeeze=TRUE, useDomInfo=TRUE)
 {
-  sym <- rgdx(gdxName, list(name=symName,compress=compress,ts=ts),squeeze=squeeze)
+  sym <- rgdx(gdxName, list(name=symName,compress=compress,ts=ts),squeeze=squeeze,useDomInfo=useDomInfo)
   if (sym$type != "parameter") {
     stop ("Expected to read a parameter: symbol ", symName, " is a ", sym$type)
   }
@@ -154,9 +155,9 @@ rgdx.scalar <- function(gdxName, symName, ts=FALSE)
   return(c)
 } # rgdx.scalar
 
-rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE)
+rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, useDomInfo=TRUE)
 {
-  sym <- rgdx(gdxName, list(name=symName,compress=compress,ts=ts))
+  sym <- rgdx(gdxName, list(name=symName,compress=compress,ts=ts), useDomInfo=useDomInfo)
   if (sym$type != "set") {
     stop ("Expected to read a set: symbol ", symName, " is a ", sym$type)
   }

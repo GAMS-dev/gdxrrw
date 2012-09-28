@@ -11,11 +11,11 @@
 }
 \usage{
   # generic form - return a symbol as a list
-  rgdx(gdxName, requestList = NULL, squeeze = TRUE)
+  rgdx(gdxName, requestList = NULL, squeeze = TRUE, useDomInfo = TRUE)
 
   # return a set or parameter in a data frame
-  rgdx.set(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE)
-  rgdx.param(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, squeeze=TRUE)
+  rgdx.set(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, useDomInfo = TRUE)
+  rgdx.param(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, squeeze=TRUE, useDomInfo = TRUE)
 
   # return a scalar
   rgdx.scalar(gdxName, symName, ts=FALSE)
@@ -27,6 +27,9 @@
   format.  This argument must be a list.  If omitted, the universe of
   UELs contained in the GDX file is returned}
   \item{squeeze}{if TRUE/nonzero, squeeze out any zero or EPS stored in the GDX container}
+  \item{useDomInfo}{if TRUE, the default filter will be the domain info
+  in the GDX.  If no domain info is available, or if
+  \code{useDomInfo=FALSE}, the default filter will be the GDX universe}
   \item{symName}{the name of the GDX symbol to read}
   \item{names}{the column names to use in the data frame returned}
   \item{compress}{if TRUE, compress the factors in the data frame so they only include required levels.  For the default compress=FALSE, each factor includes levels for the entire universe of UELs in the GDX file}

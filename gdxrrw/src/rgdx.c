@@ -294,11 +294,12 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
  * second argument <- requestList containing several elements
  * that make up a read specifier, e.g. symbol name, dim, form, etc
  * third argument <- squeeze specifier
+ * fourth argument <- useDomInfo specifier
  * ------------------------------------------------------------------ */
 SEXP rgdx (SEXP args)
 {
   const char *funcName = "rgdx";
-  SEXP fileName, requestList, squeeze, universe;
+  SEXP fileName, requestList, squeeze, udi, universe;
   SEXP outName = R_NilValue,
     outType = R_NilValue,
     outDim = R_NilValue,
@@ -346,6 +347,7 @@ SEXP rgdx (SEXP args)
   int nnz;         /* symbol cardinality, i.e. nonzero count */
   int nnzMax;      /* maximum possible nnz for this symbol */
   Rboolean zeroSqueeze = NA_LOGICAL;
+  Rboolean useDomInfo = NA_LOGICAL;
 
   /* setting intial values */
   kRec = 0;
@@ -356,14 +358,15 @@ SEXP rgdx (SEXP args)
 
   /* ----------------- Check proper number of inputs and outputs ------------
    * Function should follow specification of
-   * rgdx ('gdxFileName', requestList = NULL, squeeze = TRUE)
+   * rgdx ('gdxFileName', requestList = NULL, squeeze = TRUE, useDomInfo=TRUE)
    * ------------------------------------------------------------------------ */
-  if (4 != arglen) {
-    error ("usage: %s(gdxName, requestList = NULL, squeeze = TRUE) - incorrect arg count", funcName);
+  if (5 != arglen) {
+    error ("usage: %s(gdxName, requestList = NULL, squeeze = TRUE, useDomInfo = TRUE) - incorrect arg count", funcName);
   }
   fileName = CADR(args);
   requestList = CADDR(args);
   squeeze = CADDDR(args);
+  udi = CAD4R(args);
   if (TYPEOF(fileName) != STRSXP) {
     error ("usage: %s(gdxName, requestList = NULL) - gdxName must be a string", funcName);
   }
@@ -372,7 +375,7 @@ SEXP rgdx (SEXP args)
   else {
     withList = 1;
     if (TYPEOF(requestList) != VECSXP) {
-      error ("usage: %s(gdxName, requestList, squeeze) - requestList must be a list", funcName);
+      error ("usage: %s(gdxName, requestList, squeeze, useDomInfo) - requestList must be a list", funcName);
     }
   }
 
@@ -390,7 +393,11 @@ SEXP rgdx (SEXP args)
 
   zeroSqueeze = getSqueezeArgRead (squeeze);
   if (NA_LOGICAL == zeroSqueeze) {
-    error ("usage: %s(gdxName, requestList, squeeze = TRUE)\n    squeeze argument could not be interpreted as logical", funcName);
+    error ("usage: %s(gdxName, requestList, squeeze = TRUE, useDomInfo = TRUE)\n    squeeze argument could not be interpreted as logical", funcName);
+  }
+  useDomInfo = getSqueezeArgRead (udi);
+  if (NA_LOGICAL == useDomInfo) {
+    error ("usage: %s(gdxName, requestList, squeeze = TRUE, useDomInfo = TRUE)\n    useDomInfo argument could not be interpreted as logical", funcName);
   }
 
   /* ------------------- check if the GDX file exists --------------- */
