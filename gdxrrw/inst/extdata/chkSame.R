@@ -1,3 +1,16 @@
+## utility functions for checking results: comparing different structures, etc.
+
+isClose <- function (x, y) {
+  dif <- abs(x - y)
+  if (0 == dif) return (TRUE)
+  m <- abs(x)
+  t <- abs(y)
+  if (t > m)
+    m <- t
+  if (dif/m <= 1e-15)  return (TRUE)
+  return (FALSE)
+}  # isClose
+
 # compare the lists f1 and f2, return TRUE if the same, FALSE o/w
 ## this test assumes a certain ordering of the list elements
 ## it is not really necessary that they be ordered in this way but it
@@ -218,7 +231,9 @@ chkRgdxRes <- function(f1, f2) {
         last <- last * dims1[d]
       }
       for (kk in 1:last) {
-        if (f1[[k]][kk] != f2[[k]][kk])  return (r)
+        if (f1[[k]][kk] == f2[[k]][kk])  next
+        if (! isClose(f1[[k]][kk],f2[[k]][kk])) return (r)
+        ## if (f1[[k]][kk] != f2[[k]][kk])  return (r)
       }
     }
     else if ("form" == f2Names[[k]]) {
