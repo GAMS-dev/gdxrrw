@@ -278,6 +278,8 @@ mkXPFilter (int symIdx, xpFilter_t *filterList)
   switch (symType) {
   case GMS_DT_PAR:
   case GMS_DT_SET:
+  case GMS_DT_VAR:
+  case GMS_DT_EQU:
     rc = gdxSymbolGetDomainX (gdxHandle, symIdx, domPtrs);
     switch (rc) {
     case 1:                   /* NA: no domain info */
