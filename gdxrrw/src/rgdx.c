@@ -349,8 +349,7 @@ SEXP rgdx (SEXP args)
   Rboolean zeroSqueeze = NA_LOGICAL;
   Rboolean useDomInfo = NA_LOGICAL;
 
-  /* setting intial values */
-  kRec = 0;
+  /* setting initial values */
   rgdxAlloc = 0;
 
   /* first arg is function name - ignore it */
@@ -655,7 +654,7 @@ SEXP rgdx (SEXP args)
 
       mkXPFilter (symIdx, useDomInfo, xpFilter);
 
-      if (rSpec->te) {          /* text elements */
+      if (rSpec->te && 0) {          /* text elements */
         gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
         for (iRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
@@ -702,9 +701,26 @@ SEXP rgdx (SEXP args)
 #endif
             }
             index = kRec + symDim*mrows;
-            kRec++;
             if (symType != GMS_DT_SET)
               p[index] = values[rSpec->dField];
+            if (rSpec->te) {
+              if (values[GMS_VAL_LEVEL]) {
+                elementIndex = (int) values[GMS_VAL_LEVEL];
+                gdxGetElemText(gdxHandle, elementIndex, msg, &IDum);
+                SET_STRING_ELT(outTeSp, iRec, mkChar(msg));
+              }
+              else {
+                strcpy(stringEle, "");
+                for (kk = 0;  kk < symDim;  kk++) {
+                  strcat(stringEle, CHAR(STRING_ELT(universe, uels[kk]-1)));
+                  if (kk != symDim-1) {
+                    strcat(stringEle, ".");
+                  }
+                }
+                SET_STRING_ELT(outTeSp, iRec, mkChar(stringEle));
+              }
+            } /* if returning set text */
+            kRec++;
           } /* end of if (set || val != 0) */
         } /* loop over GDX records */
         if (!gdxDataReadDone (gdxHandle)) {
