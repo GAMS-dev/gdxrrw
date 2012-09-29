@@ -4,13 +4,14 @@ tests <- c("tReadSparse1", "tReadFull1",
            "tRead.set", "tRead.param",
            "tReadSV", "tReadText",
            "tReadErr",
+           "tReadWithDomainInfo", "tReadPreDomainInfo",
            "tWriteSparse1", "tWriteSparse2", "tWriteFull1", "tWriteFull2",
            "tWriteSV",
            "tWrap",
            "tInfo1", "tInfo2",
            "tLS")
 f <- find('interact',mode='logical')
-doPrompt <- TRUE
+doPrompt <- FALSE
 if (length(f) > 0) {
   doPrompt <- interact
 } else {
