@@ -69,9 +69,13 @@ tryCatch({
   }
 
   ijwant <- list(name="IJ", type="set", dim=2,
-                 val=matrix(c(1,5, 1,7, 2,6, 2,7, 3,7), nrow=5, ncol=2, byrow=TRUE),
+                 val=matrix(c(1,1,
+                              1,3,
+                              2,2,
+                              2,3,
+                              3,3), nrow=5, ncol=2, byrow=TRUE),
                  form="sparse",
-                 uels=list(u,u),
+                 uels=list(iUels,jUels),
                  ts='',
                  te=c("one.one", "one.three", "two.two", "two.three", "three.three"))
   ij <- rgdx(fnIn,list(name='ij',form='sparse',te=TRUE,ts=TRUE))
@@ -81,10 +85,14 @@ tryCatch({
   }
 
   ijcwant <- list(name="IJc", type="set", dim=3,
-                  val=matrix(c(1,5,8, 1,7,8, 2,6,9, 2,7,9, 3,7,10),
+                  val=matrix(c(1,1,1,
+                               1,3,1,
+                               2,2,2,
+			       2,3,2,
+			       3,3,3),
                              nrow=5, ncol=3, byrow=TRUE),
                   form="sparse",
-                  uels=list(u,u,u),
+                  uels=list(iUels,jUels,cUels),
                   te=c("eins eins tempelhof", "eins drei tempelhof", "deux deux orly",
                     "deux trois orly", "drei drei schwechat"))
   ijc <- rgdx(fnIn,list(name='ijc',form='sparse',te=TRUE))
@@ -117,7 +125,11 @@ tryCatch({
   }
 
   ijwant <- list(name="IJ", type="set", dim=2,
-                 val=matrix(c(1,1, 1,3, 2,2, 2,3, 3,3), nrow=5, ncol=2, byrow=TRUE),
+                 val=matrix(c(1,1,
+                              1,3,
+                              2,2,
+                              2,3,
+                              3,3), nrow=5, ncol=2, byrow=TRUE),
                  form="sparse",
                  uels=list(i2uels,jUels), # i4 is compressed out
                  ts='',
