@@ -117,67 +117,133 @@ checkStringLength (const char *str)
   }
 } /* checkStringLength */
 
-/* compressDataNew: compress the $vals data (in sparse form)
+/* compressData: compress the $vals data (in sparse form)
  * and also the associated domains.
- * in/out: spVals - $vals to output
- *     in: uni, nUni - universe of uels and its size/count
  *     in: symDim - symbol dimension
  *     in: mRows - nonzeros in symbol / rows in $vals
- *    out: uels - $uels to output
+ *     in: uni, nUni - universe of uels and its size/count
+ *     in: xpFilter_t filterList[]
+ * in/out: spVals - $vals to output
+ *    out: uelList - $uels to output
 */
 void
-compressDataNew (SEXP spVals, SEXP uni, int nUni, int symDim, int mRows,
-                 SEXP uels)
+compressData (int symDim, int mRows, SEXP uni, int nUni, xpFilter_t filterList[],
+              SEXP spVals, SEXP uelList)
 {
-} /* compressDataNew */
+  int n;                  /* initial cardinality for this index pos */
+  int nn;                 /* compressed cardinality */
+  int nMax;
+  int iDim, i, k, stop, nTmp;
+  int *mask;
+  double *v;                    /* index values in spVals */
+  SEXP uelVec;                  /* elements of uelList */
 
-/* compressData
- * compresses the raw data (both value and uel)
- * and removes redundant zeros from
- * value matrix and re-index output matrix.
- * And it also remove non present uel elements from UEL */
-void
-compressData (SEXP data, SEXP globalUEL, SEXP uelOut,
-              int numberOfUel, int symbolDim, int nRec)
-{
-  int *mask, i, j, k, l, total, elements;
-  double *col;
-  SEXP bufferUel;
+  n = 0;                        /* shut up warnings */
+  nMax = 0;
+  for (iDim = 0;  iDim < symDim;  iDim++) {
+    xpFilter_t *xpf = filterList + iDim;
+    switch (xpf->fType) {
+    case unset:
+      error ("internal error: xpFilter type unset");
+      break;
+    case identity:
+      /* assume index values in this dimension are in [1..nUni] */
+      n = nUni;
+      break;
+    case integer:
+      /* assume index values in this dimension are in [1..xpf->n] */
+      n = xpf->n;
+      break;
+    default:
+      error ("internal error: unknown hpFilter type");
+    } /* end switch */
+    if (n > nMax)
+      nMax = n;
+  } /* loop over index positions */
 
-  mask = malloc(numberOfUel*sizeof(*mask));
-  col =  REAL(data);
-  for (i = 0; i < symbolDim; i++) {
-    /* step 1: set all mask value to zero. */
-    for (j = 0; j < numberOfUel; j++) {
-      mask[j] = 0;
-    }
-    total = 0;
-    /* step 2: loop through data martix column and set mask = 1 for corresponding positions */
-    for (k = 0; k < nRec; k++) {
-      if (mask[(int)col[k + nRec*i] - 1] == 0) {
-        mask[(int)col[k + nRec*i] - 1] = 1;
-        total = total + 1;
+  mask = malloc(nMax*sizeof(*mask));
+  v =  REAL(spVals);
+  for (iDim = 0;  iDim < symDim;  iDim++) {
+    nn = 0;
+    xpFilter_t *xpf = filterList + iDim;
+    switch (xpf->fType) {
+    case unset:
+      error ("internal error: xpFilter type unset");
+      break;
+    case identity:
+      n = nUni;
+      /* record and count used index values */
+      /* (void) memset (mask, 0, nMax*sizeof(*mask)); */
+      (void) memset (mask, 0, n*sizeof(*mask));
+      for (k = mRows*iDim, stop = mRows*(iDim+1);  k < stop;  k++) {
+        i = (int)v[k];          /* one-based */
+        if ((i <= 0) || (i > n))
+          error ("bogus index i found in compressData: iDim=%d n=%d i=%d",
+                 iDim, n, i);
+        i--;
+        if (mask[i] == 0) {
+          mask[i] = 1;
+          nn++;
+        }
+      } /* loop over index values in this position */
+      PROTECT(uelVec = allocVector(STRSXP, nn));
+      SET_VECTOR_ELT(uelList, iDim, uelVec);
+      UNPROTECT(1);
+      /* loop over found index values in mask, computing new index values */
+      for (nTmp = 0, i = 0;  i < n;  i++) {
+        if (mask[i]) {
+          SET_STRING_ELT(uelVec, nTmp, STRING_ELT(uni, i));
+          nTmp++;
+          mask[i] = nTmp;
+        }
       }
-    }
-    /* step 3: create cellArray with size = total, fill in UEL if mask[] = 1 */
-    /* step 4: step through 1's at mask and create sum */
-    PROTECT(bufferUel = allocVector(STRSXP, total));
-    elements = 0;
-    for (l = 0; l < numberOfUel; l++) {
-      if (mask[l] == 1) {
-        elements = elements + 1;
-        mask[l] = elements;
-        SET_STRING_ELT(bufferUel, elements -1, duplicate(STRING_ELT(globalUEL, l)));
+      /*  update index values to compressed ordering */
+      for (k = mRows*iDim, stop = mRows*(iDim+1);  k < stop;  k++) {
+        i = (int)v[k] - 1;
+        v[k] = mask[i];
+      } /* loop over index values in this position */
+      break;
+    case integer:
+      n = xpf->n;
+      /* record and count used index values */
+      /* (void) memset (mask, 0, nMax*sizeof(*mask)); */
+      (void) memset (mask, 0, n*sizeof(*mask));
+      for (k = mRows*iDim, stop = mRows*(iDim+1);  k < stop;  k++) {
+        i = (int)v[k];          /* one-based */
+        if ((i <= 0) || (i > n))
+          error ("bogus index i found in compressData: iDim=%d n=%d i=%d",
+                 iDim, n, i);
+        i--;
+        if (mask[i] == 0) {
+          mask[i] = 1;
+          nn++;
+        }
+      } /* loop over index values in this position */
+      PROTECT(uelVec = allocVector(STRSXP, nn));
+      SET_VECTOR_ELT(uelList, iDim, uelVec);
+      UNPROTECT(1);
+      /* loop over found index values in mask,
+       * computing new index values and new output uels */
+      for (nTmp = 0, i = 0;  i < n;  i++) {
+        if (mask[i]) {
+          SET_STRING_ELT(uelVec, nTmp, STRING_ELT(uni, xpf->idx[i]-1));
+          nTmp++;
+          mask[i] = nTmp;
+        }
       }
-    }
-    /* step 5: step through column and update index value = mask[] */
-    l = 0;
-    for (l = 0; l < nRec; l++) {
-      col[l + nRec*i] = mask[(int)col[l + nRec*i] - 1];
-    }
-    SET_VECTOR_ELT(uelOut, i, bufferUel);
-    UNPROTECT(1);
-  }
+      /*  update index values to compressed ordering */
+      for (k = mRows*iDim, stop = mRows*(iDim+1);  k < stop;  k++) {
+        i = (int)v[k] - 1;
+        v[k] = mask[i];
+      } /* loop over index values in this position */
+
+
+      break;
+    default:
+      error ("internal error: unknown hpFilter type");
+    } /* end switch */
+  } /* loop over index positions */
+
   free(mask);
   return;
 } /* compressData */

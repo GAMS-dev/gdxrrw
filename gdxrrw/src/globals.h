@@ -128,8 +128,8 @@ checkFileExtension (shortStringBuf_t fileName);
 void
 checkStringLength (const char *str);
 void
-compressData (SEXP data, SEXP globalUEL, SEXP uelOut,
-              int numberOfUel, int symbolDim, int nRec);
+compressData (int symDim, int mRows, SEXP uni, int nUni, xpFilter_t filterList[],
+              SEXP spVals, SEXP uels);
 void
 createElementMatrix (SEXP compVal, SEXP textElement, SEXP compTe,
                      SEXP compUels, int symDim, int nRec);

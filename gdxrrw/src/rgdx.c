@@ -746,23 +746,17 @@ SEXP rgdx (SEXP args)
       }
     } /* if (withUel .. else .. ) */
 
-    /* Converting data into its compressed form. */
+    /* here the output uels $uels are allocated and populated */
     if (rSpec->compress) {
       PROTECT(outUels = allocVector(VECSXP, symDim));
       rgdxAlloc++;
-      compressData (outValSp, universe, outUels, nUEL, symDim, mrows);
+      compressData (symDim, mrows, universe, nUEL, xpFilter,
+                    outValSp, outUels);
     }
-    /* Creating outUels if none entered */
     else if (! rSpec->withUel) {
       PROTECT(outUels = allocVector(VECSXP, symDim));
       rgdxAlloc++;
-#if 0
-      for (iDim = 0;  iDim < symDim;  iDim++) {
-        SET_VECTOR_ELT(outUels, iDim, universe);
-      }
-#else
       xpFilterToUels (symDim, xpFilter, universe, outUels);
-#endif
     }
 
     /* Converting sparse data into full matrix */
