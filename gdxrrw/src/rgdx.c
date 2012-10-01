@@ -419,7 +419,7 @@ SEXP rgdx (SEXP args)
 
   if (withList) {
     checkRgdxList (requestList, rSpec, &rgdxAlloc);
-    if (rSpec->compress == 1 && rSpec->withUel) {
+    if (rSpec->compress && rSpec->withUel) {
       error("Compression is not allowed with input UELs");
     }
   }
@@ -747,11 +747,9 @@ SEXP rgdx (SEXP args)
     } /* if (withUel .. else .. ) */
 
     /* Converting data into its compressed form. */
-    if (rSpec->compress == 1) {
+    if (rSpec->compress) {
       PROTECT(outUels = allocVector(VECSXP, symDim));
       rgdxAlloc++;
-      /* might make sense to use the domain info as the start point,
-       * not the universe: could be much faster */
       compressData (outValSp, universe, outUels, nUEL, symDim, mrows);
     }
     /* Creating outUels if none entered */

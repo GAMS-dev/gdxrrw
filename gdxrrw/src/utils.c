@@ -117,6 +117,20 @@ checkStringLength (const char *str)
   }
 } /* checkStringLength */
 
+/* compressDataNew: compress the $vals data (in sparse form)
+ * and also the associated domains.
+ * in/out: spVals - $vals to output
+ *     in: uni, nUni - universe of uels and its size/count
+ *     in: symDim - symbol dimension
+ *     in: mRows - nonzeros in symbol / rows in $vals
+ *    out: uels - $uels to output
+*/
+void
+compressDataNew (SEXP spVals, SEXP uni, int nUni, int symDim, int mRows,
+                 SEXP uels)
+{
+} /* compressDataNew */
+
 /* compressData
  * compresses the raw data (both value and uel)
  * and removes redundant zeros from
