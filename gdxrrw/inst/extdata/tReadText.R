@@ -258,15 +258,13 @@ tryCatch({
     stop (paste("test rgdx(c,full,unfiltered,uncompressed) failed",chk$msg))
   }
 
-  ## it is helpful to put the names with the array
-  ## we should consider doing this with the return $val!!
-  v <- array(0,c(uCard,uCard),dimnames=list(u,u))
+  v <- array(0,c(iCard,jCard),dimnames=list(iUels,jUels))
   v['i1','j1'] <- 1;
   v['i1','j3'] <- 1;
   v['i2','j2'] <- 1;
   v['i2','j3'] <- 1;
   v['i3','j3'] <- 1;
-  te <- array("",c(uCard,uCard),dimnames=list(u,u))
+  te <- array("",c(iCard,jCard),dimnames=list(iUels,jUels))
   te['i1','j1'] <- "one.one";
   te['i1','j3'] <- "one.three";
   te['i2','j2'] <- "two.two";
@@ -275,7 +273,7 @@ tryCatch({
   ijwant <- list(name="IJ", type="set", dim=2,
                  val=v,
                  form="full",
-                 uels=list(u,u),
+                 uels=list(iUels,jUels),
                  ts='',
                  te=te)
   ij <- rgdx(fnIn,list(name='ij',form='full',te=TRUE,ts=TRUE))
@@ -284,13 +282,13 @@ tryCatch({
     stop (paste("test rgdx(ij,full,unfiltered,uncompressed) failed",chk$msg))
   }
 
-  v <- array(0,c(uCard,uCard,uCard),dimnames=list(u,u,u))
+  v <- array(0,c(iCard,jCard,cCard),dimnames=list(iUels,jUels,cUels))
   v['i1','j1','berlin'] <- 1;
   v['i1','j3','berlin'] <- 1;
   v['i2','j2','paris' ] <- 1;
   v['i2','j3','paris' ] <- 1;
   v['i3','j3','vienna'] <- 1;
-  te <- array("",c(uCard,uCard,uCard),dimnames=list(u,u,u))
+  te <- array("",c(iCard,jCard,cCard),dimnames=list(iUels,jUels,cUels))
   te['i1','j1','berlin'] <- "eins eins tempelhof";
   te['i1','j3','berlin'] <- "eins drei tempelhof";
   te['i2','j2','paris' ] <- "deux deux orly";
@@ -299,7 +297,7 @@ tryCatch({
   ijcwant <- list(name="IJc", type="set", dim=3,
                   val=v,
                   form="full",
-                  uels=list(u,u,u),
+                  uels=list(iUels,jUels,cUels),
                   te=te)
   ijc <- rgdx(fnIn,list(name='ijc',form='full',te=TRUE))
   chk <- chkRgdxRes (ijc, ijcwant)
