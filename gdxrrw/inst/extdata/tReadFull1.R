@@ -7,21 +7,6 @@ if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
 source ("chkSame.R")
 
-# compare the set s to the universe, return TRUE if the same, FALSE o/w
-chkUni <- function(uni,s) {
-  if (! is.vector(s))     return (FALSE)
-  if (! is.vector(uni))   return (FALSE)
-  n <- length(uni)
-  if (n != length(s))     return (FALSE)
-  for (k in c(1:n)) {
-    if (uni[k] != s[k]) {
-      print ("chkUni: UEL with index ", k, " is wrong")
-      return (FALSE)
-    }
-  }
-  return (TRUE)
-}
-
 iUels <- c("seattle", "san-diego")
 iCard <- length(iUels)
 jUels <- c("new-york", "chicago", "topeka")
@@ -55,6 +40,7 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx('gdxname') to read universe failed",chk$msg))
   }
+  print ("Done reading universe")
 
   i <- rgdx('trnsport',list(name='i',form='full'))
   iwant <- list(name="i", type="set", dim=1,

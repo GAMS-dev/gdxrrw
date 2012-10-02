@@ -310,6 +310,11 @@ chkRgdxRes <- function(f1, f2) {
       }
       if (! chkSameVec ("", f1[[k]], f2[[k]])) return (r)
     }
+    else if ("field" == f2Names[[k]]) {
+      if (! is.character(f1[[k]]))   return (r)
+      if (! is.character(f2[[k]]))   return (r)
+      if (f1[[k]] != f2[[k]])        return (r)
+    }
     else {
       return (r)
     }
