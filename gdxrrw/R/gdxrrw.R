@@ -127,6 +127,7 @@ rgdx.param <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, s
   dflist[[fnames[[symDim+1]]]] <- sym$val[,symDim+1]
   symDF <- data.frame(dflist)
   attr(symDF,"symName") <- sym$name
+  attr(symDF,"domains") <- sym$domains
   if (ts) {
     attr(symDF,"ts") <- sym$ts
   }
@@ -209,6 +210,7 @@ rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, use
   }
   symDF <- data.frame(dflist)
   attr(symDF,"symName") <- sym$name
+  attr(symDF,"domains") <- sym$domains
   if (ts) {
     attr(symDF,"ts") <- sym$ts
   }
