@@ -63,7 +63,7 @@ iwant <- list(name="I", type="set", dim=1,
               form="sparse",
               uels=list(iUels),
               domains=c('_compressed'))
-i <- rgdx(fnIn,list(name='i',form='sparse',compress=compress),useDomInfo=useDomInfo)
+i <- rgdx(fnIn,list(name='i',form='sparse',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (i, iwant)
 if (!chk$same) {
   stop (paste("test rgdx(i,sparse) failed",chk$msg))
@@ -74,7 +74,7 @@ jwant <- list(name="J", type="set", dim=1,
               form="sparse",
               uels=list(jUels),
               domains=c('_compressed'))
-j <- rgdx(fnIn,list(name='j',form='sparse',compress=compress),useDomInfo=useDomInfo)
+j <- rgdx(fnIn,list(name='j',form='sparse',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (j, jwant)
 if (!chk$same) {
   stop (paste("test rgdx(j,sparse) failed",chk$msg))
@@ -85,7 +85,7 @@ awant <- list(name="A", type="parameter", dim=2,
               form="sparse",
               uels=aUels,
               domains=c('_compressed','_compressed'))
-a <- rgdx(fnIn,list(name='a',form='sparse',compress=compress),useDomInfo=useDomInfo)
+a <- rgdx(fnIn,list(name='a',form='sparse',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (a, awant)
 if (!chk$same) {
   stop (paste("test rgdx(a,sparse) failed",chk$msg))
@@ -96,7 +96,7 @@ bwant <- list(name="B", type="parameter", dim=2,
               form="sparse",
               uels=bUels,
               domains=c('_compressed','_compressed'))
-b <- rgdx(fnIn,list(name='b',form='sparse',compress=compress),useDomInfo=useDomInfo)
+b <- rgdx(fnIn,list(name='b',form='sparse',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (b, bwant)
 if (!chk$same) {
   stop (paste("test rgdx(b,sparse) failed",chk$msg))
@@ -107,7 +107,7 @@ dwant <- list(name="D", type="parameter", dim=2,
               form="sparse",
               uels=dUels,
               domains=c('_compressed','_compressed'))
-d <- rgdx(fnIn,list(name='d',form='sparse',compress=compress),useDomInfo=useDomInfo)
+d <- rgdx(fnIn,list(name='d',form='sparse',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (d, dwant)
 if (!chk$same) {
   stop (paste("test rgdx(d,sparse) failed",chk$msg))
@@ -118,7 +118,7 @@ ewant <- list(name="E", type="parameter", dim=2,
               form="sparse",
               uels=eUels,
               domains=c('_compressed','_compressed'))
-e <- rgdx(fnIn,list(name='e',form='sparse',compress=compress),useDomInfo=useDomInfo)
+e <- rgdx(fnIn,list(name='e',form='sparse',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (e, ewant)
 if (!chk$same) {
   stop (paste("test rgdx(e,sparse) failed",chk$msg))
@@ -129,7 +129,7 @@ cwant <- list(name="c", type="parameter", dim=1,
               form="sparse",
               uels=cUels,
               domains=c('_compressed'))
-c <- rgdx(fnIn,list(name='c',form='sparse',compress=compress),useDomInfo=useDomInfo)
+c <- rgdx(fnIn,list(name='c',form='sparse',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (c, cwant)
 if (!chk$same) {
   stop (paste("test rgdx(c,sparse) failed",chk$msg))
@@ -143,7 +143,7 @@ iwant <- list(name="I", type="set", dim=1,
               form="full",
               uels=list(iUels),
               domains=c('_compressed'))
-i <- rgdx(fnIn,list(name='i',form='full',compress=compress),useDomInfo=useDomInfo)
+i <- rgdx(fnIn,list(name='i',form='full',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (i, iwant)
 if (!chk$same) {
   stop (paste("test rgdx(i,full) failed",chk$msg))
@@ -154,7 +154,7 @@ jwant <- list(name="J", type="set", dim=1,
               form="full",
               uels=list(jUels),
               domains=c('_compressed'))
-j <- rgdx(fnIn,list(name='j',form='full',compress=compress),useDomInfo=useDomInfo)
+j <- rgdx(fnIn,list(name='j',form='full',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (j, jwant)
 if (!chk$same) {
   stop (paste("test rgdx(j,full) failed",chk$msg))
@@ -165,7 +165,7 @@ awant <- list(name="A", type="parameter", dim=2,
               form="full",
               uels=aUels,
               domains=c('_compressed','_compressed'))
-a <- rgdx(fnIn,list(name='a',form='full',compress=compress),useDomInfo=useDomInfo)
+a <- rgdx(fnIn,list(name='a',form='full',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (a, awant)
 if (!chk$same) {
   stop (paste("test rgdx(a,full) failed",chk$msg))
@@ -176,7 +176,7 @@ bwant <- list(name="B", type="parameter", dim=2,
               form="full",
               uels=bUels,
               domains=c('_compressed','_compressed'))
-b <- rgdx(fnIn,list(name='b',form='full',compress=compress),useDomInfo=useDomInfo)
+b <- rgdx(fnIn,list(name='b',form='full',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (b, bwant)
 if (!chk$same) {
   stop (paste("test rgdx(b,full) failed",chk$msg))
@@ -187,7 +187,7 @@ dwant <- list(name="D", type="parameter", dim=2,
               form="full",
               uels=dUels,
               domains=c('_compressed','_compressed'))
-d <- rgdx(fnIn,list(name='d',form='full',compress=compress),useDomInfo=useDomInfo)
+d <- rgdx(fnIn,list(name='d',form='full',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (d, dwant)
 if (!chk$same) {
   stop (paste("test rgdx(d,full) failed",chk$msg))
@@ -198,7 +198,7 @@ ewant <- list(name="E", type="parameter", dim=2,
               form="full",
               uels=eUels,
               domains=c('_compressed','_compressed'))
-e <- rgdx(fnIn,list(name='e',form='full',compress=compress),useDomInfo=useDomInfo)
+e <- rgdx(fnIn,list(name='e',form='full',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (e, ewant)
 if (!chk$same) {
   stop (paste("test rgdx(e,full) failed",chk$msg))
@@ -209,7 +209,7 @@ cwant <- list(name="c", type="parameter", dim=1,
               form="full",
               uels=cUels,
               domains=c('_compressed'))
-c <- rgdx(fnIn,list(name='c',form='full',compress=compress),useDomInfo=useDomInfo)
+c <- rgdx(fnIn,list(name='c',form='full',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (c, cwant)
 if (!chk$same) {
   stop (paste("test rgdx(c,full) failed",chk$msg))

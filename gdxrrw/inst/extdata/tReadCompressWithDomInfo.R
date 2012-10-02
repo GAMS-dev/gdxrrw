@@ -10,7 +10,6 @@ tryCatch({
   if (! file_test ('-f', fnIn)) {
     stop (paste("FAIL: File", fnIn, "does not exist"))
   }
-  compress <- TRUE
   useDomInfo <- TRUE                    # the default
 
   source ("tReadCompressBody.R")
