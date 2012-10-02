@@ -52,6 +52,7 @@ eUels <- list(c('i3'),jUels)
 
 cVals <- matrix(c(1,1.1,
                   2,5.1), nrow=2, ncol=2, byrow=TRUE)
+cFull <- matrix(c(1.1, 5.1), nrow=2,ncol=1)
 cUels <- list(c("j1", "j5"))
 
 
@@ -60,7 +61,8 @@ cUels <- list(c("j1", "j5"))
 iwant <- list(name="I", type="set", dim=1,
               val=iVals,
               form="sparse",
-              uels=list(iUels))
+              uels=list(iUels),
+              domains=c('_compressed'))
 i <- rgdx(fnIn,list(name='i',form='sparse',compress=compress),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (i, iwant)
 if (!chk$same) {
@@ -70,7 +72,8 @@ if (!chk$same) {
 jwant <- list(name="J", type="set", dim=1,
               val=jVals,
               form="sparse",
-              uels=list(jUels))
+              uels=list(jUels),
+              domains=c('_compressed'))
 j <- rgdx(fnIn,list(name='j',form='sparse',compress=compress),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (j, jwant)
 if (!chk$same) {
@@ -80,7 +83,8 @@ if (!chk$same) {
 awant <- list(name="A", type="parameter", dim=2,
               val=aVals,
               form="sparse",
-              uels=aUels)
+              uels=aUels,
+              domains=c('_compressed','_compressed'))
 a <- rgdx(fnIn,list(name='a',form='sparse',compress=compress),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (a, awant)
 if (!chk$same) {
@@ -90,7 +94,8 @@ if (!chk$same) {
 bwant <- list(name="B", type="parameter", dim=2,
               val=bVals,
               form="sparse",
-              uels=bUels)
+              uels=bUels,
+              domains=c('_compressed','_compressed'))
 b <- rgdx(fnIn,list(name='b',form='sparse',compress=compress),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (b, bwant)
 if (!chk$same) {
@@ -100,7 +105,8 @@ if (!chk$same) {
 dwant <- list(name="D", type="parameter", dim=2,
               val=dVals,
               form="sparse",
-              uels=dUels)
+              uels=dUels,
+              domains=c('_compressed','_compressed'))
 d <- rgdx(fnIn,list(name='d',form='sparse',compress=compress),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (d, dwant)
 if (!chk$same) {
@@ -110,7 +116,8 @@ if (!chk$same) {
 ewant <- list(name="E", type="parameter", dim=2,
               val=eVals,
               form="sparse",
-              uels=eUels)
+              uels=eUels,
+              domains=c('_compressed','_compressed'))
 e <- rgdx(fnIn,list(name='e',form='sparse',compress=compress),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (e, ewant)
 if (!chk$same) {
@@ -120,7 +127,8 @@ if (!chk$same) {
 cwant <- list(name="c", type="parameter", dim=1,
               val=cVals,
               form="sparse",
-              uels=cUels)
+              uels=cUels,
+              domains=c('_compressed'))
 c <- rgdx(fnIn,list(name='c',form='sparse',compress=compress),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (c, cwant)
 if (!chk$same) {
@@ -133,7 +141,8 @@ if (!chk$same) {
 iwant <- list(name="I", type="set", dim=1,
               val=iOnes,
               form="full",
-              uels=list(iUels))
+              uels=list(iUels),
+              domains=c('_compressed'))
 i <- rgdx(fnIn,list(name='i',form='full',compress=compress),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (i, iwant)
 if (!chk$same) {
@@ -143,7 +152,8 @@ if (!chk$same) {
 jwant <- list(name="J", type="set", dim=1,
               val=jOnes,
               form="full",
-              uels=list(jUels))
+              uels=list(jUels),
+              domains=c('_compressed'))
 j <- rgdx(fnIn,list(name='j',form='full',compress=compress),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (j, jwant)
 if (!chk$same) {
@@ -153,7 +163,8 @@ if (!chk$same) {
 awant <- list(name="A", type="parameter", dim=2,
               val=aFull,
               form="full",
-              uels=aUels)
+              uels=aUels,
+              domains=c('_compressed','_compressed'))
 a <- rgdx(fnIn,list(name='a',form='full',compress=compress),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (a, awant)
 if (!chk$same) {
@@ -163,7 +174,8 @@ if (!chk$same) {
 bwant <- list(name="B", type="parameter", dim=2,
               val=bFull,
               form="full",
-              uels=bUels)
+              uels=bUels,
+              domains=c('_compressed','_compressed'))
 b <- rgdx(fnIn,list(name='b',form='full',compress=compress),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (b, bwant)
 if (!chk$same) {
@@ -173,7 +185,8 @@ if (!chk$same) {
 dwant <- list(name="D", type="parameter", dim=2,
               val=dFull,
               form="full",
-              uels=dUels)
+              uels=dUels,
+              domains=c('_compressed','_compressed'))
 d <- rgdx(fnIn,list(name='d',form='full',compress=compress),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (d, dwant)
 if (!chk$same) {
@@ -183,10 +196,22 @@ if (!chk$same) {
 ewant <- list(name="E", type="parameter", dim=2,
               val=eFull,
               form="full",
-              uels=eUels)
+              uels=eUels,
+              domains=c('_compressed','_compressed'))
 e <- rgdx(fnIn,list(name='e',form='full',compress=compress),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (e, ewant)
 if (!chk$same) {
   stop (paste("test rgdx(e,full) failed",chk$msg))
+}
+
+cwant <- list(name="c", type="parameter", dim=1,
+              val=cFull,
+              form="full",
+              uels=cUels,
+              domains=c('_compressed'))
+c <- rgdx(fnIn,list(name='c',form='full',compress=compress),useDomInfo=useDomInfo)
+chk <- chkRgdxRes (c, cwant)
+if (!chk$same) {
+  stop (paste("test rgdx(c,full) failed",chk$msg))
 }
 
