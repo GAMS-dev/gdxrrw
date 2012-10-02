@@ -1,6 +1,9 @@
 ### Test rgdx, rgdx.param with special values and zero
 # We read a parameter containing special values and test the results
 
+if (! require(gdxrrw))      stop ("gdxrrw package is not available")
+if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
+
 tryCatch({
   print ("test reading special values with form='sparse' and no filter")
   rgdx('?')

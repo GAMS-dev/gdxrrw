@@ -2,6 +2,9 @@
 # We write all the transport data using full writes and universe
 # subsets, with or without values
 
+if (! require(gdxrrw))      stop ("gdxrrw package is not available")
+if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
+
 tryCatch({
 
   fn <- "twd2.gdx"

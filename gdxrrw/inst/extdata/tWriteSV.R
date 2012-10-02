@@ -1,5 +1,8 @@
 ### Test wgdx with special values and zero
 
+if (! require(gdxrrw))      stop ("gdxrrw package is not available")
+if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
+
 tryCatch({
 
   print ("test writing special values with form='sparse' and no filter")

@@ -1,6 +1,9 @@
 ### Test gdxInfo
 # with returnDF=TRUE we get data frames with symbol info for the transport data
 
+if (! require(gdxrrw))      stop ("gdxrrw package is not available")
+if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
+
 # compare the data frames f1 and f2, return TRUE if the same, FALSE o/w
 chkFrame <- function(s, f1, f2) {
   if (! is.data.frame(f1))   return (FALSE)

@@ -1,6 +1,9 @@
 #### test rgdx errors: some things should be an error,
 #### and we expect certain behavior in these cases
 
+if (! require(gdxrrw))      stop ("gdxrrw package is not available")
+if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
+
 tryCatch({
   print ("testing error detection and handling for rgdx")
   rgdx('?')

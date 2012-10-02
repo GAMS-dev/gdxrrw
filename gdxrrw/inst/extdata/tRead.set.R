@@ -3,6 +3,9 @@
 # first from GDX and then from .csv files produced by GAMS,
 # and compare the contents to be sure we get the same results
 
+if (! require(gdxrrw))      stop ("gdxrrw package is not available")
+if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
+
 tryCatch({
   ix <- rgdx.set('ijk','i',names="I")
   jx <- rgdx.set('ijk','j',names="J")

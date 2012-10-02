@@ -2,6 +2,9 @@
 # We read the transport data using defaults: form=sparse and a full universe
 # This test does near-exhaustive checks on the returned structure
 
+if (! require(gdxrrw))      stop ("gdxrrw package is not available")
+if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
+
 tryCatch({
   print ("Test rgdx with defaults (form='sparse' and no filter)")
   print ("using the transport data as input")

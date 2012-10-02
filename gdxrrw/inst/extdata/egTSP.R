@@ -1,8 +1,11 @@
+
+if (! require(gdxrrw))      stop ("gdxrrw package is not available")
+if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
+
 fnData <- "eurodist.gdx"
 fnSol <- "eurosol.gdx"
 suppressWarnings(file.remove(fnData,fnSol))
 
-if (! require(stats))  stop ("stats package is not available")
 n <- attr(eurodist,"Size")
 cities <- attr(eurodist,"Labels")
 uu <- list(c(cities))
@@ -47,8 +50,6 @@ for (j in c(1:n)) {
 }
 solSeq[n+1] <- 1
 if (k != 1)  stop ("Bogus tour specified")
-
-if (! require(graphics))  stop ("graphics package is not available")
 
 
 loc <- cmdscale(eurodist)

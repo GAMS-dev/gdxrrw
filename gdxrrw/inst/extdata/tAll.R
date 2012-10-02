@@ -1,5 +1,8 @@
 ### run through all the tests
 
+if (! require(gdxrrw))      stop ("gdxrrw package is not available")
+if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
+
 tests <- c("tReadSparse1", "tReadFull1",
            "tRead.set", "tRead.param",
            "tReadSV", "tReadText",

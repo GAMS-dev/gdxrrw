@@ -2,6 +2,9 @@
 ### N.B.  This test depends on the domain info in the GDX file
 ### wanted lists produced with    dump("listName",file="")
 
+if (! require(gdxrrw))      stop ("gdxrrw package is not available")
+if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
+
 source ("chkSame.R")
 
 # compare the set s to the universe, return TRUE if the same, FALSE o/w
