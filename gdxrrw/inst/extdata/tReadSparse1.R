@@ -29,12 +29,11 @@ tryCatch({
     }
   }
 
-  lst <- list(name='i')
-  i <- rgdx('trnsport',lst)
+  i <- rgdx('trnsport',list(name='i'))
   if (!is.list(i))
     stop ("Expected rgdx output to be in list form")
-  if (length(i) != 6)
-    stop ("Expected the list returned to have 6 components")
+  if (length(i) != 7)
+    stop ("Expected the list returned to have 7 components")
   if (i$name != 'i')
     stop ("Expected i$name to be 'i', got ", i$name)
   if (i$type != "set")
@@ -55,12 +54,14 @@ tryCatch({
       stop ("Bad data in i$val, row ", k)
     }
   }
-  lst <- list(name='j')
-  j <- rgdx('trnsport',lst)
+  if (i$domains[[1]] != "*")
+    stop ("Expected i$domains[[1]] to be '*', got ", i$domains[[1]])
+
+  j <- rgdx('trnsport',list(name='j'))
   if (!is.list(j))
     stop ("Expected rgdx output to be in list form")
-  if (length(j) != 6)
-    stop ("Expected the list returned to have 6 components")
+  if (length(j) != 7)
+    stop ("Expected the list returned to have 7 components")
   if (j$name != 'j')
     stop ("Expected j$name to be 'j', got ", j$name)
   if (j$type != "set")
@@ -81,13 +82,14 @@ tryCatch({
       stop ("Bad data in j$val, row ", k)
     }
   }
+  if (j$domains[[1]] != "*")
+    stop ("Expected j$domains[[1]] to be '*', got ", j$domains[[1]])
 
-  lst <- list(name='f')
-  f <- rgdx('trnsport',lst)
+  f <- rgdx('trnsport',list(name='f'))
   if (!is.list(f))
     stop ("Expected rgdx output to be in list form")
-  if (length(f) != 6)
-    stop ("Expected the list returned to have 6 components")
+  if (length(f) != 7)
+    stop ("Expected the list returned to have 7 components")
   if (f$name != 'f')
     stop ("Expected f$name to be 'f', got ", f$name)
   if (f$type != "parameter")
@@ -104,13 +106,14 @@ tryCatch({
     stop ("Expected dim(f$val)[2] to be 1")
   if (f$val[1,1] != 90)
     stop ("Bad data in f$val, row 1")
+  if (0 != length(f$domains))
+    stop ("Expected length(f$domains) to be 0, got ", length(f$domains))
 
-  lst <- list(name='a')
-  a <- rgdx('trnsport',lst)
+  a <- rgdx('trnsport',list(name='a'))
   if (!is.list(a))
     stop ("Expected rgdx output to be in list form")
-  if (length(a) != 6)
-    stop ("Expected the list returned to have 6 components")
+  if (length(a) != 7)
+    stop ("Expected the list returned to have 7 components")
   if (a$name != 'a')
     stop ("Expected a$name to be 'a', got ", a$name)
   if (a$type != "parameter")
@@ -133,13 +136,14 @@ tryCatch({
       }
     }
   }
+  if (a$domains[[1]] != "i")
+    stop ("Expected a$domains[[1]] to be 'i', got ", a$domains[[1]])
 
-  lst <- list(name='b')
-  b <- rgdx('trnsport',lst)
+  b <- rgdx('trnsport',list(name='b'))
   if (!is.list(b))
     stop ("Expected rgdx output to be in list form")
-  if (length(b) != 6)
-    stop ("Expected the list returned to have 6 components")
+  if (length(b) != 7)
+    stop ("Expected the list returned to have 7 components")
   if (b$name != 'b')
     stop ("Expected b$name to be 'b', got ", b$name)
   if (b$type != "parameter")
@@ -162,13 +166,14 @@ tryCatch({
       }
     }
   }
+  if (b$domains[[1]] != "j")
+    stop ("Expected b$domains[[1]] to be 'j', got ", b$domains[[1]])
 
-  lst <- list(name='c')
-  c <- rgdx('trnsport',lst)
+  c <- rgdx('trnsport',list(name='c'))
   if (!is.list(c))
     stop ("Expected rgdx output to be in list form")
-  if (length(c) != 6)
-    stop ("Expected the list returned to have 6 components")
+  if (length(c) != 7)
+    stop ("Expected the list returned to have 7 components")
   if (c$name != 'c')
     stop ("Expected c$name to be 'c', got ", c$name)
   if (c$type != "parameter")
@@ -196,13 +201,16 @@ tryCatch({
       }
     }
   }
+  if (c$domains[[1]] != "i")
+    stop ("Expected c$domains[[1]] to be 'i', got ", c$domains[[1]])
+  if (c$domains[[2]] != "j")
+    stop ("Expected c$domains[[2]] to be 'j', got ", c$domains[[2]])
 
-  lst <- list(name='d')
-  d <- rgdx('trnsport',lst)
+  d <- rgdx('trnsport',list(name='d'))
   if (!is.list(d))
     stop ("Expected rgdx output to be in list form")
-  if (length(d) != 6)
-    stop ("Expected the list returned to have 6 components")
+  if (length(d) != 7)
+    stop ("Expected the list returned to have 7 components")
   if (d$name != 'd')
     stop ("Expected d$name to be 'd', got ", d$name)
   if (d$type != "parameter")
@@ -230,13 +238,16 @@ tryCatch({
       }
     }
   }
+  if (d$domains[[1]] != "i")
+    stop ("Expected d$domains[[1]] to be 'i', got ", d$domains[[1]])
+  if (d$domains[[2]] != "j")
+    stop ("Expected d$domains[[2]] to be 'j', got ", d$domains[[2]])
 
-  lst <- list(name='x')
-  x <- rgdx('trnsport',lst)
+  x <- rgdx('trnsport',list(name='x'))
   if (!is.list(x))
     stop ("Expected rgdx output to be in list form")
-  if (length(x) != 7)
-    stop ("Expected the list returned to have 7 components")
+  if (length(x) != 8)
+    stop ("Expected the list returned to have 8 components")
   if (x$name != 'x')
     stop ("Expected x$name to be 'x', got ", x$name)
   if (x$type != "variable")
@@ -264,13 +275,16 @@ tryCatch({
       }
     }
   }
+  if (x$domains[[1]] != "i")
+    stop ("Expected x$domains[[1]] to be 'i', got ", x$domains[[1]])
+  if (x$domains[[2]] != "j")
+    stop ("Expected x$domains[[2]] to be 'j', got ", x$domains[[2]])
 
-  lst <- list(name='z')
-  z <- rgdx('trnsport',lst)
+  z <- rgdx('trnsport',list(name='z'))
   if (!is.list(z))
     stop ("Expected rgdx output to be in list form")
-  if (length(z) != 7)
-    stop ("Expected the list returned to have 7 components")
+  if (length(z) != 8)
+    stop ("Expected the list returned to have 8 components")
   if (z$name != 'z')
     stop ("Expected z$name to be 'z', got ", z$name)
   if (z$type != "variable")
@@ -289,6 +303,8 @@ tryCatch({
     stop ("Expected dim(z$val)[2] to be 1")
   if (z$val[1,1] != 153.675)
     stop ("Bad data in z$val")
+  if (0 != length(z$domains))
+    stop ("Expected length(z$domains) to be 0, got ", length(z$domains))
 
 
   print ("Successfully completed tests")
