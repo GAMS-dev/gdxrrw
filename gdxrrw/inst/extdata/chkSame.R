@@ -263,6 +263,9 @@ chkRgdxRes <- function(f1, f2) {
         if (! chkSameArray (f1[[k]], f2[[k]])) return (r)
       }
     }
+    else if ("domains" == f2Names[[k]]) {
+      if (! chkSameVec ("", f1[[k]], f2[[k]])) return (r)
+    }
     else {
       return (r)
     }

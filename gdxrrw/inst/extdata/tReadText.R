@@ -38,7 +38,7 @@ tryCatch({
   iwant <- list(name="I", type="set", dim=1,
                 val=matrix(c(1:4), nrow=4, ncol=1),
                 form="sparse",
-                uels=list(u), te=iText)
+                uels=list(u), domains=c("*"), te=iText)
   i <- rgdx(fnIn,list(name='i',form='sparse',te=TRUE))
   chk <- chkRgdxRes (i, iwant)
   if (!chk$same) {
@@ -48,7 +48,7 @@ tryCatch({
   jwant <- list(name="J", type="set", dim=1,
                 val=matrix(c(5:7), nrow=3, ncol=1),
                 form="sparse",
-                uels=list(u),
+                uels=list(u), domains=c("*"),
                 te=jText)
   j <- rgdx(fnIn,list(name='j',form='sparse',te=TRUE))
   chk <- chkRgdxRes (j, jwant)
@@ -59,7 +59,7 @@ tryCatch({
   cwant <- list(name="c", type="set", dim=1,
                 val=matrix(c(8:10), nrow=3, ncol=1),
                 form="sparse",
-                uels=list(u),
+                uels=list(u), domains=c("*"),
                 ts='cities',
                 te=cText)
   c <- rgdx(fnIn,list(name='c',form='sparse',te=TRUE,ts=TRUE))
@@ -75,7 +75,7 @@ tryCatch({
                               2,3,
                               3,3), nrow=5, ncol=2, byrow=TRUE),
                  form="sparse",
-                 uels=list(iUels,jUels),
+                 uels=list(iUels,jUels), domains=c("I","J"),
                  ts='',
                  te=c("one.one", "one.three", "two.two", "two.three", "three.three"))
   ij <- rgdx(fnIn,list(name='ij',form='sparse',te=TRUE,ts=TRUE))
@@ -92,7 +92,7 @@ tryCatch({
 			       3,3,3),
                              nrow=5, ncol=3, byrow=TRUE),
                   form="sparse",
-                  uels=list(iUels,jUels,cUels),
+                  uels=list(iUels,jUels,cUels), domains=c("I","J","c"),
                   te=c("eins eins tempelhof", "eins drei tempelhof", "deux deux orly",
                     "deux trois orly", "drei drei schwechat"))
   ijc <- rgdx(fnIn,list(name='ijc',form='sparse',te=TRUE))
@@ -106,7 +106,7 @@ tryCatch({
   iwant <- list(name="I", type="set", dim=1,
                 val=matrix(c(1:4), nrow=4, ncol=1),
                 form="sparse",
-                uels=list(iUels), te=iText)
+                uels=list(iUels), domains=c("_compressed"), te=iText)
   i <- rgdx(fnIn,list(name='i',form='sparse',te=TRUE,compress=TRUE))
   chk <- chkRgdxRes (i, iwant)
   if (!chk$same) {
@@ -116,7 +116,7 @@ tryCatch({
   jwant <- list(name="J", type="set", dim=1,
                 val=matrix(c(1:3), nrow=3, ncol=1),
                 form="sparse",
-                uels=list(jUels),
+                uels=list(jUels), domains=c("_compressed"),
                 te=jText)
   j <- rgdx(fnIn,list(name='j',form='sparse',te=TRUE,compress=TRUE))
   chk <- chkRgdxRes (j, jwant)
@@ -132,6 +132,7 @@ tryCatch({
                               3,3), nrow=5, ncol=2, byrow=TRUE),
                  form="sparse",
                  uels=list(i2uels,jUels), # i4 is compressed out
+                 domains=c("_compressed","_compressed"),
                  ts='',
                  te=c("one.one", "one.three", "two.two", "two.three", "three.three"))
   ij <- rgdx(fnIn,list(name='ij',form='sparse',te=TRUE,ts=TRUE,compress=TRUE))
@@ -145,6 +146,7 @@ tryCatch({
                              nrow=5, ncol=3, byrow=TRUE),
                   form="sparse",
                   uels=list(iUels[1:3],jUels,cUels),
+                  domains=c("_compressed","_compressed","_compressed"),
                   te=c("eins eins tempelhof", "eins drei tempelhof", "deux deux orly",
                     "deux trois orly", "drei drei schwechat"))
   ijc <- rgdx(fnIn,list(name='ijc',form='sparse',te=TRUE,compress=TRUE))
@@ -158,7 +160,7 @@ tryCatch({
   iwant <- list(name="I", type="set", dim=1,
                 val=matrix(c(1:3), nrow=3, ncol=1),
                 form="sparse",
-                uels=list(ifUels), te=ifText)
+                uels=list(ifUels), domains=c("_user"), te=ifText)
   i <- rgdx(fnIn,list(name='i',form='sparse',uels=list(ifUels),te=TRUE))
   chk <- chkRgdxRes (i, iwant)
   if (!chk$same) {
@@ -168,7 +170,7 @@ tryCatch({
   jwant <- list(name="J", type="set", dim=1,
                 val=matrix(1:3, nrow=3, ncol=1),
                 form="sparse",
-                uels=list(jfUels),
+                uels=list(jfUels), domains=c("_user"),
                 te=jfText)
   j <- rgdx(fnIn,list(name='j',form='sparse',uels=list(jfUels),te=TRUE))
   chk <- chkRgdxRes (j, jwant)
@@ -179,7 +181,7 @@ tryCatch({
   cwant <- list(name="c", type="set", dim=1,
                 val=matrix(c(8:10), nrow=3, ncol=1),
                 form="sparse",
-                uels=list(u),
+                uels=list(u), domains=c("_user"),
                 ts='cities',
                 te=cText)
   c <- rgdx(fnIn,list(name='c',form='sparse',uels=list(u),te=TRUE,ts=TRUE))
@@ -191,7 +193,7 @@ tryCatch({
   ijwant <- list(name="IJ", type="set", dim=2,
                  val=matrix(c(1,2, 1,3, 2,3), nrow=3, ncol=2, byrow=TRUE),
                  form="sparse",
-                 uels=list(ifUels,jfUels),
+                 uels=list(ifUels,jfUels), domains=c("_user","_user"),
                  ts='',
                  te=c("two.two", "two.three", "three.three"))
   ij <- rgdx(fnIn,list(name='ij',form='sparse',uels=list(ifUels,jfUels),te=TRUE,ts=TRUE))
@@ -204,7 +206,7 @@ tryCatch({
                   val=matrix(c(1,2,9, 1,3,9, 2,3,10),
                              nrow=3, ncol=3, byrow=TRUE),
                   form="sparse",
-                  uels=list(ifUels,jfUels,u),
+                  uels=list(ifUels,jfUels,u), domains=c("_user","_user","_user"),
                   te=c("deux deux orly", "deux trois orly", "drei drei schwechat"))
   ijc <- rgdx(fnIn,list(name='ijc',form='sparse',uels=list(ifUels,jfUels,u),te=TRUE))
   chk <- chkRgdxRes (ijc, ijcwant)
@@ -221,7 +223,8 @@ tryCatch({
   iwant <- list(name="I", type="set", dim=1,
                 val=v,
                 form="full",
-                uels=list(u), te=te)
+                uels=list(u), domains=c("*"),
+                te=te)
   i <- rgdx(fnIn,list(name='i',form='full',te=TRUE))
   chk <- chkRgdxRes (i, iwant)
   if (!chk$same) {
@@ -236,7 +239,7 @@ tryCatch({
   jwant <- list(name="J", type="set", dim=1,
                 val=v,
                 form="full",
-                uels=list(u), te=te)
+                uels=list(u), domains=c("*"), te=te)
   j <- rgdx(fnIn,list(name='j',form='full',te=TRUE))
   chk <- chkRgdxRes (j, jwant)
   if (!chk$same) {
@@ -251,7 +254,7 @@ tryCatch({
   cwant <- list(name="c", type="set", dim=1,
                 val=v,
                 form="full",
-                uels=list(u), te=te)
+                uels=list(u), domains=c("*"), te=te)
   c <- rgdx(fnIn,list(name='c',form='full',te=TRUE))
   chk <- chkRgdxRes (c, cwant)
   if (!chk$same) {
@@ -273,7 +276,7 @@ tryCatch({
   ijwant <- list(name="IJ", type="set", dim=2,
                  val=v,
                  form="full",
-                 uels=list(iUels,jUels),
+                 uels=list(iUels,jUels), domains=c("I","J"),
                  ts='',
                  te=te)
   ij <- rgdx(fnIn,list(name='ij',form='full',te=TRUE,ts=TRUE))
@@ -297,7 +300,7 @@ tryCatch({
   ijcwant <- list(name="IJc", type="set", dim=3,
                   val=v,
                   form="full",
-                  uels=list(iUels,jUels,cUels),
+                  uels=list(iUels,jUels,cUels), domains=c("I","J","c"),
                   te=te)
   ijc <- rgdx(fnIn,list(name='ijc',form='full',te=TRUE))
   chk <- chkRgdxRes (ijc, ijcwant)
@@ -313,7 +316,7 @@ tryCatch({
   iwant <- list(name="I", type="set", dim=1,
                 val=v,
                 form="full",
-                uels=list(iUels), te=te)
+                uels=list(iUels), domains=c("_compressed"), te=te)
   i <- rgdx(fnIn,list(name='i',form='full',te=TRUE,compress=TRUE))
   chk <- chkRgdxRes (i, iwant)
   if (!chk$same) {
@@ -326,7 +329,7 @@ tryCatch({
   jwant <- list(name="J", type="set", dim=1,
                 val=v,
                 form="full",
-                uels=list(jUels),
+                uels=list(jUels), domains=c("_compressed"),
                 te=te)
   j <- rgdx(fnIn,list(name='j',form='full',te=TRUE,compress=TRUE))
   chk <- chkRgdxRes (j, jwant)
@@ -349,7 +352,7 @@ tryCatch({
   ijwant <- list(name="IJ", type="set", dim=2,
                  val=v,
                  form="full",
-                 uels=list(i2uels,jUels),
+                 uels=list(i2uels,jUels), domains=c("_compressed","_compressed"),
                  ts='',
                  te=te)
   ij <- rgdx(fnIn,list(name='ij',form='full',te=TRUE,ts=TRUE,compress=TRUE))
@@ -374,6 +377,7 @@ tryCatch({
                   val=v,
                   form="full",
                   uels=list(i2uels,jUels,cUels),
+                  domains=c("_compressed","_compressed","_compressed"),
                   te=te)
   ijc <- rgdx(fnIn,list(name='ijc',form='full',te=TRUE,compress=TRUE))
   chk <- chkRgdxRes (ijc, ijcwant)
@@ -389,7 +393,7 @@ tryCatch({
   iwant <- list(name="I", type="set", dim=1,
                 val=v,
                 form="full",
-                uels=list(ifUels), te=te)
+                uels=list(ifUels), domains=c("_user"), te=te)
   i <- rgdx(fnIn,list(name='i',form='full',uels=list(ifUels),te=TRUE))
   chk <- chkRgdxRes (i, iwant)
   if (!chk$same) {
@@ -402,7 +406,7 @@ tryCatch({
   jwant <- list(name="J", type="set", dim=1,
                 val=v,
                 form="full",
-                uels=list(jfUels),
+                uels=list(jfUels), domains=c("_user"),
                 te=te)
   j <- rgdx(fnIn,list(name='j',form='full',te=TRUE,uels=list(jfUels)))
   chk <- chkRgdxRes (j, jwant)
@@ -418,7 +422,7 @@ tryCatch({
   cwant <- list(name="c", type="set", dim=1,
                 val=v,
                 form="full",
-                uels=list(u),
+                uels=list(u), domains=c("_user"),
                 ts='cities',
                 te=te)
   c <- rgdx(fnIn,list(name='c',form='full',uels=list(u),te=TRUE,ts=TRUE))
@@ -438,7 +442,7 @@ tryCatch({
   ijwant <- list(name="IJ", type="set", dim=2,
                  val=v,
                  form="full",
-                 uels=list(ifUels,jfUels),
+                 uels=list(ifUels,jfUels), domains=c("_user","_user"),
                  ts='',
                  te=te)
   ij <- rgdx(fnIn,list(name='ij',form='full',te=TRUE,ts=TRUE,uels=list(ifUels,jfUels)))
@@ -458,7 +462,7 @@ tryCatch({
   ijcwant <- list(name="IJc", type="set", dim=3,
                   val=v,
                   form="full",
-                  uels=list(ifUels,jfUels,u),
+                  uels=list(ifUels,jfUels,u), domains=c("_user","_user","_user"),
                   te=te)
   ijc <- rgdx(fnIn,list(name='ijc',form='full',te=TRUE,uels=list(ifUels,jfUels,u)))
   chk <- chkRgdxRes (ijc, ijcwant)
