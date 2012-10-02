@@ -876,7 +876,7 @@ SEXP rgdx (SEXP args)
         } /* if rSpec->te */
         break;
       } /* switch(symDim) */
-    }
+    }   /* if dForm = full */
 
     /* Creating output string for symbol name */
     PROTECT(outName = allocVector(STRSXP, 1) );
@@ -917,6 +917,7 @@ SEXP rgdx (SEXP args)
     }
 
 
+    outElements++;       /* for domains */
     /* Create a string vector for symbol field */
     if (symType == GMS_DT_VAR || symType == GMS_DT_EQU) {
       outElements++;
@@ -951,9 +952,6 @@ SEXP rgdx (SEXP args)
     if (rSpec->te) {
       outElements++;
     }
-    if (useDomInfo) {
-      outElements++;
-    }
   } /* if (withList) aa */
   else {
     /* no requestList was input, so returning universe */
@@ -982,18 +980,18 @@ SEXP rgdx (SEXP args)
   SET_STRING_ELT(outListNames, 5, mkChar("uels"));
   if (withList) {
     SET_STRING_ELT(outListNames, 6, mkChar("domains"));
-    nField = 6;
+    nField = 7;
     if (symType == GMS_DT_VAR || symType == GMS_DT_EQU) {
-      nField++;
       SET_STRING_ELT(outListNames, nField, mkChar("field"));
+      nField++;
     }
     if (rSpec->ts) {
-      nField++;
       SET_STRING_ELT(outListNames, nField, mkChar("ts"));
+      nField++;
     }
     if (rSpec->te) {
-      nField++;
       SET_STRING_ELT(outListNames, nField, mkChar("te"));
+      nField++;
     }
   }
 
@@ -1020,23 +1018,23 @@ SEXP rgdx (SEXP args)
     }
     SET_VECTOR_ELT(outList, 6, outDomains);
 
-    nField = 6;
+    nField = 7;
     if (symType == GMS_DT_VAR || symType == GMS_DT_EQU) {
-      nField++;
       SET_VECTOR_ELT(outList, nField, outField);
+      nField++;
     }
     if (rSpec->ts) {
-      nField++;
       SET_VECTOR_ELT(outList, nField, outTs);
+      nField++;
     }
     if (rSpec->te) {
-      nField++;
       if (rSpec->dForm == full) {
         SET_VECTOR_ELT(outList, nField, outTeFull);
       }
       else {
         SET_VECTOR_ELT(outList, nField, outTeSp);
       }
+      nField++;
     }
   }
   else {
