@@ -28,7 +28,7 @@ uCard <- length(u)
 iwant <- list(name="I", type="set", dim=1,
               val=matrix(c(1:4), nrow=4, ncol=1),
               form="sparse",
-              uels=list(u), te=iText)
+              uels=list(u), domains=c("*"), te=iText)
 i <- rgdx(fnIn,list(name='i',form='sparse',te=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (i, iwant)
 if (!chk$same) {
@@ -38,7 +38,7 @@ if (!chk$same) {
 jwant <- list(name="J", type="set", dim=1,
               val=matrix(c(5:7), nrow=3, ncol=1),
               form="sparse",
-              uels=list(u),
+              uels=list(u), domains=c("*"),
               te=jText)
 j <- rgdx(fnIn,list(name='j',form='sparse',te=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (j, jwant)
@@ -49,7 +49,7 @@ if (!chk$same) {
 cwant <- list(name="c", type="set", dim=1,
               val=matrix(c(8:10), nrow=3, ncol=1),
               form="sparse",
-              uels=list(u),
+              uels=list(u), domains=c("*"),
               ts='cities',
               te=cText)
 c <- rgdx(fnIn,list(name='c',form='sparse',te=TRUE,ts=TRUE),useDomInfo=useDomInfo)
@@ -61,7 +61,7 @@ if (!chk$same) {
 ijwant <- list(name="IJ", type="set", dim=2,
                val=matrix(c(1,5, 1,7, 2,6, 2,7, 3,7), nrow=5, ncol=2, byrow=TRUE),
                form="sparse",
-               uels=list(u,u),
+               uels=list(u,u), domains=c("*","*"),
                ts='',
                te=c("one.one", "one.three", "two.two", "two.three", "three.three"))
 ij <- rgdx(fnIn,list(name='ij',form='sparse',te=TRUE,ts=TRUE),useDomInfo=useDomInfo)
@@ -74,7 +74,7 @@ ijcwant <- list(name="IJc", type="set", dim=3,
                 val=matrix(c(1,5,8, 1,7,8, 2,6,9, 2,7,9, 3,7,10),
                            nrow=5, ncol=3, byrow=TRUE),
                 form="sparse",
-                uels=list(u,u,u),
+                uels=list(u,u,u), domains=c("*","*","*"),
                 te=c("eins eins tempelhof", "eins drei tempelhof", "deux deux orly",
                   "deux trois orly", "drei drei schwechat"))
 ijc <- rgdx(fnIn,list(name='ijc',form='sparse',te=TRUE),useDomInfo=useDomInfo)
@@ -87,8 +87,7 @@ aicwant <- list(name="AIc", type="parameter", dim=2,
                 val=matrix(c(1,8,11, 1,9,12, 2,9,22, 2,10,23, 3,10,33),
                            nrow=5, ncol=3, byrow=TRUE),
                 form="sparse",
-                uels=list(u,u)
-                )
+                uels=list(u,u), domains=c("*","*") )
 aic <- rgdx(fnIn,list(name='aic',form='sparse'),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (aic, aicwant)
 if (!chk$same) {
@@ -103,7 +102,7 @@ aijcwant <- list(name="AIJc", type="parameter", dim=3,
                               3,7,10,333),
                    nrow=5, ncol=4, byrow=TRUE),
                 form="sparse",
-                uels=list(u,u,u)
+                uels=list(u,u,u), domains=c("*","*","*")
                 )
 aijc <- rgdx(fnIn,list(name='aijc',form='sparse'),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (aijc, aijcwant)
@@ -116,7 +115,7 @@ if (!chk$same) {
 iwant <- list(name="I", type="set", dim=1,
               val=matrix(c(1:4), nrow=4, ncol=1),
               form="sparse",
-              uels=list(iUels), te=iText)
+              uels=list(iUels), domains=c("_compressed"), te=iText)
 i <- rgdx(fnIn,list(name='i',form='sparse',te=TRUE,compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (i, iwant)
 if (!chk$same) {
@@ -126,7 +125,7 @@ if (!chk$same) {
 jwant <- list(name="J", type="set", dim=1,
               val=matrix(c(1:3), nrow=3, ncol=1),
               form="sparse",
-              uels=list(jUels),
+              uels=list(jUels), domains=c("_compressed"),
               te=jText)
 j <- rgdx(fnIn,list(name='j',form='sparse',te=TRUE,compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (j, jwant)
@@ -138,6 +137,7 @@ ijwant <- list(name="IJ", type="set", dim=2,
                val=matrix(c(1,1, 1,3, 2,2, 2,3, 3,3), nrow=5, ncol=2, byrow=TRUE),
                form="sparse",
                uels=list(i2uels,jUels), # i4 is compressed out
+               domains=c("_compressed","_compressed"),
                ts='',
                te=c("one.one", "one.three", "two.two", "two.three", "three.three"))
 ij <- rgdx(fnIn,list(name='ij',form='sparse',te=TRUE,ts=TRUE,compress=TRUE),useDomInfo=useDomInfo)
@@ -151,6 +151,7 @@ ijcwant <- list(name="IJc", type="set", dim=3,
                            nrow=5, ncol=3, byrow=TRUE),
                 form="sparse",
                 uels=list(iUels[1:3],jUels,cUels),
+                domains=c("_compressed","_compressed","_compressed"),
                 te=c("eins eins tempelhof", "eins drei tempelhof", "deux deux orly",
                   "deux trois orly", "drei drei schwechat"))
 ijc <- rgdx(fnIn,list(name='ijc',form='sparse',te=TRUE,compress=TRUE),useDomInfo=useDomInfo)
@@ -167,7 +168,9 @@ aicwant <- list(name="AIc", type="parameter", dim=2,
                              3,3,33),
                   nrow=5, ncol=3, byrow=TRUE),
                 form="sparse",
-                uels=list(iUels[1:3],cUels) )
+                uels=list(iUels[1:3],cUels),
+                domains=c("_compressed","_compressed") )
+
 aic <- rgdx(fnIn,list(name='aic',form='sparse',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (aic, aicwant)
 if (!chk$same) {
@@ -182,7 +185,8 @@ aijcwant <- list(name="AIJc", type="parameter", dim=3,
                               3,3,3,333),
                   nrow=5, ncol=4, byrow=TRUE),
                 form="sparse",
-                uels=list(iUels[1:3],jUels,cUels) )
+                uels=list(iUels[1:3],jUels,cUels),
+                domains=c("_compressed","_compressed","_compressed") )
 aijc <- rgdx(fnIn,list(name='aijc',form='sparse',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (aijc, aijcwant)
 if (!chk$same) {
@@ -194,7 +198,7 @@ if (!chk$same) {
 iwant <- list(name="I", type="set", dim=1,
               val=matrix(c(1:3), nrow=3, ncol=1),
               form="sparse",
-              uels=list(ifUels), te=ifText)
+              uels=list(ifUels), domains=c("_user"), te=ifText)
 i <- rgdx(fnIn,list(name='i',form='sparse',uels=list(ifUels),te=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (i, iwant)
 if (!chk$same) {
@@ -205,6 +209,7 @@ jwant <- list(name="J", type="set", dim=1,
               val=matrix(1:3, nrow=3, ncol=1),
               form="sparse",
               uels=list(jfUels),
+              domains=c("_user"),
               te=jfText)
 j <- rgdx(fnIn,list(name='j',form='sparse',uels=list(jfUels),te=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (j, jwant)
@@ -216,6 +221,7 @@ cwant <- list(name="c", type="set", dim=1,
               val=matrix(c(8:10), nrow=3, ncol=1),
               form="sparse",
               uels=list(u),
+              domains=c("_user"),
               ts='cities',
               te=cText)
 c <- rgdx(fnIn,list(name='c',form='sparse',uels=list(u),te=TRUE,ts=TRUE),useDomInfo=useDomInfo)
@@ -228,6 +234,7 @@ ijwant <- list(name="IJ", type="set", dim=2,
                val=matrix(c(1,2, 1,3, 2,3), nrow=3, ncol=2, byrow=TRUE),
                form="sparse",
                uels=list(ifUels,jfUels),
+               domains=c("_user","_user"),
                ts='',
                te=c("two.two", "two.three", "three.three"))
 ij <- rgdx(fnIn,list(name='ij',form='sparse',uels=list(ifUels,jfUels),te=TRUE,ts=TRUE),useDomInfo=useDomInfo)
@@ -241,6 +248,7 @@ ijcwant <- list(name="IJc", type="set", dim=3,
                            nrow=3, ncol=3, byrow=TRUE),
                 form="sparse",
                 uels=list(ifUels,jfUels,u),
+                domains=c("_user","_user","_user"),
                 te=c("deux deux orly", "deux trois orly", "drei drei schwechat"))
 ijc <- rgdx(fnIn,list(name='ijc',form='sparse',uels=list(ifUels,jfUels,u),te=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (ijc, ijcwant)
@@ -254,7 +262,8 @@ aicwant <- list(name="AIc", type="parameter", dim=2,
                               2,10,33),
                            nrow=3, ncol=3, byrow=TRUE),
                 form="sparse",
-                uels=list(ifUels,u) )
+                uels=list(ifUels,u),
+                domains=c("_user","_user") )
 aic <- rgdx(fnIn,list(name='aic',form='sparse',uels=list(ifUels,u)),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (aic, aicwant)
 if (!chk$same) {
@@ -267,7 +276,8 @@ aijcwant <- list(name="AIJc", type="parameter", dim=3,
                               2,3,10,333),
                            nrow=3, ncol=4, byrow=TRUE),
                 form="sparse",
-                uels=list(ifUels,jfUels,u) )
+                uels=list(ifUels,jfUels,u),
+                domains=c("_user","_user","_user") )
 aijc <- rgdx(fnIn,list(name='aijc',form='sparse',uels=list(ifUels,jfUels,u)),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (aijc, aijcwant)
 if (!chk$same) {
@@ -283,7 +293,7 @@ te[(1:iCard)] <- iText
 iwant <- list(name="I", type="set", dim=1,
               val=v,
               form="full",
-              uels=list(u), te=te)
+              uels=list(u), domains=c("*"), te=te)
 i <- rgdx(fnIn,list(name='i',form='full',te=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (i, iwant)
 if (!chk$same) {
@@ -298,7 +308,7 @@ te[jblock] <- jText
 jwant <- list(name="J", type="set", dim=1,
               val=v,
               form="full",
-              uels=list(u), te=te)
+              uels=list(u), domains=c("*"), te=te)
 j <- rgdx(fnIn,list(name='j',form='full',te=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (j, jwant)
 if (!chk$same) {
@@ -313,7 +323,7 @@ te[cblock] <- cText
 cwant <- list(name="c", type="set", dim=1,
               val=v,
               form="full",
-              uels=list(u), te=te)
+              uels=list(u), domains=c("*"), te=te)
 c <- rgdx(fnIn,list(name='c',form='full',te=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (c, cwant)
 if (!chk$same) {
@@ -337,7 +347,7 @@ te['i3','j3'] <- "three.three";
 ijwant <- list(name="IJ", type="set", dim=2,
                val=v,
                form="full",
-               uels=list(u,u),
+               uels=list(u,u), domains=c("*","*"),
                ts='',
                te=te)
 ij <- rgdx(fnIn,list(name='ij',form='full',te=TRUE,ts=TRUE),useDomInfo=useDomInfo)
@@ -361,7 +371,7 @@ te['i3','j3','vienna'] <- "drei drei schwechat";
 ijcwant <- list(name="IJc", type="set", dim=3,
                 val=v,
                 form="full",
-                uels=list(u,u,u),
+                uels=list(u,u,u), domains=c("*","*","*"),
                 te=te)
 ijc <- rgdx(fnIn,list(name='ijc',form='full',te=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (ijc, ijcwant)
@@ -378,7 +388,7 @@ v['i3','vienna'] <- 33;
 aicwant <- list(name="AIc", type="parameter", dim=2,
                 val=v,
                 form="full",
-                uels=list(u,u))
+                uels=list(u,u), domains=c("*","*"))
 aic <- rgdx(fnIn,list(name='aic',form='full'),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (aic, aicwant)
 if (!chk$same) {
@@ -394,7 +404,7 @@ v['i3','j3','vienna'] <- 333;
 aijcwant <- list(name="AIJc", type="parameter", dim=3,
                 val=v,
                 form="full",
-                uels=list(u,u,u))
+                uels=list(u,u,u), domains=c("*","*","*"))
 aijc <- rgdx(fnIn,list(name='aijc',form='full'),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (aijc, aijcwant)
 if (!chk$same) {
@@ -409,7 +419,7 @@ te[(1:iCard)] <- iText
 iwant <- list(name="I", type="set", dim=1,
               val=v,
               form="full",
-              uels=list(iUels), te=te)
+              uels=list(iUels), domains=c("_compressed"), te=te)
 i <- rgdx(fnIn,list(name='i',form='full',te=TRUE,compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (i, iwant)
 if (!chk$same) {
@@ -422,12 +432,26 @@ te[(1:jCard)] <- jText
 jwant <- list(name="J", type="set", dim=1,
               val=v,
               form="full",
-              uels=list(jUels),
+              uels=list(jUels), domains=c("_compressed"),
               te=te)
 j <- rgdx(fnIn,list(name='j',form='full',te=TRUE,compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (j, jwant)
 if (!chk$same) {
   stop (paste("test rgdx(j,full,unfiltered,compressed) failed",chk$msg))
+}
+
+v <- array(1,c(cCard,1))
+te <- array("",c(cCard,1))
+te[(1:cCard)] <- cText
+cwant <- list(name="c", type="set", dim=1,
+              val=v,
+              form="full",
+              uels=list(cUels), domains=c("_compressed"),
+              te=te)
+c <- rgdx(fnIn,list(name='c',form='full',te=TRUE,compress=TRUE),useDomInfo=useDomInfo)
+chk <- chkRgdxRes (c, cwant)
+if (!chk$same) {
+  stop (paste("test rgdx(c,full,unfiltered,compressed) failed",chk$msg))
 }
 
 v <- array(0,c(i2card,jCard),dimnames=list(i2uels,jUels))
@@ -446,6 +470,7 @@ ijwant <- list(name="IJ", type="set", dim=2,
                val=v,
                form="full",
                uels=list(i2uels,jUels),
+               domains=c("_compressed","_compressed"),
                ts='',
                te=te)
 ij <- rgdx(fnIn,list(name='ij',form='full',te=TRUE,ts=TRUE,compress=TRUE),useDomInfo=useDomInfo)
@@ -470,6 +495,7 @@ ijcwant <- list(name="IJc", type="set", dim=3,
                 val=v,
                 form="full",
                 uels=list(i2uels,jUels,cUels),
+                domains=c("_compressed","_compressed","_compressed"),
                 te=te)
 ijc <- rgdx(fnIn,list(name='ijc',form='full',te=TRUE,compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (ijc, ijcwant)
@@ -487,6 +513,7 @@ aicwant <- list(name="AIc", type="parameter", dim=2,
                 val=v,
                 form="full",
                 uels=list(i2uels,cUels),
+                domains=c("_compressed","_compressed"),
                 ts='')
 aic <- rgdx(fnIn,list(name='aic',form='full',ts=TRUE,compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (aic, aicwant)
@@ -503,7 +530,8 @@ v['i3','j3','vienna'] <- 333;
 aijcwant <- list(name="AIJc", type="parameter", dim=3,
                 val=v,
                 form="full",
-                uels=list(i2uels,jUels,cUels))
+                uels=list(i2uels,jUels,cUels),
+                domains=c("_compressed","_compressed","_compressed") )
 aijc <- rgdx(fnIn,list(name='aijc',form='full',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (aijc, aijcwant)
 if (!chk$same) {
@@ -518,7 +546,7 @@ te[(1:ifCard)] <- ifText
 iwant <- list(name="I", type="set", dim=1,
               val=v,
               form="full",
-              uels=list(ifUels), te=te)
+              uels=list(ifUels), domains=c("_user"), te=te)
 i <- rgdx(fnIn,list(name='i',form='full',uels=list(ifUels),te=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (i, iwant)
 if (!chk$same) {
@@ -532,6 +560,7 @@ jwant <- list(name="J", type="set", dim=1,
               val=v,
               form="full",
               uels=list(jfUels),
+              domains=c("_user"),
               te=te)
 j <- rgdx(fnIn,list(name='j',form='full',te=TRUE,uels=list(jfUels)),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (j, jwant)
@@ -548,6 +577,7 @@ cwant <- list(name="c", type="set", dim=1,
               val=v,
               form="full",
               uels=list(u),
+              domains=c("_user"),
               ts='cities',
               te=te)
 c <- rgdx(fnIn,list(name='c',form='full',uels=list(u),te=TRUE,ts=TRUE),useDomInfo=useDomInfo)
@@ -568,6 +598,7 @@ ijwant <- list(name="IJ", type="set", dim=2,
                val=v,
                form="full",
                uels=list(ifUels,jfUels),
+               domains=c("_user","_user"),
                ts='',
                te=te)
 ij <- rgdx(fnIn,list(name='ij',form='full',te=TRUE,ts=TRUE,uels=list(ifUels,jfUels)),useDomInfo=useDomInfo)
@@ -588,6 +619,7 @@ ijcwant <- list(name="IJc", type="set", dim=3,
                 val=v,
                 form="full",
                 uels=list(ifUels,jfUels,u),
+                domains=c("_user","_user","_user"),
                 te=te)
 ijc <- rgdx(fnIn,list(name='ijc',form='full',te=TRUE,uels=list(ifUels,jfUels,u)),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (ijc, ijcwant)
@@ -603,6 +635,7 @@ aicwant <- list(name="AIc", type="parameter", dim=2,
                 val=v,
                 form="full",
                 uels=list(ifUels,u),
+                domains=c("_user","_user"),
                 ts='')
 aic <- rgdx(fnIn,list(name='aic',form='full',ts=TRUE,uels=list(ifUels,u)),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (aic, aicwant)
@@ -618,6 +651,7 @@ aijcwant <- list(name="AIJc", type="parameter", dim=3,
                 val=v,
                 form="full",
                 uels=list(ifUels,jfUels,cUels),
+                domains=c("_user","_user","_user"),
                 ts='')
 aijc <- rgdx(fnIn,list(name='aijc',form='full',ts=TRUE,uels=list(ifUels,jfUels,cUels)),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (aijc, aijcwant)
