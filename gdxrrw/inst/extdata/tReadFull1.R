@@ -19,6 +19,23 @@ chkUni <- function(uni,s) {
   return (TRUE)
 }
 
+iUels <- c("seattle", "san-diego")
+iCard <- length(iUels)
+jUels <- c("new-york", "chicago", "topeka")
+jCard <- length(jUels)
+uUels <- c(iUels, jUels)
+uCard <- length(uUels)
+
+iVals <- matrix(0, nrow=uCard, ncol=1, dimnames=list(uUels)) ; iVals[iUels,1] <- 1
+jVals <- matrix(0, nrow=uCard, ncol=1, dimnames=list(uUels)) ; jVals[jUels,1] <- 1
+aVals <- matrix(c(350,600), nrow=iCard, ncol=1, dimnames=list(iUels,NULL))
+bVals <- matrix(c(325,300,275), nrow=jCard, ncol=1, dimnames=list(jUels,NULL))
+
+dVals <- matrix(c(2.5, 1.7, 1.8,
+                  2.5, 1.8, 1.4), nrow=iCard, ncol=jCard,
+                dimnames=list(iUels,jUels), byrow=TRUE)
+cVals <- dVals * 90 / 1000
+
 
 tryCatch({
   fn <- "trnsport.gdx"
@@ -27,79 +44,57 @@ tryCatch({
   rgdx('?')
 
   u <- rgdx('trnsport')
-  if (!is.list(u))
-    stop ("Expected rgdx output to be in list form")
-
-  lst <- list(name='i',form='full')
-  i <- rgdx('trnsport',lst)
-  if (i$name != 'i')
-    stop ("Expected i$name to be 'i', got ", i$name)
-  if (i$type != "set")
-    stop ("Expected i$type to be 'set', got ", i$type)
-  if (i$dim != 1)
-    stop ("Expected i$dim to be 1, got ", i$dim)
-  if (i$form != "full")
-    stop ("Expected i$form to be 'full', got ", i$form)
-  if (length(i$uels) != i$dim)
-    stop ("Expected length of i$uels to be equal i$dim, got ", length(i$uels))
-  if (! chkUni(u$uels,i$uels[[1]])) {
-    stop ("Expected universe in dim 1 of i$uels")
+  uwant <- list(name="*", type="set", dim=1,
+                val=NULL,
+                form=NULL,
+                uels=uUels)
+  chk <- chkRgdxRes (u, uwant)
+  if (!chk$same) {
+    stop (paste("test rgdx('gdxname') to read universe failed",chk$msg))
   }
-  iv <- matrix(c(1,1,0,0,0), c(5,1))
-  dd <- iv == i$val
-  if (! prod(dd)) {
-    stop ("Bad data in i$val: ", dd)
+
+  i <- rgdx('trnsport',list(name='i',form='full'))
+  iwant <- list(name="i", type="set", dim=1,
+                val=iVals,
+                form="full",
+                uels=list(uUels),
+                domains=c("*"))
+  chk <- chkRgdxRes (i, iwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(i,form=full) failed",chk$msg))
   }
   print ("Done reading set i")
 
-  lst <- list(name='j',form='full')
-  j <- rgdx('trnsport',lst)
-  if (j$name != 'j')
-    stop ("Expected j$name to be 'j', got ", j$name)
-  if (j$type != "set")
-    stop ("Expected j$type to be 'set', got ", j$type)
-  if (j$dim != 1)
-    stop ("Expected j$dim to be 1, got ", j$dim)
-  if (j$form != "full")
-    stop ("Expected j$form to be 'full', got ", j$form)
-  if (length(j$uels) != j$dim)
-    stop ("Expected length of j$uels to be equal j$dim, got ", length(j$uels))
-  if (! chkUni(u$uels,j$uels[[1]])) {
-    stop ("Expected universe in dim 1 of j$uels")
-  }
-  jv <- matrix(c(0,0,1,1,1), c(5,1))
-  dd <- jv == j$val
-  if (! prod(dd)) {
-    stop ("Bad data in j$val: ", dd)
+  j <- rgdx('trnsport',list(name='j',form='full'))
+  jwant <- list(name="j", type="set", dim=1,
+                val=jVals,
+                form="full",
+                uels=list(uUels),
+                domains=c("*"))
+  chk <- chkRgdxRes (j, jwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(j,form=full) failed",chk$msg))
   }
   print ("Done reading set j")
 
-  lst <- list(name='f',form='full')
-  f <- rgdx('trnsport',lst)
-  if (f$name != 'f')
-    stop ("Expected f$name to be 'f', got ", f$name)
-  if (f$type != "parameter")
-    stop ("Expected f$type to be 'parameter', got ", f$type)
-  if (f$dim != 0)
-    stop ("Expected f$dim to be 0, got ", f$dim)
-  if (f$form != "full")
-    stop ("Expected f$form to be 'full', got ", f$form)
-  if (! is.vector(f$val))
-    stop ("Expected f$val to be a vector")
-  dd <- 90 == f$val
-  if (! prod(dd)) {
-    stop ("Bad data in f$val: ", dd)
+  f <- rgdx('trnsport',list(name='f',form='full'))
+  fwant <- list(name="f", type="parameter", dim=0,
+                val=90,
+                form="full",
+                uels=list(),
+                domains=character(0) )
+  chk <- chkRgdxRes (f, fwant)
+  if (!chk$same) {
+    stop (paste("test rgdx(f,form=full) failed",chk$msg))
   }
-  if (length(f$uels) != 0)
-    stop ("Expected f$uels to be empty")
   print ("Done reading scalar f")
 
   a <- rgdx('trnsport',list(name='a',form='full'))
-  av <- matrix(c(350,600), c(2,1))
   awant <- list(name="a", type="parameter", dim=1,
-                val=av,
+                val=aVals,
                 form="full",
-                uels=list(c("seattle","san-diego")))
+                uels=list(iUels),
+                domains=c("i") )
   chk <- chkRgdxRes (a, awant)
   if (!chk$same) {
     stop (paste("test rgdx(a,form='full') failed",chk$msg))
@@ -107,11 +102,11 @@ tryCatch({
   print ("Done reading parameter a")
 
   b <- rgdx('trnsport',list(name='b',form='full'))
-  bv <- matrix(c(325,300,275), c(3,1))
   bwant <- list(name="b", type="parameter", dim=1,
-                val=bv,
+                val=bVals,
                 form="full",
-                uels=list(c("new-york","chicago","topeka")))
+                uels=list(jUels),
+                domains=c('j') )
   chk <- chkRgdxRes (b, bwant)
   if (!chk$same) {
     stop (paste("test rgdx(b,form='full') failed",chk$msg))
@@ -119,13 +114,11 @@ tryCatch({
   print ("Done reading parameter b")
 
   c <- rgdx('trnsport',list(name='c',form='full'))
-  dv <- matrix(c(2.5, 1.7, 1.8,
-                 2.5, 1.8, 1.4),  c(2,3), byrow=TRUE)
-  cv <- dv * 90 / 1000
   cwant <- list(name="c", type="parameter", dim=2,
-                val=cv,
+                val=cVals,
                 form="full",
-                uels=list(c("seattle","san-diego"),c("new-york","chicago","topeka")))
+                uels=list(iUels,jUels),
+                domains=c("i","j") )
   chk <- chkRgdxRes (c, cwant)
   if (!chk$same) {
     stop (paste("test rgdx(c,form='full') failed",chk$msg))

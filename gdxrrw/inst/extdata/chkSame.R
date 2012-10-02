@@ -164,6 +164,8 @@ chkSameVec <- function(s, v1,v2) {
 ## makes the test easier to implement
 chkRgdxRes <- function(f1, f2) {
   isSparse <- TRUE
+  isUniverse <- FALSE
+  symDim <- -1
 
   r <- list(same=FALSE,msg="not lists")
   if (! is.list(f1))   return (r)
@@ -176,22 +178,6 @@ chkRgdxRes <- function(f1, f2) {
   f1Names <- names(f1)
   f2Names <- names(f2)
 
-  r$msg <- "invalid/missing 'form' element"
-  if (is.null(f1$form)) return (r)
-  if (is.null(f2$form)) return (r)
-  if (! is.character(f1$form))   return (r)
-  if (! is.character(f2$form))   return (r)
-  if (f1$form != f2$form)        return (r)
-  if ('sparse' == f2$form) {
-    isSparse <- TRUE
-  }
-  else if ('full' == f2$form) {
-    isSparse <- FALSE
-  }
-  else {
-    return (r)
-  }
-
   r$msg <- "element 1 (name) error"
   ## element 1: symbol name
   if (! is.character(f1[[1]]))   return (r)
@@ -199,6 +185,8 @@ chkRgdxRes <- function(f1, f2) {
   if ("name"       != f2Names[[1]])   return (r)
   if (f1Names[[1]] != f2Names[[1]])   return (r)
   if (f1[[1]] != f2[[1]])        return (r)
+  if ("*" == f2[[1]])
+    isUniverse <- TRUE
 
   r$msg <- "element 2 (type) error"
   ## element 2: symbol type
@@ -208,6 +196,30 @@ chkRgdxRes <- function(f1, f2) {
   if (f1Names[[2]] != f2Names[[2]])   return (r)
   if (f1[[2]] != f2[[2]])        return (r)
 
+  if (isUniverse) {
+    ## universe set is special: no form, no vals, just uels are returned
+    r$msg <- "universe set: expect NULL 'form' element"
+    if (! is.null(f1$form)) return (r)
+    if (! is.null(f2$form)) return (r)
+  }
+  else {
+    r$msg <- "invalid/missing 'form' element"
+    if (is.null(f1$form)) return (r)
+    if (is.null(f2$form)) return (r)
+    if (! is.character(f1$form))   return (r)
+    if (! is.character(f2$form))   return (r)
+    if (f1$form != f2$form)        return (r)
+    if ('sparse' == f2$form) {
+      isSparse <- TRUE
+    }
+    else if ('full' == f2$form) {
+      isSparse <- FALSE
+    }
+    else {
+      return (r)
+    }
+  }
+
   for (k in 3:n) {
     r$msg <- paste("element",k,"error")
     if (f1Names[[k]] != f2Names[[k]])  return (r)
@@ -215,10 +227,26 @@ chkRgdxRes <- function(f1, f2) {
       if (! is.numeric(f1[[k]]))   return (r)
       if (! is.numeric(f2[[k]]))   return (r)
       if (f1[[k]] != f2[[k]])      return (r)
+      symDim <- f1[[k]]
     }
     else if ("val" == f2Names[[k]]) {
+      if (isUniverse) {
+        r$msg <- "universe set: expect NULL 'val' element"
+        if (! is.null(f1[[k]])) return (r)
+        if (! is.null(f2[[k]])) return (r)
+        next
+      }
       if (! is.numeric(f1[[k]]))   return (r)
       if (! is.numeric(f2[[k]]))   return (r)
+      if ((! isSparse) && (0 == symDim)) {
+        if (! is.vector(f1[[k]]))   return (r)
+        if (! is.vector(f2[[k]]))   return (r)
+        if (1 != length(f1[[k]]))   return (r)
+        if (1 != length(f2[[k]]))   return (r)
+        if (f1[[k]] == f2[[k]])  next
+        if (! isClose(f1[[k]],f2[[k]])) return (r)
+        next
+      }
       if (! is.array(f1[[k]]))     return (r)
       if (! is.array(f2[[k]]))     return (r)
       dims1 <- dim(f1[[k]])
@@ -237,15 +265,24 @@ chkRgdxRes <- function(f1, f2) {
       }
     }
     else if ("form" == f2Names[[k]]) {
+      if (isUniverse) {
+        next                            # already checked
+      }
       if (! is.character(f1[[k]]))   return (r)
       if (! is.character(f2[[k]]))   return (r)
       if (f1[[k]] != f2[[k]])        return (r)
     }
     else if ("uels" == f2Names[[k]]) {
+      if (isUniverse) {
+        r$msg <- "universe set: expect vector of uels"
+        if (! chkSameVec ("", f1[[k]], f2[[k]])) return (r)
+        next
+      }
       if (! is.list(f1[[k]]))   return (r)
       if (! is.list(f2[[k]]))   return (r)
       n1 <- length(f1[[k]])
       if (n1 != length(f2[[k]]))  return (r)
+      if (0 == n1)                next
       for (i in 1:n1) {
         if (! chkSameVec ("", f1[[k]][[i]], f2[[k]][[i]])) return (r)
       }
@@ -264,12 +301,19 @@ chkRgdxRes <- function(f1, f2) {
       }
     }
     else if ("domains" == f2Names[[k]]) {
+      if (0 == symDim) {
+        if (! is.vector(f1[[k]],mode="character"))   return (r)
+        if (! is.vector(f2[[k]],mode="character"))   return (r)
+        if (0 != length(f1[[k]]))                    return (r)
+        if (0 != length(f2[[k]]))                    return (r)
+        next
+      }
       if (! chkSameVec ("", f1[[k]], f2[[k]])) return (r)
     }
     else {
       return (r)
     }
-  }
+  }                                     # loop over list elements
 
   r$msg <- ''
   r$same <- TRUE
