@@ -310,7 +310,8 @@ SEXP rgdx (SEXP args)
     outField = R_NilValue,
     outTs = R_NilValue,
     outTeSp = R_NilValue,       /* output .te, sparse form */
-    outTeFull = R_NilValue;     /* output .te, full form */
+    outTeFull = R_NilValue,     /* output .te, full form */
+    outDomains = R_NilValue;    /* output .domains */
   SEXP outListNames, outList, dimVect, dimNames;
   hpFilter_t hpFilter[GMS_MAX_INDEX_DIM];
   xpFilter_t xpFilter[GMS_MAX_INDEX_DIM];
@@ -531,6 +532,10 @@ SEXP rgdx (SEXP args)
       ncols = symDim;
     }
 
+    /* we will have domain info returned for all symbols */
+    PROTECT(outDomains = allocVector(STRSXP, symDim));
+    rgdxAlloc++;
+
     outTeSp = R_NilValue;
     nnz = 0;
     if (rSpec->withUel) {
@@ -545,6 +550,11 @@ SEXP rgdx (SEXP args)
       }
       for (nnzMax = 1, iDim = 0;  iDim < symDim;  iDim++) {
         nnzMax *=  length(VECTOR_ELT(rSpec->filterUel, iDim));
+      }
+
+      /* set domain names to "_user": cannot conflict with real set names */
+      for (iDim = 0;  iDim < symDim;  iDim++) {
+        SET_STRING_ELT(outDomains, iDim, mkChar("_user"));
       }
 
       /* Start reading data */
@@ -652,7 +662,7 @@ SEXP rgdx (SEXP args)
         rgdxAlloc++;
       }
 
-      mkXPFilter (symIdx, useDomInfo, xpFilter);
+      mkXPFilter (symIdx, useDomInfo, xpFilter, outDomains);
 
       if (rSpec->te && 0) {          /* text elements */
         gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
@@ -752,6 +762,10 @@ SEXP rgdx (SEXP args)
       rgdxAlloc++;
       compressData (symDim, mrows, universe, nUEL, xpFilter,
                     outValSp, outUels);
+      /* set domain names to "_compressed": cannot conflict with real set names */
+      for (iDim = 0;  iDim < symDim;  iDim++) {
+        SET_STRING_ELT(outDomains, iDim, mkChar("_compressed"));
+      }
     }
     else if (! rSpec->withUel) {
       PROTECT(outUels = allocVector(VECSXP, symDim));
@@ -937,6 +951,9 @@ SEXP rgdx (SEXP args)
     if (rSpec->te) {
       outElements++;
     }
+    if (useDomInfo) {
+      outElements++;
+    }
   } /* if (withList) aa */
   else {
     /* no requestList was input, so returning universe */
@@ -963,8 +980,8 @@ SEXP rgdx (SEXP args)
   SET_STRING_ELT(outListNames, 3, mkChar("val"));
   SET_STRING_ELT(outListNames, 4, mkChar("form"));
   SET_STRING_ELT(outListNames, 5, mkChar("uels"));
-
-  nField = 5;
+  SET_STRING_ELT(outListNames, 6, mkChar("domains"));
+  nField = 6;
   if (withList) {
     if (symType == GMS_DT_VAR || symType == GMS_DT_EQU) {
       nField++;
@@ -1001,8 +1018,9 @@ SEXP rgdx (SEXP args)
     else {
       SET_VECTOR_ELT(outList, 5, outUels);
     }
+    SET_VECTOR_ELT(outList, 6, outDomains);
 
-    nField = 5;
+    nField = 6;
     if (symType == GMS_DT_VAR || symType == GMS_DT_EQU) {
       nField++;
       SET_VECTOR_ELT(outList, nField, outField);

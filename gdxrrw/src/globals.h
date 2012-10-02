@@ -136,7 +136,7 @@ createElementMatrix (SEXP compVal, SEXP textElement, SEXP compTe,
 void
 mkHPFilter (SEXP uFilter, hpFilter_t *hpf);
 void
-mkXPFilter (int symIdx, Rboolean useDomInfo, xpFilter_t filterList[]);
+mkXPFilter (int symIdx, Rboolean useDomInfo, xpFilter_t filterList[], SEXP outDomains);
 void
 prepHPFilter (int symDim, hpFilter_t filterList[]);
 int

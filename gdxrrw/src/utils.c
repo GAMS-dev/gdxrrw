@@ -330,7 +330,7 @@ mkHPFilter (SEXP uFilter, hpFilter_t *hpf)
  * xpf: high-performance filter for internal use
  */
 void
-mkXPFilter (int symIdx, Rboolean useDomInfo, xpFilter_t filterList[])
+mkXPFilter (int symIdx, Rboolean useDomInfo, xpFilter_t filterList[], SEXP outDomains)
 {
   int rc, iRec, nRecs, changeIdx;
   int kSym, kDim, kType;        /* for loop over index sets */
@@ -371,11 +371,16 @@ mkXPFilter (int symIdx, Rboolean useDomInfo, xpFilter_t filterList[])
         xpf->domType = none;
         xpf->fType = identity;
       } /* end loop over dims */
+      if (R_NilValue != outDomains) {
+        for (iDim = 0;  iDim < symDim;  iDim++) {
+          SET_STRING_ELT(outDomains, iDim, mkChar("*"));
+        }
+      }
       break;
     case 2:                   /* relaxed domain info */
       for (iDim = 0;  iDim < symDim;  iDim++) {
         xpf = filterList + iDim;
-        Rprintf ("  index %d : symbol %s\n", iDim, domPtrs[iDim]);
+        SET_STRING_ELT(outDomains, iDim, mkChar(domPtrs[iDim]));
         if (0 == strcmp(domPtrs[iDim],"*")) { /* not available: use the universe */
           xpf->domType = none;
           xpf->fType = identity;
@@ -422,6 +427,7 @@ mkXPFilter (int symIdx, Rboolean useDomInfo, xpFilter_t filterList[])
       if (! rc)
         error ("error calling gdxSymbolGetDomain");
       for (iDim = 0;  iDim < symDim;  iDim++) {
+        SET_STRING_ELT(outDomains, iDim, mkChar(domPtrs[iDim]));
         kSym = symDoms[iDim];
         rc = gdxSymbolInfo (gdxHandle, kSym, kName, &kDim, &kType);
         if (! rc)
