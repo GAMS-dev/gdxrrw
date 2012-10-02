@@ -344,7 +344,7 @@ SEXP rgdx (SEXP args)
   char *fields[] = {"l", "m", "up", "lo", "s"};
   int nField, elementIndex, IDum, ndimension, totalElement;
   int withList = 0;
-  int outElements;
+  int outElements = 0;    /* shut up compiler warnings */
   int nnz;         /* symbol cardinality, i.e. nonzero count */
   int nnzMax;      /* maximum possible nnz for this symbol */
   Rboolean zeroSqueeze = NA_LOGICAL;
@@ -980,9 +980,9 @@ SEXP rgdx (SEXP args)
   SET_STRING_ELT(outListNames, 3, mkChar("val"));
   SET_STRING_ELT(outListNames, 4, mkChar("form"));
   SET_STRING_ELT(outListNames, 5, mkChar("uels"));
-  SET_STRING_ELT(outListNames, 6, mkChar("domains"));
-  nField = 6;
   if (withList) {
+    SET_STRING_ELT(outListNames, 6, mkChar("domains"));
+    nField = 6;
     if (symType == GMS_DT_VAR || symType == GMS_DT_EQU) {
       nField++;
       SET_STRING_ELT(outListNames, nField, mkChar("field"));
