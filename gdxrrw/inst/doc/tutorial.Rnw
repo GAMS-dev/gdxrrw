@@ -15,8 +15,10 @@
 \usepackage{lscape}
 \usepackage{Sweave}
 
+\newcommand{\rrw}{\texttt{gdxrrw}}
+
 \title{A Tutorial for the {\tt gdxrrw} Package}
-\author{Steve Dirkse}
+\author{Steve Dirkse \\ GAMS Development Corporation}
 
 \begin{document}
 
@@ -25,17 +27,71 @@
 \thispagestyle{empty}
 \section{Introduction}
 
-The \texttt{gdxrrw} package is great.
+In this tutorial introduction to \rrw{} we carry out a small modeling
+exercise.  We consider a common use case in which one starts with a
+self-contained, fully-functional GAMS model that reads from and writes
+to GDX.  This model will run in the same way whether run in or
+independently from R.  Without changing the model source, can control
+the model behavior by passing it different commands and by giving it
+different data sources.
+
+It's worth noting that this tutorial assumes the user is familar with
+GAMS and to a lesser extent with R.
+
+The \rrw{} package is great.
 
 \section{First steps}
 
 Here we execute the basic steps: transfering data between GAMS and R,
 and running GAMS.
 
-
+Before you can use any R package, you must load
+it.  The \rrw{} package also depends on the shared libraries found in
+the GAMS system directory.  The \texttt{igdx} command is useful for
+controlling this linkage:
 <<>>=
-jj <- getwd()
-str(jj)
+library(gdxrrw)
+# point gdxrrw at the GAMS system directory, and verify it was found
+igdx('~/leg_alpha/gmstest')
+igdx()
 @
+
+Our starting point is a modified version of the transport model from
+the GAMS model library where all of the data inputs and outputs are
+done via GDX.  Running this model is easy:
+<<>>=
+gams('transport')
+@
+
+The model \texttt{transport} dumps all of its data (including its
+inputs) to GDX before it quits.  There are 5 inputs, 2 sets and 3
+parameters.
+<<>>=
+I <- rgdx.set('outputs.gdx','I')
+J <- rgdx.set('outputs.gdx','J')
+a <- rgdx.param('outputs.gdx','a')
+b <- rgdx.param('outputs.gdx','b')
+c <- rgdx.param('outputs.gdx','c')
+@
+
+As an exercise, we first generate a GDX file whose data is identical
+to the original inputs, and verify that the solution with this data is unchanged:
+<<>>=
+wgdx.lst('in2',list(I,J,a,b,c))
+rc <- system('gdxdiff in2 inputs')
+if (0 == rc) print ("identical inputs") else print ("different inputs")
+gams('transport.gms --INPUT in2.gdx --OUTPUT out2.gdx')
+zlst <- rgdx('outputs.gdx',list(name='z'))
+z <- zlst$val
+zlst <- rgdx('out2.gdx',list(name='z'))
+z2 <- zlst$val
+if (z2 == z) print ("identical objective") else print ("different objective")
+@
+
+
+\section{Abnormal Results}
+
+Say something here about abnormal results: GAMS not running OK,
+infeasible model, etc.
 
 \end{document}
