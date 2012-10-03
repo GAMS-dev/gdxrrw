@@ -1,0 +1,41 @@
+% \VignetteIndexEntry{gdxrrw Tutorial}
+% \VignetteDepends{gdxrrw}
+% \VignettePackage{gdxrrw}
+\documentclass[11pt]{article}
+\usepackage{amsmath}
+\usepackage[pdftex]{graphicx}
+\usepackage{color}
+% \usepackage{xspace}
+% \usepackage{fancyvrb}
+% \usepackage{fancyhdr}
+\usepackage[colorlinks=true,
+            linkcolor=blue,
+            citecolor=blue,
+            urlcolor=blue]{hyperref}
+\usepackage{lscape}
+\usepackage{Sweave}
+
+\title{A Tutorial for the {\tt gdxrrw} Package}
+\author{Steve Dirkse}
+
+\begin{document}
+
+\maketitle
+
+\thispagestyle{empty}
+\section{Introduction}
+
+The \texttt{gdxrrw} package is great.
+
+\section{First steps}
+
+Here we execute the basic steps: transfering data between GAMS and R,
+and running GAMS.
+
+
+<<>>=
+jj <- getwd()
+str(jj)
+@
+
+\end{document}
