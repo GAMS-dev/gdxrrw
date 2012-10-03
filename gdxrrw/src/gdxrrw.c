@@ -50,7 +50,7 @@ void
 getGamsPath (char *dir);
 
 int
-callGams(const char *gamsFile);
+callGams(const char *gamsCmd);
 
 static int
 GSExec(char *command,
@@ -136,7 +136,7 @@ getGamsPath (char *dir)
 
 /* Execute GAMS command */
 int
-callGams (const char *gamsFile)
+callGams (const char *gamsCmd)
 {
   char *gamsExeName;
   char *cmdLine, *gamsPath;
@@ -190,11 +190,10 @@ callGams (const char *gamsFile)
     gamsExeName = gamsPath;
   }
 
-  if (gamsFile == NULL) {
-    error("Error getting GAMS input file name");
-    return 1;
+  if (gamsCmd == NULL) {
+    error("Internal error getting GAMS command");
   }
-  (void) CHAR2ShortStr (gamsFile, jobString);
+  (void) CHAR2ShortStr (gamsCmd, jobString);
 
   cmdLine = malloc(strlen(gamsExeName) + 1 + strlen(jobString)
                    + 1 + 6);
@@ -333,11 +332,7 @@ SEXP gams (SEXP args)
 {
   SEXP firstArg;
   SEXP result = R_NilValue;
-  FILE *fp;
   const char *argStr;
-  char *fileExt, *p;
-  shortStringBuf_t input;
-  shortStringBuf_t gmsFileName;
   int rc, arglen;
   char strippedID[GMS_SSSIZE];
 
@@ -368,20 +363,6 @@ SEXP gams (SEXP args)
   } /* if audit run */
 
   checkStringLength(argStr);
-  (void) CHAR2ShortStr (argStr, input);
-  p = strtok (input, " ");
-  (void) CHAR2ShortStr (p, gmsFileName);
-  fileExt = strstr (p, ".");
-  if (NULL == fileExt) {
-    cat2ShortStr (gmsFileName, ".gms");
-  }
-  fp = fopen (gmsFileName,"r");
-  if (fp == NULL) {
-    error("Cannot find or open GAMS source file '%s'.\n", gmsFileName);
-  }
-  else {
-    fclose(fp);
-  }
 
   rc = callGams(argStr);
   PROTECT(result = allocVector(INTSXP, 1));
