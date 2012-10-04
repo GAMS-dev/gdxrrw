@@ -164,7 +164,7 @@ if (0 == rc) print ("normal gams return") else print ("abnormal gams return")
 Another case to consider is an infeasible model.  This is not an
 error: infeasible models are sometimes expected.  The model status
 (one of many values available after a solve) can indicate an infeasible
-model, among other things.  If we reduce the supply availab from
+model, among other things.  If we reduce the supply available from
 Seattle, we make the model infeasible.
 <<>>=
 a2 <- a
