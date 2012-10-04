@@ -38,23 +38,18 @@ different data sources.
 It's worth noting that this tutorial assumes the user is familar with
 GAMS and to a lesser extent with R.
 
-The \rrw{} package is great.
-
 \section{First steps}
 
 Here we execute the basic steps: transferring data between GAMS and R,
 and running GAMS.
 
 Before you can use any R package, you must load
-it.  The \rrw{} package also depends on the shared libraries found in
-the GAMS system directory.  The \texttt{igdx} command is useful for
+it.  The \rrw{} package also depends on the GDX shared libraries found
+in the GAMS system directory.  The \texttt{igdx} command is useful for
 controlling this linkage:
 <<>>=
 library(gdxrrw)
-# point gdxrrw at the GAMS system directory, and verify it was found
-# SPD: fix so ~ works!!
-# igdx('~/leg_alpha/gmstest')
-igdx('/home/sdirkse/leg_alpha/gmstest')
+# igdx('/path/to/GAMS/sysdir') if not taken from environment
 igdx()
 @
 
@@ -66,7 +61,7 @@ gams('transport')
 @
 
 The model \texttt{transport} dumps all of its data (including its
-inputs) to GDX before it quits.  There are 5 inputs, 2 sets and 3
+inputs) to GDX before it quits.  There are 5 inputs: 2 sets and 3
 parameters.
 <<>>=
 I <- rgdx.set('outputs.gdx','I')
@@ -168,12 +163,12 @@ if (0 == rc) print ("normal gams return") else print ("abnormal gams return")
 
 Another case to consider is an infeasible model.  This is not an
 error: infeasible models are sometimes expected.  The model status
-(one of many values available after a solve) indicates an infeasible
-model, among other things.
+(one of many values available after a solve) can indicate an infeasible
+model, among other things.  If we reduce the supply availab from
+Seattle, we make the model infeasible.
 <<>>=
 a2 <- a
 a2[a2$i == 'seattle','value'] <- a2[a2$i == 'seattle','value'] - 100
-# wgdx.lst('inInf',list(I,J,a2,b,c))
 wgdx.lst('inInf',list(I,J,a2,b,c))
 gams('transport.gms --INPUT inInf.gdx --OUTPUT outInf.gdx')
 ms <- rgdx.scalar('outInf.gdx','modelStat')
