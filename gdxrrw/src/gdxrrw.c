@@ -387,7 +387,8 @@ SEXP igdx (SEXP args)
   int arglen;
   int rc, gdxLoaded;
   char loadPath[GMS_SSSIZE];
-  SEXP pSysDir, silent;
+  SEXP sysDirExp, silent;
+  const char *sd1, *sd2;
   shortStringBuf_t sysDir, msgBuf;
   Rboolean isSilent = NA_LOGICAL;
 
@@ -395,7 +396,7 @@ SEXP igdx (SEXP args)
   if (3 != arglen) {
     error ("usage: %s(gamsSysDir=NULL, silent=FALSE) - incorrect arg count", funcName);
   }
-  pSysDir = CADR(args);
+  sysDirExp = CADR(args);
   silent = CADDR(args);
   isSilent = getSqueezeArgRead (silent);
   if (NA_LOGICAL == isSilent) {
@@ -403,11 +404,13 @@ SEXP igdx (SEXP args)
   }
   gdxLoaded = gdxLibraryLoaded();
 
-  if (TYPEOF(pSysDir) != NILSXP) { /* we should have gamsSysDir */
-    if (TYPEOF(pSysDir) != STRSXP) {
+  if (TYPEOF(sysDirExp) != NILSXP) { /* we should have gamsSysDir */
+    if (TYPEOF(sysDirExp) != STRSXP) {
       error ("usage: %s(gamsSysDir) - gamsSysDir must be a string", funcName);
     }
-    (void) CHAR2ShortStr (CHAR(STRING_ELT(pSysDir, 0)), sysDir);
+    sd1 = CHAR(STRING_ELT(sysDirExp, 0));
+    sd2 = R_ExpandFileName(sd1); /* interpret ~ as home directory */
+    (void) CHAR2ShortStr (sd2, sysDir);
 
     /* ---- load the GDX API ---- */
     if (gdxLoaded) {
