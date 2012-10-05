@@ -1,0 +1,9 @@
+Steps to recreate harvestr slides:
+
+in R:
+> library(knitr)
+>  knit('harvestr.Rmd')
+
+cmd line:
+$ pandoc -t beamer --template=utah.beamer.tex -Vurl:1 -V theme:CambridgeUS -V colortheme:beaver  -V shorttitle:harvestr  harvestr.md -o harvestr.pdf
+
