@@ -37,9 +37,7 @@ if (1 != solvestat)     stop(paste("Bad solver status: expected 1, got", solvest
 lst <- list(name='tour',form='sparse',compress=TRUE)
 v <- rgdx(fnSol, lst)
 nxt <- v$val[,2]
-
-# now compute the sequence of cities to display, based on the next
-# relationship in nxt
+# compute the sequence of cities, based on nxt
 solSeq <- NA * c(1:n+1)
 k <- 1
 for (j in c(1:n)) {
