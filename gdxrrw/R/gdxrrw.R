@@ -16,9 +16,9 @@ wgdx <- function(gdxName, ..., squeeze='y')
   invisible(.External("wgdx", gdxName=gdxName, ..., squeeze=squeeze, PACKAGE="gdxrrw"))
 }
 
-gams <- function(gms, ...)
+gams <- function(gmsAndArgs)
 {
-  .External("gams", gms, ..., PACKAGE="gdxrrw")
+  .External("gams", gmsAndArgs, PACKAGE="gdxrrw")
 }
 
 gdxInfo <- function(gdxName = NULL, dump=TRUE, returnList=FALSE, returnDF=FALSE)

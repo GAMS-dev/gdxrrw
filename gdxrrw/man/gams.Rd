@@ -8,7 +8,7 @@
   gams(gmsAndArgs)
 }
 \arguments{
-  \item{gmsAndArgs}{Name of \code{.gms} file to run, with possible args}
+  \item{gmsAndArgs}{Name of \tt{.gms} file to run, with possible args}
 }
 \author{Original coding by Rishabh Jain.  Adopted and packaged by
 Steve Dirkse.  Maintainer: \email{R@gams.com}}
