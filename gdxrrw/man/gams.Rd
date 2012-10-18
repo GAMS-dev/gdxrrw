@@ -5,19 +5,14 @@
   Run a GAMS model from R.
 }
 \usage{
-  gams(gms, ...)
+  gams(gmsAndArgs)
 }
 \arguments{
-  \item{gms}{Name of \code{.gms} file to run}
-  \item{\dots}{Data inputs for the GAMS model}
+  \item{gmsAndArgs}{Name of \code{.gms} file to run, with possible args}
 }
 \author{Original coding by Rishabh Jain.  Adopted and packaged by
 Steve Dirkse.  Maintainer: \email{R@gams.com}}
-\value{
-  Data outputs from the GAMS model.  This usage is deprecated: the
-  recommended procedure is to write GDX files from the GAMS models and
-  use the \code{rgdx} family of calls to bring the data into R.
-}
+\value{Return from executing \code{gams gmsAndArgs}}
 \note{
   A common problem is failure to find the GAMS system directory.  Use
   \code{\link{igdx}} to troubleshoot and solve this problem.
@@ -28,6 +23,7 @@ Steve Dirkse.  Maintainer: \email{R@gams.com}}
 \examples{
   \dontrun{
     gams("trnsport.gms")
+    gams("myModel.gms lp=BDMLP --JOB_ID=case00")
   }
 }
 \keyword{ data }

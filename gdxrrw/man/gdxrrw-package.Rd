@@ -2,30 +2,24 @@
 \alias{gdxrrw-package}
 \alias{gdxrrw}
 \docType{package}
-\title{
-  This package contains different methods to transfer data between GDX file and R
-}
+\title{Exchanging data between GAMS and R}
 \description{
-This package implements an interface between GAMS and R.  It
-  includes functions to transfer data between GDX and R and a function to
-  call gams from within R.
+This package implements an interface between GAMS and R.  It includes
+functions to transfer data between GDX (the GAMS data format) and R, a
+function to call GAMS from within R, query functions for the meta-data
+in GDX, and other related utilities.
 }
 \details{
-\tabular{ll}{
-Package: \tab gdxrrw\cr
-Type: \tab Package\cr
-Version: \tab 0.0-3\cr
-Date: \tab 2011-11-02\cr
-License: \tab GNU GPL\cr
-LazyLoad: \tab yes\cr
-}
-It contains five classes of methods:
+This package contains five classes of functions:
 \itemize{
-  \item{igdx(...)}
-  \item{rgdx("gdxfile", ...) and related functions}
-  \item{wgdx("gdxfile", ...) and related functions}
-  \item{gams("gmsfile", ...)}
-  \item{gdxInfo("gdxfile")}
+  \item{igdx(...) gives information on the linkage between this
+  package and the GDX library.}
+  \item{rgdx("gdxfile", ...) and related functions read from GDX}
+  \item{wgdx("gdxfile", ...) and related functions write to GDX}
+  \item{gams("gmsfile and args", ...) runs gams with the arguments
+  provided}
+  \item{gdxInfo("gdxfile", ...) dumps GDX content or returns GDX
+  metadata (list of symbols, etc.)} 
 }
 }
 \author{Original coding by Rishabh Jain.  Adopted, packaged, and extended by
