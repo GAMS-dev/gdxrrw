@@ -21,8 +21,7 @@ R CMD INSTALL gdxrrw --build
 # to build and check locally
 R CMD check gdxrrw ; echo "check rc = $?"
 
-# this command creates a source distribution: gdxrrw_X.Y-Z.tar.gz but
-# we don't distribute that
+# this command creates a source distribution: gdxrrw_X.Y-Z.tar.gz
 R CMD build gdxrrw
 
 -- unneeded/old stuff
