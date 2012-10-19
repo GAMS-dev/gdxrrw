@@ -16,12 +16,12 @@ R CMD check gdxrrw
 # with R 2.14, R CMD build cannot be used for making binaries, instead
 # do:
 R CMD INSTALL gdxrrw --build
-# to create the binary gdxrrw_X.Y-Z_R_x86_64-redhat-linux-gnu.tar.gz
+# to create the binary gdxrrw_X.Y.Z_R_x86_64-redhat-linux-gnu.tar.gz
 
 # to build and check locally
 R CMD check gdxrrw ; echo "check rc = $?"
 
-# this command creates a source distribution: gdxrrw_X.Y-Z.tar.gz
+# this command creates a source distribution: gdxrrw_X.Y.Z.tar.gz
 R CMD build gdxrrw
 
 -- unneeded/old stuff
@@ -44,7 +44,7 @@ R CMD build gdxrrw
 R CMD INSTALL gdxrrw
 R --no-init-file CMD INSTALL gdxrrw
 R CMD REMOVE  gdxrrw    {to remove, or undo an install}
-R CMD INSTALL gdxrrw --build   {creates gdxrrw_X.Y-Z.zip for distribution}
+R CMD INSTALL gdxrrw --build   {creates gdxrrw_X.Y.Z.zip for distribution}
 
 -- these didn't work so well
 R CMD INSTALL -l C:\R\2.12 --no-multiarch gdxrrw
@@ -52,10 +52,12 @@ R --arch=x64 CMD INSTALL -l C:\R\2.12 gdxrrw
 
 
 ================ Mac OSX (what Mac machine will we use?) ================
-On shanti (OS X) we tried
+On OSX multi-arch binaries are built.  This requires the default
+compilers in /usr/bin, not the stuff in /usr/local/bin.  Be aware.
+
 R CMD INSTALL gdxrrw
-R CMD build gdxrrw --binary
-R CMD build gdxrrw && R CMD check gdxrrw_0.0-3.tar.gz ; echo "check rc = $?"
+R CMD INSTALL gdxrrw --build
+R CMD build gdxrrw && R CMD check gdxrrw_X.Y.Z.tar.gz ; echo "check rc = $?"
 
 # R CMD INSTALL -l ~/Library/R/2.13/library gdxrrw #  no need to set -l
 
