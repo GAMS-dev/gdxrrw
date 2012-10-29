@@ -18,6 +18,7 @@ kCard <- length(kUels)
 domains <- c("i","j","k")
 comprDomains <- c("_compressed","_compressed","_compressed")
 userDomains <- c("_user","_user","_user")
+cart <- list(iUels,jUels,kUels)
 
 tryCatch({
   print ("testing rgdx on variable reads")
@@ -314,6 +315,165 @@ tryCatch({
   chk <- chkRgdxRes (x, xwantS)
   if (!chk$same) {
     stop (paste("test rgdx(x,'s',full,unfiltered,compress=F) failed",chk$msg))
+  }
+
+  ### ---------- reading form=full, no filter, compress=T
+  # level
+  v <- array(0,c(iCard,jCard,kCard))
+  for (i in 1:iCard) {
+    for (j in 1:jCard) {
+      for (k in 1:kCard) {
+        v[i,j,k] <- 100 * (i-1) + 10 * (j-1) + (k-1)
+      }
+    }
+  }
+  v[iCard,jCard,kCard] <- 6
+  xwantL <- list(name="x", type="variable", dim=3,
+                 val=v,
+                 form="full",
+                 uels=list(iUels,jUels,kUels), domains=comprDomains,
+                 field='l')
+  x <- rgdx(fnIn,list(name='x',form='full',compress=T))
+  chk <- chkRgdxRes (x, xwantL)
+  if (!chk$same) {
+    stop (paste("test rgdx(x,'L',full,unfiltered,compress=T) failed",chk$msg))
+  }
+  # marginal
+  v <- array(.25,c(1,jCard,1))
+  xwantM <- list(name="x", type="variable", dim=3,
+                 val=v,
+                 form="full",
+                 uels=list(c('i1'),jUels,c('k2')),
+                 domains=comprDomains,
+                 field='m')
+  x <- rgdx(fnIn,list(name='x',form='full',field='M',compress=T))
+  chk <- chkRgdxRes (x, xwantM)
+  if (!chk$same) {
+    stop (paste("test rgdx(x,'M',filtered,compress=T) failed",chk$msg))
+  }
+  # lower
+  v <- array(c(-Inf,0,100,6),c(iCard,1,kCard))
+  xwantLo <- list(name="x", type="variable", dim=3,
+                 val=v,
+                 form="full",
+                 uels=list(iUels,c('j2'),kUels),
+                 domains=comprDomains,
+                 field='lo')
+  x <- rgdx(fnIn,list(name='x',form='full',field='lo',compress=T))
+  chk <- chkRgdxRes (x, xwantLo)
+  if (!chk$same) {
+    stop (paste("test rgdx(x,'lo',filtered,compress=T) failed",chk$msg))
+  }
+  # upper
+  v <- array(+Inf,c(iCard,jCard,kCard),dimnames=cart)
+  v['i1','j1','k1'] <- 525
+  v['i2','j1','k1'] <- 0
+  v['i2','j2','k2'] <- 6
+  xwantUp <- list(name="x", type="variable", dim=3,
+                 val=v,
+                 form="full",
+                 uels=list(iUels,jUels,kUels),
+                 domains=comprDomains,
+                 field='up')
+  x <- rgdx(fnIn,list(name='x',form='full',field='up',compress=T))
+  chk <- chkRgdxRes (x, xwantUp)
+  if (!chk$same) {
+    stop (paste("test rgdx(x,'up',filtered,compress=T) failed",chk$msg))
+  }
+  # scale
+  v <- array(1,c(iCard,jCard,kCard),dimnames=cart)
+  v['i2','j2','k1'] <- 10
+  xwantS <- list(name="x", type="variable", dim=3,
+                 val=v,
+                 form="full",
+                 uels=list(iUels,jUels,kUels),
+                 domains=comprDomains,
+                 field='s')
+  x <- rgdx(fnIn,list(name='x',form='full',field='s',compress=T))
+  chk <- chkRgdxRes (x, xwantS)
+  if (!chk$same) {
+    stop (paste("test rgdx(x,'s',filtered,compress=T) failed",chk$msg))
+  }
+
+  ### ---------- reading form=full, filtered, compress=F
+  # level
+  f <- list(c('i2'),jUels,kUels)
+  v <- array(0,c(1,jCard,kCard),dimnames=f)
+  for (j in 1:jCard) {
+    for (k in 1:kCard) {
+      v[1,j,k] <- 100 + 10 * (j-1) + (k-1)
+    }
+  }
+  v['i2','j2','k2'] <- 6
+  xwantL <- list(name="x", type="variable", dim=3,
+                 val=v,
+                 form="full",
+                 uels=f, domains=userDomains,
+                 field='l')
+  x <- rgdx(fnIn,list(name='x',form='full',uels=f))
+  chk <- chkRgdxRes (x, xwantL)
+  if (!chk$same) {
+    stop (paste("test rgdx(x,'L',full,filtered) failed",chk$msg))
+  }
+  # marginal
+  f <- cart
+  v <- array(0,c(iCard,jCard,kCard),f)
+  v['i1',jUels,'k2'] <- 0.25
+  xwantM <- list(name="x", type="variable", dim=3,
+                 val=v,
+                 form="full",
+                 uels=f, domains=userDomains,
+                 field='m')
+  x <- rgdx(fnIn,list(name='x',form='full',uels=f,field='M'))
+  chk <- chkRgdxRes (x, xwantM)
+  if (!chk$same) {
+    stop (paste("test rgdx(x,'M',full,filtered) failed",chk$msg))
+  }
+  # lower
+  f <- list(iUels,c('j2'),kUels)
+  v <- array(0,c(iCard,1,kCard),dimnames=f)
+  v['i1','j2','k1'] <- -Inf
+  v['i1','j2','k2'] <- 100
+  v['i2','j2','k2'] <- 6
+  xwantLo <- list(name="x", type="variable", dim=3,
+                  val=v,
+                  form="full",
+                  uels=f, domains=userDomains,
+                  field='lo')
+  x <- rgdx(fnIn,list(name='x',form='full',uels=f,field='lo'))
+  chk <- chkRgdxRes (x, xwantLo)
+  if (!chk$same) {
+    stop (paste("test rgdx(x,'lo',full,filtered) failed",chk$msg))
+  }
+  # upper
+  f <- cart
+  v <- array(Inf,c(iCard,jCard,kCard),dimnames=f)
+  v['i1','j1','k1'] <- 525
+  v['i2','j1','k1'] <- 0
+  v['i2','j2','k2'] <- 6
+  xwantUp <- list(name="x", type="variable", dim=3,
+                  val=v,
+                  form="full",
+                  uels=f, domains=userDomains,
+                  field='up')
+  x <- rgdx(fnIn,list(name='x',form='full',uels=f,field='up'))
+  chk <- chkRgdxRes (x, xwantUp)
+  if (!chk$same) {
+    stop (paste("test rgdx(x,'up',full,filtered) failed",chk$msg))
+  }
+  # scale
+  f <- cart
+  v <- array(1,c(iCard,jCard,kCard),dimnames=f)
+  v['i2','j2','k1'] <- 10
+  xwantS <- list(name="x", type="variable", dim=3,
+                 val=v,
+                 form="full",
+                 uels=f, domains=userDomains,
+                 field='s')
+  x <- rgdx(fnIn,list(name='x',form='full',uels=f,field='s'))
+  chk <- chkRgdxRes (x, xwantS)
+  if (!chk$same) {
+    stop (paste("test rgdx(x,'s',full,filtered) failed",chk$msg))
   }
 
 
