@@ -163,7 +163,7 @@ chkSameVec <- function(s, v1,v2) {
 ## assumes a certain ordering of the list elements
 ## it is not really necessary that they be ordered in this way but it
 ## makes the test easier to implement
-chkRgdxRes <- function(f1, f2) {
+chkRgdxRes <- function(f1, f2, checkDimNames=FALSE) {
   isSparse <- TRUE
   isUniverse <- FALSE
   symDim <- -1
@@ -263,6 +263,19 @@ chkRgdxRes <- function(f1, f2) {
         if (f1[[k]][kk] == f2[[k]][kk])  next
         if (! isClose(f1[[k]][kk],f2[[k]][kk])) return (r)
         ## if (f1[[k]][kk] != f2[[k]][kk])  return (r)
+      }
+      if ((! isSparse) && checkDimNames) {
+        dn1 <- dimnames(f1[[k]])
+        dn2 <- dimnames(f2[[k]])
+        if (is.null(dn1) && is.null(dn2))   next
+        if (is.null(dn1))                   return (r)
+        if (is.null(dn2))                   return (r)
+        for (d in 1:nd) {
+          if (is.null(dn1[d]) && is.null(dn2[d]))    next
+          if (is.null(dn1[d]))                       return (r)
+          if (is.null(dn2[d]))                       return (r)
+          if (! chkSameVec ("", dn1[[d]], dn2[[d]])) return (r)
+        }
       }
     }
     else if ("form" == f2Names[[k]]) {
