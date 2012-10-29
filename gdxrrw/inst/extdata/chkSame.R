@@ -7,6 +7,7 @@ isClose <- function (x, y) {
   t <- abs(y)
   if (t > m)
     m <- t
+  if (Inf == m)        return (FALSE)
   if (dif/m <= 1e-15)  return (TRUE)
   return (FALSE)
 }  # isClose
