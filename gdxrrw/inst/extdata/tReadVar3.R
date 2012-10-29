@@ -17,6 +17,7 @@ kUels <- c("k1", "k2")
 kCard <- length(kUels)
 domains <- c("i","j","k")
 comprDomains <- c("_compressed","_compressed","_compressed")
+userDomains <- c("_user","_user","_user")
 
 tryCatch({
   print ("testing rgdx on variable reads")
@@ -145,6 +146,95 @@ tryCatch({
   chk <- chkRgdxRes (x, xwantS)
   if (!chk$same) {
     stop (paste("test rgdx(x,'s',unfiltered,compress=T) failed",chk$msg))
+  }
+
+  ### ---------- reading form=sparse, no filtered, compress=F
+  # level
+  f <- list(c('i2'),jUels,kUels)
+  xwantL <- list(name="x", type="variable", dim=3,
+                 val=matrix(c( 1,1,1, 100
+                              ,1,1,2, 101
+                              ,1,2,1, 110
+                              ,1,2,2,   6), nrow=4, ncol=4,byrow=T),
+                 form="sparse",
+                 uels=f, domains=userDomains,
+                 field='l')
+  x <- rgdx(fnIn,list(name='x',form='sparse',uels=f))
+  chk <- chkRgdxRes (x, xwantL)
+  if (!chk$same) {
+    stop (paste("test rgdx(x,'L',filtered,compress=F) failed",chk$msg))
+  }
+  # marginal
+  f <- list(iUels,jUels,kUels)
+  xwantM <- list(name="x", type="variable", dim=3,
+                 val=matrix(c( 1,1,1,   0
+                              ,1,1,2,  .25
+                              ,1,2,1,   0
+                              ,1,2,2,  .25
+                              ,2,1,1,   0
+                              ,2,1,2,   0
+                              ,2,2,1,   0
+                              ,2,2,2,   0 ), nrow=8, ncol=4,byrow=T),
+                 form="sparse",
+                 uels=f, domains=userDomains,
+                 field='m')
+  x <- rgdx(fnIn,list(name='x',form='sparse',uels=f,field='M'))
+  chk <- chkRgdxRes (x, xwantM)
+  if (!chk$same) {
+    stop (paste("test rgdx(x,'M',filtered,compress=F) failed",chk$msg))
+  }
+  # lower
+  f <- list(iUels,c('j2'),kUels)
+  xwantLo <- list(name="x", type="variable", dim=3,
+                  val=matrix(c( 1,1,1, -Inf
+                               ,1,1,2,  100
+                               ,2,1,1,    0
+                               ,2,1,2,    6), nrow=4, ncol=4,byrow=T),
+                  form="sparse",
+                  uels=f, domains=userDomains,
+                  field='lo')
+  x <- rgdx(fnIn,list(name='x',form='sparse',uels=f,field='lo'))
+  chk <- chkRgdxRes (x, xwantLo)
+  if (!chk$same) {
+    stop (paste("test rgdx(x,'lo',filtered,compress=F) failed",chk$msg))
+  }
+  # upper
+  f <- list(iUels,jUels,kUels)
+  xwantUp <- list(name="x", type="variable", dim=3,
+                  val=matrix(c( 1,1,1,  525
+                               ,1,1,2, +Inf
+                               ,1,2,1, +Inf
+                               ,1,2,2, +Inf
+                               ,2,1,1,    0
+                               ,2,1,2, +Inf
+                               ,2,2,1, +Inf
+                               ,2,2,2,    6), nrow=8, ncol=4,byrow=T),
+                  form="sparse",
+                  uels=f, domains=userDomains,
+                  field='up')
+  x <- rgdx(fnIn,list(name='x',form='sparse',uels=f,field='UP'))
+  chk <- chkRgdxRes (x, xwantUp)
+  if (!chk$same) {
+    stop (paste("test rgdx(x,'up',filtered,compress=F) failed",chk$msg))
+  }
+  # scale
+  f <- list(iUels,jUels,kUels)
+  xwantS <- list(name="x", type="variable", dim=3,
+                 val=matrix(c( 1,1,1,    1
+                              ,1,1,2,    1
+                              ,1,2,1,    1
+                              ,1,2,2,    1
+                              ,2,1,1,    1
+                              ,2,1,2,    1
+                              ,2,2,1,   10
+                              ,2,2,2,    1), nrow=8, ncol=4,byrow=T),
+                 form="sparse",
+                 uels=f, domains=userDomains,
+                 field='s')
+  x <- rgdx(fnIn,list(name='x',form='sparse',field='S',uels=f))
+  chk <- chkRgdxRes (x, xwantS)
+  if (!chk$same) {
+    stop (paste("test rgdx(x,'S',filtered,compress=F) failed",chk$msg))
   }
 
 
