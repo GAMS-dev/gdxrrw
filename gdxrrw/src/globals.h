@@ -40,7 +40,8 @@ typedef enum dField {
   lower = GMS_VAL_LOWER,
   upper = GMS_VAL_UPPER,
   scale = GMS_VAL_SCALE,
-  max = GMS_VAL_MAX
+  all = GMS_VAL_MAX,
+  max = GMS_VAL_MAX + 1
 } dField_t;
 typedef struct rSpec {          /* rgdx read specifier */
   char name[1024];

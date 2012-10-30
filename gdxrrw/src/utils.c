@@ -770,6 +770,9 @@ getNonZeroElements (gdxHandle_t h, int symIdx, dField_t dField)
   gdxValues_t values;
 
   gdxDataReadRawStart (h, symIdx, &nRecs);
+  if (all == dField) {
+    return nRecs;
+  }
   for (cnt = 0, i = 0;  i < nRecs;  i++) {
     gdxDataReadRaw (h, uels, values, &changeIdx);
     if (values[dField] != 0) {

@@ -151,6 +151,8 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
   } /* dimExp */
 
   if (fieldExp) {
+    char fieldErrorMsg[] = "Input list element 'field' must be in"
+      " ['l','m','lo','up','s','all'].";
     if (TYPEOF(fieldExp) != STRSXP ) {
       Rprintf ("List element 'field' must be a string - found %d instead\n",
                TYPEOF(fieldExp));
@@ -158,7 +160,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
     }
     tmpName = CHAR(STRING_ELT(fieldExp, 0));
     if (strlen(tmpName) == 0) {
-      error("Input list element 'field' must be in ['l','m','lo','up','s'].");
+      error(fieldErrorMsg);
     }
     rSpec->withField = 1;
     if      (0 == strcasecmp("l", tmpName)) {
@@ -176,9 +178,12 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
     else if (0 == strcasecmp("s", tmpName)) {
       rSpec->dField = scale;
     }
-    else {
-      error("Input list element 'field' must be from 'l', 'm', 'lo', 'up' or 's'.");
+    else if (0 == strcasecmp("all", tmpName)) {
+      rSpec->dField = all;
     }
+    else {
+      error(fieldErrorMsg);
+     }
   } /* if fieldExp */
 
   if (formExp) {
@@ -328,7 +333,10 @@ SEXP rgdx (SEXP args)
   shortStringBuf_t gdxFileName;
   int symIdx, symDim, symType, symNNZ, symUser;
   int iDim;
-  int rc, findrc, errNum, mrows = 0, ncols, nUEL, iUEL;
+  int rc, findrc, errNum, nUEL, iUEL;
+  int mrows = 0;                /* NNZ count, i.e. number of rows in
+                                 * $val when form='sparse' */
+  int ncols;                    /* number of cols in $val when form='sparse' */
   int kk, iRec, nRecs, index, changeIdx, kRec;
   int rgdxAlloc;                /* PROTECT count: undo this many on exit */
   int UELUserMapping, highestMappedUEL;
@@ -524,13 +532,17 @@ SEXP rgdx (SEXP args)
       hpFilter[iDim].fType = identity;
     }
 
-    /* if it is a parameter, add 1 to the dimension */
-    if (symType != GMS_DT_SET) {
-      ncols = symDim+1;
-    }
-    else {
-      ncols = symDim;
-    }
+    ncols = symDim + 1;         /* usual index cols + data col */
+    switch (symType) {
+    case GMS_DT_SET:
+      ncols = symDim;           /* no data col */
+      break;
+    case GMS_DT_VAR:
+    case GMS_DT_EQU:
+      if (all == rSpec->dField) /* additional 'field' col */
+        ncols++;
+      break;
+    } /* end switch */
 
     /* we will have domain info returned for all symbols */
     PROTECT(outDomains = allocVector(STRSXP, symDim));
@@ -539,6 +551,10 @@ SEXP rgdx (SEXP args)
     outTeSp = R_NilValue;
     nnz = 0;
     if (rSpec->withUel) {
+      if (all == rSpec->dField) {
+        error ("field='all' not yet implemented");
+      }
+
       /* here we check the cardinality of the symbol we are reading,
        * i.e. the number of nonzeros, i.e. the number of elements that match
        * in uel filter.  Given this value,
@@ -578,12 +594,10 @@ SEXP rgdx (SEXP args)
       PROTECT(outValSp = allocMatrix(REALSXP, nnz, ncols));
       rgdxAlloc++;
       p = REAL(outValSp);
-      if (rSpec->te && symType == GMS_DT_SET) {
-        PROTECT(outTeSp = allocVector(STRSXP, nnz));
-        rgdxAlloc++;
-      }
 
       if (rSpec->te) { /* read set elements with their text, using filter */
+        PROTECT(outTeSp = allocVector(STRSXP, nnz));
+        rgdxAlloc++;
         gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
         prepHPFilter (symDim, hpFilter);
         for (matched = 0, iRec = 0;  iRec < nRecs;  iRec++) {
@@ -634,8 +648,14 @@ SEXP rgdx (SEXP args)
             index = matched + symDim * nnz;
             matched++;
 
-            if (symType != GMS_DT_SET)
-              p[index] = values[rSpec->dField];
+            if (symType != GMS_DT_SET) {
+              if (all == rSpec->dField) {
+                error ("field='all' not yet implemented");
+              }
+              else {
+                p[index] = values[rSpec->dField];
+              }
+            }
           }
           if (matched == nnz) {
             break;
@@ -648,71 +668,52 @@ SEXP rgdx (SEXP args)
     }   /* if withUel */
     else {
       /* read without user UEL filter: use domain info to filter if possible */
+      if (all == rSpec->dField) {
+        error ("field='all' not yet implemented");
+      }
       mrows = symNNZ;
       /*  check for non zero elements for variable and equation */
-      if ((symType == GMS_DT_VAR || symType == GMS_DT_EQU) && zeroSqueeze) {
-        mrows = getNonZeroElements(gdxHandle, symIdx, rSpec->dField);
+      if ((symType == GMS_DT_VAR || symType == GMS_DT_EQU)) {
+        if (all == rSpec->dField) {
+          mrows *= 5;           /* l,m,lo,up,scale */
+        }
+        else if (zeroSqueeze) { /* potentially squeeze some out */
+          mrows = getNonZeroElements(gdxHandle, symIdx, rSpec->dField);
+        }
       }
       /* Create 2D sparse R array */
       PROTECT(outValSp = allocMatrix(REALSXP, mrows, ncols));
       rgdxAlloc++;
       p = REAL(outValSp);
-      if (rSpec->te && symType == GMS_DT_SET) {
+      if (rSpec->te) {          /* implies GMS_DT_SET */
         PROTECT(outTeSp = allocVector(STRSXP, mrows));
         rgdxAlloc++;
       }
 
       mkXPFilter (symIdx, useDomInfo, xpFilter, outDomains);
 
-      if (rSpec->te && 0) {          /* text elements */
-        gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
-        for (iRec = 0;  iRec < nRecs;  iRec++) {
-          gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-          if (values[GMS_VAL_LEVEL]) {
-            elementIndex = (int) values[GMS_VAL_LEVEL];
-            gdxGetElemText(gdxHandle, elementIndex, msg, &IDum);
-            SET_STRING_ELT(outTeSp, iRec, mkChar(msg));
-          }
-          else {
-            strcpy(stringEle, "");
-            for (kk = 0;  kk < symDim;  kk++) {
-              strcat(stringEle, CHAR(STRING_ELT(universe, uels[kk]-1))  );
-              if (kk != symDim-1) {
-                strcat(stringEle, ".");
-              }
-            }
-            SET_STRING_ELT(outTeSp, iRec, mkChar(stringEle));
-          }
-          for (kk = 0;  kk < symDim;  kk++) {
-            p[iRec+kk*mrows] = uels[kk];
-          }
-        }  /* loop over GDX records */
-        if (!gdxDataReadDone (gdxHandle)) {
-          error ("Could not gdxDataReadDone");
+      gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
+      for (iRec = 0, kRec = 0;  iRec < nRecs;  iRec++) {
+        gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+        findrc = findInXPFilter (symDim, uels, xpFilter, outIdx);
+        if (findrc) {
+          error ("DEBUG 00: findrc = %d is unhandled", findrc);
         }
-      }    /* rSpec->te: must be a set */
-      else {
-        gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
-        for (iRec = 0, kRec = 0;  iRec < nRecs;  iRec++) {
-          gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-          findrc = findInXPFilter (symDim, uels, xpFilter, outIdx);
-          if (findrc) {
-            error ("DEBUG 00: findrc = %d is unhandled", findrc);
-          }
-          if ((GMS_DT_SET == symType) ||
-              (! zeroSqueeze) ||
-              (0 != values[rSpec->dField])) {
-            /* store the value */
-            for (kk = 0;  kk < symDim;  kk++) {
+        if ((GMS_DT_SET == symType) ||
+            (! zeroSqueeze) ||
+            (! zeroSqueeze) ||
+            (0 != values[rSpec->dField])) {
+          /* store the value */
+          for (kk = 0;  kk < symDim;  kk++) {
 #if 0
-              p[kRec + kk*mrows] = uels[kk];
+            p[kRec + kk*mrows] = uels[kk];
 #else
-              p[kRec + kk*mrows] = outIdx[kk]; /* from the xpFilter */
+            p[kRec + kk*mrows] = outIdx[kk]; /* from the xpFilter */
 #endif
-            }
-            index = kRec + symDim*mrows;
-            if (symType != GMS_DT_SET)
-              p[index] = values[rSpec->dField];
+          }
+          index = kRec + symDim*mrows;
+          switch (symType) {
+          case GMS_DT_SET:
             if (rSpec->te) {
               if (values[GMS_VAL_LEVEL]) {
                 elementIndex = (int) values[GMS_VAL_LEVEL];
@@ -731,28 +732,46 @@ SEXP rgdx (SEXP args)
               }
             } /* if returning set text */
             kRec++;
-          } /* end of if (set || val != 0) */
-        } /* loop over GDX records */
-        if (!gdxDataReadDone (gdxHandle)) {
-          error ("Could not gdxDataReadDone");
-        }
-        if (kRec < mrows) {
-          SEXP newCV, tmp;
-          double *newp;
-          double *from, *to;
+            break;
+          case GMS_DT_PAR:
+            p[index] = values[rSpec->dField];
+            kRec++;
+            break;
+          case GMS_DT_VAR:
+          case GMS_DT_EQU:
+            if (all != rSpec->dField) {
+              p[index] = values[rSpec->dField];
+              kRec++;
+            }
+            else {
+              error ("field='all' not yet implemented");
+            }
+            break;
+          default:
+            error("Unrecognized type of symbol found.");
+          } /* end switch */
+        } /* end of if (set || val != 0) */
+      } /* loop over GDX records */
 
-          PROTECT(newCV = allocMatrix(REALSXP, kRec, ncols));
-          newp = REAL(newCV);
-          for (kk = 0;  kk <= symDim;  kk++) {
-            from = p    + kk*mrows;
-            to   = newp + kk*kRec;
-            MEMCPY (to, from, sizeof(*p)*kRec);
-          }
-          tmp = outValSp;
-          outValSp = newCV;
-          UNPROTECT_PTR(tmp);
-          mrows = kRec;
+      if (!gdxDataReadDone (gdxHandle)) {
+        error ("Could not gdxDataReadDone");
+      }
+      if (kRec < mrows) {
+        SEXP newCV, tmp;
+        double *newp;
+        double *from, *to;
+
+        PROTECT(newCV = allocMatrix(REALSXP, kRec, ncols));
+        newp = REAL(newCV);
+        for (kk = 0;  kk <= symDim;  kk++) {
+          from = p    + kk*mrows;
+          to   = newp + kk*kRec;
+          MEMCPY (to, from, sizeof(*p)*kRec);
         }
+        tmp = outValSp;
+        outValSp = newCV;
+        UNPROTECT_PTR(tmp);
+        mrows = kRec;
       }
     } /* if (withUel .. else .. ) */
 
@@ -777,6 +796,9 @@ SEXP rgdx (SEXP args)
     if (rSpec->dForm == full) {
       switch (symDim) {
       case 0:
+        if (all == rSpec->dField) {
+          error ("field='all' not yet implemented");
+        }
         PROTECT(outValFull = allocVector(REALSXP, 1));
         rgdxAlloc++;
         if (outValSp != R_NilValue && REAL(outValSp) != NULL) {
@@ -789,6 +811,9 @@ SEXP rgdx (SEXP args)
         break;
 
       case 1:
+        if (all == rSpec->dField) {
+          error ("field='all' not yet implemented");
+        }
         PROTECT(dimVect = allocVector(REALSXP, 2));
         rgdxAlloc++;
         dimVal = REAL(dimVect);
@@ -831,6 +856,9 @@ SEXP rgdx (SEXP args)
         break;
 
       default:
+        if (all == rSpec->dField) {
+          error ("field='all' not yet implemented");
+        }
         PROTECT(dimVect = allocVector(REALSXP, symDim));
         rgdxAlloc++;
         totalElement = 1;
