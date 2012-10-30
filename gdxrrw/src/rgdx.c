@@ -693,66 +693,84 @@ SEXP rgdx (SEXP args)
       mkXPFilter (symIdx, useDomInfo, xpFilter, outDomains);
 
       gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
-      for (iRec = 0, kRec = 0;  iRec < nRecs;  iRec++) {
-        gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-        findrc = findInXPFilter (symDim, uels, xpFilter, outIdx);
-        if (findrc) {
-          error ("DEBUG 00: findrc = %d is unhandled", findrc);
-        }
-        if ((GMS_DT_SET == symType) ||
-            (! zeroSqueeze) ||
-            (! zeroSqueeze) ||
-            (0 != values[rSpec->dField])) {
-          /* store the value */
-          for (kk = 0;  kk < symDim;  kk++) {
-#if 0
-            p[kRec + kk*mrows] = uels[kk];
-#else
-            p[kRec + kk*mrows] = outIdx[kk]; /* from the xpFilter */
-#endif
+      switch (symType) {
+      case GMS_DT_SET:
+        for (iRec = 0;  iRec < nRecs;  iRec++) {
+          gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+          findrc = findInXPFilter (symDim, uels, xpFilter, outIdx);
+          if (findrc) {
+            error ("DEBUG 00: findrc = %d is unhandled", findrc);
           }
-          index = kRec + symDim*mrows;
-          switch (symType) {
-          case GMS_DT_SET:
-            if (rSpec->te) {
-              if (values[GMS_VAL_LEVEL]) {
-                elementIndex = (int) values[GMS_VAL_LEVEL];
-                gdxGetElemText(gdxHandle, elementIndex, msg, &IDum);
-                SET_STRING_ELT(outTeSp, iRec, mkChar(msg));
-              }
-              else {
-                strcpy(stringEle, "");
-                for (kk = 0;  kk < symDim;  kk++) {
-                  strcat(stringEle, CHAR(STRING_ELT(universe, uels[kk]-1)));
-                  if (kk != symDim-1) {
-                    strcat(stringEle, ".");
-                  }
-                }
-                SET_STRING_ELT(outTeSp, iRec, mkChar(stringEle));
-              }
-            } /* if returning set text */
-            kRec++;
-            break;
-          case GMS_DT_PAR:
-            p[index] = values[rSpec->dField];
-            kRec++;
-            break;
-          case GMS_DT_VAR:
-          case GMS_DT_EQU:
-            if (all != rSpec->dField) {
-              p[index] = values[rSpec->dField];
-              kRec++;
+          for (kk = 0;  kk < symDim;  kk++) {
+            p[iRec + kk*mrows] = outIdx[kk]; /* from the xpFilter */
+          }
+          if (rSpec->te) {
+            if (values[GMS_VAL_LEVEL]) {
+              elementIndex = (int) values[GMS_VAL_LEVEL];
+              gdxGetElemText(gdxHandle, elementIndex, msg, &IDum);
+              SET_STRING_ELT(outTeSp, iRec, mkChar(msg));
             }
             else {
-              error ("field='all' not yet implemented");
+              strcpy(stringEle, "");
+              for (kk = 0;  kk < symDim;  kk++) {
+                strcat(stringEle, CHAR(STRING_ELT(universe, uels[kk]-1)));
+                if (kk != symDim-1) {
+                  strcat(stringEle, ".");
+                }
+              }
+              SET_STRING_ELT(outTeSp, iRec, mkChar(stringEle));
             }
-            break;
-          default:
-            error("Unrecognized type of symbol found.");
-          } /* end switch */
-        } /* end of if (set || val != 0) */
-      } /* loop over GDX records */
-
+          } /* if returning set text */
+        } /* loop over GDX records */
+        kRec = nRecs;
+        break;
+      case GMS_DT_PAR:
+        for (iRec = 0, kRec = 0;  iRec < nRecs;  iRec++) {
+          gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+          findrc = findInXPFilter (symDim, uels, xpFilter, outIdx);
+          if (findrc) {
+            error ("DEBUG 00: findrc = %d is unhandled", findrc);
+          }
+          if ((! zeroSqueeze) ||
+              (0 != values[GMS_VAL_LEVEL])) {
+            /* store the value */
+            for (index = kRec, kk = 0;  kk < symDim;  kk++) {
+              p[index] = outIdx[kk]; /* from the xpFilter */
+              index += mrows;
+            }
+            p[index] = values[GMS_VAL_LEVEL];
+            kRec++;
+          } /* end if (no squeeze || val != 0) */
+        } /* loop over GDX records */
+        break;
+      case GMS_DT_VAR:
+      case GMS_DT_EQU:
+        if (all != rSpec->dField) {
+          for (iRec = 0, kRec = 0;  iRec < nRecs;  iRec++) {
+            gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+            findrc = findInXPFilter (symDim, uels, xpFilter, outIdx);
+            if (findrc) {
+              error ("DEBUG 00: findrc = %d is unhandled", findrc);
+            }
+            if ((! zeroSqueeze) ||
+                (0 != values[rSpec->dField])) {
+              /* store the value */
+              for (index = kRec, kk = 0;  kk < symDim;  kk++) {
+                p[index] = outIdx[kk]; /* from the xpFilter */
+                index += mrows;
+              }
+              p[index] = values[rSpec->dField];
+              kRec++;
+            } /* end if (no squeeze || val != 0) */
+          } /* loop over GDX records */
+        }
+        else {
+          error ("field='all' not yet implemented");
+        }
+        break;
+      default:
+        error("Unrecognized type of symbol found.");
+      } /* end switch(symType) */
       if (!gdxDataReadDone (gdxHandle)) {
         error ("Could not gdxDataReadDone");
       }
