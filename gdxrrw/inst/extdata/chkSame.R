@@ -259,6 +259,7 @@ chkRgdxRes <- function(f1, f2, checkDimNames=FALSE) {
         if (dims1[d] != dims2[d])  return (r)
         last <- last * dims1[d]
       }
+      if (0 == last)               next
       for (kk in 1:last) {
         if (f1[[k]][kk] == f2[[k]][kk])  next
         if (! isClose(f1[[k]][kk],f2[[k]][kk])) return (r)
