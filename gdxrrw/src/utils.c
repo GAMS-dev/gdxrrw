@@ -676,7 +676,6 @@ findInXPFilter (int symDim, const int inUels[], xpFilter_t filterList[],
 /* xpFilterToUels
  * create output uels (i.e. $uels) for an xpFilter
  */
-
 void
 xpFilterToUels (int symDim, xpFilter_t filterList[], SEXP uni, SEXP uels)
 {

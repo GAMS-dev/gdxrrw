@@ -332,6 +332,8 @@ SEXP rgdx (SEXP args)
   shortStringBuf_t uelName;
   shortStringBuf_t gdxFileName;
   int symIdx, symDim, symType, symNNZ, symUser;
+  int symDimX;                  /* allow for additional dim on var/equ with field='all' */
+  SEXP fieldUels;               /* UELS for addition dimension for field */
   int iDim;
   int rc, findrc, errNum, nUEL, iUEL;
   int mrows = 0;                /* NNZ count, i.e. number of rows in
@@ -349,7 +351,7 @@ SEXP rgdx (SEXP args)
   char symText[GMS_SSSIZE], msg[GMS_SSSIZE], stringEle[GMS_SSSIZE];
   char *types[] = {"set", "parameter", "variable", "equation"};
   char *forms[] = {"full", "sparse"};
-  char *fields[] = {"l", "m", "up", "lo", "s"};
+  char *fields[] = {"l", "m", "lo", "up", "s", "all"};
   int nField, elementIndex, IDum, ndimension, totalElement;
   int withList = 0;
   int outElements = 0;    /* shut up compiler warnings */
@@ -533,26 +535,36 @@ SEXP rgdx (SEXP args)
     }
 
     ncols = symDim + 1;         /* usual index cols + data col */
+    symDimX = symDim;
     switch (symType) {
     case GMS_DT_SET:
       ncols = symDim;           /* no data col */
       break;
     case GMS_DT_VAR:
     case GMS_DT_EQU:
-      if (all == rSpec->dField) /* additional 'field' col */
+      if (all == rSpec->dField) { /* additional 'field' col */
         ncols++;
+        symDimX++;
+        PROTECT(fieldUels = allocVector(STRSXP, GMS_VAL_MAX));
+        rgdxAlloc++;
+        SET_STRING_ELT(fieldUels, GMS_VAL_LEVEL   , mkChar(fields[GMS_VAL_LEVEL   ]));
+        SET_STRING_ELT(fieldUels, GMS_VAL_MARGINAL, mkChar(fields[GMS_VAL_MARGINAL]));
+        SET_STRING_ELT(fieldUels, GMS_VAL_LOWER   , mkChar(fields[GMS_VAL_LOWER   ]));
+        SET_STRING_ELT(fieldUels, GMS_VAL_UPPER   , mkChar(fields[GMS_VAL_UPPER   ]));
+        SET_STRING_ELT(fieldUels, GMS_VAL_SCALE   , mkChar(fields[GMS_VAL_SCALE   ]));
+      }
       break;
     } /* end switch */
 
     /* we will have domain info returned for all symbols */
-    PROTECT(outDomains = allocVector(STRSXP, symDim));
+    PROTECT(outDomains = allocVector(STRSXP, symDimX));
     rgdxAlloc++;
 
     outTeSp = R_NilValue;
     nnz = 0;
     if (rSpec->withUel) {
       if (all == rSpec->dField) {
-        error ("field='all' not yet implemented");
+        error ("field='all' not yet implemented: 000");
       }
 
       /* here we check the cardinality of the symbol we are reading,
@@ -650,7 +662,7 @@ SEXP rgdx (SEXP args)
 
             if (symType != GMS_DT_SET) {
               if (all == rSpec->dField) {
-                error ("field='all' not yet implemented");
+                error ("field='all' not yet implemented: 100");
               }
               else {
                 p[index] = values[rSpec->dField];
@@ -669,7 +681,7 @@ SEXP rgdx (SEXP args)
     else {
       /* read without user UEL filter: use domain info to filter if possible */
       if (all == rSpec->dField) {
-        error ("field='all' not yet implemented");
+        /* error ("field='all' not yet implemented: 200"); */
       }
       mrows = symNNZ;
       /*  check for non zero elements for variable and equation */
@@ -685,16 +697,16 @@ SEXP rgdx (SEXP args)
       PROTECT(outValSp = allocMatrix(REALSXP, mrows, ncols));
       rgdxAlloc++;
       p = REAL(outValSp);
-      if (rSpec->te) {          /* implies GMS_DT_SET */
-        PROTECT(outTeSp = allocVector(STRSXP, mrows));
-        rgdxAlloc++;
-      }
 
       mkXPFilter (symIdx, useDomInfo, xpFilter, outDomains);
 
       gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
       switch (symType) {
       case GMS_DT_SET:
+        if (rSpec->te) {
+          PROTECT(outTeSp = allocVector(STRSXP, mrows));
+          rgdxAlloc++;
+        }
         for (iRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
           findrc = findInXPFilter (symDim, uels, xpFilter, outIdx);
@@ -765,7 +777,33 @@ SEXP rgdx (SEXP args)
           } /* loop over GDX records */
         }
         else {
-          error ("field='all' not yet implemented");
+          for (iRec = 0, kRec = 0;  iRec < nRecs;  iRec++) {
+            gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+            findrc = findInXPFilter (symDim, uels, xpFilter, outIdx);
+            if (findrc) {
+              error ("DEBUG 00: findrc = %d is unhandled", findrc);
+            }
+            for (index = kRec, kk = 0;  kk < symDim;  kk++) {
+              p[index+GMS_VAL_LEVEL   ] = outIdx[kk];
+              p[index+GMS_VAL_MARGINAL] = outIdx[kk];
+              p[index+GMS_VAL_LOWER   ] = outIdx[kk];
+              p[index+GMS_VAL_UPPER   ] = outIdx[kk];
+              p[index+GMS_VAL_SCALE   ] = outIdx[kk];
+              index += mrows;
+            }
+            p[index+GMS_VAL_LEVEL   ] = 1 + GMS_VAL_LEVEL;
+            p[index+GMS_VAL_MARGINAL] = 1 + GMS_VAL_MARGINAL;
+            p[index+GMS_VAL_LOWER   ] = 1 + GMS_VAL_LOWER;
+            p[index+GMS_VAL_UPPER   ] = 1 + GMS_VAL_UPPER;
+            p[index+GMS_VAL_SCALE   ] = 1 + GMS_VAL_SCALE;
+            index += mrows;
+            p[index+GMS_VAL_LEVEL   ] = values[GMS_VAL_LEVEL];
+            p[index+GMS_VAL_MARGINAL] = values[GMS_VAL_MARGINAL];
+            p[index+GMS_VAL_LOWER   ] = values[GMS_VAL_LOWER];
+            p[index+GMS_VAL_UPPER   ] = values[GMS_VAL_UPPER];
+            p[index+GMS_VAL_SCALE   ] = values[GMS_VAL_SCALE];
+            kRec += GMS_VAL_MAX;
+          } /* loop over GDX records */
         }
         break;
       default:
@@ -795,7 +833,7 @@ SEXP rgdx (SEXP args)
 
     /* here the output uels $uels are allocated and populated */
     if (rSpec->compress) {
-      PROTECT(outUels = allocVector(VECSXP, symDim));
+      PROTECT(outUels = allocVector(VECSXP, symDimX));
       rgdxAlloc++;
       compressData (symDim, mrows, universe, nUEL, xpFilter,
                     outValSp, outUels);
@@ -805,9 +843,13 @@ SEXP rgdx (SEXP args)
       }
     }
     else if (! rSpec->withUel) {
-      PROTECT(outUels = allocVector(VECSXP, symDim));
+      PROTECT(outUels = allocVector(VECSXP, symDimX));
       rgdxAlloc++;
       xpFilterToUels (symDim, xpFilter, universe, outUels);
+    }
+    if (all == rSpec->dField) {
+      SET_VECTOR_ELT(outUels, symDim, fieldUels);
+      SET_STRING_ELT(outDomains, symDim, mkChar("_field"));
     }
 
     /* Converting sparse data into full matrix */
@@ -815,7 +857,7 @@ SEXP rgdx (SEXP args)
       switch (symDim) {
       case 0:
         if (all == rSpec->dField) {
-          error ("field='all' not yet implemented");
+          error ("field='all' not yet implemented: 400");
         }
         PROTECT(outValFull = allocVector(REALSXP, 1));
         rgdxAlloc++;
@@ -830,7 +872,7 @@ SEXP rgdx (SEXP args)
 
       case 1:
         if (all == rSpec->dField) {
-          error ("field='all' not yet implemented");
+          error ("field='all' not yet implemented: 500");
         }
         PROTECT(dimVect = allocVector(REALSXP, 2));
         rgdxAlloc++;
@@ -874,21 +916,21 @@ SEXP rgdx (SEXP args)
         break;
 
       default:
-        if (all == rSpec->dField) {
-          error ("field='all' not yet implemented");
-        }
-        PROTECT(dimVect = allocVector(REALSXP, symDim));
+        PROTECT(dimVect = allocVector(REALSXP, symDimX));
         rgdxAlloc++;
         totalElement = 1;
         dimVal = REAL(dimVect);
         if (rSpec->withUel) {
+          if (all == rSpec->dField) {
+            error ("field='all' not yet implemented: 600");
+          }
           for (ndimension = 0; ndimension < symDim; ndimension++) {
             dimVal[ndimension] = length(VECTOR_ELT(rSpec->filterUel, ndimension));
             totalElement *= dimVal[ndimension];
           }
         }
         else {
-          for (ndimension = 0; ndimension < symDim; ndimension++) {
+          for (ndimension = 0; ndimension < symDimX; ndimension++) {
             dimVal[ndimension] = length(VECTOR_ELT(outUels, ndimension));
             totalElement *= dimVal[ndimension];
           }
@@ -901,7 +943,7 @@ SEXP rgdx (SEXP args)
           setAttrib(outValFull, R_DimNamesSymbol, rSpec->filterUel);
         }
         else {
-          sparseToFull (outValSp, outValFull, outUels, symType, mrows, symDim);
+          sparseToFull (outValSp, outValFull, outUels, symType, mrows, symDimX);
           setAttrib(outValFull, R_DimSymbol, dimVect);
           setAttrib(outValFull, R_DimNamesSymbol, outUels);
         }
@@ -971,22 +1013,25 @@ SEXP rgdx (SEXP args)
       rgdxAlloc++;
       switch(rSpec->dField) {
       case level:
-        SET_STRING_ELT(outField, 0, mkChar( fields[0] ));
+        SET_STRING_ELT(outField, 0, mkChar (fields[GMS_VAL_LEVEL]));
         break;
       case marginal:
-        SET_STRING_ELT(outField, 0, mkChar( fields[1] ));
+        SET_STRING_ELT(outField, 0, mkChar (fields[GMS_VAL_MARGINAL]));
         break;
       case upper:
-        SET_STRING_ELT(outField, 0, mkChar( fields[2] ));
+        SET_STRING_ELT(outField, 0, mkChar (fields[GMS_VAL_LOWER]));
         break;
       case lower:
-        SET_STRING_ELT(outField, 0, mkChar( fields[3] ));
+        SET_STRING_ELT(outField, 0, mkChar (fields[GMS_VAL_UPPER]));
         break;
       case scale:
-        SET_STRING_ELT(outField, 0, mkChar( fields[4] ));
+        SET_STRING_ELT(outField, 0, mkChar (fields[GMS_VAL_SCALE]));
+        break;
+      case all:
+        SET_STRING_ELT(outField, 0, mkChar (fields[GMS_VAL_MAX]));
         break;
       default:
-        error("Unrecognized type of symbol found.");
+        error("Unrecognized type of field found.");
       }
     }
     if (rSpec->ts) {
