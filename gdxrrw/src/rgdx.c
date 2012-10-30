@@ -859,7 +859,7 @@ SEXP rgdx (SEXP args)
         }
         PROTECT(outValFull = allocVector(REALSXP, 1));
         rgdxAlloc++;
-        if (outValSp != R_NilValue && REAL(outValSp) != NULL) {
+        if (outValSp != R_NilValue && (REAL(outValSp) != NULL) && (mrows > 0)) {
           REAL(outValFull)[0] = REAL(outValSp)[0];
         }
         else {
