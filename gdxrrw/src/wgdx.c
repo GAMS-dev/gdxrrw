@@ -63,7 +63,7 @@ checkForValidData(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
   double dt;
   int nDimsData, nDimsUels;
   int ncols, nrows;
-  int max;
+  int mx;
 
   nDimsUels = length(uelOut);
 
@@ -92,7 +92,7 @@ checkForValidData(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
     }
     /* the matrix of vals is stored column-major */
     for (j = 0;  j < ncols;  j++) {
-      for (max = 0, i = 0;  i < nrows;  i++) {
+      for (mx = 0, i = 0;  i < nrows;  i++) {
         if (pd) {
           dt = pd[i + j*nrows];
           if (dt < 1) {
@@ -115,11 +115,11 @@ checkForValidData(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
         /* if (!mxIsFinite(P[j + i*nrows])) {
            error("Only finite numbers are allowed in index columns of sparse data");
            } */
-        if (k > max) {
-          max = k;
+        if (k > mx) {
+          mx = k;
         }
       }
-      if (max > (int)length(VECTOR_ELT(uelOut, j))) {
+      if (mx > (int)length(VECTOR_ELT(uelOut, j))) {
         error ("Row index in sparse matrix exceeds number of elements in UEL for that column.");
       }
     } /* end loop over cols */
@@ -149,7 +149,7 @@ createUelOut(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
   int *intVal;
   char buffer [256];
   int ncols, nrows, ndims;
-  int max;
+  int mx;
 
   dims = getAttrib(val, R_DimSymbol);
   if (dForm == sparse) {
@@ -162,14 +162,14 @@ createUelOut(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
     if (TYPEOF(val) == REALSXP) {
       P = REAL(val);
       for (i = 0; i < ncols; i++) {
-        max = 0;
+        mx = 0;
         for (j = 0; j < nrows; j++) {
-          if (P[j + i*nrows] > max) {
-            max = (int) P[j + i*nrows];
+          if (P[j + i*nrows] > mx) {
+            mx = (int) P[j + i*nrows];
           }
         }
-        PROTECT(bufferUel = allocVector(STRSXP, max));
-        for (k = 1; k <= max; k++) {
+        PROTECT(bufferUel = allocVector(STRSXP, mx));
+        for (k = 1; k <= mx; k++) {
           sprintf(buffer, "%d", k);
           SET_STRING_ELT(bufferUel, k-1, mkChar(buffer));
         }
@@ -181,14 +181,14 @@ createUelOut(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
       intVal = INTEGER(val);
 
       for (i = 0; i < ncols; i++) {
-        max = 0;
+        mx = 0;
         for (j = 0; j < nrows; j++) {
-          if (intVal[j + i*nrows] > max) {
-            max = intVal[j + i*nrows];
+          if (intVal[j + i*nrows] > mx) {
+            mx = intVal[j + i*nrows];
           }
         }
-        PROTECT(bufferUel = allocVector(STRSXP, max));
-        for (k = 1; k <= max; k++) {
+        PROTECT(bufferUel = allocVector(STRSXP, mx));
+        for (k = 1; k <= mx; k++) {
           sprintf(buffer, "%d", k);
           SET_STRING_ELT(bufferUel, k-1, mkChar(buffer));
         }
