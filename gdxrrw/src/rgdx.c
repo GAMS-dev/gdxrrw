@@ -333,7 +333,7 @@ SEXP rgdx (SEXP args)
   shortStringBuf_t gdxFileName;
   int symIdx, symDim, symType, symNNZ, symUser;
   int symDimX;                  /* allow for additional dim on var/equ with field='all' */
-  SEXP fieldUels;               /* UELS for addition dimension for field */
+  SEXP fieldUels = R_NilValue; /* UELS for addition dimension for field */
   int iDim;
   int rc, findrc, errNum, nUEL, iUEL;
   int mrows = 0;                /* NNZ count, i.e. number of rows in
@@ -680,9 +680,6 @@ SEXP rgdx (SEXP args)
     }   /* if withUel */
     else {
       /* read without user UEL filter: use domain info to filter if possible */
-      if (all == rSpec->dField) {
-        /* error ("field='all' not yet implemented: 200"); */
-      }
       mrows = symNNZ;
       /*  check for non zero elements for variable and equation */
       if ((symType == GMS_DT_VAR || symType == GMS_DT_EQU)) {
@@ -700,6 +697,7 @@ SEXP rgdx (SEXP args)
 
       mkXPFilter (symIdx, useDomInfo, xpFilter, outDomains);
 
+      kRec = 0;                 /* shut up warnings */
       gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
       switch (symType) {
       case GMS_DT_SET:
@@ -1018,10 +1016,10 @@ SEXP rgdx (SEXP args)
       case marginal:
         SET_STRING_ELT(outField, 0, mkChar (fields[GMS_VAL_MARGINAL]));
         break;
-      case upper:
+      case lower:
         SET_STRING_ELT(outField, 0, mkChar (fields[GMS_VAL_LOWER]));
         break;
-      case lower:
+      case upper:
         SET_STRING_ELT(outField, 0, mkChar (fields[GMS_VAL_UPPER]));
         break;
       case scale:
