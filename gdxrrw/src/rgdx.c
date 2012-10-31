@@ -876,18 +876,26 @@ SEXP rgdx (SEXP args)
         break;
 
       case 1:
-        if (all == rSpec->dField) {
-          error ("field='all' not yet implemented: 500");
-        }
         PROTECT(dimVect = allocVector(REALSXP, 2));
         rgdxAlloc++;
         dimVal = REAL(dimVect);
-        dimVal[1] = 1;
         PROTECT(dimNames = allocVector(VECSXP, 2)); /* for one-dim symbol, val is 2-dim */
         rgdxAlloc++;
-        SET_VECTOR_ELT(dimNames, 1, R_NilValue); /* no names for 2nd dimension */
+        if (all == rSpec->dField) {
+          dimVal[1] = 5;
+          SET_VECTOR_ELT(dimNames, 1, fieldUels);
+        }
+        else {
+          totalElement = 1;
+          dimVal[1] = 1;
+          SET_VECTOR_ELT(dimNames, 1, R_NilValue); /* no names for 2nd dimension */
+        }
+        totalElement = dimVal[1];
 
         if (rSpec->withUel) {
+          if (all == rSpec->dField) {
+            error ("field='all' not yet implemented: 500");
+          }
           dimVal[0] = length(VECTOR_ELT(rSpec->filterUel, 0));
           PROTECT(outValFull = allocVector(REALSXP, dimVal[0]));
           rgdxAlloc++;
@@ -898,9 +906,10 @@ SEXP rgdx (SEXP args)
         }
         else {
           dimVal[0] = length(VECTOR_ELT(outUels, 0));
-          PROTECT(outValFull = allocVector(REALSXP, dimVal[0]));
+          totalElement *= dimVal[0];
+          PROTECT(outValFull = allocVector(REALSXP, totalElement));
           rgdxAlloc++;
-          sparseToFull (outValSp, outValFull, outUels, symType, mrows, symDim);
+          sparseToFull (outValSp, outValFull, outUels, symType, mrows, symDimX);
           setAttrib(outValFull, R_DimSymbol, dimVect);
           SET_VECTOR_ELT(dimNames, 0, VECTOR_ELT(outUels, 0));
           setAttrib(outValFull, R_DimNamesSymbol, dimNames);
