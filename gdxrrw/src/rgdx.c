@@ -852,6 +852,8 @@ SEXP rgdx (SEXP args)
 
     /* Converting sparse data into full matrix */
     if (rSpec->dForm == full) {
+      double *p0;
+
       switch (symDim) {
       case 0:
         if (all == rSpec->dField) {
@@ -859,11 +861,16 @@ SEXP rgdx (SEXP args)
         }
         PROTECT(outValFull = allocVector(REALSXP, 1));
         rgdxAlloc++;
-        if (outValSp != R_NilValue && (REAL(outValSp) != NULL) && (mrows > 0)) {
-          REAL(outValFull)[0] = REAL(outValSp)[0];
+        p0 = REAL(outValFull);
+        *p0 = 0;
+        if (rSpec->withUel) {
+          if (outValSp != R_NilValue && (REAL(outValSp) != NULL)) {
+            *p0 = REAL(outValSp)[0];
+          }
         }
         else {
-          REAL(outValFull)[0] = 0;
+          if (mrows > 0)
+            *p0 = REAL(outValSp)[0];
         }
         /* sets cannot have symDim 0, so skip conversion of set text */
         break;
