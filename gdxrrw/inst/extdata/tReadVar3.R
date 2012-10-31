@@ -86,7 +86,7 @@ tryCatch({
   x <- rgdx(fnIn,list(name='x',form='sparse',field='up'))
   chk <- chkRgdxRes (x, xwantUp)
   if (!chk$same) {
-    stop (paste("test rgdx(x,'lo',unfiltered,uncompressed) failed",chk$msg))
+    stop (paste("test rgdx(x,'up',unfiltered,uncompressed) failed",chk$msg))
   }
   # scale
   xwantS <- list(name="x", type="variable", dim=3,
