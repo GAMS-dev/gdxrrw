@@ -272,10 +272,10 @@ chkRgdxRes <- function(f1, f2, checkDimNames=FALSE) {
         if (is.null(dn1))                   return (r)
         if (is.null(dn2))                   return (r)
         for (d in 1:nd) {
-          if (is.null(dn1[d]) && is.null(dn2[d]))    next
-          if (is.null(dn1[d]))                       return (r)
-          if (is.null(dn2[d]))                       return (r)
-          if (! chkSameVec ("", dn1[[d]], dn2[[d]])) return (r)
+          if (is.null(dn1[[d]]) && is.null(dn2[[d]]))  next
+          if (is.null(dn1[[d]]))                       return (r)
+          if (is.null(dn2[[d]]))                       return (r)
+          if (! chkSameVec ("", dn1[[d]], dn2[[d]]))   return (r)
         }
       }
     }
