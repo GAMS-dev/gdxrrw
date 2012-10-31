@@ -1,0 +1,112 @@
+#### test rgdx reading 1-dim variables
+#### test form=['sparse','full'] X [filtered,unfiltered] X compress=[T,F]
+#### ['l','m','lo','up','s']
+
+#### wanted lists can be produced with    dump("listName",file="")
+
+if (! require(gdxrrw))      stop ("gdxrrw package is not available")
+if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
+
+source ("chkSame.R")
+
+kUels <- c('k1', 'k2', 'k3', 'k4')
+kCard <- length(kUels)
+dom <- c("k")
+comprDom <- c("_compressed")
+userDom <- c("_user")
+cart <- list(kUels)
+
+tryCatch({
+  print ("testing rgdx on 1-dim variable reads")
+  rgdx('?')
+  fnIn <- "tReadVar1.gdx"
+  if (! file_test ('-f', fnIn)) {
+    stop (paste("FAIL: File", fnIn, "does not exist"))
+  }
+
+  ### ---------- reading form=sparse, no filter, no compress
+  # level
+  uwantL <- list(name="u", type="variable", dim=1,
+                 val=matrix(c( 1,  5), nrow=1, ncol=2, byrow=T),
+                 form="sparse", uels=cart, domains=dom,
+                 field='l')
+  u <- rgdx(fnIn,list(name='u',form='sparse',field='L'))
+  chk <- chkRgdxRes (u, uwantL)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'L',unfiltered,uncompressed) failed",chk$msg))
+  }
+
+  ### ---------- reading form=sparse, no filter, compress=T
+  # level
+  uwantL$domains <- comprDom
+  uwantL$uels[[1]] <- c('k1')
+  u <- rgdx(fnIn,list(name='u',form='sparse',field='L',compress=T))
+  chk <- chkRgdxRes (u, uwantL)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'L',unfiltered,compress=T) failed",chk$msg))
+  }
+
+  ### ---------- reading form=sparse, filtered, compress=F
+  # level
+  f <- list(c('k2','k3'))
+  uwantL <- list(name="u", type="variable", dim=1,
+                 val=matrix(c(1,  0,
+                              2,  0), nrow=2, ncol=2, byrow=T),
+                 form="sparse", uels=f, domains=userDom,
+                 field='l')
+  u <- rgdx(fnIn,list(name='u',form='sparse',uels=f))
+  chk <- chkRgdxRes (u, uwantL)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'L',filtered,compress=F) failed",chk$msg))
+  }
+
+  ### ---------- reading form=full, no filter, compress=F
+  # level
+  v <- array(0,c(kCard,1),dimnames=cart)
+  v['k1',1] <- 5
+  uwantL <- list(name="u", type="variable", dim=1,
+                 val=v,
+                 form="full", uels=cart, domains=dom,
+                 field='l')
+  u <- rgdx(fnIn,list(name='u',form='full'))
+  chk <- chkRgdxRes (u, uwantL, T)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'L',full,unfiltered,compress=F) failed",chk$msg))
+  }
+
+  ### ---------- reading form=full, no filter, compress=T
+  # level
+  uc <- list(c('k1'))
+  v <- array(0,c(1,1),dimnames=uc)
+  v['k1',1] <- 5
+  uwantL <- list(name="u", type="variable", dim=1,
+                 val=v,
+                 form="full", uels=uc, domains=comprDom,
+                 field='l')
+  u <- rgdx(fnIn,list(name='u',form='full',compress=T))
+  chk <- chkRgdxRes (u, uwantL, T)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'L',full,unfiltered,compress=T) failed",chk$msg))
+  }
+
+  ### ---------- reading form=full, filtered, compress=F
+  # level
+  f <- list(c('k2','k3'))
+  v <- array(0,c(2,1),dimnames=f)
+  uwantL <- list(name="u", type="variable", dim=1,
+                 val=v,
+                 form="full", uels=f, domains=userDom,
+                 field='l')
+  u <- rgdx(fnIn,list(name='u',form='full',uels=f))
+  chk <- chkRgdxRes (u, uwantL, T)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'L',full,filtered) failed",chk$msg))
+  }
+
+
+  print ("test of rgdx on variable reads passed")
+  TRUE   ## all tests passed: return TRUE
+},
+
+error = function(ex) { print ("test of rgdx on variable reads failed"); print(ex) ; FALSE }
+)
