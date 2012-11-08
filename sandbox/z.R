@@ -8,6 +8,7 @@ if (! require(gdxrrw))      stop ("gdxrrw package is not available")
 if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
 source ("chkSame.R")
+reqIdent <- TRUE
 
 kUels <- c('k1', 'k2', 'k3', 'k4')
 kCard <- length(kUels)
@@ -31,7 +32,7 @@ tryCatch({
                  form='sparse', uels=cart, domains=dom,
                  field='l')
   u <- rgdx(fnIn,list(name='u',form='sparse',field='L'))
-  chk <- chkRgdxRes (u, uwantL)
+  chk <- chkRgdxRes (u, uwantL, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'L',unfiltered,uncompressed) failed",chk$msg))
   }
@@ -40,7 +41,7 @@ tryCatch({
                  form='sparse', uels=cart, domains=dom,
                  field='l')
   v <- rgdx(fnIn,list(name='v',form='sparse',field='L'))
-  chk <- chkRgdxRes (v, vwantL)
+  chk <- chkRgdxRes (v, vwantL, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'L',unfiltered,uncompressed) failed",chk$msg))
   }
@@ -50,7 +51,7 @@ tryCatch({
                  form='sparse', uels=cart, domains=dom,
                  field='m')
   u <- rgdx(fnIn,list(name='u',form='sparse',field='M'))
-  chk <- chkRgdxRes (u, uwantM)
+  chk <- chkRgdxRes (u, uwantM, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'M',unfiltered,uncompressed) failed",chk$msg))
   }
@@ -59,7 +60,7 @@ tryCatch({
                  form='sparse', uels=cart, domains=dom,
                  field='m')
   v <- rgdx(fnIn,list(name='v',form='sparse',field='M'))
-  chk <- chkRgdxRes (v, vwantM)
+  chk <- chkRgdxRes (v, vwantM, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'M',unfiltered,uncompressed) failed",chk$msg))
   }
@@ -69,7 +70,7 @@ tryCatch({
                   form='sparse', uels=cart, domains=dom,
                   field='lo')
   u <- rgdx(fnIn,list(name='u',form='sparse',field='Lo'))
-  chk <- chkRgdxRes (u, uwantLo)
+  chk <- chkRgdxRes (u, uwantLo, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'lo',unfiltered,uncompressed) failed",chk$msg))
   }
@@ -79,7 +80,7 @@ tryCatch({
                   form='sparse', uels=cart, domains=dom,
                   field='lo')
   v <- rgdx(fnIn,list(name='v',form='sparse',field='lo'))
-  chk <- chkRgdxRes (v, vwantLo)
+  chk <- chkRgdxRes (v, vwantLo, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'lo',unfiltered,uncompressed) failed",chk$msg))
   }
@@ -91,7 +92,7 @@ tryCatch({
                   form='sparse', uels=cart, domains=dom,
                   field='up')
   u <- rgdx(fnIn,list(name='u',form='sparse',field='Up'))
-  chk <- chkRgdxRes (u, uwantUp)
+  chk <- chkRgdxRes (u, uwantUp, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'up',unfiltered,uncompressed) failed",chk$msg))
   }
@@ -101,7 +102,7 @@ tryCatch({
                   form='sparse', uels=cart, domains=dom,
                   field='up')
   v <- rgdx(fnIn,list(name='v',form='sparse',field='up'))
-  chk <- chkRgdxRes (v, vwantUp)
+  chk <- chkRgdxRes (v, vwantUp, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'up',unfiltered,uncompressed) failed",chk$msg))
   }
@@ -113,7 +114,7 @@ tryCatch({
                  form='sparse', uels=cart, domains=dom,
                  field='s')
   u <- rgdx(fnIn,list(name='u',form='sparse',field='S'))
-  chk <- chkRgdxRes (u, uwantS)
+  chk <- chkRgdxRes (u, uwantS, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'S',unfiltered,uncompressed) failed",chk$msg))
   }
@@ -123,7 +124,7 @@ tryCatch({
                  form='sparse', uels=cart, domains=dom,
                  field='s')
   v <- rgdx(fnIn,list(name='v',form='sparse',field='s'))
-  chk <- chkRgdxRes (v, vwantS)
+  chk <- chkRgdxRes (v, vwantS, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'S',unfiltered,uncompressed) failed",chk$msg))
   }
@@ -133,7 +134,7 @@ tryCatch({
   uwantL$domains <- comprDom
   uwantL$uels[[1]] <- c('k1')
   u <- rgdx(fnIn,list(name='u',form='sparse',field='L',compress=T))
-  chk <- chkRgdxRes (u, uwantL)
+  chk <- chkRgdxRes (u, uwantL, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'L',unfiltered,compress=T) failed",chk$msg))
   }
@@ -141,7 +142,7 @@ tryCatch({
   vwantL$uels[[1]] <- c('k2')
   vwantL$val=matrix(c( 1,   -2), nrow=1, ncol=2, byrow=T)
   v <- rgdx(fnIn,list(name='v',form='sparse',field='L',compress=T))
-  chk <- chkRgdxRes (v, vwantL)
+  chk <- chkRgdxRes (v, vwantL, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'L',unfiltered,compress=T) failed",chk$msg))
   }
@@ -150,7 +151,7 @@ tryCatch({
   uwantM$uels[[1]] <- c('k2')
   uwantM$val=matrix(c( 1, 1.5), nrow=1, ncol=2, byrow=T)
   u <- rgdx(fnIn,list(name='u',form='sparse',field='M',compress=T))
-  chk <- chkRgdxRes (u, uwantM)
+  chk <- chkRgdxRes (u, uwantM, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'M',unfiltered,compress=T) failed",chk$msg))
   }
@@ -158,7 +159,7 @@ tryCatch({
   vwantM$uels[[1]] <- c('k2')
   vwantM$val=matrix(c( 1, -20), nrow=1, ncol=2, byrow=T)
   v <- rgdx(fnIn,list(name='v',form='sparse',field='M',compress=T))
-  chk <- chkRgdxRes (v, vwantM)
+  chk <- chkRgdxRes (v, vwantM, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'M',unfiltered,compress=T) failed",chk$msg))
   }
@@ -167,7 +168,7 @@ tryCatch({
   uwantLo$uels[[1]] <- c('k1')
   uwantLo$val=matrix(c( 1, 5), nrow=1, ncol=2, byrow=T)
   u <- rgdx(fnIn,list(name='u',form='sparse',field='LO',compress=T))
-  chk <- chkRgdxRes (u, uwantLo)
+  chk <- chkRgdxRes (u, uwantLo, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'lo',unfiltered,compress=T) failed",chk$msg))
   }
@@ -176,7 +177,7 @@ tryCatch({
   vwantLo$val=matrix(c( 1, -Inf,
                         2, -2), nrow=2, ncol=2, byrow=T)
   v <- rgdx(fnIn,list(name='v',form='sparse',field='lo',compress=T))
-  chk <- chkRgdxRes (v, vwantLo)
+  chk <- chkRgdxRes (v, vwantLo, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'lo',unfiltered,compress=T) failed",chk$msg))
   }
@@ -187,7 +188,7 @@ tryCatch({
                         2, 15,
                         3, 15), nrow=3, ncol=2, byrow=T)
   u <- rgdx(fnIn,list(name='u',form='sparse',field='UP',compress=T))
-  chk <- chkRgdxRes (u, uwantUp)
+  chk <- chkRgdxRes (u, uwantUp, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'up',unfiltered,compress=T) failed",chk$msg))
   }
@@ -196,7 +197,7 @@ tryCatch({
   vwantUp$val=matrix(c( 1, Inf,
                         2, -2), nrow=2, ncol=2, byrow=T)
   v <- rgdx(fnIn,list(name='v',form='sparse',field='up',compress=T))
-  chk <- chkRgdxRes (v, vwantUp)
+  chk <- chkRgdxRes (v, vwantUp, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'up',unfiltered,compress=T) failed",chk$msg))
   }
@@ -207,7 +208,7 @@ tryCatch({
                        2,  1,
                        3,  1), nrow=3, ncol=2, byrow=T)
   u <- rgdx(fnIn,list(name='u',form='sparse',field='S',compress=T))
-  chk <- chkRgdxRes (u, uwantS)
+  chk <- chkRgdxRes (u, uwantS, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'s',unfiltered,compress=T) failed",chk$msg))
   }
@@ -216,7 +217,7 @@ tryCatch({
   vwantS$val=matrix(c( 1, 1,
                        2, 1), nrow=2, ncol=2, byrow=T)
   v <- rgdx(fnIn,list(name='v',form='sparse',field='s',compress=T))
-  chk <- chkRgdxRes (v, vwantS)
+  chk <- chkRgdxRes (v, vwantS, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'s',unfiltered,compress=T) failed",chk$msg))
   }
@@ -230,7 +231,7 @@ tryCatch({
                  form='sparse', uels=f, domains=userDom,
                  field='l')
   u <- rgdx(fnIn,list(name='u',form='sparse',uels=f))
-  chk <- chkRgdxRes (u, uwantL)
+  chk <- chkRgdxRes (u, uwantL, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'L',filtered,compress=F) failed",chk$msg))
   }
@@ -240,7 +241,7 @@ tryCatch({
                  form='sparse', uels=f, domains=userDom,
                  field='l')
   v <- rgdx(fnIn,list(name='v',form='sparse',uels=f))
-  chk <- chkRgdxRes (v, vwantL)
+  chk <- chkRgdxRes (v, vwantL, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'L',filtered,compress=F) failed",chk$msg))
   }
@@ -252,7 +253,7 @@ tryCatch({
                  form='sparse', uels=f, domains=userDom,
                  field='m')
   u <- rgdx(fnIn,list(name='u',form='sparse',uels=f,field='M'))
-  chk <- chkRgdxRes (u, uwantM)
+  chk <- chkRgdxRes (u, uwantM, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'M',filtered,compress=F) failed",chk$msg))
   }
@@ -262,7 +263,7 @@ tryCatch({
                  form='sparse', uels=f, domains=userDom,
                  field='m')
   v <- rgdx(fnIn,list(name='v',form='sparse',uels=f,field='M'))
-  chk <- chkRgdxRes (v, vwantM)
+  chk <- chkRgdxRes (v, vwantM, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'M',filtered,compress=F) failed",chk$msg))
   }
@@ -279,7 +280,7 @@ tryCatch({
                  form='full', uels=cart, domains=dom,
                  field='l')
   u <- rgdx(fnIn,list(name='u',form='full'))
-  chk <- chkRgdxRes (u, uwantL, T)
+  chk <- chkRgdxRes (u, uwantL, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'L',full,unfiltered,compress=F) failed",chk$msg))
   }
@@ -290,7 +291,7 @@ tryCatch({
                  form='full', uels=cart, domains=dom,
                  field='l')
   v <- rgdx(fnIn,list(name='v',form='full'))
-  chk <- chkRgdxRes (v, vwantL, T)
+  chk <- chkRgdxRes (v, vwantL, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'L',full,unfiltered,compress=F) failed",chk$msg))
   }
@@ -302,7 +303,7 @@ tryCatch({
                  form='full', uels=cart, domains=dom,
                  field='m')
   u <- rgdx(fnIn,list(name='u',form='full',field='M'))
-  chk <- chkRgdxRes (u, uwantM, T)
+  chk <- chkRgdxRes (u, uwantM, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'M',full,unfiltered,compress=F) failed",chk$msg))
   }
@@ -313,7 +314,7 @@ tryCatch({
                  form='full', uels=cart, domains=dom,
                  field='m')
   v <- rgdx(fnIn,list(name='v',form='full',field='m'))
-  chk <- chkRgdxRes (v, vwantM, T)
+  chk <- chkRgdxRes (v, vwantM, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'M',full,unfiltered,compress=F) failed",chk$msg))
   }
@@ -331,7 +332,7 @@ tryCatch({
                  form='full', uels=uc, domains=comprDom,
                  field='l')
   u <- rgdx(fnIn,list(name='u',form='full',compress=T))
-  chk <- chkRgdxRes (u, uwantL, T)
+  chk <- chkRgdxRes (u, uwantL, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'L',full,unfiltered,compress=T) failed",chk$msg))
   }
@@ -343,7 +344,7 @@ tryCatch({
                  form='full', uels=uc, domains=comprDom,
                  field='l')
   v <- rgdx(fnIn,list(name='v',form='full',compress=T))
-  chk <- chkRgdxRes (v, vwantL, T)
+  chk <- chkRgdxRes (v, vwantL, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'L',full,unfiltered,compress=T) failed",chk$msg))
   }
@@ -356,7 +357,7 @@ tryCatch({
                  form='full', uels=uc, domains=comprDom,
                  field='m')
   u <- rgdx(fnIn,list(name='u',form='full',compress=T,field='M'))
-  chk <- chkRgdxRes (u, uwantM, T)
+  chk <- chkRgdxRes (u, uwantM, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'M',full,unfiltered,compress=T) failed",chk$msg))
   }
@@ -368,7 +369,7 @@ tryCatch({
                  form='full', uels=uc, domains=comprDom,
                  field='m')
   v <- rgdx(fnIn,list(name='v',form='full',compress=T,field='m'))
-  chk <- chkRgdxRes (v, vwantM, T)
+  chk <- chkRgdxRes (v, vwantM, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'M',full,unfiltered,compress=T) failed",chk$msg))
   }
@@ -386,7 +387,7 @@ tryCatch({
                  form='full', uels=f, domains=userDom,
                  field='l')
   u <- rgdx(fnIn,list(name='u',form='full',uels=f))
-  chk <- chkRgdxRes (u, uwantL, T)
+  chk <- chkRgdxRes (u, uwantL, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'L',full,filtered) failed",chk$msg))
   }
@@ -398,7 +399,7 @@ tryCatch({
                  form='full', uels=f, domains=userDom,
                  field='l')
   v <- rgdx(fnIn,list(name='v',form='full',uels=f))
-  chk <- chkRgdxRes (v, vwantL, T)
+  chk <- chkRgdxRes (v, vwantL, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'L',full,filtered) failed",chk$msg))
   }
@@ -410,7 +411,7 @@ tryCatch({
                  form='full', uels=f, domains=userDom,
                  field='m')
   u <- rgdx(fnIn,list(name='u',form='full',uels=f,field='M'))
-  chk <- chkRgdxRes (u, uwantM, T)
+  chk <- chkRgdxRes (u, uwantM, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'M',full,filtered) failed",chk$msg))
   }
@@ -422,7 +423,7 @@ tryCatch({
                  form='full', uels=f, domains=userDom,
                  field='m')
   v <- rgdx(fnIn,list(name='v',form='full',uels=f,field='m'))
-  chk <- chkRgdxRes (v, vwantM, T)
+  chk <- chkRgdxRes (v, vwantM, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'M',full,filtered) failed",chk$msg))
   }
