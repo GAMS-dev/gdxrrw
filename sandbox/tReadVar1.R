@@ -44,7 +44,7 @@ tryCatch({
   ### ---------- reading form=sparse, no filter, compress=T
   # level
   uwantL$domains <- comprDom
-  uwantL$uels <- list(c('k1'))
+  uwantL$uels[[1]] <- c('k1')
   u <- rgdx(fnIn,list(name='u',form='sparse',field='L',compress=T))
   chk <- chkRgdxRes (u, uwantL)
   if (!chk$same) {
@@ -61,8 +61,7 @@ tryCatch({
   uwantL <- list(name='u', type='variable', dim=1L,
                  val=matrix(c( 1,   5,
                                2,   0), nrow=2, ncol=2, byrow=T),
-                 form='sparse',
-                 uels=f, domains=userDom,
+                 form='sparse', uels=f, domains=userDom,
                  field='l')
   u <- rgdx(fnIn,list(name='u',form='sparse',uels=f))
   chk <- chkRgdxRes (u, uwantL)
@@ -80,8 +79,7 @@ tryCatch({
   t['k1',1] <- 5
   uwantL <- list(name='u', type='variable', dim=1L,
                  val=t,
-                 form='full',
-                 uels=list(kUels), domains=dom,
+                 form='full', uels=cart, domains=dom,
                  field='l')
   u <- rgdx(fnIn,list(name='u',form='full'))
   chk <- chkRgdxRes (u, uwantL, T)
@@ -95,13 +93,12 @@ tryCatch({
 
   ### ---------- reading form=full, no filter, compress=T
   # level
-  f <- list(c('k1'))
-  t <- array(0,c(1,1),dimnames=f)
+  uc <- list(c('k1'))
+  t <- array(0,c(1,1),dimnames=uc)
   t['k1',1] <- 5
   uwantL <- list(name='u', type='variable', dim=1L,
                  val=t,
-                 form='full',
-                 uels=f, domains=comprDom,
+                 form='full', uels=uc, domains=comprDom,
                  field='l')
   u <- rgdx(fnIn,list(name='u',form='full',compress=T))
   chk <- chkRgdxRes (u, uwantL, T)
@@ -114,20 +111,19 @@ tryCatch({
   # scale
 
   ### ---------- reading form=full, filtered, compress=F
+  # level
   f <- list(c('k1','k3','k4'))
   t <- array(0,c(3,1),dimnames=f)
   t['k1',1] <- 5
   uwantL <- list(name='u', type='variable', dim=1L,
                  val=t,
-                 form="full",
-                 uels=f, domains=userDom,
+                 form='full', uels=f, domains=userDom,
                  field='l')
   u <- rgdx(fnIn,list(name='u',form='full',uels=f))
   chk <- chkRgdxRes (u, uwantL, T)
   if (!chk$same) {
     stop (paste("test rgdx(u,'L',full,filtered) failed",chk$msg))
   }
-  # level
   # marginal
   # lower
   # upper
