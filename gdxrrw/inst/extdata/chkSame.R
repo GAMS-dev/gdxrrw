@@ -163,7 +163,9 @@ chkSameVec <- function(s, v1,v2) {
 ## assumes a certain ordering of the list elements
 ## it is not really necessary that they be ordered in this way but it
 ## makes the test easier to implement
-chkRgdxRes <- function(f1, f2, checkDimNames=FALSE) {
+chkRgdxRes <- function(f1, f2, checkDimNames=FALSE, reqIdent=FALSE) {
+  if (identical(f1,f2))     return (list(same=TRUE,msg=''))
+
   isSparse <- TRUE
   isUniverse <- FALSE
   symDim <- -1
@@ -335,8 +337,10 @@ chkRgdxRes <- function(f1, f2, checkDimNames=FALSE) {
     }
   }                                     # loop over list elements
 
-  r$msg <- ''
-  r$same <- TRUE
+  ## already checked if identical: they are not!
+  if (reqIdent)     return(list(same=FALSE,msg='not identical'))
+
+  r$same <- TRUE ;   r$msg <- ''
   return (r)
 } # chkRgdxRes
 
