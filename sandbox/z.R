@@ -299,8 +299,7 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(u,'lo',full,unfiltered) failed",chk$msg))
   }
-  t <- array(0,c(kCard,1),dimnames=cart)
-  t['k1',1] <- -Inf
+  t <- array(-Inf,c(kCard,1),dimnames=cart)
   t['k2',1] <- -2
   vwantLo <- list(name='v', type='variable', dim=1L,
                   val=t,
@@ -312,7 +311,7 @@ tryCatch({
     stop (paste("test rgdx(v,'lo',full,unfiltered) failed",chk$msg))
   }
   # upper
-  t <- array(0,c(kCard,1),dimnames=cart)
+  t <- array(100,c(kCard,1),dimnames=cart)
   t['k1',1] <- 5
   t['k2',1] <- 15
   t['k3',1] <- 15
@@ -338,9 +337,7 @@ tryCatch({
     stop (paste("test rgdx(v,'up',full,unfiltered) failed",chk$msg))
   }
   # scale
-  t <- array(0,c(kCard,1),dimnames=cart)
-  t['k1',1] <- 1
-  t['k2',1] <- 1
+  t <- array(1,c(kCard,1),dimnames=cart)
   t['k3',1] <- 1
   uwantS <- list(name='u', type='variable', dim=1L,
                  val=t,
@@ -351,9 +348,8 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(u,'s',full,unfiltered) failed",chk$msg))
   }
-  t <- array(0,c(kCard,1),dimnames=cart)
+  t <- array(1,c(kCard,1),dimnames=cart)
   t['k1',1] <- 1
-  t['k2',1] <- 1
   vwantS <- list(name='v', type='variable', dim=1L,
                  val=t,
                  form='full', uels=cart, domains=dom,
@@ -428,7 +424,7 @@ tryCatch({
     stop (paste("test rgdx(u,'lo',full,filtered) failed",chk$msg))
   }
   f <- list(c('k1','k2','k3','k4'))
-  t <- array(0,c(4,1),dimnames=f)
+  t <- array(-Inf,c(4,1),dimnames=f)
   t['k1',1] <- -Inf
   t['k2',1] <- -2
   vwantLo <- list(name='v', type='variable', dim=1L,
@@ -442,7 +438,7 @@ tryCatch({
   }
   # upper
   f <- list(c('k1','k3','k4'))
-  t <- array(0,c(3,1),dimnames=f)
+  t <- array(100,c(3,1),dimnames=f)
   t['k1',1] <-  5
   t['k3',1] <- 15
   uwantUp <- list(name='u', type='variable', dim=1L,
@@ -470,7 +466,6 @@ tryCatch({
   # scale
   f <- list(c('k1','k3','k4'))
   t <- array(1,c(3,1),dimnames=f)
-  t['k4',1] <- 0  ## this is pretty iffy
   uwantS <- list(name='u', type='variable', dim=1L,
                  val=t,
                  form='full', uels=f, domains=userDom,
@@ -482,8 +477,6 @@ tryCatch({
   }
   f <- list(c('k1','k2','k3','k4'))
   t <- array(1,c(4,1),dimnames=f)
-  ## these are also pretty iffy
-  t[c('k3','k4'),1] <- 0
   vwantS <- list(name='v', type='variable', dim=1L,
                  val=t,
                  form='full', uels=f, domains=userDom,
