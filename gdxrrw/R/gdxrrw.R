@@ -530,23 +530,23 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
 } # wgdx.reshape
 
 # typeCode constants for variables
-GMS_VARTYPE <- list(UNKNOWN=0,
-                    BINARY=1,
-                    INTEGER=2,
-                    POSITIVE=3,
-                    NEGATIVE=4,
-                    FREE=5,
-                    SOS1=6,
-                    SOS2=7,
-                    SEMICONT=8,
-                    SEMIINT=9,
-                    MAX=10)
+GMS_VARTYPE <- list(UNKNOWN=0L,
+                    BINARY=1L,
+                    INTEGER=2L,
+                    POSITIVE=3L,
+                    NEGATIVE=4L,
+                    FREE=5L,
+                    SOS1=6L,
+                    SOS2=7L,
+                    SEMICONT=8L,
+                    SEMIINT=9L,
+                    MAX=10L)
 
 # typeCode constants for equations
-GMS_EQUTYPE <- list(E=0,
-                    G=1,
-                    L=2,
-                    N=3,
-                    X=4,
-                    C=5,
-                    MAX=6)
+GMS_EQUTYPE <- list(E=0L,
+                    G=1L,
+                    L=2L,
+                    N=3L,
+                    X=4L,
+                    C=5L,
+                    MAX=6L)
