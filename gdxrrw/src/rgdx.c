@@ -318,6 +318,7 @@ SEXP rgdx (SEXP args)
     outTeFull = R_NilValue,     /* output .te, full form */
     outDomains = R_NilValue;    /* output .domains */
   SEXP outListNames, outList, dimVect, dimNames;
+  SEXP tmpExp;
   hpFilter_t hpFilter[GMS_MAX_INDEX_DIM];
   xpFilter_t xpFilter[GMS_MAX_INDEX_DIM];
   int outIdx[GMS_MAX_INDEX_DIM];
@@ -331,7 +332,7 @@ SEXP rgdx (SEXP args)
   shortStringBuf_t msgBuf;
   shortStringBuf_t uelName;
   shortStringBuf_t gdxFileName;
-  int symIdx, symDim, symType, symNNZ, symUser;
+  int symIdx, symDim, symType, symNNZ, symUser = 0;
   int symDimX;                  /* allow for additional dim on var/equ with field='all' */
   SEXP fieldUels = R_NilValue; /* UELS for addition dimension for field */
   int iDim;
@@ -352,9 +353,10 @@ SEXP rgdx (SEXP args)
   char *types[] = {"set", "parameter", "variable", "equation"};
   char *forms[] = {"full", "sparse"};
   char *fields[] = {"l", "m", "lo", "up", "s", "all"};
-  int nField, elementIndex, IDum, ndimension, totalElement;
+  int elementIndex, IDum, ndimension, totalElement;
   int withList = 0;
-  int outElements = 0;    /* shut up compiler warnings */
+  int outElements = 0;    /* count of elements in outList */
+  int iElement;           /* index into outList, outListNames */
   int nnz;         /* symbol cardinality, i.e. nonzero count */
   int nnzMax;      /* maximum possible nnz for this symbol */
   Rboolean zeroSqueeze = NA_LOGICAL;
@@ -1019,10 +1021,10 @@ SEXP rgdx (SEXP args)
     }
 
 
-    outElements++;       /* for domains */
+    outElements++;       /* for $domains */
     /* Create a string vector for symbol field */
     if (symType == GMS_DT_VAR || symType == GMS_DT_EQU) {
-      outElements++;
+      outElements++;            /* for $field  */
       PROTECT(outField = allocVector(STRSXP, 1));
       rgdxAlloc++;
       switch(rSpec->dField) {
@@ -1047,7 +1049,10 @@ SEXP rgdx (SEXP args)
       default:
         error("Unrecognized type of field found.");
       }
-    }
+      if (GMS_DT_VAR == symType)
+        outElements++;            /* one for $varTypeText */
+      outElements++;            /* one for $typeCode */
+    } /* symbol is var or equ */
     if (rSpec->ts) {
       outElements++;
       PROTECT(outTs = allocVector(STRSXP, 1));
@@ -1077,78 +1082,98 @@ SEXP rgdx (SEXP args)
   PROTECT(outListNames = allocVector(STRSXP, outElements));
   rgdxAlloc++;
   /* populating list element names */
-  SET_STRING_ELT(outListNames, 0, mkChar("name"));
-  SET_STRING_ELT(outListNames, 1, mkChar("type"));
-  SET_STRING_ELT(outListNames, 2, mkChar("dim"));
-  SET_STRING_ELT(outListNames, 3, mkChar("val"));
-  SET_STRING_ELT(outListNames, 4, mkChar("form"));
-  SET_STRING_ELT(outListNames, 5, mkChar("uels"));
+  iElement = 0;
+  SET_STRING_ELT(outListNames, iElement, mkChar("name"));  iElement++;
+  SET_STRING_ELT(outListNames, iElement, mkChar("type"));  iElement++;
+  SET_STRING_ELT(outListNames, iElement, mkChar("dim"));  iElement++;
+  SET_STRING_ELT(outListNames, iElement, mkChar("val"));  iElement++;
+  SET_STRING_ELT(outListNames, iElement, mkChar("form"));  iElement++;
+  SET_STRING_ELT(outListNames, iElement, mkChar("uels"));  iElement++;
   if (withList) {
-    SET_STRING_ELT(outListNames, 6, mkChar("domains"));
-    nField = 7;
+    SET_STRING_ELT(outListNames, iElement, mkChar("domains"));  iElement++;
     if (symType == GMS_DT_VAR || symType == GMS_DT_EQU) {
-      SET_STRING_ELT(outListNames, nField, mkChar("field"));
-      nField++;
+      SET_STRING_ELT(outListNames, iElement, mkChar("field"));  iElement++;
+      if (GMS_DT_VAR == symType) {
+        SET_STRING_ELT(outListNames, iElement, mkChar("varTypeText"));
+        iElement++;
+      }
+      SET_STRING_ELT(outListNames, iElement, mkChar("typeCode"));  iElement++;
     }
     if (rSpec->ts) {
-      SET_STRING_ELT(outListNames, nField, mkChar("ts"));
-      nField++;
+      SET_STRING_ELT(outListNames, iElement, mkChar("ts"));
+      iElement++;
     }
     if (rSpec->te) {
-      SET_STRING_ELT(outListNames, nField, mkChar("te"));
-      nField++;
+      SET_STRING_ELT(outListNames, iElement, mkChar("te"));
+      iElement++;
     }
   }
+  if (iElement != outElements)
+    error ("Internal error creating outListNames: iElement = %d  outElements = %d",
+           iElement, outElements);
 
   PROTECT(outList = allocVector(VECSXP, outElements));
   rgdxAlloc++;
 
   /* populating list component vector */
-  SET_VECTOR_ELT(outList, 0, outName);
-  SET_VECTOR_ELT(outList, 1, outType);
-  SET_VECTOR_ELT(outList, 2, outDim);
+  iElement = 0;
+  SET_VECTOR_ELT(outList, iElement, outName);  iElement++;
+  SET_VECTOR_ELT(outList, iElement, outType);  iElement++;
+  SET_VECTOR_ELT(outList, iElement, outDim);  iElement++;
   if (withList) {
     if (rSpec->dForm == full) {
-      SET_VECTOR_ELT(outList, 3, outValFull);
+      SET_VECTOR_ELT(outList, iElement, outValFull);  iElement++;
     }
     else {
-      SET_VECTOR_ELT(outList, 3, outValSp);
+      SET_VECTOR_ELT(outList, iElement, outValSp);    iElement++;
     }
-    SET_VECTOR_ELT(outList, 4, outForm);
+    SET_VECTOR_ELT(outList, iElement, outForm);       iElement++;
     if (rSpec->withUel) {
-      SET_VECTOR_ELT(outList, 5, rSpec->filterUel);
+      SET_VECTOR_ELT(outList, iElement, rSpec->filterUel);  iElement++;
     }
     else {
-      SET_VECTOR_ELT(outList, 5, outUels);
+      SET_VECTOR_ELT(outList, iElement, outUels);    iElement++;
     }
-    SET_VECTOR_ELT(outList, 6, outDomains);
+    SET_VECTOR_ELT(outList, iElement, outDomains);   iElement++;
 
-    nField = 7;
     if (symType == GMS_DT_VAR || symType == GMS_DT_EQU) {
-      SET_VECTOR_ELT(outList, nField, outField);
-      nField++;
+      SET_VECTOR_ELT(outList, iElement, outField);   iElement++;
+
+      if (GMS_DT_VAR == symType) {
+        PROTECT(tmpExp = allocVector(STRSXP, 1));
+        SET_STRING_ELT(tmpExp, 0, mkChar(gmsVarTypeText[symUser]));
+        SET_VECTOR_ELT(outList, iElement, tmpExp);   iElement++;
+        UNPROTECT(1);
+      }
+
+      PROTECT(tmpExp = allocVector(INTSXP, 1));
+      INTEGER(tmpExp)[0] = symUser;
+      SET_VECTOR_ELT(outList, iElement, tmpExp);     iElement++;
+      UNPROTECT(1);
     }
     if (rSpec->ts) {
-      SET_VECTOR_ELT(outList, nField, outTs);
-      nField++;
+      SET_VECTOR_ELT(outList, iElement, outTs);      iElement++;
     }
     if (rSpec->te) {
       if (rSpec->dForm == full) {
-        SET_VECTOR_ELT(outList, nField, outTeFull);
+        SET_VECTOR_ELT(outList, iElement, outTeFull); iElement++;
       }
       else {
-        SET_VECTOR_ELT(outList, nField, outTeSp);
+        SET_VECTOR_ELT(outList, iElement, outTeSp);   iElement++;
       }
-      nField++;
     }
   }
   else {
     /* no read specifier so return the universe */
     /* entering null values if nothing else makes sense */
-    SET_VECTOR_ELT(outList, 3, R_NilValue);
-    SET_VECTOR_ELT(outList, 4, R_NilValue);
-    SET_VECTOR_ELT(outList, 5, universe);
+    SET_VECTOR_ELT(outList, iElement, R_NilValue);      iElement++;
+
+    SET_VECTOR_ELT(outList, iElement, R_NilValue);      iElement++;
+    SET_VECTOR_ELT(outList, iElement, universe);        iElement++;
   }
+  if (iElement != outElements)
+    error ("Internal error creating outList: iElement = %d  outElements = %d",
+           iElement, outElements);
 
   /* Setting attribute name */
   setAttrib(outList, R_NamesSymbol, outListNames);
