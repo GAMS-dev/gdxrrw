@@ -7,7 +7,7 @@
 
 const char *gmsGdxTypeText[GMS_DT_MAX] =
   {"Set","Parameter","Variable","Equation","Alias"};
-const char *gmsVarTypeText[GMS_VARTYPE_MAX] = {"Unknown","Binary","Integer","Positive","Negative","Free","Sos1","Sos2","Semicont","Semiint"};
+const char *gmsVarTypeText[GMS_VARTYPE_MAX] = {"unknown","binary","integer","positive","negative","free","sos1","sos2","semicont","semiint"};
 const char *gmsValTypeText[GMS_VAL_MAX] = {".l",".m",".lo",".up",".scale"};
 const char *gmsSVText[GMS_SVIDX_MAX] = {"UNdef","NA","+Inf","-Inf","Eps","0","AcroN"};
 
