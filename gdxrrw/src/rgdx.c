@@ -485,6 +485,12 @@ SEXP rgdx (SEXP args)
       break;
     case GMS_DT_VAR:
     case GMS_DT_EQU:
+      if (rSpec->compress) {
+        if (GMS_DT_VAR == symType)
+          error("Compression is not allowed when reading variables");
+        else
+          error("Compression is not allowed when reading equations");
+      }
       /* no checks necessary */
       break;
     case GMS_DT_ALIAS:          /* follow link to actual set */

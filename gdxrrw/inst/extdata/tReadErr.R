@@ -53,6 +53,23 @@ tryCatch({
   else {
     stop (paste(msg, ": failed",sep=""))
   }
+
+  # we do not allow compressed reads of variables
+  msg <- "rgdx test with compressed read of a variable"
+  tcr <- tryCatch({
+    IJ <- rgdx('tReadVar0',list(name='z',compress=TRUE)) ; FALSE
+    },
+    error = function(e) { print(paste(' Caught error: msg =',e)) ; TRUE }
+  )
+  if (tcr) {
+    print(paste(msg,": passed",sep=""))
+  }
+  else {
+    stop (paste(msg, ": failed",sep=""))
+  }
+
+
+
   ## all tests passed: return TRUE
   print ("test of rgdx error handling: all passed")
   TRUE
