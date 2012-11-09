@@ -7,7 +7,7 @@ var/equ, not just one field, and write a proper variable or equation.
 Lets look at the case of reading first.  Obviously, we want this to be
 as invertible as possible, so we want to data we get from rgdx to be
 the same as the data we pass in to wgdx.  Assume we do:
-  
+
   lst <- list(name='x',form='sparse')
   d <- rgdx('var.gdx', lst)
 

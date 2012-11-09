@@ -2,23 +2,23 @@
 rgdx <- function(gdxName, requestList = NULL, squeeze=TRUE, useDomInfo=TRUE)
 {
   if (is.null(requestList) && (gdxName == '?')) {
-    invisible(.External("rgdx", gdxName=gdxName, requestList=NULL,
-                        squeeze=squeeze, useDomInfo=useDomInfo, PACKAGE="gdxrrw"))
+    invisible(.External(rgdxExt, gdxName=gdxName, requestList=NULL,
+                        squeeze=squeeze, useDomInfo=useDomInfo))
   }
   else {
-    .External("rgdx", gdxName=gdxName, requestList=requestList,
-              squeeze=squeeze, useDomInfo=useDomInfo, PACKAGE="gdxrrw")
+    .External(rgdxExt, gdxName=gdxName, requestList=requestList,
+              squeeze=squeeze, useDomInfo=useDomInfo)
   }
 }
 
 wgdx <- function(gdxName, ..., squeeze='y')
 {
-  invisible(.External("wgdx", gdxName=gdxName, ..., squeeze=squeeze, PACKAGE="gdxrrw"))
+  invisible(.External(wgdxExt, gdxName=gdxName, ..., squeeze=squeeze))
 }
 
 gams <- function(gmsAndArgs)
 {
-  .External("gams", gmsAndArgs, PACKAGE="gdxrrw")
+  .External(gamsExt, gmsAndArgs)
 }
 
 gdxInfo <- function(gdxName = NULL, dump=TRUE, returnList=FALSE, returnDF=FALSE)
@@ -37,18 +37,18 @@ gdxInfo <- function(gdxName = NULL, dump=TRUE, returnList=FALSE, returnDF=FALSE)
   }
 #  print (paste('gdxInfo: dump=',d,'returnList=',rl,'returnDF=',rdf))
   if (! (rl || rdf)) {
-    invisible(.External("gdxInfo", gdxName=gdxName, dump=d, returnList=rl,
-                        returnDF=rdf, PACKAGE="gdxrrw"))
+    invisible(.External(gdxInfoExt, gdxName=gdxName, dump=d, returnList=rl,
+                        returnDF=rdf))
   }
   else {
-    .External("gdxInfo", gdxName=gdxName, dump=d, returnList=rl,
-              returnDF=rdf, PACKAGE="gdxrrw")
+    .External(gdxInfoExt, gdxName=gdxName, dump=d, returnList=rl,
+              returnDF=rdf)
   }
 } # gdxInfo
 
 igdx <- function(gamsSysDir = NULL, silent = FALSE)
 {
-  invisible(.External("igdx", gamsSysDir, silent=silent, PACKAGE="gdxrrw"))
+  invisible(.External(igdxExt, gamsSysDir, silent=silent))
 }
 
 rgdx.param <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, squeeze=TRUE, useDomInfo=TRUE)
@@ -528,3 +528,25 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
     }
   }
 } # wgdx.reshape
+
+# typeCode constants for variables
+GMS_VARTYPE <- list(UNKNOWN=0,
+                    BINARY=1,
+                    INTEGER=2,
+                    POSITIVE=3,
+                    NEGATIVE=4,
+                    FREE=5,
+                    SOS1=6,
+                    SOS2=7,
+                    SEMICONT=8,
+                    SEMIINT=9,
+                    MAX=10)
+
+# typeCode constants for equations
+GMS_EQUTYPE <- list(E=0,
+                    G=1,
+                    L=2,
+                    N=3,
+                    X=4,
+                    C=5,
+                    MAX=6)

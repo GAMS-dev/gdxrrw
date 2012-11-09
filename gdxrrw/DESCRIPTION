@@ -10,4 +10,4 @@ Description: An interface between GAMS and R.  It includes functions
   call gams from within R.
 License: EPL
 Depends: reshape2
-LazyData: yes
+LazyData: no
