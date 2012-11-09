@@ -981,17 +981,21 @@ makeStrVec (SEXP outExp, SEXP inExp)
   return;
 } /* makeStrVec */
 
-/* sparseToFull: from input data in sparse for, create output data in full form
+/* sparseToFull: from input data in sparse form, create output data in full form
  * spVal: input .val matrix in sparse form
- * uelLists: .uels for symbol
  * fullVal: output .val matrix in full form
+ * uelLists: .uels for symbol
+ * 
  */
 void
 sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
-              int symType, int nRec, int symDim)
+              int symType, int symSubType, dField_t dField, int nRec, int symDim)
 {
   int k, iRec;
+  int fullLen;             /* length of output matrix fullVal */
+  int fullCard;            /* cardinality of fully allocated matrix */
   int card[GLOBAL_MAX_INDEX_DIM];
+  double defVal;           /* default value - may be nonzero */
   double *p, *pFull;
   int index;
 #if 1
@@ -1000,22 +1004,41 @@ sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
   int stride;
 #endif
 
-  /* step 1: loop over full matrix and set every value as 0 */
   pFull = REAL(fullVal);
-#if 0
-  for (k = 0;  k < length(fullVal);  k++) {
-    pFull[k] = 0;
+  fullLen = length(fullVal);
+
+  /* step 1: loop over full matrix and initialize every value */
+  defVal = 0;
+  switch (symType) {
+  case GMS_DT_VAR:
+    defVal = getDefRecVar (symSubType,dField);
+    break;
+  case GMS_DT_EQU:
+    /* defVal = gmsDefRecEqu[symSubType][dField]; */
+    error  ("not implemented");
+    break;
+  } /* end switch */
+
+  if (0 == defVal) {
+    (void) memset (pFull, 0, fullLen * sizeof(*pFull));
   }
-#else
-  (void) memset (pFull, 0, length(fullVal) * sizeof(*pFull));
-#endif
+  else {
+    for (k = 0;  k < fullLen;  k++) {
+      pFull[k] = defVal;
+    }
+  }
 
   /* N.B.: R stores matrices column-wise, i.e. left index moving fastest */
   /* step 2: loop over each row/nonzero of sparse matrix to populate full matrix */
   p = REAL(spVal);
+  fullCard = 1;
   for (k = 0;  k < symDim;  k++) {
     card[k] = length(VECTOR_ELT(uelLists, k)); /* number of elements in dim k */
+    fullCard *= card[k];
   }
+  if (fullCard != fullLen)
+    error ("sparseToFull: unexpected inputs:  fullCard=%d  fullLen=%d",
+           fullCard, fullLen);
 
   for (iRec = 0;  iRec < nRec;  iRec++) {
 #if 0
@@ -1042,3 +1065,49 @@ sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
   return;
 } /* sparseToFull */
 
+double
+getDefRecVar (int subType, dField_t dField)
+{
+  if (scale == dField)
+    return 1;
+
+  switch (subType) {
+  case GMS_VARTYPE_BINARY:
+    if (upper == dField)
+      return 1;
+    break;
+  case GMS_VARTYPE_INTEGER:
+    if (upper == dField)
+      return 100;
+    break;
+  case GMS_VARTYPE_POSITIVE:
+  case GMS_VARTYPE_SOS1:
+  case GMS_VARTYPE_SOS2:
+    if (upper == dField)
+      return R_PosInf;
+    break;
+  case GMS_VARTYPE_NEGATIVE:
+    if (lower == dField)
+      return R_NegInf;
+    break;
+  case GMS_VARTYPE_FREE:
+    if (lower == dField)
+      return R_NegInf;
+    if (upper == dField)
+      return R_PosInf;
+    break;
+  case GMS_VARTYPE_SEMICONT:
+    if (lower == dField)
+      return 1;
+    if (upper == dField)
+      return R_PosInf;
+    break;
+  case GMS_VARTYPE_SEMIINT:
+    if (lower == dField)
+      return 1;
+    if (upper == dField)
+      return 100;
+    break;
+  } /* switch subType */
+  return 0;
+} /* getDefRecVar */
