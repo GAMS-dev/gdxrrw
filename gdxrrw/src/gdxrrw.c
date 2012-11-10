@@ -398,7 +398,7 @@ SEXP igdx (SEXP args)
   }
   sysDirExp = CADR(args);
   silent = CADDR(args);
-  isSilent = getSqueezeArgRead (silent);
+  isSilent = exp2Boolean (silent);
   if (NA_LOGICAL == isSilent) {
     isSilent = FALSE;
   }

@@ -153,7 +153,7 @@ getGlobalString (const char *globName, shortStringBuf_t result);
 int
 getNonZeroElements (gdxHandle_t h, int symIdx, dField_t dField);
 Rboolean
-getSqueezeArgRead (SEXP squeeze);
+exp2Boolean (SEXP exp);
 int
 isCompress (void);
 void

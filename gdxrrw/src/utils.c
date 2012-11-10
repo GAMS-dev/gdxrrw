@@ -781,27 +781,27 @@ getNonZeroElements (gdxHandle_t h, int symIdx, dField_t dField)
   return cnt;
 } /* getNonZeroElements */
 
-/* interpret the squeeze arg for rgdx as a logical/boolean */
+/* interpret an expression (probably an input arg) as a logical/boolean */
 Rboolean
-getSqueezeArgRead (SEXP squeeze)
+exp2Boolean (SEXP exp)
 {
   const char *s;
 
-  switch (TYPEOF(squeeze)) {
+  switch (TYPEOF(exp)) {
   case LGLSXP:
-    return LOGICAL(squeeze)[0];
+    return LOGICAL(exp)[0];
     break;
   case INTSXP:
-    return INTEGER(squeeze)[0];
+    return INTEGER(exp)[0];
     break;
   case REALSXP:
-    if (0.0 == REAL(squeeze)[0])
+    if (0.0 == REAL(exp)[0])
       return FALSE;
     else
       return TRUE;
     break;
   case STRSXP:
-    s = CHAR(STRING_ELT(squeeze, 0));
+    s = CHAR(STRING_ELT(exp, 0));
     if ('\0' == s[1])
       switch (s[0]) {
       case 'T':
@@ -837,7 +837,7 @@ getSqueezeArgRead (SEXP squeeze)
     break;
   }
   return NA_LOGICAL;
-} /* getSqueezeArgRead */
+} /* exp2Boolean */
 
 /* this method for global input "compress" */
 int isCompress (void)

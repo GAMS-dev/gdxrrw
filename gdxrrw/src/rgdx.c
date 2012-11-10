@@ -304,7 +304,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
 SEXP rgdx (SEXP args)
 {
   const char *funcName = "rgdx";
-  SEXP fileName, requestList, squeeze, udi, universe;
+  SEXP fileName, requestList, squeezeExp, udi, universe;
   SEXP outName = R_NilValue,
     outType = R_NilValue,
     outDim = R_NilValue,
@@ -359,7 +359,7 @@ SEXP rgdx (SEXP args)
   int iElement;           /* index into outList, outListNames */
   int nnz;         /* symbol cardinality, i.e. nonzero count */
   int nnzMax;      /* maximum possible nnz for this symbol */
-  Rboolean zeroSqueeze = NA_LOGICAL;
+  Rboolean squeezeDef = NA_LOGICAL; /* squeeze out default records */
   Rboolean useDomInfo = NA_LOGICAL;
 
   /* setting initial values */
@@ -377,7 +377,7 @@ SEXP rgdx (SEXP args)
   }
   fileName = CADR(args);
   requestList = CADDR(args);
-  squeeze = CADDDR(args);
+  squeezeExp = CADDDR(args);
   udi = CAD4R(args);
   if (TYPEOF(fileName) != STRSXP) {
     error ("usage: %s(gdxName, requestList = NULL) - gdxName must be a string", funcName);
@@ -403,11 +403,11 @@ SEXP rgdx (SEXP args)
     } /* if audit run */
   } /* if one arg, of character type */
 
-  zeroSqueeze = getSqueezeArgRead (squeeze);
-  if (NA_LOGICAL == zeroSqueeze) {
+  squeezeDef = exp2Boolean (squeezeExp);
+  if (NA_LOGICAL == squeezeDef) {
     error ("usage: %s(gdxName, requestList, squeeze = TRUE, useDomInfo = TRUE)\n    squeeze argument could not be interpreted as logical", funcName);
   }
-  useDomInfo = getSqueezeArgRead (udi);
+  useDomInfo = exp2Boolean (udi);
   if (NA_LOGICAL == useDomInfo) {
     error ("usage: %s(gdxName, requestList, squeeze = TRUE, useDomInfo = TRUE)\n    useDomInfo argument could not be interpreted as logical", funcName);
   }
@@ -694,7 +694,7 @@ SEXP rgdx (SEXP args)
         if (all == rSpec->dField) {
           mrows *= 5;           /* l,m,lo,up,scale */
         }
-        else if (zeroSqueeze) { /* potentially squeeze some out */
+        else if (squeezeDef) { /* potentially squeeze some out */
           mrows = getNonZeroElements(gdxHandle, symIdx, rSpec->dField);
         }
       }
@@ -749,7 +749,7 @@ SEXP rgdx (SEXP args)
           if (findrc) {
             error ("DEBUG 00: findrc = %d is unhandled", findrc);
           }
-          if ((! zeroSqueeze) ||
+          if ((! squeezeDef) ||
               (0 != values[GMS_VAL_LEVEL])) {
             /* store the value */
             for (index = kRec, kk = 0;  kk < symDim;  kk++) {
@@ -770,7 +770,7 @@ SEXP rgdx (SEXP args)
             if (findrc) {
               error ("DEBUG 00: findrc = %d is unhandled", findrc);
             }
-            if ((! zeroSqueeze) ||
+            if ((! squeezeDef) ||
                 (0 != values[rSpec->dField])) {
               /* store the value */
               for (index = kRec, kk = 0;  kk < symDim;  kk++) {
