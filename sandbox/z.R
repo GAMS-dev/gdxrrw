@@ -1,5 +1,5 @@
 #### test rgdx reading 1-dim variables
-#### test form=['sparse','full'] X [filtered,unfiltered]
+#### test form=['sparse','full'] X [filtered,unfiltered] X squeeze=[T,F]
 #### ['l','m','lo','up','s']
 
 #### wanted lists can be produced with    dump("listName",file="")
@@ -35,6 +35,15 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(u,'L',unfiltered) failed",chk$msg))
   }
+  t <- matrix(c( 1,   5,
+                 2,   0,
+                 3,   0), nrow=3, ncol=2, byrow=T)
+  uwantL$val <- t
+  u <- rgdx(fnIn,list(name='u',form='sparse',field='L'),squeeze=F)
+  chk <- chkRgdxRes (u, uwantL, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'L',unfiltered,squeeze=F) failed",chk$msg))
+  }
   vwantL <- list(name='v', type='variable', dim=1L,
                  val=matrix(c( 2,   -2), nrow=1, ncol=2, byrow=T),
                  form='sparse', uels=cart, domains=dom,
@@ -43,6 +52,14 @@ tryCatch({
   chk <- chkRgdxRes (v, vwantL, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'L',unfiltered) failed",chk$msg))
+  }
+  t <- matrix(c( 1,   0,
+                 2,  -2), nrow=2, ncol=2, byrow=T)
+  vwantL$val <- t
+  v <- rgdx(fnIn,list(name='v',form='sparse',field='L'),squeeze=F)
+  chk <- chkRgdxRes (v, vwantL, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(v,'L',unfiltered,squeeze=F) failed",chk$msg))
   }
   # marginal
   uwantM <- list(name='u', type='variable', dim=1L,
@@ -53,6 +70,15 @@ tryCatch({
   chk <- chkRgdxRes (u, uwantM, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'M',unfiltered) failed",chk$msg))
+  }
+  t <- matrix(c( 1,    0,
+                 2,  1.5,
+                 3,    0), nrow=3, ncol=2, byrow=T)
+  uwantM$val <- t
+  u <- rgdx(fnIn,list(name='u',form='sparse',field='M'),squeeze=F)
+  chk <- chkRgdxRes (u, uwantM, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'M',unfiltered,squeeze=F) failed",chk$msg))
   }
   vwantM <- list(name='v', type='variable', dim=1L,
                  val=matrix(c( 2,  -20), nrow=1, ncol=2, byrow=T),
@@ -74,14 +100,20 @@ tryCatch({
     stop (paste("test rgdx(u,'lo',unfiltered) failed",chk$msg))
   }
   vwantLo <- list(name='v', type='variable', dim=1L,
-                  val=matrix(c( 1,  -Inf,
-                                2,  -2  ), nrow=2, ncol=2, byrow=T),
+                  val=matrix(c(2,  -2), nrow=1, ncol=2, byrow=T),
                   form='sparse', uels=cart, domains=dom,
                   field='lo', varTypeText="negative", typeCode=GMS_VARTYPE$NEGATIVE)
   v <- rgdx(fnIn,list(name='v',form='sparse',field='lo'))
   chk <- chkRgdxRes (v, vwantLo, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(v,'lo',unfiltered) failed",chk$msg))
+  }
+  vwantLo$val <- matrix(c( 1,  -Inf,
+                           2,  -2  ), nrow=2, ncol=2, byrow=T)
+  v <- rgdx(fnIn,list(name='v',form='sparse',field='lo'),squeeze=F)
+  chk <- chkRgdxRes (v, vwantLo, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(v,'lo',unfiltered,squeeze=F) failed",chk$msg))
   }
   # upper
   uwantUp <- list(name='u', type='variable', dim=1L,
@@ -95,6 +127,11 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(u,'up',unfiltered) failed",chk$msg))
   }
+  u <- rgdx(fnIn,list(name='u',form='sparse',field='Up'),squeeze=F)
+  chk <- chkRgdxRes (u, uwantUp, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'up',unfiltered,squeeze=F) failed",chk$msg))
+  }
   vwantUp <- list(name='v', type='variable', dim=1L,
                   val=matrix(c( 1,  +Inf,
                                 2,  -2  ), nrow=2, ncol=2, byrow=T),
@@ -105,11 +142,15 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(v,'up',unfiltered) failed",chk$msg))
   }
+  v <- rgdx(fnIn,list(name='v',form='sparse',field='up'),squeeze=F)
+  chk <- chkRgdxRes (v, vwantUp, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(v,'up',unfiltered,squeeze=F) failed",chk$msg))
+  }
   # scale
+  
   uwantS <- list(name='u', type='variable', dim=1L,
-                 val=matrix(c( 1, 1,
-                               2, 1,
-                               3, 1), nrow=3, ncol=2, byrow=T),
+                 val=matrix(0,nrow=0, ncol=2, byrow=T),
                  form='sparse', uels=cart, domains=dom,
                  field='s', varTypeText="integer", typeCode=GMS_VARTYPE$INTEGER)
   u <- rgdx(fnIn,list(name='u',form='sparse',field='S'))
@@ -117,9 +158,13 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(u,'S',unfiltered) failed",chk$msg))
   }
+  u <- rgdx(fnIn,list(name='u',form='sparse',field='S'))
+  chk <- chkRgdxRes (u, uwantS, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'S',unfiltered) failed",chk$msg))
+  }
   vwantS <- list(name='v', type='variable', dim=1L,
-                 val=matrix(c( 1,  1,
-                               2,  1), nrow=2, ncol=2, byrow=T),
+                 val=matrix(0,nrow=0, ncol=2, byrow=T),
                  form='sparse', uels=cart, domains=dom,
                  field='s', varTypeText="negative", typeCode=GMS_VARTYPE$NEGATIVE)
   v <- rgdx(fnIn,list(name='v',form='sparse',field='s'))
@@ -127,19 +172,32 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(v,'S',unfiltered) failed",chk$msg))
   }
+  vwantS$val <- matrix(c( 1,  1,
+                          2,  1), nrow=2, ncol=2, byrow=T)
+  v <- rgdx(fnIn,list(name='v',form='sparse',field='s'),squeeze=F)
+  chk <- chkRgdxRes (v, vwantS, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(v,'S',unfiltered,squeeze=F) failed",chk$msg))
+  }
 
   ### ---------- reading form=sparse, filtered
   # level
   f <- list(c('k1','k3','k4'))
   uwantL <- list(name='u', type='variable', dim=1L,
-                 val=matrix(c( 1,   5,
-                               2,   0), nrow=2, ncol=2, byrow=T),
+                 val=matrix(c( 1,   5), nrow=1, ncol=2, byrow=T),
                  form='sparse', uels=f, domains=userDom,
                  field='l', varTypeText="integer", typeCode=GMS_VARTYPE$INTEGER)
   u <- rgdx(fnIn,list(name='u',form='sparse',uels=f))
   chk <- chkRgdxRes (u, uwantL, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'L',filtered) failed",chk$msg))
+  }
+  uwantL$val <- matrix(c( 1,   5,
+                          2,   0), nrow=2, ncol=2, byrow=T)
+  u <- rgdx(fnIn,list(name='u',form='sparse',uels=f),squeeze=F)
+  chk <- chkRgdxRes (u, uwantL, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'L',filtered,squeeze=F) failed",chk$msg))
   }
   f <- list(c('k2','k3'))
   vwantL <- list(name='v', type='variable', dim=1L,
@@ -151,17 +209,28 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(v,'L',filtered) failed",chk$msg))
   }
+  v <- rgdx(fnIn,list(name='v',form='sparse',uels=f),squeeze=F)
+  chk <- chkRgdxRes (v, vwantL, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(v,'L',filtered,squeeze=F) failed",chk$msg))
+  }
   # marginal
   f <- list(c('k1','k3','k4'))
   uwantM <- list(name='u', type='variable', dim=1L,
-                 val=matrix(c( 1,   0,
-                               2,   0), nrow=2, ncol=2, byrow=T),
+                 val=matrix(0, nrow=0, ncol=2, byrow=T),
                  form='sparse', uels=f, domains=userDom,
                  field='m', varTypeText="integer", typeCode=GMS_VARTYPE$INTEGER)
   u <- rgdx(fnIn,list(name='u',form='sparse',uels=f,field='M'))
   chk <- chkRgdxRes (u, uwantM, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(u,'M',filtered) failed",chk$msg))
+  }
+  uwantM$val <- matrix(c( 1,   0,
+                          2,   0), nrow=2, ncol=2, byrow=T)
+  u <- rgdx(fnIn,list(name='u',form='sparse',uels=f,field='M'),squeeze=F)
+  chk <- chkRgdxRes (u, uwantM, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'M',filtered,squeeze=F) failed",chk$msg))
   }
   f <- list(c('k2','k3'))
   vwantM <- list(name='v', type='variable', dim=1L,
