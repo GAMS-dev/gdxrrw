@@ -332,6 +332,16 @@ chkRgdxRes <- function(f1, f2, checkDimNames=FALSE, reqIdent=FALSE) {
       if (! is.character(f2[[k]]))   return (r)
       if (f1[[k]] != f2[[k]])        return (r)
     }
+    else if ("varTypeText" == f2Names[[k]]) {
+      if (! is.character(f1[[k]]))   return (r)
+      if (! is.character(f2[[k]]))   return (r)
+      if (f1[[k]] != f2[[k]])        return (r)
+    }
+    else if ("typeCode" == f2Names[[k]]) {
+      if (! is.numeric(f1[[k]]))   return (r)
+      if (! is.numeric(f2[[k]]))   return (r)
+      if (f1[[k]] != f2[[k]])      return (r)
+    }
     else {
       return (r)
     }
