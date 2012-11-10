@@ -151,6 +151,9 @@ xpFilterToUels (int symDim, xpFilter_t filterList[], SEXP uni, SEXP uels);
 char *
 getGlobalString (const char *globName, shortStringBuf_t result);
 int
+getNonDefaultElemCount (gdxHandle_t h, int symIdx,
+                        int symType, int symSubType, dField_t dField);
+int
 getNonZeroElements (gdxHandle_t h, int symIdx, dField_t dField);
 Rboolean
 exp2Boolean (SEXP exp);

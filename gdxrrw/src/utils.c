@@ -758,6 +758,43 @@ char *getGlobalString (const char *globName, shortStringBuf_t result)
   return res;
 } /* getGlobalString */
 
+/* getNonDefaultElemCount
+ * return count of non-default elements for the specified field
+ * of the symbol referenced by symIdx
+ */
+int
+getNonDefaultElemCount (gdxHandle_t h, int symIdx,
+                        int symType, int symSubType, dField_t dField)
+{
+  double defVal;                /* default value - may be nonzero */
+  int nRecs, changeIdx, i, cnt;
+  gdxUelIndex_t uels;
+  gdxValues_t values;
+
+  defVal = 0;
+  switch (symType) {
+  case GMS_DT_VAR:
+    defVal = getDefRecVar (symSubType, dField);
+    break;
+  case GMS_DT_EQU:
+    /* defVal = gmsDefRecEqu[symSubType][dField]; */
+    error  ("not implemented");
+    break;
+  } /* end switch */
+
+  gdxDataReadRawStart (h, symIdx, &nRecs);
+  if (all == dField) {
+    return nRecs;
+  }
+  for (cnt = 0, i = 0;  i < nRecs;  i++) {
+    gdxDataReadRaw (h, uels, values, &changeIdx);
+    if (values[dField] != defVal) {
+      cnt++;
+    }
+  }
+  return cnt;
+} /* getNonDefaultElemCount */
+
 /* getNonZeroElements
  * return nonzero count for the specified field of a variable or equation
  */
@@ -1011,7 +1048,7 @@ sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
   defVal = 0;
   switch (symType) {
   case GMS_DT_VAR:
-    defVal = getDefRecVar (symSubType,dField);
+    defVal = getDefRecVar (symSubType, dField);
     break;
   case GMS_DT_EQU:
     /* defVal = gmsDefRecEqu[symSubType][dField]; */

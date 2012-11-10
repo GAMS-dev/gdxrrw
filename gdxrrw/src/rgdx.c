@@ -571,6 +571,8 @@ SEXP rgdx (SEXP args)
     outTeSp = R_NilValue;
     nnz = 0;
     if (rSpec->withUel) {
+      double defVal = 0;
+
       if (all == rSpec->dField) {
         error ("field='all' not yet implemented: 000");
       }
@@ -593,11 +595,18 @@ SEXP rgdx (SEXP args)
         SET_STRING_ELT(outDomains, iDim, mkChar("_user"));
       }
 
+
+      if (GMS_DT_VAR == symType)
+        defVal = getDefRecVar (symUser, rSpec->dField);
+      else if (GMS_DT_EQU == symType)
+        error  ("not implemented");
       /* Start reading data */
       gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
       prepHPFilter (symDim, hpFilter);
       for (iRec = 0;  iRec < nRecs;  iRec++) {
         gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+        if (squeezeDef && (defVal == values[rSpec->dField]))
+          continue;
         foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
         if (foundTuple) {
           nnz++;
@@ -656,10 +665,18 @@ SEXP rgdx (SEXP args)
         }
       } /* if rSpec->te */
       else {
+        double defVal = 0;
+
+        if (GMS_DT_VAR == symType)
+          defVal = getDefRecVar (symUser, rSpec->dField);
+        else if (GMS_DT_EQU == symType)
+          error  ("not implemented");
         gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
         prepHPFilter (symDim, hpFilter);
         for (matched = 0, iRec = 0;  iRec < nRecs;  iRec++) {
           gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+          if (squeezeDef && (defVal == values[rSpec->dField]))
+            continue;
           foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
           if (foundTuple) {
             for (iDim = 0;  iDim < symDim;  iDim++) {
@@ -676,7 +693,7 @@ SEXP rgdx (SEXP args)
                 p[index] = values[rSpec->dField];
               }
             }
-          }
+          } /* if foundTuple */
           if (matched == nnz) {
             break;
           }
@@ -695,7 +712,8 @@ SEXP rgdx (SEXP args)
           mrows *= 5;           /* l,m,lo,up,scale */
         }
         else if (squeezeDef) { /* potentially squeeze some out */
-          mrows = getNonZeroElements(gdxHandle, symIdx, rSpec->dField);
+          mrows = getNonDefaultElemCount(gdxHandle, symIdx, symType, symUser,
+                                         rSpec->dField);
         }
       }
       /* Create 2D sparse R array */
@@ -764,6 +782,12 @@ SEXP rgdx (SEXP args)
       case GMS_DT_VAR:
       case GMS_DT_EQU:
         if (all != rSpec->dField) {
+          double defVal = 0;
+
+          if (GMS_DT_VAR == symType)
+            defVal = getDefRecVar (symUser, rSpec->dField);
+          else
+            error  ("not implemented");
           for (iRec = 0, kRec = 0;  iRec < nRecs;  iRec++) {
             gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
             findrc = findInXPFilter (symDim, uels, xpFilter, outIdx);
@@ -771,7 +795,7 @@ SEXP rgdx (SEXP args)
               error ("DEBUG 00: findrc = %d is unhandled", findrc);
             }
             if ((! squeezeDef) ||
-                (0 != values[rSpec->dField])) {
+                (defVal != values[rSpec->dField])) {
               /* store the value */
               for (index = kRec, kk = 0;  kk < symDim;  kk++) {
                 p[index] = outIdx[kk]; /* from the xpFilter */
@@ -779,7 +803,7 @@ SEXP rgdx (SEXP args)
               }
               p[index] = values[rSpec->dField];
               kRec++;
-            } /* end if (no squeeze || val != 0) */
+            } /* end if (no squeeze || val != default) */
           } /* loop over GDX records */
         }
         else {
