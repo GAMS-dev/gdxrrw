@@ -571,7 +571,7 @@ SEXP rgdx (SEXP args)
     outTeSp = R_NilValue;
     nnz = 0;
     if (rSpec->withUel) {
-      double defVal = 0;
+      double defVal;
 
       if (all == rSpec->dField) {
         error ("field='all' not yet implemented: 000");
@@ -596,10 +596,7 @@ SEXP rgdx (SEXP args)
       }
 
 
-      if (GMS_DT_VAR == symType)
-        defVal = getDefRecVar (symUser, rSpec->dField);
-      else if (GMS_DT_EQU == symType)
-        error  ("not implemented");
+      defVal = getDefRec (symType, symUser, rSpec->dField);
       /* Start reading data */
       gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
       prepHPFilter (symDim, hpFilter);
@@ -665,12 +662,8 @@ SEXP rgdx (SEXP args)
         }
       } /* if rSpec->te */
       else {
-        double defVal = 0;
+        double defVal = getDefRec (symType, symUser, rSpec->dField);
 
-        if (GMS_DT_VAR == symType)
-          defVal = getDefRecVar (symUser, rSpec->dField);
-        else if (GMS_DT_EQU == symType)
-          error  ("not implemented");
         gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
         prepHPFilter (symDim, hpFilter);
         for (matched = 0, iRec = 0;  iRec < nRecs;  iRec++) {

@@ -168,6 +168,8 @@ sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
               int symType, int symSubType, dField_t dField, int nRec, int symDim);
 double
 getDefRecVar (int subType, dField_t dField);
+double
+getDefRec (int symType, int subType, dField_t dField);
 
 
 /* ****** global variables ****** */

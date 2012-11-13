@@ -1148,3 +1148,23 @@ getDefRecVar (int subType, dField_t dField)
   } /* switch subType */
   return 0;
 } /* getDefRecVar */
+
+double
+getDefRec (int symType, int subType, dField_t dField)
+{
+  double defVal = 0;
+
+  switch (symType) {
+  case GMS_DT_SET:    /* just choose something not to match the val */
+    defVal = -1;
+    break;
+  case GMS_DT_VAR:
+    defVal = getDefRecVar (subType, dField);
+    break;
+  case GMS_DT_EQU:
+    /* defVal = gmsDefRecEqu[symSubType][dField]; */
+    error  ("getDefRec not implemented for symType=GMS_DT_EQU");
+    break;
+  } /* end switch */
+  return defVal;
+} /* getDefRec */
