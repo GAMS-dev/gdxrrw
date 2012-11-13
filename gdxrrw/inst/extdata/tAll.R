@@ -25,6 +25,7 @@ if (length(f) > 0) {
 
 nRuns <- 0
 nFails  <- 0
+fTests <- list()
 for (t in tests) {
   print (paste("Starting test", t))
   rc <- source (paste(t,".R",sep=""))
@@ -33,6 +34,7 @@ for (t in tests) {
   } else {
     print (paste("Test", t, "result: FAIL"))
     nFails  <- nFails + 1
+    fTests[[t]] <- T
   }
   nRuns  <- nRuns + 1
   if (doPrompt) {
@@ -42,6 +44,7 @@ for (t in tests) {
 }
 if (nFails) {
   print (paste("Tests complete. ", nRuns,"tests run,",nFails,"tests FAILED"))
+  for (nm in names(fTests)) print(paste0('  ',nm))
 } else {
   print (paste("Testing complete.  All", nRuns,"tests PASSED"))
 }
