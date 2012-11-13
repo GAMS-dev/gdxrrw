@@ -138,7 +138,7 @@ tryCatch({
                 uels=list(iUels,jUels),
                 domains=c("i","j"),
                 field="l",
-		varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   chk <- chkRgdxRes (x, xwant)
   if (!chk$same) {
     stop (paste("test rgdx(x,form='sparse') failed",chk$msg))
@@ -152,7 +152,7 @@ tryCatch({
                 uels=list(),
                 domains=character(0),
                 field="l",
-		varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   chk <- chkRgdxRes (z, zwant)
   if (!chk$same) {
     stop (paste("test rgdx(z,form='sparse') failed",chk$msg))
