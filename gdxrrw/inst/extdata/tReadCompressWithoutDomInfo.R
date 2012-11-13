@@ -5,6 +5,7 @@ if (! require(gdxrrw))      stop ("gdxrrw package is not available")
 if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
 source ("chkSame.R")
+reqIdent <- TRUE
 
 tryCatch({
   print ("testing rgdx handling of GDX file with compress=TRUE and useDomInfo=FALSE")
