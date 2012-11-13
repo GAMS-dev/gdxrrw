@@ -6,6 +6,7 @@ if (! require(gdxrrw))      stop ("gdxrrw package is not available")
 if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
 source ("chkSame.R")
+reqIdent <- TRUE
 
 iUels <- c("seattle", "san-diego")
 iCard <- length(iUels)
@@ -32,83 +33,83 @@ tryCatch({
   rgdx('?')
 
   u <- rgdx('trnsport')
-  uwant <- list(name="*", type="set", dim=1,
+  uwant <- list(name="*", type="set", dim=1L,
                 val=NULL,
                 form=NULL,
                 uels=uUels)
-  chk <- chkRgdxRes (u, uwant)
+  chk <- chkRgdxRes (u, uwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx('gdxname') to read universe failed",chk$msg))
   }
   print ("Done reading universe")
 
   i <- rgdx('trnsport',list(name='i',form='full'))
-  iwant <- list(name="i", type="set", dim=1,
+  iwant <- list(name="i", type="set", dim=1L,
                 val=iVals,
                 form="full",
                 uels=list(uUels),
                 domains=c("*"))
-  chk <- chkRgdxRes (i, iwant)
+  chk <- chkRgdxRes (i, iwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(i,form=full) failed",chk$msg))
   }
   print ("Done reading set i")
 
   j <- rgdx('trnsport',list(name='j',form='full'))
-  jwant <- list(name="j", type="set", dim=1,
+  jwant <- list(name="j", type="set", dim=1L,
                 val=jVals,
                 form="full",
                 uels=list(uUels),
                 domains=c("*"))
-  chk <- chkRgdxRes (j, jwant)
+  chk <- chkRgdxRes (j, jwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(j,form=full) failed",chk$msg))
   }
   print ("Done reading set j")
 
   f <- rgdx('trnsport',list(name='f',form='full'))
-  fwant <- list(name="f", type="parameter", dim=0,
+  fwant <- list(name="f", type="parameter", dim=0L,
                 val=90,
                 form="full",
                 uels=list(),
                 domains=character(0) )
-  chk <- chkRgdxRes (f, fwant)
+  chk <- chkRgdxRes (f, fwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(f,form=full) failed",chk$msg))
   }
   print ("Done reading scalar f")
 
   a <- rgdx('trnsport',list(name='a',form='full'))
-  awant <- list(name="a", type="parameter", dim=1,
+  awant <- list(name="a", type="parameter", dim=1L,
                 val=aVals,
                 form="full",
                 uels=list(iUels),
                 domains=c("i") )
-  chk <- chkRgdxRes (a, awant)
+  chk <- chkRgdxRes (a, awant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(a,form='full') failed",chk$msg))
   }
   print ("Done reading parameter a")
 
   b <- rgdx('trnsport',list(name='b',form='full'))
-  bwant <- list(name="b", type="parameter", dim=1,
+  bwant <- list(name="b", type="parameter", dim=1L,
                 val=bVals,
                 form="full",
                 uels=list(jUels),
                 domains=c('j') )
-  chk <- chkRgdxRes (b, bwant)
+  chk <- chkRgdxRes (b, bwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(b,form='full') failed",chk$msg))
   }
   print ("Done reading parameter b")
 
   c <- rgdx('trnsport',list(name='c',form='full'))
-  cwant <- list(name="c", type="parameter", dim=2,
+  cwant <- list(name="c", type="parameter", dim=2L,
                 val=cVals,
                 form="full",
                 uels=list(iUels,jUels),
                 domains=c("i","j") )
-  chk <- chkRgdxRes (c, cwant)
+  chk <- chkRgdxRes (c, cwant, reqIdent=F)
   if (!chk$same) {
     stop (paste("test rgdx(c,form='full') failed",chk$msg))
   }
