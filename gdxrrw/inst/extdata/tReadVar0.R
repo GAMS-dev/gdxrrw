@@ -8,6 +8,7 @@ if (! require(gdxrrw))      stop ("gdxrrw package is not available")
 if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
 source ("chkSame.R")
+reqIdent <- TRUE
 
 tryCatch({
   print ("testing rgdx on variable reads")
@@ -19,157 +20,157 @@ tryCatch({
 
   ### ---------- reading form=sparse, no filter
   # level
-  xwantL <- list(name='xpos0', type='variable', dim=0,
+  xwantL <- list(name='xpos0', type='variable', dim=0L,
                  val=matrix(24, nrow=1, ncol=1),
                  form='sparse', uels=list(), domains=character(0),
                  field='l',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',field='L'))
-  chk <- chkRgdxRes (x, xwantL)
+  chk <- chkRgdxRes (x, xwantL, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'L',unfiltered) failed",chk$msg))
   }
-  ywantL <- list(name='y0', type='variable', dim=0,
+  ywantL <- list(name='y0', type='variable', dim=0L,
                  val=matrix(1, nrow=1, ncol=1),
                  form='sparse', uels=list(), domains=character(0),
                  field='l',
                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',field='L'))
-  chk <- chkRgdxRes (y, ywantL)
+  chk <- chkRgdxRes (y, ywantL, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'L',unfiltered) failed",chk$msg))
   }
-  zwantL <- list(name='z', type='variable', dim=0,
+  zwantL <- list(name='z', type='variable', dim=0L,
                  val=matrix(26, nrow=1, ncol=1),
                  form='sparse', uels=list(), domains=character(0),
                  field='l',
                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',field='L'))
-  chk <- chkRgdxRes (z, zwantL)
+  chk <- chkRgdxRes (z, zwantL, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'L',unfiltered) failed",chk$msg))
   }
   # marginal
-  xwantM <- list(name='xpos0', type='variable', dim=0,
+  xwantM <- list(name='xpos0', type='variable', dim=0L,
                  val=matrix(-1, nrow=1, ncol=1),
                  form='sparse', uels=list(), domains=character(0),
                  field='m',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',field='M'))
-  chk <- chkRgdxRes (x, xwantM)
+  chk <- chkRgdxRes (x, xwantM, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'M',unfiltered) failed",chk$msg))
   }
-  ywantM <- list(name='y0', type='variable', dim=0,
+  ywantM <- list(name='y0', type='variable', dim=0L,
                  val=matrix(0.5, nrow=1, ncol=1),
                  form='sparse', uels=list(), domains=character(0),
                  field='m',
                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',field='M'))
-  chk <- chkRgdxRes (y, ywantM)
+  chk <- chkRgdxRes (y, ywantM, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'M',unfiltered) failed",chk$msg))
   }
-  zwantM <- list(name='z', type='variable', dim=0,
+  zwantM <- list(name='z', type='variable', dim=0L,
                  val=matrix(0, nrow=0, ncol=1),
                  form='sparse', uels=list(), domains=character(0),
                  field='m',
                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',field='M'))
-  chk <- chkRgdxRes (z, zwantM)
+  chk <- chkRgdxRes (z, zwantM, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'M',unfiltered) failed",chk$msg))
   }
   # lower
-  xwantLo <- list(name='xpos0', type='variable', dim=0,
+  xwantLo <- list(name='xpos0', type='variable', dim=0L,
                   val=matrix(0, nrow=0, ncol=1),
                   form='sparse', uels=list(), domains=character(0),
                   field='lo',
                   varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',field='lo'))
-  chk <- chkRgdxRes (x, xwantLo)
+  chk <- chkRgdxRes (x, xwantLo, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'lo',unfiltered) failed",chk$msg))
   }
-  ywantLo <- list(name='y0', type='variable', dim=0,
+  ywantLo <- list(name='y0', type='variable', dim=0L,
                   val=matrix(1, nrow=1, ncol=1),
                   form='sparse', uels=list(), domains=character(0),
                   field='lo',
                   varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',field='lo'))
-  chk <- chkRgdxRes (y, ywantLo)
+  chk <- chkRgdxRes (y, ywantLo, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'lo',unfiltered) failed",chk$msg))
   }
-  zwantLo <- list(name='z', type='variable', dim=0,
+  zwantLo <- list(name='z', type='variable', dim=0L,
                   val=matrix(-Inf, nrow=0, ncol=1),
                   form='sparse', uels=list(), domains=character(0),
                   field='lo',
                   varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',field='lo'))
-  chk <- chkRgdxRes (z, zwantLo)
+  chk <- chkRgdxRes (z, zwantLo, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'lo',unfiltered) failed",chk$msg))
   }
   # upper
-  xwantUp <- list(name='xpos0', type='variable', dim=0,
+  xwantUp <- list(name='xpos0', type='variable', dim=0L,
                   val=matrix(100, nrow=1, ncol=1),
                   form='sparse', uels=list(), domains=character(0),
                   field='up',
                   varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',field='up'))
-  chk <- chkRgdxRes (x, xwantUp)
+  chk <- chkRgdxRes (x, xwantUp, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'up',unfiltered) failed",chk$msg))
   }
-  ywantUp <- list(name='y0', type='variable', dim=0,
+  ywantUp <- list(name='y0', type='variable', dim=0L,
                   val=matrix(1, nrow=0, ncol=1),
                   form='sparse', uels=list(), domains=character(0),
                   field='up',
                   varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',field='up'))
-  chk <- chkRgdxRes (y, ywantUp)
+  chk <- chkRgdxRes (y, ywantUp, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'up',unfiltered) failed",chk$msg))
   }
-  zwantUp <- list(name='z', type='variable', dim=0,
+  zwantUp <- list(name='z', type='variable', dim=0L,
                   val=matrix(Inf, nrow=0, ncol=1),
                   form='sparse', uels=list(), domains=character(0),
                   field='up',
                   varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',field='up'))
-  chk <- chkRgdxRes (z, zwantUp)
+  chk <- chkRgdxRes (z, zwantUp, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'up',unfiltered) failed",chk$msg))
   }
   # scale
-  xwantS <- list(name='xpos0', type='variable', dim=0,
+  xwantS <- list(name='xpos0', type='variable', dim=0L,
                  val=matrix(10, nrow=1, ncol=1),
                  form='sparse', uels=list(), domains=character(0),
                  field='s',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',field='s'))
-  chk <- chkRgdxRes (x, xwantS)
+  chk <- chkRgdxRes (x, xwantS, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'s',unfiltered) failed",chk$msg))
   }
-  ywantS <- list(name='y0', type='variable', dim=0,
+  ywantS <- list(name='y0', type='variable', dim=0L,
                  val=matrix(1, nrow=0, ncol=1),
                  form='sparse', uels=list(), domains=character(0),
                  field='s',
                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',field='s'))
-  chk <- chkRgdxRes (y, ywantS)
+  chk <- chkRgdxRes (y, ywantS, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'s',unfiltered) failed",chk$msg))
   }
-  zwantS <- list(name='z', type='variable', dim=0,
+  zwantS <- list(name='z', type='variable', dim=0L,
                  val=matrix(1, nrow=0, ncol=1),
                  form='sparse', uels=list(), domains=character(0),
                  field='s',
                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',field='s'))
-  chk <- chkRgdxRes (z, zwantS)
+  chk <- chkRgdxRes (z, zwantS, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'s',unfiltered) failed",chk$msg))
   }
@@ -177,471 +178,471 @@ tryCatch({
   ### ---------- reading form=sparse, filtered
   # level
   f <- list()
-  xwantL <- list(name='xpos0', type='variable', dim=0,
+  xwantL <- list(name='xpos0', type='variable', dim=0L,
                  val=matrix(24, nrow=1, ncol=1),
                  form='sparse', uels=f, domains=character(0),
                  field='l',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',uels=f))
-  chk <- chkRgdxRes (x, xwantL)
+  chk <- chkRgdxRes (x, xwantL, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'L',filtered) failed",chk$msg))
   }
-  ywantL <- list(name='y0', type='variable', dim=0,
+  ywantL <- list(name='y0', type='variable', dim=0L,
                  val=matrix(1, nrow=1, ncol=1),
                  form='sparse', uels=f, domains=character(0),
                  field='l',
                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',uels=f))
-  chk <- chkRgdxRes (y, ywantL)
+  chk <- chkRgdxRes (y, ywantL, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'L',filtered) failed",chk$msg))
   }
-  zwantL <- list(name='z', type='variable', dim=0,
+  zwantL <- list(name='z', type='variable', dim=0L,
                  val=matrix(26, nrow=1, ncol=1),
                  form='sparse', uels=f, domains=character(0),
                  field='l',
                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',uels=f))
-  chk <- chkRgdxRes (z, zwantL)
+  chk <- chkRgdxRes (z, zwantL, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'L',filtered) failed",chk$msg))
   }
   # marginal
-  xwantM <- list(name='xpos0', type='variable', dim=0,
+  xwantM <- list(name='xpos0', type='variable', dim=0L,
                  val=matrix(-1, nrow=1, ncol=1),
                  form='sparse', uels=f, domains=character(0),
                  field='m',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',uels=f,field='M'))
-  chk <- chkRgdxRes (x, xwantM)
+  chk <- chkRgdxRes (x, xwantM, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'M',filtered) failed",chk$msg))
   }
-  ywantM <- list(name='y0', type='variable', dim=0,
+  ywantM <- list(name='y0', type='variable', dim=0L,
                  val=matrix(0.5, nrow=1, ncol=1),
                  form='sparse', uels=f, domains=character(0),
                  field='m',
                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',uels=f,field='M'))
-  chk <- chkRgdxRes (y, ywantM)
+  chk <- chkRgdxRes (y, ywantM, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'M',filtered) failed",chk$msg))
   }
-  zwantM <- list(name='z', type='variable', dim=0,
+  zwantM <- list(name='z', type='variable', dim=0L,
                  val=matrix(0, nrow=0, ncol=1),
                  form='sparse', uels=f, domains=character(0),
                  field='m',
                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',uels=f,field='M'))
-  chk <- chkRgdxRes (z, zwantM)
+  chk <- chkRgdxRes (z, zwantM, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'M',filtered) failed",chk$msg))
   }
   # lower
-  xwantLo <- list(name='xpos0', type='variable', dim=0,
+  xwantLo <- list(name='xpos0', type='variable', dim=0L,
                   val=matrix(0, nrow=0, ncol=1),
                   form='sparse', uels=f, domains=character(0),
                   field='lo',
                   varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',uels=f,field='lo'))
-  chk <- chkRgdxRes (x, xwantLo)
+  chk <- chkRgdxRes (x, xwantLo, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'lo',filtered) failed",chk$msg))
   }
-  ywantLo <- list(name='y0', type='variable', dim=0,
+  ywantLo <- list(name='y0', type='variable', dim=0L,
                   val=matrix(1, nrow=1, ncol=1),
                   form='sparse', uels=f, domains=character(0),
                   field='lo',
                   varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',uels=f,field='lo'))
-  chk <- chkRgdxRes (y, ywantLo)
+  chk <- chkRgdxRes (y, ywantLo, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'lo',filtered) failed",chk$msg))
   }
-  zwantLo <- list(name='z', type='variable', dim=0,
+  zwantLo <- list(name='z', type='variable', dim=0L,
                   val=matrix(-Inf, nrow=0, ncol=1),
                   form='sparse', uels=f, domains=character(0),
                   field='lo',
                   varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',uels=f,field='lo'))
-  chk <- chkRgdxRes (z, zwantLo)
+  chk <- chkRgdxRes (z, zwantLo, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'lo',filtered) failed",chk$msg))
   }
   # upper
-  xwantUp <- list(name='xpos0', type='variable', dim=0,
+  xwantUp <- list(name='xpos0', type='variable', dim=0L,
                   val=matrix(100, nrow=1, ncol=1),
                   form='sparse', uels=f, domains=character(0),
                   field='up',
                   varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',uels=f,field='UP'))
-  chk <- chkRgdxRes (x, xwantUp)
+  chk <- chkRgdxRes (x, xwantUp, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'up',filtered) failed",chk$msg))
   }
-  ywantUp <- list(name='y0', type='variable', dim=0,
+  ywantUp <- list(name='y0', type='variable', dim=0L,
                   val=matrix(1, nrow=0, ncol=1),
                   form='sparse', uels=f, domains=character(0),
                   field='up',
                   varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',uels=f,field='UP'))
-  chk <- chkRgdxRes (y, ywantUp)
+  chk <- chkRgdxRes (y, ywantUp, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'up',filtered) failed",chk$msg))
   }
-  zwantUp <- list(name='z', type='variable', dim=0,
+  zwantUp <- list(name='z', type='variable', dim=0L,
                   val=matrix(+Inf, nrow=0, ncol=1),
                   form='sparse', uels=f, domains=character(0),
                   field='up',
                   varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',uels=f,field='UP'))
-  chk <- chkRgdxRes (z, zwantUp)
+  chk <- chkRgdxRes (z, zwantUp, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'up',filtered) failed",chk$msg))
   }
   # scale
-  xwantS <- list(name='xpos0', type='variable', dim=0,
+  xwantS <- list(name='xpos0', type='variable', dim=0L,
                  val=matrix(10, nrow=1, ncol=1),
                  form='sparse', uels=f, domains=character(0),
                  field='s',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',field='S',uels=f))
-  chk <- chkRgdxRes (x, xwantS)
+  chk <- chkRgdxRes (x, xwantS, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'S',filtered) failed",chk$msg))
   }
-  ywantS <- list(name='y0', type='variable', dim=0,
+  ywantS <- list(name='y0', type='variable', dim=0L,
                  val=matrix(1, nrow=0, ncol=1),
                  form='sparse', uels=f, domains=character(0),
                  field='s',
                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',field='S',uels=f))
-  chk <- chkRgdxRes (y, ywantS)
+  chk <- chkRgdxRes (y, ywantS, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'S',filtered) failed",chk$msg))
   }
-  zwantS <- list(name='z', type='variable', dim=0,
+  zwantS <- list(name='z', type='variable', dim=0L,
                  val=matrix(1, nrow=0, ncol=1),
                  form='sparse', uels=f, domains=character(0),
                  field='s',
                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',field='S',uels=f))
-  chk <- chkRgdxRes (z, zwantS)
+  chk <- chkRgdxRes (z, zwantS, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'S',filtered) failed",chk$msg))
   }
 
   ### ---------- reading form=full, no filter
   # level
-  xwantL <- list(name='xpos0', type='variable', dim=0,
+  xwantL <- list(name='xpos0', type='variable', dim=0L,
                  val=24,
                  form='full', uels=list(), domains=character(0),
                  field='l',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full'))
-  chk <- chkRgdxRes (x, xwantL, T)
+  chk <- chkRgdxRes (x, xwantL, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'L',full,unfiltered) failed",chk$msg))
   }
-  ywantL <- list(name='y0', type='variable', dim=0,
+  ywantL <- list(name='y0', type='variable', dim=0L,
                  val=1,
                  form='full', uels=list(), domains=character(0),
                  field='l',
                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full'))
-  chk <- chkRgdxRes (y, ywantL, T)
+  chk <- chkRgdxRes (y, ywantL, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'L',full,unfiltered) failed",chk$msg))
   }
-  zwantL <- list(name='z', type='variable', dim=0,
+  zwantL <- list(name='z', type='variable', dim=0L,
                  val=26,
                  form='full', uels=list(), domains=character(0),
                  field='l',
                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full'))
-  chk <- chkRgdxRes (z, zwantL, T)
+  chk <- chkRgdxRes (z, zwantL, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'L',full,unfiltered) failed",chk$msg))
   }
   # marginal
-  xwantM <- list(name='xpos0', type='variable', dim=0,
+  xwantM <- list(name='xpos0', type='variable', dim=0L,
                  val=-1,
                  form='full', uels=list(), domains=character(0),
                  field='m',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',field='m'))
-  chk <- chkRgdxRes (x, xwantM, T)
+  chk <- chkRgdxRes (x, xwantM, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'M',full,unfiltered) failed",chk$msg))
   }
-  ywantM <- list(name='y0', type='variable', dim=0,
+  ywantM <- list(name='y0', type='variable', dim=0L,
                  val=0.5,
                  form='full', uels=list(), domains=character(0),
                  field='m',
                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',field='m'))
-  chk <- chkRgdxRes (y, ywantM, T)
+  chk <- chkRgdxRes (y, ywantM, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'M',full,unfiltered) failed",chk$msg))
   }
-  zwantM <- list(name='z', type='variable', dim=0,
+  zwantM <- list(name='z', type='variable', dim=0L,
                  val=0,
                  form='full', uels=list(), domains=character(0),
                  field='m',
                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',field='m'))
-  chk <- chkRgdxRes (z, zwantM, T)
+  chk <- chkRgdxRes (z, zwantM, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'M',full,unfiltered) failed",chk$msg))
   }
   # lower
-  xwantLo <- list(name='xpos0', type='variable', dim=0,
+  xwantLo <- list(name='xpos0', type='variable', dim=0L,
                   val=0,
                   form='full', uels=list(), domains=character(0),
                   field='lo',
                   varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',field='lo'))
-  chk <- chkRgdxRes (x, xwantLo, T)
+  chk <- chkRgdxRes (x, xwantLo, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'lo',full,unfiltered) failed",chk$msg))
   }
-  ywantLo <- list(name='y0', type='variable', dim=0,
+  ywantLo <- list(name='y0', type='variable', dim=0L,
                   val=1,
                   form='full', uels=list(), domains=character(0),
                   field='lo',
                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',field='lo'))
-  chk <- chkRgdxRes (y, ywantLo, T)
+  chk <- chkRgdxRes (y, ywantLo, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'lo',full,unfiltered) failed",chk$msg))
   }
-  zwantLo <- list(name='z', type='variable', dim=0,
+  zwantLo <- list(name='z', type='variable', dim=0L,
                   val=-Inf,
                   form='full', uels=list(), domains=character(0),
                   field='lo',
                   varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',field='lo'))
-  chk <- chkRgdxRes (z, zwantLo, T)
+  chk <- chkRgdxRes (z, zwantLo, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'lo',full,unfiltered) failed",chk$msg))
   }
   # upper
-  xwantUp <- list(name='xpos0', type='variable', dim=0,
+  xwantUp <- list(name='xpos0', type='variable', dim=0L,
                   val=100,
                   form='full', uels=list(), domains=character(0),
                   field='up',
                   varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',field='up'))
-  chk <- chkRgdxRes (x, xwantUp, T)
+  chk <- chkRgdxRes (x, xwantUp, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'up',full,unfiltered) failed",chk$msg))
   }
-  ywantUp <- list(name='y0', type='variable', dim=0,
+  ywantUp <- list(name='y0', type='variable', dim=0L,
                   val=1,
                   form='full', uels=list(), domains=character(0),
                   field='up',
                   varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',field='up'))
-  chk <- chkRgdxRes (y, ywantUp, T)
+  chk <- chkRgdxRes (y, ywantUp, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'up',full,unfiltered) failed",chk$msg))
   }
-  zwantUp <- list(name='z', type='variable', dim=0,
+  zwantUp <- list(name='z', type='variable', dim=0L,
                   val=+Inf,
                   form='full', uels=list(), domains=character(0),
                   field='up',
                   varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',field='up'))
-  chk <- chkRgdxRes (z, zwantUp, T)
+  chk <- chkRgdxRes (z, zwantUp, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'up',full,unfiltered) failed",chk$msg))
   }
   # scale
-  xwantS <- list(name='xpos0', type='variable', dim=0,
+  xwantS <- list(name='xpos0', type='variable', dim=0L,
                  val=10,
                  form='full', uels=list(), domains=character(0),
                  field='s',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',field='s'))
-  chk <- chkRgdxRes (x, xwantS, T)
+  chk <- chkRgdxRes (x, xwantS, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'s',full,unfiltered) failed",chk$msg))
   }
-  ywantS <- list(name='y0', type='variable', dim=0,
+  ywantS <- list(name='y0', type='variable', dim=0L,
                  val=1,
                  form='full', uels=list(), domains=character(0),
                  field='s',
                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',field='s'))
-  chk <- chkRgdxRes (y, ywantS, T)
+  chk <- chkRgdxRes (y, ywantS, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'s',full,unfiltered) failed",chk$msg))
   }
-  zwantS <- list(name='z', type='variable', dim=0,
+  zwantS <- list(name='z', type='variable', dim=0L,
                  val=1,
                  form='full', uels=list(), domains=character(0),
                  field='s',
                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',field='s'))
-  chk <- chkRgdxRes (z, zwantS, T)
+  chk <- chkRgdxRes (z, zwantS, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'s',full,unfiltered) failed",chk$msg))
   }
 
   ### ---------- reading form=full, filtered
   # level
-  xwantL <- list(name='xpos0', type='variable', dim=0,
+  xwantL <- list(name='xpos0', type='variable', dim=0L,
                  val=24,
                  form='full', uels=f, domains=character(0),
                  field='l',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',uels=f))
-  chk <- chkRgdxRes (x, xwantL, T)
+  chk <- chkRgdxRes (x, xwantL, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'L',full,filtered) failed",chk$msg))
   }
-  ywantL <- list(name='y0', type='variable', dim=0,
+  ywantL <- list(name='y0', type='variable', dim=0L,
                  val=1,
                  form='full', uels=f, domains=character(0),
                  field='l',
                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',uels=f))
-  chk <- chkRgdxRes (y, ywantL, T)
+  chk <- chkRgdxRes (y, ywantL, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'L',full,filtered) failed",chk$msg))
   }
-  zwantL <- list(name='z', type='variable', dim=0,
+  zwantL <- list(name='z', type='variable', dim=0L,
                  val=26,
                  form='full', uels=f, domains=character(0),
                  field='l',
                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',uels=f))
-  chk <- chkRgdxRes (z, zwantL, T)
+  chk <- chkRgdxRes (z, zwantL, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'L',full,filtered) failed",chk$msg))
   }
   # marginal
-  xwantM <- list(name='xpos0', type='variable', dim=0,
+  xwantM <- list(name='xpos0', type='variable', dim=0L,
                  val=-1,
                  form='full', uels=f, domains=character(0),
                  field='m',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',uels=f,field='M'))
-  chk <- chkRgdxRes (x, xwantM, T)
+  chk <- chkRgdxRes (x, xwantM, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'M',full,filtered) failed",chk$msg))
   }
-  ywantM <- list(name='y0', type='variable', dim=0,
+  ywantM <- list(name='y0', type='variable', dim=0L,
                  val=0.5,
                  form='full', uels=f, domains=character(0),
                  field='m',
                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',uels=f,field='M'))
-  chk <- chkRgdxRes (y, ywantM, T)
+  chk <- chkRgdxRes (y, ywantM, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'M',full,filtered) failed",chk$msg))
   }
-  zwantM <- list(name='z', type='variable', dim=0,
+  zwantM <- list(name='z', type='variable', dim=0L,
                  val=0,
                  form='full', uels=f, domains=character(0),
                  field='m',
                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',uels=f,field='M'))
-  chk <- chkRgdxRes (z, zwantM, T)
+  chk <- chkRgdxRes (z, zwantM, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'M',full,filtered) failed",chk$msg))
   }
   # lower
-  xwantLo <- list(name='xpos0', type='variable', dim=0,
+  xwantLo <- list(name='xpos0', type='variable', dim=0L,
                   val=0,
                   form='full', uels=f, domains=character(0),
                   field='lo',
                   varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',uels=f,field='lo'))
-  chk <- chkRgdxRes (x, xwantLo, T)
+  chk <- chkRgdxRes (x, xwantLo, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'lo',full,filtered) failed",chk$msg))
   }
-  ywantLo <- list(name='y0', type='variable', dim=0,
+  ywantLo <- list(name='y0', type='variable', dim=0L,
                   val=1,
                   form='full', uels=f, domains=character(0),
                   field='lo',
                   varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',uels=f,field='lo'))
-  chk <- chkRgdxRes (y, ywantLo, T)
+  chk <- chkRgdxRes (y, ywantLo, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'lo',full,filtered) failed",chk$msg))
   }
-  zwantLo <- list(name='z', type='variable', dim=0,
+  zwantLo <- list(name='z', type='variable', dim=0L,
                   val=-Inf,
                   form='full', uels=f, domains=character(0),
                   field='lo',
                   varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',uels=f,field='lo'))
-  chk <- chkRgdxRes (z, zwantLo, T)
+  chk <- chkRgdxRes (z, zwantLo, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'lo',full,filtered) failed",chk$msg))
   }
   # upper
-  xwantUp <- list(name='xpos0', type='variable', dim=0,
+  xwantUp <- list(name='xpos0', type='variable', dim=0L,
                   val=100,
                   form='full', uels=f, domains=character(0),
                   field='up',
                   varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',uels=f,field='up'))
-  chk <- chkRgdxRes (x, xwantUp, T)
+  chk <- chkRgdxRes (x, xwantUp, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'up',full,filtered) failed",chk$msg))
   }
-  ywantUp <- list(name='y0', type='variable', dim=0,
+  ywantUp <- list(name='y0', type='variable', dim=0L,
                   val=1,
                   form='full', uels=f, domains=character(0),
                   field='up',
                   varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',uels=f,field='up'))
-  chk <- chkRgdxRes (y, ywantUp, T)
+  chk <- chkRgdxRes (y, ywantUp, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'up',full,filtered) failed",chk$msg))
   }
-  zwantUp <- list(name='z', type='variable', dim=0,
+  zwantUp <- list(name='z', type='variable', dim=0L,
                   val=+Inf,
                   form='full', uels=f, domains=character(0),
                   field='up',
                   varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',uels=f,field='up'))
-  chk <- chkRgdxRes (z, zwantUp, T)
+  chk <- chkRgdxRes (z, zwantUp, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'up',full,filtered) failed",chk$msg))
   }
   # scale
-  xwantS <- list(name='xpos0', type='variable', dim=0,
+  xwantS <- list(name='xpos0', type='variable', dim=0L,
                  val=10,
                  form='full', uels=f, domains=character(0),
                  field='s',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',uels=f,field='s'))
-  chk <- chkRgdxRes (x, xwantS, T)
+  chk <- chkRgdxRes (x, xwantS, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'s',full,filtered) failed",chk$msg))
   }
-  ywantS <- list(name='y0', type='variable', dim=0,
+  ywantS <- list(name='y0', type='variable', dim=0L,
                  val=1,
                  form='full', uels=f, domains=character(0),
                  field='s',
                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',uels=f,field='s'))
-  chk <- chkRgdxRes (y, ywantS, T)
+  chk <- chkRgdxRes (y, ywantS, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(y0,'s',full,filtered) failed",chk$msg))
   }
-  zwantS <- list(name='z', type='variable', dim=0,
+  zwantS <- list(name='z', type='variable', dim=0L,
                  val=1,
                  form='full', uels=f, domains=character(0),
                  field='s',
                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',uels=f,field='s'))
-  chk <- chkRgdxRes (z, zwantS, T)
+  chk <- chkRgdxRes (z, zwantS, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,'s',full,filtered) failed",chk$msg))
   }
