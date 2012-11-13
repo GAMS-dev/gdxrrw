@@ -344,7 +344,7 @@ SEXP rgdx (SEXP args)
   int rgdxAlloc;                /* PROTECT count: undo this many on exit */
   int UELUserMapping, highestMappedUEL;
   int foundTuple;
-  int arglen, matched;
+  int arglen, matched = 0;
   double *p, *dimVal;
   char buf[3*sizeof(shortStringBuf_t)];
   char strippedID[GMS_SSSIZE];
@@ -887,9 +887,11 @@ SEXP rgdx (SEXP args)
         PROTECT(outValFull = allocVector(REALSXP, 1));
         rgdxAlloc++;
         p0 = REAL(outValFull);
-        *p0 = 0;
+        *p0 = getDefRec (symType, symUser, rSpec->dField);
         if (rSpec->withUel) {
-          if (outValSp != R_NilValue && (REAL(outValSp) != NULL)) {
+          /* assume matched is always set for filtered reads */
+          /* if (outValSp != R_NilValue && (REAL(outValSp) != NULL)) { */
+          if (matched > 0) {
             *p0 = REAL(outValSp)[0];
           }
         }
