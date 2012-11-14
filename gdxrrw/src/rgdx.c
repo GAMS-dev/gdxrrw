@@ -317,6 +317,7 @@ SEXP rgdx (SEXP args)
     outTeSp = R_NilValue,       /* output .te, sparse form */
     outTeFull = R_NilValue,     /* output .te, full form */
     outDomains = R_NilValue;    /* output .domains */
+  int reuseFilter = 0;          /* reuse input filter for outUels */
   SEXP outListNames, outList, dimVect, dimNames;
   SEXP tmpExp;
   hpFilter_t hpFilter[GMS_MAX_INDEX_DIM];
@@ -344,7 +345,7 @@ SEXP rgdx (SEXP args)
   int rgdxAlloc;                /* PROTECT count: undo this many on exit */
   int UELUserMapping, highestMappedUEL;
   int foundTuple;
-  int arglen, matched = 0;
+  int arglen, matched = -1;
   double *p, *dimVal;
   char buf[3*sizeof(shortStringBuf_t)];
   char strippedID[GMS_SSSIZE];
@@ -571,12 +572,6 @@ SEXP rgdx (SEXP args)
     outTeSp = R_NilValue;
     nnz = 0;
     if (rSpec->withUel) {
-      double defVal;
-
-      if (all == rSpec->dField) {
-        error ("field='all' not yet implemented: 000");
-      }
-
       /* here we check the cardinality of the symbol we are reading,
        * i.e. the number of nonzeros, i.e. the number of elements that match
        * in uel filter.  Given this value,
@@ -594,30 +589,89 @@ SEXP rgdx (SEXP args)
       for (iDim = 0;  iDim < symDim;  iDim++) {
         SET_STRING_ELT(outDomains, iDim, mkChar("_user"));
       }
+      reuseFilter = 1;
+      if (symDimX > symDim) {
+        reuseFilter = 0;
+        SET_STRING_ELT(outDomains, iDim, mkChar("_field"));
+      }
 
-
-      defVal = getDefRec (symType, symUser, rSpec->dField);
-      /* Start reading data */
-      gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
+      /* count records that match the filter and won't be squeezed out */
       prepHPFilter (symDim, hpFilter);
-      for (iRec = 0;  iRec < nRecs;  iRec++) {
-        gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-        if (squeezeDef && (defVal == values[rSpec->dField]))
-          continue;
-        foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
-        if (foundTuple) {
-          nnz++;
-          if (nnz >= nnzMax) {
-            break;
+      gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
+      switch (symType) {
+      case GMS_DT_SET:
+        for (nnz = 0, iRec = 0;  iRec < nRecs;  iRec++) {
+          gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+          /* no squeeze for a set */
+          foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
+          if (foundTuple) {
+            nnz++;
+            if (nnz >= nnzMax) {
+              break;
+            }
           }
+        } /* loop over gdx records */
+        break;
+      case GMS_DT_PAR:
+        for (nnz = 0, iRec = 0;  iRec < nRecs;  iRec++) {
+          gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+          if (squeezeDef && (0 == values[GMS_VAL_LEVEL]))
+            continue;
+          foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
+          if (foundTuple) {
+            nnz++;
+            if (nnz >= nnzMax) {
+              break;
+            }
+          }
+        } /* loop over gdx records */
+        break;
+      case GMS_DT_VAR:
+      case GMS_DT_EQU:
+        if (all != rSpec->dField) {
+          double defVal = getDefRec (symType, symUser, rSpec->dField);
+
+          for (nnz = 0, iRec = 0;  iRec < nRecs;  iRec++) {
+            gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+            if (squeezeDef && (defVal == values[rSpec->dField]))
+              continue;
+            foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
+            if (foundTuple) {
+              nnz++;
+              if (nnz >= nnzMax) {
+                break;
+              }
+            }
+          } /* loop over GDX records */
         }
-      } /* loop over gdx records */
+        else {                /* all == rSpec->dField */
+          for (kRec = 0, iRec = 0;  iRec < nRecs;  iRec++) {
+            gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+            /* for now assume no filtering when field==all */
+            foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
+            if (foundTuple) {
+              nnz++;
+              if (nnz >= nnzMax) {
+                break;
+              }
+            }
+          } /* loop over GDX records */
+        }   /* if (all != field) .. else ..  */
+        break;
+      default:
+        error("Unrecognized type of symbol found.");
+      } /* end switch(symType) */
       if (!gdxDataReadDone (gdxHandle)) {
         error ("Could not gdxDataReadDone");
       }
 
+      mrows = nnz;
+      if ((symType == GMS_DT_VAR || symType == GMS_DT_EQU))
+        if (all == rSpec->dField)
+          mrows *= 5;           /* l,m,lo,up,scale */
+
       /* Allocating memory for 2D sparse matrix */
-      PROTECT(outValSp = allocMatrix(REALSXP, nnz, ncols));
+      PROTECT(outValSp = allocMatrix(REALSXP, mrows, ncols));
       rgdxAlloc++;
       p = REAL(outValSp);
 
@@ -662,42 +716,114 @@ SEXP rgdx (SEXP args)
         }
       } /* if rSpec->te */
       else {
-        double defVal = getDefRec (symType, symUser, rSpec->dField);
-
-        gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
         prepHPFilter (symDim, hpFilter);
-        for (matched = 0, iRec = 0;  iRec < nRecs;  iRec++) {
-          gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
-          if (squeezeDef && (defVal == values[rSpec->dField]))
-            continue;
-          foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
-          if (foundTuple) {
-            for (iDim = 0;  iDim < symDim;  iDim++) {
-              p[matched + iDim*nnz] = outIdx[iDim];
-            }
-            index = matched + symDim * nnz;
-            matched++;
-
-            if (symType != GMS_DT_SET) {
-              if (all == rSpec->dField) {
-                error ("field='all' not yet implemented: 100");
-              }
-              else {
-                p[index] = values[rSpec->dField];
-              }
-            }
-          } /* if foundTuple */
-          if (matched == nnz) {
-            break;
+        gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
+        switch (symType) {
+        case GMS_DT_SET:
+          /* at some point, put the rSpec->te stuff in here instead of above this */
+          if (rSpec->te) {
+            error ("filtered set read: rSpec->te already handled above");
           }
-        } /* loop over GDX records */
+          for (matched = 0, iRec = 0;  iRec < nRecs;  iRec++) {
+            gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+            /* no squeeze for a set */
+            foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
+            if (foundTuple) {
+              for (iDim = 0;  iDim < symDim;  iDim++) {
+                p[matched + iDim*nnz] = outIdx[iDim];
+              }
+              matched++;
+              if (matched == nnz)
+                break;
+            } /* if foundTuple */
+          } /* loop over GDX records */
+          break;
+        case GMS_DT_PAR:
+          for (matched = 0, iRec = 0;  iRec < nRecs;  iRec++) {
+            gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+            if (squeezeDef && (0 == values[GMS_VAL_LEVEL]))
+              continue;
+            foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
+            if (foundTuple) {
+              for (iDim = 0;  iDim < symDim;  iDim++) {
+                p[matched + iDim*nnz] = outIdx[iDim];
+              }
+              index = matched + symDim * nnz;
+              p[index] = values[GMS_VAL_LEVEL];
+              matched++;
+              if (matched == nnz)
+                break;
+            } /* if foundTuple */
+          } /* loop over GDX records */
+          break;
+        case GMS_DT_VAR:
+        case GMS_DT_EQU:
+          if (all != rSpec->dField) {
+            double defVal = getDefRec (symType, symUser, rSpec->dField);
+
+            for (matched = 0, iRec = 0;  iRec < nRecs;  iRec++) {
+              gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+              if (squeezeDef && (defVal == values[rSpec->dField]))
+                continue;
+              foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
+              if (foundTuple) {
+                for (iDim = 0;  iDim < symDim;  iDim++) {
+                  p[matched + iDim*nnz] = outIdx[iDim];
+                }
+                index = matched + symDim * nnz;
+                p[index] = values[rSpec->dField];
+                matched++;
+                if (matched == nnz)
+                  break;
+              } /* if foundTuple */
+            } /* loop over GDX records */
+          }
+          else {                /* all == rSpec->dField */
+            for (matched = 0, kRec = 0, iRec = 0;  iRec < nRecs;  iRec++) {
+              gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
+              /* for now assume no filtering when field==all */
+              foundTuple = findInHPFilter (symDim, uels, hpFilter, outIdx);
+              if (foundTuple) {
+                for (index = kRec, kk = 0;  kk < symDim;  kk++) {
+                  p[index+GMS_VAL_LEVEL   ] = outIdx[kk];
+                  p[index+GMS_VAL_MARGINAL] = outIdx[kk];
+                  p[index+GMS_VAL_LOWER   ] = outIdx[kk];
+                  p[index+GMS_VAL_UPPER   ] = outIdx[kk];
+                  p[index+GMS_VAL_SCALE   ] = outIdx[kk];
+                  index += mrows;
+                }
+                p[index+GMS_VAL_LEVEL   ] = 1 + GMS_VAL_LEVEL;
+                p[index+GMS_VAL_MARGINAL] = 1 + GMS_VAL_MARGINAL;
+                p[index+GMS_VAL_LOWER   ] = 1 + GMS_VAL_LOWER;
+                p[index+GMS_VAL_UPPER   ] = 1 + GMS_VAL_UPPER;
+                p[index+GMS_VAL_SCALE   ] = 1 + GMS_VAL_SCALE;
+                index += mrows;
+                p[index+GMS_VAL_LEVEL   ] = values[GMS_VAL_LEVEL];
+                p[index+GMS_VAL_MARGINAL] = values[GMS_VAL_MARGINAL];
+                p[index+GMS_VAL_LOWER   ] = values[GMS_VAL_LOWER];
+                p[index+GMS_VAL_UPPER   ] = values[GMS_VAL_UPPER];
+                p[index+GMS_VAL_SCALE   ] = values[GMS_VAL_SCALE];
+                kRec += GMS_VAL_MAX;
+                matched++;
+                if (matched == nnz)
+                  break;
+              } /* if foundTuple */
+            } /* loop over GDX records */
+          }   /* if (all != field) .. else ..  */
+          break;
+        default:
+          error("Unrecognized type of symbol found.");
+        } /* end switch(symType) */
         if (!gdxDataReadDone (gdxHandle)) {
           error ("Could not gdxDataReadDone");
         }
+        if (matched != nnz)
+          error ("mismatch after filtered read: matched = %d  nnz = %d", matched, nnz);
       } /* if (te) .. else .. */
     }   /* if withUel */
     else {
       /* read without user UEL filter: use domain info to filter if possible */
+      reuseFilter = 0;
       mrows = symNNZ;
       /*  check for non zero elements for variable and equation */
       if ((symType == GMS_DT_VAR || symType == GMS_DT_EQU)) {
@@ -715,6 +841,8 @@ SEXP rgdx (SEXP args)
       p = REAL(outValSp);
 
       mkXPFilter (symIdx, useDomInfo, xpFilter, outDomains);
+      if (symDimX > symDim)
+        SET_STRING_ELT(outDomains, iDim, mkChar("_field"));
 
       kRec = 0;                 /* shut up warnings */
       gdxDataReadRawStart (gdxHandle, symIdx, &nRecs);
@@ -864,15 +992,26 @@ SEXP rgdx (SEXP args)
       for (iDim = 0;  iDim < symDim;  iDim++) {
         SET_STRING_ELT(outDomains, iDim, mkChar("_compressed"));
       }
+      if (symDimX > symDim) {
+        SET_VECTOR_ELT(outUels, iDim, fieldUels);
+        SET_STRING_ELT(outDomains, iDim, mkChar("_field"));
+      }
     }
     else if (! rSpec->withUel) {
       PROTECT(outUels = allocVector(VECSXP, symDimX));
       rgdxAlloc++;
       xpFilterToUels (symDim, xpFilter, universe, outUels);
+      if (symDimX > symDim)
+        SET_VECTOR_ELT(outUels, iDim, fieldUels);
     }
-    if (all == rSpec->dField) {
-      SET_VECTOR_ELT(outUels, symDim, fieldUels);
-      SET_STRING_ELT(outDomains, symDim, mkChar("_field"));
+    else if (! reuseFilter) {
+      /* if we got here, we have a UEL filter from the user but must copy it */
+      PROTECT(outUels = allocVector(VECSXP, symDimX));
+      rgdxAlloc++;
+      for (iDim = 0;  iDim < symDim;  iDim++) {
+        SET_VECTOR_ELT(outUels, iDim, VECTOR_ELT(rSpec->filterUel, iDim));
+      }
+      SET_VECTOR_ELT(outUels, iDim, fieldUels);
     }
 
     /* Converting sparse data into full matrix */
@@ -1153,7 +1292,7 @@ SEXP rgdx (SEXP args)
       SET_VECTOR_ELT(outList, iElement, outValSp);    iElement++;
     }
     SET_VECTOR_ELT(outList, iElement, outForm);       iElement++;
-    if (rSpec->withUel) {
+    if (reuseFilter) {
       SET_VECTOR_ELT(outList, iElement, rSpec->filterUel);  iElement++;
     }
     else {
