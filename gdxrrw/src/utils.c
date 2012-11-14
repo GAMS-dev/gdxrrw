@@ -1035,11 +1035,7 @@ sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
   double defVal;           /* default value - may be nonzero */
   double *p, *pFull;
   int index;
-#if 1
   int ii;
-#else
-  int stride;
-#endif
 
   pFull = REAL(fullVal);
   fullLen = length(fullVal);
@@ -1078,20 +1074,11 @@ sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
            fullCard, fullLen);
 
   for (iRec = 0;  iRec < nRec;  iRec++) {
-#if 0
-    index = 0;
-    stride = 1;              /* something like Horner's method here */
-    for (k = 0; k < symDim; k++) {
-      index = index + (p[iRec + nRec*k] - 1)*stride;
-      stride *= card[k];
-    }
-#else
     ii = iRec + nRec*(symDim-1);
     for (index = p[ii]-1, k = symDim-2;  k >= 0;  k--) {
       ii -= nRec;
       index = (index * card[k]) + p[ii] - 1;
     }
-#endif
     if (symType != GMS_DT_SET) {
       pFull[index] = p[iRec + nRec*symDim];
     }
@@ -1105,6 +1092,9 @@ sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
 double
 getDefRecVar (int subType, dField_t dField)
 {
+  if (all == dField)
+    error ("dField = all passed to getDefRecVar: internal error");
+
   if (scale == dField)
     return 1;
 
