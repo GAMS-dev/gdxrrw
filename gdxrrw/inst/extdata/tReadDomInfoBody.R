@@ -228,7 +228,7 @@ cwant <- list(name="c", type="set", dim=1L,
               ts='cities',
               te=cText)
 c <- rgdx(fnIn,list(name='c',form='sparse',uels=list(u),te=TRUE,ts=TRUE),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (c, cwant)
+chk <- chkRgdxRes (c, cwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(c,filtered,uncompressed) failed",chk$msg))
 }
@@ -241,7 +241,7 @@ ijwant <- list(name="IJ", type="set", dim=2L,
                ts='',
                te=c("two.two", "two.three", "three.three"))
 ij <- rgdx(fnIn,list(name='ij',form='sparse',uels=list(ifUels,jfUels),te=TRUE,ts=TRUE),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (ij, ijwant)
+chk <- chkRgdxRes (ij, ijwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(ij,filtered,uncompressed) failed",chk$msg))
 }
@@ -254,7 +254,7 @@ ijcwant <- list(name="IJc", type="set", dim=3L,
                 domains=c("_user","_user","_user"),
                 te=c("deux deux orly", "deux trois orly", "drei drei schwechat"))
 ijc <- rgdx(fnIn,list(name='ijc',form='sparse',uels=list(ifUels,jfUels,u),te=TRUE),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (ijc, ijcwant)
+chk <- chkRgdxRes (ijc, ijcwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(ijc,filtered,uncompressed) failed",chk$msg))
 }
@@ -268,7 +268,7 @@ aicwant <- list(name="AIc", type="parameter", dim=2L,
                 uels=list(ifUels,u),
                 domains=c("_user","_user") )
 aic <- rgdx(fnIn,list(name='aic',form='sparse',uels=list(ifUels,u)),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (aic, aicwant)
+chk <- chkRgdxRes (aic, aicwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(aic,filtered,uncompressed) failed",chk$msg))
 }
@@ -282,53 +282,53 @@ aijcwant <- list(name="AIJc", type="parameter", dim=3L,
                 uels=list(ifUels,jfUels,u),
                 domains=c("_user","_user","_user") )
 aijc <- rgdx(fnIn,list(name='aijc',form='sparse',uels=list(ifUels,jfUels,u)),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (aijc, aijcwant)
+chk <- chkRgdxRes (aijc, aijcwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(aijc,filtered,uncompressed) failed",chk$msg))
 }
 
 ## ---------- reading form=full, no filter, no compress
 
-v <- array(0,c(uCard,1))
+v <- array(0,c(uCard,1),dimnames=list(u))
 v[(1:iCard)] <- 1
-te <- array("",c(uCard,1))
+te <- array("",c(uCard,1),dimnames=list(u))
 te[(1:iCard)] <- iText
 iwant <- list(name="I", type="set", dim=1L,
               val=v,
               form="full",
               uels=list(u), domains=c("*"), te=te)
 i <- rgdx(fnIn,list(name='i',form='full',te=TRUE),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (i, iwant)
+chk <- chkRgdxRes (i, iwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(i,full,unfiltered,uncompressed) failed",chk$msg))
 }
 
 jblock <- iCard + (1:jCard)
-v <- array(0,c(uCard,1))
+v <- array(0,c(uCard,1),dimnames=list(u))
 v[jblock] <- 1
-te <- array("",c(uCard,1))
+te <- array("",c(uCard,1),dimnames=list(u))
 te[jblock] <- jText
 jwant <- list(name="J", type="set", dim=1L,
               val=v,
               form="full",
               uels=list(u), domains=c("*"), te=te)
 j <- rgdx(fnIn,list(name='j',form='full',te=TRUE),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (j, jwant)
+chk <- chkRgdxRes (j, jwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(j,full,unfiltered,uncompressed) failed",chk$msg))
 }
 
 cblock <- iCard + jCard + (1:cCard)
-v <- array(0,c(uCard,1))
+v <- array(0,c(uCard,1),dimnames=list(u))
 v[cblock] <- 1
-te <- array("",c(uCard,1))
+te <- array("",c(uCard,1),dimnames=list(u))
 te[cblock] <- cText
 cwant <- list(name="c", type="set", dim=1L,
               val=v,
               form="full",
               uels=list(u), domains=c("*"), te=te)
 c <- rgdx(fnIn,list(name='c',form='full',te=TRUE),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (c, cwant)
+chk <- chkRgdxRes (c, cwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(c,full,unfiltered,uncompressed) failed",chk$msg))
 }
@@ -354,7 +354,7 @@ ijwant <- list(name="IJ", type="set", dim=2L,
                ts='',
                te=te)
 ij <- rgdx(fnIn,list(name='ij',form='full',te=TRUE,ts=TRUE),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (ij, ijwant)
+chk <- chkRgdxRes (ij, ijwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(ij,full,unfiltered,uncompressed) failed",chk$msg))
 }
@@ -377,7 +377,7 @@ ijcwant <- list(name="IJc", type="set", dim=3L,
                 uels=list(u,u,u), domains=c("*","*","*"),
                 te=te)
 ijc <- rgdx(fnIn,list(name='ijc',form='full',te=TRUE),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (ijc, ijcwant)
+chk <- chkRgdxRes (ijc, ijcwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(ijc,full,unfiltered,uncompressed) failed",chk$msg))
 }
@@ -393,7 +393,7 @@ aicwant <- list(name="AIc", type="parameter", dim=2L,
                 form="full",
                 uels=list(u,u), domains=c("*","*"))
 aic <- rgdx(fnIn,list(name='aic',form='full'),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (aic, aicwant)
+chk <- chkRgdxRes (aic, aicwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(aic,full,unfiltered,uncompressed) failed",chk$msg))
 }
@@ -409,28 +409,28 @@ aijcwant <- list(name="AIJc", type="parameter", dim=3L,
                 form="full",
                 uels=list(u,u,u), domains=c("*","*","*"))
 aijc <- rgdx(fnIn,list(name='aijc',form='full'),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (aijc, aijcwant)
+chk <- chkRgdxRes (aijc, aijcwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(aijc,full,unfiltered,uncompressed) failed",chk$msg))
 }
 
 ## ---------- reading form=full, no filter, compress=TRUE
 
-v <- array(1,c(iCard,1))
-te <- array("",c(iCard,1))
+v <- array(1,c(iCard,1),dimnames=list(iUels))
+te <- array("",c(iCard,1),dimnames=list(iUels))
 te[(1:iCard)] <- iText
 iwant <- list(name="I", type="set", dim=1L,
               val=v,
               form="full",
               uels=list(iUels), domains=c("_compressed"), te=te)
 i <- rgdx(fnIn,list(name='i',form='full',te=TRUE,compress=TRUE),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (i, iwant)
+chk <- chkRgdxRes (i, iwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(i,full,unfiltered,compressed) failed",chk$msg))
 }
 
-v <- array(1,c(jCard,1))
-te <- array("",c(jCard,1))
+v <- array(1,c(jCard,1),dimnames=list(jUels))
+te <- array("",c(jCard,1),dimnames=list(jUels))
 te[(1:jCard)] <- jText
 jwant <- list(name="J", type="set", dim=1L,
               val=v,
@@ -438,13 +438,13 @@ jwant <- list(name="J", type="set", dim=1L,
               uels=list(jUels), domains=c("_compressed"),
               te=te)
 j <- rgdx(fnIn,list(name='j',form='full',te=TRUE,compress=TRUE),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (j, jwant)
+chk <- chkRgdxRes (j, jwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(j,full,unfiltered,compressed) failed",chk$msg))
 }
 
-v <- array(1,c(cCard,1))
-te <- array("",c(cCard,1))
+v <- array(1,c(cCard,1),dimnames=list(cUels))
+te <- array("",c(cCard,1),dimnames=list(cUels))
 te[(1:cCard)] <- cText
 cwant <- list(name="c", type="set", dim=1L,
               val=v,
@@ -452,7 +452,7 @@ cwant <- list(name="c", type="set", dim=1L,
               uels=list(cUels), domains=c("_compressed"),
               te=te)
 c <- rgdx(fnIn,list(name='c',form='full',te=TRUE,compress=TRUE),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (c, cwant)
+chk <- chkRgdxRes (c, cwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(c,full,unfiltered,compressed) failed",chk$msg))
 }
@@ -477,7 +477,7 @@ ijwant <- list(name="IJ", type="set", dim=2L,
                ts='',
                te=te)
 ij <- rgdx(fnIn,list(name='ij',form='full',te=TRUE,ts=TRUE,compress=TRUE),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (ij, ijwant)
+chk <- chkRgdxRes (ij, ijwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(ij,full,unfiltered,compressed) failed",chk$msg))
 }
@@ -501,7 +501,7 @@ ijcwant <- list(name="IJc", type="set", dim=3L,
                 domains=c("_compressed","_compressed","_compressed"),
                 te=te)
 ijc <- rgdx(fnIn,list(name='ijc',form='full',te=TRUE,compress=TRUE),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (ijc, ijcwant)
+chk <- chkRgdxRes (ijc, ijcwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(ijc,full,unfiltered,compressed) failed",chk$msg))
 }
@@ -519,7 +519,7 @@ aicwant <- list(name="AIc", type="parameter", dim=2L,
                 domains=c("_compressed","_compressed"),
                 ts='')
 aic <- rgdx(fnIn,list(name='aic',form='full',ts=TRUE,compress=TRUE),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (aic, aicwant)
+chk <- chkRgdxRes (aic, aicwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(aic,full,unfiltered,compressed) failed",chk$msg))
 }
@@ -536,28 +536,28 @@ aijcwant <- list(name="AIJc", type="parameter", dim=3L,
                 uels=list(i2uels,jUels,cUels),
                 domains=c("_compressed","_compressed","_compressed") )
 aijc <- rgdx(fnIn,list(name='aijc',form='full',compress=TRUE),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (aijc, aijcwant)
+chk <- chkRgdxRes (aijc, aijcwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(aijc,full,unfiltered,compressed) failed",chk$msg))
 }
 
 ## ---------- reading form=full, filtered, no compress
 
-v <- array(1,c(ifCard,1))
-te <- array("",c(ifCard,1))
+v <- array(1,c(ifCard,1),dimnames=list(ifUels))
+te <- array("",c(ifCard,1),dimnames=list(ifUels))
 te[(1:ifCard)] <- ifText
 iwant <- list(name="I", type="set", dim=1L,
               val=v,
               form="full",
               uels=list(ifUels), domains=c("_user"), te=te)
 i <- rgdx(fnIn,list(name='i',form='full',uels=list(ifUels),te=TRUE),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (i, iwant)
+chk <- chkRgdxRes (i, iwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(i,full,filtered,uncompressed) failed",chk$msg))
 }
 
-v <- array(1,c(jfCard,1))
-te <- array("",c(jfCard,1))
+v <- array(1,c(jfCard,1),dimnames=list(jfUels))
+te <- array("",c(jfCard,1),dimnames=list(jfUels))
 te[(1:jfCard)] <- jfText
 jwant <- list(name="J", type="set", dim=1L,
               val=v,
@@ -566,15 +566,15 @@ jwant <- list(name="J", type="set", dim=1L,
               domains=c("_user"),
               te=te)
 j <- rgdx(fnIn,list(name='j',form='full',te=TRUE,uels=list(jfUels)),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (j, jwant)
+chk <- chkRgdxRes (j, jwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(j,full,filtered,uncompressed) failed",chk$msg))
 }
 
 cblock <- iCard + jCard + (1:cCard)
-v <- array(0,c(uCard,1))
+v <- array(0,c(uCard,1),dimnames=list(u))
 v[cblock] <- 1
-te <- array("",c(uCard,1))
+te <- array("",c(uCard,1),dimnames=list(u))
 te[cblock] <- cText
 cwant <- list(name="c", type="set", dim=1L,
               val=v,
@@ -584,7 +584,7 @@ cwant <- list(name="c", type="set", dim=1L,
               ts='cities',
               te=te)
 c <- rgdx(fnIn,list(name='c',form='full',uels=list(u),te=TRUE,ts=TRUE),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (c, cwant)
+chk <- chkRgdxRes (c, cwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(c,full,filtered,uncompressed) failed",chk$msg))
 }
@@ -605,7 +605,7 @@ ijwant <- list(name="IJ", type="set", dim=2L,
                ts='',
                te=te)
 ij <- rgdx(fnIn,list(name='ij',form='full',te=TRUE,ts=TRUE,uels=list(ifUels,jfUels)),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (ij, ijwant)
+chk <- chkRgdxRes (ij, ijwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(ij,full,filtered,uncompressed) failed",chk$msg))
 }
@@ -625,7 +625,7 @@ ijcwant <- list(name="IJc", type="set", dim=3L,
                 domains=c("_user","_user","_user"),
                 te=te)
 ijc <- rgdx(fnIn,list(name='ijc',form='full',te=TRUE,uels=list(ifUels,jfUels,u)),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (ijc, ijcwant)
+chk <- chkRgdxRes (ijc, ijcwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(ijc,full,filtered,uncompressed) failed",chk$msg))
 }
@@ -641,7 +641,7 @@ aicwant <- list(name="AIc", type="parameter", dim=2L,
                 domains=c("_user","_user"),
                 ts='')
 aic <- rgdx(fnIn,list(name='aic',form='full',ts=TRUE,uels=list(ifUels,u)),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (aic, aicwant)
+chk <- chkRgdxRes (aic, aicwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(aic,full,filtered,uncompressed) failed",chk$msg))
 }
@@ -657,7 +657,7 @@ aijcwant <- list(name="AIJc", type="parameter", dim=3L,
                 domains=c("_user","_user","_user"),
                 ts='')
 aijc <- rgdx(fnIn,list(name='aijc',form='full',ts=TRUE,uels=list(ifUels,jfUels,cUels)),useDomInfo=useDomInfo)
-chk <- chkRgdxRes (aijc, aijcwant)
+chk <- chkRgdxRes (aijc, aijcwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(aijc,full,filtered,uncompressed) failed",chk$msg))
 }
