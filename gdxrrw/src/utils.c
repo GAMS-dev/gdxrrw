@@ -1022,7 +1022,7 @@ makeStrVec (SEXP outExp, SEXP inExp)
  * spVal: input .val matrix in sparse form
  * fullVal: output .val matrix in full form
  * uelLists: .uels for symbol
- * 
+ * N.B.: R stores matrices column-wise, i.e. left index moving fastest
  */
 void
 sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
@@ -1039,53 +1039,95 @@ sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
 
   pFull = REAL(fullVal);
   fullLen = length(fullVal);
+  p = REAL(spVal);
 
-  /* step 1: loop over full matrix and initialize every value */
-  defVal = 0;
   switch (symType) {
+  case GMS_DT_SET:
+    /* step 1: initialize full matrix */
+    (void) memset (pFull, 0, fullLen * sizeof(*pFull));
+    /* step 2: loop over each row/nonzero of sparse matrix to populate full matrix */
+    fullCard = 1;
+    for (k = 0;  k < symDim;  k++) {
+      card[k] = length(VECTOR_ELT(uelLists, k)); /* number of elements in dim k */
+      fullCard *= card[k];
+    }
+    if (fullCard != fullLen)
+      error ("sparseToFull: unexpected inputs:  fullCard=%d  fullLen=%d",
+             fullCard, fullLen);
+
+    for (iRec = 0;  iRec < nRec;  iRec++) {
+      ii = iRec + nRec*(symDim-1);
+      for (index = p[ii]-1, k = symDim-2;  k >= 0;  k--) {
+        ii -= nRec;
+        index = (index * card[k]) + p[ii] - 1;
+      }
+      pFull[index] = 1;
+    } /* end loop over nonzeros */
+    break;
+  case GMS_DT_PAR:
+    /* step 1: initialize full matrix */
+    (void) memset (pFull, 0, fullLen * sizeof(*pFull));
+    /* step 2: loop over each row/nonzero of sparse matrix to populate full matrix */
+    fullCard = 1;
+    for (k = 0;  k < symDim;  k++) {
+      card[k] = length(VECTOR_ELT(uelLists, k)); /* number of elements in dim k */
+      fullCard *= card[k];
+    }
+    if (fullCard != fullLen)
+      error ("sparseToFull: unexpected inputs:  fullCard=%d  fullLen=%d",
+             fullCard, fullLen);
+
+    for (iRec = 0;  iRec < nRec;  iRec++) {
+      ii = iRec + nRec*(symDim-1);
+      for (index = p[ii]-1, k = symDim-2;  k >= 0;  k--) {
+        ii -= nRec;
+        index = (index * card[k]) + p[ii] - 1;
+      }
+      pFull[index] = p[iRec + nRec*symDim];
+    } /* end loop over nonzeros */
+    break;
   case GMS_DT_VAR:
-    defVal = getDefRecVar (symSubType, dField);
+    if (all == dField) {
+      error  ("sparseToFull VAR all fields: not yet implemented");
+    }
+    else {                      /* all != dField */
+      /* step 1: initialize full matrix */
+      defVal = getDefRecVar (symSubType, dField);
+      if (0 == defVal) {
+        (void) memset (pFull, 0, fullLen * sizeof(*pFull));
+      }
+      else {
+        for (k = 0;  k < fullLen;  k++)
+          pFull[k] = defVal;
+      }
+      /* step 2: loop over each row/nonzero of sparse matrix to populate full matrix */
+      fullCard = 1;
+      for (k = 0;  k < symDim;  k++) {
+        card[k] = length(VECTOR_ELT(uelLists, k)); /* number of elements in dim k */
+        fullCard *= card[k];
+      }
+      if (fullCard != fullLen)
+        error ("sparseToFull: unexpected inputs:  fullCard=%d  fullLen=%d",
+               fullCard, fullLen);
+
+      for (iRec = 0;  iRec < nRec;  iRec++) {
+        ii = iRec + nRec*(symDim-1);
+        for (index = p[ii]-1, k = symDim-2;  k >= 0;  k--) {
+          ii -= nRec;
+          index = (index * card[k]) + p[ii] - 1;
+        }
+        pFull[index] = p[iRec + nRec*symDim];
+      } /* end loop over nonzeros */
+    } /* if all == dField .. else .. */
     break;
   case GMS_DT_EQU:
     /* defVal = gmsDefRecEqu[symSubType][dField]; */
     error  ("not implemented");
     break;
+  default:
+    error("Unrecognized type of symbol found.");
   } /* end switch */
 
-  if (0 == defVal) {
-    (void) memset (pFull, 0, fullLen * sizeof(*pFull));
-  }
-  else {
-    for (k = 0;  k < fullLen;  k++) {
-      pFull[k] = defVal;
-    }
-  }
-
-  /* N.B.: R stores matrices column-wise, i.e. left index moving fastest */
-  /* step 2: loop over each row/nonzero of sparse matrix to populate full matrix */
-  p = REAL(spVal);
-  fullCard = 1;
-  for (k = 0;  k < symDim;  k++) {
-    card[k] = length(VECTOR_ELT(uelLists, k)); /* number of elements in dim k */
-    fullCard *= card[k];
-  }
-  if (fullCard != fullLen)
-    error ("sparseToFull: unexpected inputs:  fullCard=%d  fullLen=%d",
-           fullCard, fullLen);
-
-  for (iRec = 0;  iRec < nRec;  iRec++) {
-    ii = iRec + nRec*(symDim-1);
-    for (index = p[ii]-1, k = symDim-2;  k >= 0;  k--) {
-      ii -= nRec;
-      index = (index * card[k]) + p[ii] - 1;
-    }
-    if (symType != GMS_DT_SET) {
-      pFull[index] = p[iRec + nRec*symDim];
-    }
-    else {
-      pFull[index] = 1;
-    }
-  }
   return;
 } /* sparseToFull */
 
