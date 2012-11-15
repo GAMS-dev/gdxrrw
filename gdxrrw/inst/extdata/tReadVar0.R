@@ -601,14 +601,61 @@ tryCatch({
   t['s' ] <- 10
   xwantA <- list(name='xpos0', type='variable', dim=0L,
                  val=t,
-                 form='full', uels=list(), domains=userDomf,
+                 form='full', uels=list(fields), domains=userDomf,
                  field='all',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
-#  x <- rgdx(fnIn,list(name='xpos0',form='full',field='all'))
-#  chk <- chkRgdxRes (x, xwantL, T, reqIdent=reqIdent)
-#  if (!chk$same) {
-#    stop (paste("test rgdx(xpos0,'all',full,unfiltered) failed",chk$msg))
-#  }
+  x <- rgdx(fnIn,list(name='xpos0',form='full',field='all'))
+  chk <- chkRgdxRes (x, xwantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(xpos0,'all',full,unfiltered) failed",chk$msg))
+  }
+  x <- rgdx(fnIn,list(name='xpos0',form='full',field='all'),squeeze=F)
+  chk <- chkRgdxRes (x, xwantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(xpos0,'all',full,unfiltered,squeeze=F) failed",chk$msg))
+  }
+  t <- array(0,c(nFields),dimnames=list(fields))
+  t['l' ] <- 1
+  t['m' ] <- 0.5
+  t['lo'] <- 1
+  t['up'] <- 1
+  t['s' ] <- 1
+  ywantA <- list(name='y0', type='variable', dim=0L,
+                 val=t,
+                 form='full', uels=list(fields), domains=userDomf,
+                 field='all',
+                 varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+  y <- rgdx(fnIn,list(name='y0',form='full',field='all'))
+  chk <- chkRgdxRes (y, ywantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(y0,'all',full,unfiltered) failed",chk$msg))
+  }
+  y <- rgdx(fnIn,list(name='y0',form='full',field='all'),squeeze=F)
+  chk <- chkRgdxRes (y, ywantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(y0,'all',full,unfiltered,squeeze=F) failed",chk$msg))
+  }
+  t <- array(0,c(nFields),dimnames=list(fields))
+  t['l' ] <- 26
+  t['m' ] <- 0
+  t['lo'] <- -Inf
+  t['up'] <- +Inf
+  t['s' ] <- 1
+  zwantA <- list(name='z', type='variable', dim=0L,
+                 val=t,
+                 form='full', uels=list(fields), domains=userDomf,
+                 field='all',
+                 varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+  z <- rgdx(fnIn,list(name='z',form='full',field='all'))
+  chk <- chkRgdxRes (z, zwantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(z,'all',full,unfiltered) failed",chk$msg))
+  }
+  z <- rgdx(fnIn,list(name='z',form='full',field='all'),squeeze=F)
+  chk <- chkRgdxRes (z, zwantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(z,'all',full,unfiltered,squeeze=F) failed",chk$msg))
+  }
   # level
   xwantL <- list(name='xpos0', type='variable', dim=0L,
                  val=24,
