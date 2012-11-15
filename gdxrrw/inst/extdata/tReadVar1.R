@@ -13,8 +13,18 @@ reqIdent <- TRUE
 kUels <- c('k1', 'k2', 'k3', 'k4')
 kCard <- length(kUels)
 dom <- c('k')
+domf <- c('k','_field')
+fields <- c('l','m','lo','up','s')
+nFields <- length(fields)
 userDom <- c('_user')
+userDomf <- c('_user','_field')
 cart <- list(kUels)
+cartf <- list(kUels,fields)
+lev <- 1
+mar <- 2
+low <- 3
+upp <- 4
+sca <- 5
 
 tryCatch({
   print ("testing rgdx on 1-dim variable reads")
@@ -25,6 +35,62 @@ tryCatch({
   }
 
   ### ---------- reading form=sparse, no filter
+  # all
+  t <- matrix(c( 1, lev,   5
+                ,1, mar,   0
+                ,1, low,   5
+                ,1, upp,   5
+                ,1, sca,   1
+                ,2, lev,   0
+                ,2, mar,   1.5
+                ,2, low,   0
+                ,2, upp,   15
+                ,2, sca,   1
+                ,3, lev,   0
+                ,3, mar,   0
+                ,3, low,   0
+                ,3, upp,   15
+                ,3, sca,   1
+             ), nrow=15, ncol=3, byrow=T)
+  uwantA <- list(name='u', type='variable', dim=1L,
+                 val=t,
+                 form='sparse', uels=cartf, domains=domf,
+                 field='all', varTypeText="integer", typeCode=GMS_VARTYPE$INTEGER)
+  u <- rgdx(fnIn,list(name='u',form='sparse',field='ALL'))
+  chk <- chkRgdxRes (u, uwantA, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'all',unfiltered) failed",chk$msg))
+  }
+  u <- rgdx(fnIn,list(name='u',form='sparse',field='all'),squeeze=F)
+  chk <- chkRgdxRes (u, uwantA, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'all',unfiltered,squeeze=F) failed",chk$msg))
+  }
+  t <- matrix(c( 1, lev,   0
+                ,1, mar,   0
+                ,1, low,   -Inf
+                ,1, upp,   +Inf
+                ,1, sca,   1
+                ,2, lev,   -2
+                ,2, mar,   -20
+                ,2, low,   -2
+                ,2, upp,   -2
+                ,2, sca,   1
+             ), nrow=10, ncol=3, byrow=T)
+  vwantA <- list(name='v', type='variable', dim=1L,
+                 val=t,
+                 form='sparse', uels=cartf, domains=domf,
+                 field='all', varTypeText="negative", typeCode=GMS_VARTYPE$NEGATIVE)
+  v <- rgdx(fnIn,list(name='v',form='sparse',field='ALL'))
+  chk <- chkRgdxRes (v, vwantA, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(v,'all',unfiltered) failed",chk$msg))
+  }
+  v <- rgdx(fnIn,list(name='v',form='sparse',field='all'),squeeze=F)
+  chk <- chkRgdxRes (v, vwantA, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(v,'all',unfiltered,squeeze=F) failed",chk$msg))
+  }
   # level
   uwantL <- list(name='u', type='variable', dim=1L,
                  val=matrix(c( 1,   5), nrow=1, ncol=2, byrow=T),
@@ -148,7 +214,6 @@ tryCatch({
     stop (paste("test rgdx(v,'up',unfiltered,squeeze=F) failed",chk$msg))
   }
   # scale
-  
   uwantS <- list(name='u', type='variable', dim=1L,
                  val=matrix(0,nrow=0, ncol=2, byrow=T),
                  form='sparse', uels=cart, domains=dom,
@@ -181,6 +246,33 @@ tryCatch({
   }
 
   ### ---------- reading form=sparse, filtered
+  # all
+  f <- list(c('k1','k3','k4'))
+  t <- matrix(c( 1, lev,   5
+                ,1, mar,   0
+                ,1, low,   5
+                ,1, upp,   5
+                ,1, sca,   1
+                ,2, lev,   0
+                ,2, mar,   0
+                ,2, low,   0
+                ,2, upp,   15
+                ,2, sca,   1
+             ), nrow=10, ncol=3, byrow=T)
+  uwantA <- list(name='u', type='variable', dim=1L,
+                 val=t,
+                 form='sparse', uels=list(f[[1]],fields), domains=userDomf,
+                 field='all', varTypeText="integer", typeCode=GMS_VARTYPE$INTEGER)
+  u <- rgdx(fnIn,list(name='u',form='sparse',uels=f,field='all'))
+  chk <- chkRgdxRes (u, uwantA, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'all',filtered) failed",chk$msg))
+  }
+  u <- rgdx(fnIn,list(name='u',field='all',form='sparse',uels=f),squeeze=F)
+  chk <- chkRgdxRes (u, uwantA, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'all',filtered,squeeze=F) failed",chk$msg))
+  }
   # level
   f <- list(c('k1','k3','k4'))
   uwantL <- list(name='u', type='variable', dim=1L,
@@ -348,6 +440,52 @@ tryCatch({
   }
 
   ### ---------- reading form=full, no filter
+  # all
+  t <- array(0,c(kCard,nFields),dimnames=cartf)
+  t[    ,'up'] <- 100
+  t[    ,'s' ] <- 1
+  t['k1','l' ] <- 5
+  t['k1','lo'] <- 5
+  t['k1','up'] <- 5
+  t['k2','m' ] <- 1.5
+  t['k2','up'] <- 15
+  t['k3','up'] <- 15
+  uwantA <- list(name='u', type='variable', dim=1L,
+                 val=t,
+                 form='full', uels=cartf, domains=domf,
+                 field='all', varTypeText="integer", typeCode=GMS_VARTYPE$INTEGER)
+  u <- rgdx(fnIn,list(name='u',form='full',field='aLL'))
+  chk <- chkRgdxRes (u, uwantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'all',full,unfiltered) failed",chk$msg))
+  }
+  u <- rgdx(fnIn,list(name='u',form='full',field='all'),squeeze=F)
+  chk <- chkRgdxRes (u, uwantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'all',full,unfiltered,squeeze=F) failed",chk$msg))
+  }
+  t <- array(0,c(kCard,nFields),dimnames=cartf)
+  t[    ,'lo'] <- -Inf
+  t[    ,'s' ] <- 1
+  t['k1','up'] <- Inf
+  t['k2','l' ] <- -2
+  t['k2','m' ] <- -20
+  t['k2','lo'] <- -2
+  t['k2','up'] <- -2
+  vwantA <- list(name='v', type='variable', dim=1L,
+                 val=t,
+                 form='full', uels=cartf, domains=domf,
+                 field='all', varTypeText="negative", typeCode=GMS_VARTYPE$NEGATIVE)
+  v <- rgdx(fnIn,list(field='all',name='v',form='full'))
+  chk <- chkRgdxRes (v, vwantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(v,'all',full,unfiltered) failed",chk$msg))
+  }
+  v <- rgdx(fnIn,list(name='v',form='full',field='all'),squeeze=F)
+  chk <- chkRgdxRes (v, vwantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(v,'all',full,unfiltered,squeeze=F) failed",chk$msg))
+  }
   # level
   t <- array(0,c(kCard,1),dimnames=cart)
   t['k1',1] <- 5
