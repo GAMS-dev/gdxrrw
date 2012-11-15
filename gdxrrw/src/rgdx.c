@@ -354,7 +354,7 @@ SEXP rgdx (SEXP args)
   char *types[] = {"set", "parameter", "variable", "equation"};
   char *forms[] = {"full", "sparse"};
   char *fields[] = {"l", "m", "lo", "up", "s", "all"};
-  int elementIndex, IDum, ndimension, totalElement;
+  int elementIndex, IDum, totalElement;
   int withList = 0;
   int outElements = 0;    /* count of elements in outList */
   int iElement;           /* index into outList, outListNames */
@@ -1128,30 +1128,27 @@ SEXP rgdx (SEXP args)
         rgdxAlloc++;
         totalElement = 1;
         dimVal = REAL(dimVect);
-        if (rSpec->withUel) {
-          if (all == rSpec->dField) {
-            error ("field='all' not yet implemented: 600");
+        if (reuseFilter) {
+          for (iDim = 0;  iDim < symDimX;  iDim++) {
+            dimVal[iDim] = length(VECTOR_ELT(rSpec->filterUel, iDim));
+            totalElement *= dimVal[iDim];
           }
-          for (ndimension = 0; ndimension < symDim; ndimension++) {
-            dimVal[ndimension] = length(VECTOR_ELT(rSpec->filterUel, ndimension));
-            totalElement *= dimVal[ndimension];
-          }
-        }
-        else {
-          for (ndimension = 0; ndimension < symDimX; ndimension++) {
-            dimVal[ndimension] = length(VECTOR_ELT(outUels, ndimension));
-            totalElement *= dimVal[ndimension];
-          }
-        }
-        PROTECT(outValFull = allocVector(REALSXP, totalElement));
-        rgdxAlloc++;
-        if (rSpec->withUel) {
-          sparseToFull (outValSp, outValFull, rSpec->filterUel, symType, symUser, rSpec->dField, nnz, symDim);
+          PROTECT(outValFull = allocVector(REALSXP, totalElement));
+          rgdxAlloc++;
+          sparseToFull (outValSp, outValFull, rSpec->filterUel, symType, symUser,
+                        rSpec->dField, nnz, symDimX);
           setAttrib(outValFull, R_DimSymbol, dimVect);
           setAttrib(outValFull, R_DimNamesSymbol, rSpec->filterUel);
         }
         else {
-          sparseToFull (outValSp, outValFull, outUels, symType, symUser, rSpec->dField, mrows, symDimX);
+          for (iDim = 0;  iDim < symDimX;  iDim++) {
+            dimVal[iDim] = length(VECTOR_ELT(outUels, iDim));
+            totalElement *= dimVal[iDim];
+          }
+          PROTECT(outValFull = allocVector(REALSXP, totalElement));
+          rgdxAlloc++;
+          sparseToFull (outValSp, outValFull, outUels, symType, symUser,
+                        rSpec->dField, mrows, symDimX);
           setAttrib(outValFull, R_DimSymbol, dimVect);
           setAttrib(outValFull, R_DimNamesSymbol, outUels);
         }
