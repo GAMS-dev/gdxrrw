@@ -168,6 +168,8 @@ chkRgdxRes <- function(f1, f2, checkDimNames=FALSE, reqIdent=FALSE) {
 
   isSparse <- TRUE
   isUniverse <- FALSE
+  isVar <- FALSE
+  isEqu <- FALSE
   symDim <- -1
 
   r <- list(same=FALSE,msg="not lists")
@@ -198,6 +200,10 @@ chkRgdxRes <- function(f1, f2, checkDimNames=FALSE, reqIdent=FALSE) {
   if ("type"       != f2Names[[2]])   return (r)
   if (f1Names[[2]] != f2Names[[2]])   return (r)
   if (f1[[2]] != f2[[2]])        return (r)
+  if (f1[[2]] == 'variable')
+    isVar = TRUE
+  if (f1[[2]] == 'equation')
+    isEqu = TRUE
 
   if (isUniverse) {
     ## universe set is special: no form, no vals, just uels are returned
@@ -242,12 +248,23 @@ chkRgdxRes <- function(f1, f2, checkDimNames=FALSE, reqIdent=FALSE) {
       if (! is.numeric(f1[[k]]))   return (r)
       if (! is.numeric(f2[[k]]))   return (r)
       if ((! isSparse) && (0 == symDim)) {
+        ## full form for scalars is slightly different
         if (! is.vector(f1[[k]]))   return (r)
         if (! is.vector(f2[[k]]))   return (r)
-        if (1 != length(f1[[k]]))   return (r)
-        if (1 != length(f2[[k]]))   return (r)
-        if (f1[[k]] == f2[[k]])  next
-        if (! isClose(f1[[k]],f2[[k]])) return (r)
+        if (isVar) {
+          if (5 != length(f1[[k]]))   return (r)
+          if (5 != length(f2[[k]]))   return (r)
+          for (kk in 1:5) {
+            if (f1[[k]][k] == f2[[k]][k])  next
+            if (! isClose(f1[[k]][k],f2[[k]][k])) return (r)
+          }
+        }
+        else {
+          if (1 != length(f1[[k]]))   return (r)
+          if (1 != length(f2[[k]]))   return (r)
+          if (f1[[k]] == f2[[k]])  next
+          if (! isClose(f1[[k]],f2[[k]])) return (r)
+        }
         next
       }
       if (! is.array(f1[[k]]))     return (r)
