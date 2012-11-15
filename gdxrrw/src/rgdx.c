@@ -1016,28 +1016,52 @@ SEXP rgdx (SEXP args)
 
     /* Converting sparse data into full matrix */
     if (rSpec->dForm == full) {
-      double *p0;
+      double *p0, *p1;
 
       switch (symDim) {
       case 0:
         if (all == rSpec->dField) {
-          error ("field='all' not yet implemented: 400");
-        }
-        PROTECT(outValFull = allocVector(REALSXP, 1));
-        rgdxAlloc++;
-        p0 = REAL(outValFull);
-        *p0 = getDefVal (symType, symUser, rSpec->dField);
-        if (rSpec->withUel) {
-          /* assume matched is always set for filtered reads */
-          /* if (outValSp != R_NilValue && (REAL(outValSp) != NULL)) { */
-          if (matched > 0) {
-            *p0 = REAL(outValSp)[0];
+          PROTECT(outValFull = allocVector(REALSXP, GMS_VAL_MAX));
+          rgdxAlloc++;
+          p0 = REAL(outValFull);
+          if (GMS_DT_VAR == symType)
+            getDefRecVar (symUser, p0);
+          else
+            error ("not yet implemented");
+          if (rSpec->withUel) {
+            /* assume matched is always set for filtered reads */
+            if (matched > 0) {
+              p1 = REAL(outValSp);
+              p1 += GMS_VAL_MAX; /* skip index column */
+              (void) memcpy (p0, p1, GMS_VAL_MAX * sizeof(double));
+            }
           }
+          else {
+            if (mrows > 0) {
+              p1 = REAL(outValSp);
+              p1 += GMS_VAL_MAX; /* skip index column */
+              (void) memcpy (p0, p1, GMS_VAL_MAX * sizeof(double));
+            }
+          }
+          setAttrib(outValFull, R_NamesSymbol, fieldUels);
         }
-        else {
-          if (mrows > 0)
-            *p0 = REAL(outValSp)[0];
-        }
+        else {                  /* all != dField */
+          PROTECT(outValFull = allocVector(REALSXP, 1));
+          rgdxAlloc++;
+          p0 = REAL(outValFull);
+          *p0 = getDefVal (symType, symUser, rSpec->dField);
+          if (rSpec->withUel) {
+            /* assume matched is always set for filtered reads */
+            /* if (outValSp != R_NilValue && (REAL(outValSp) != NULL)) { */
+            if (matched > 0) {
+              *p0 = REAL(outValSp)[0];
+            }
+          }
+          else {
+            if (mrows > 0)
+              *p0 = REAL(outValSp)[0];
+          }
+        } /* all != dField */
         /* sets cannot have symDim 0, so skip conversion of set text */
         break;
 
