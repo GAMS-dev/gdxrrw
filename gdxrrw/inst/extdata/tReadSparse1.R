@@ -32,6 +32,14 @@ xVals <- matrix(c(1,1, 50,
                   2,1, 275,
                   2,3, 275) , c(4,3), byrow=TRUE)
 
+fields <- c('l','m','lo','up','s')
+nFields <- length(fields)
+lev <- 1
+mar <- 2
+low <- 3
+upp <- 4
+sca <- 5
+
 tryCatch({
   print ("Test rgdx with defaults (form='sparse' and no filter)")
   print ("using the transport data as input")
@@ -133,7 +141,6 @@ tryCatch({
   }
   print ("Done reading parameter d")
 
-  x <- rgdx('trnsport',list(name='x'))
   xwant <- list(name="x", type="variable", dim=2L,
                 val=xVals,
                 form="sparse",
@@ -141,13 +148,57 @@ tryCatch({
                 domains=c("i","j"),
                 field="l",
                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+  x <- rgdx('trnsport',list(name='x'))
   chk <- chkRgdxRes (x, xwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(x,form='sparse') failed",chk$msg))
   }
+  t <- matrix(c( 1, 1, lev,   50
+                ,1, 1, mar,    0
+                ,1, 1, low,    0
+                ,1, 1, upp,  Inf
+                ,1, 1, sca,    1
+                ,1, 2, lev,  300
+                ,1, 2, mar,    0
+                ,1, 2, low,    0
+                ,1, 2, upp,  Inf
+                ,1, 2, sca,    1
+                ,1, 3, lev,    0
+                ,1, 3, mar,    0.036
+                ,1, 3, low,    0
+                ,1, 3, upp,  Inf
+                ,1, 3, sca,    1
+                ,2, 1, lev,  275
+                ,2, 1, mar,    0
+                ,2, 1, low,    0
+                ,2, 1, upp,  Inf
+                ,2, 1, sca,    1
+                ,2, 2, lev,    0
+                ,2, 2, mar,    0.00900000000000001
+                ,2, 2, low,    0
+                ,2, 2, upp,  Inf
+                ,2, 2, sca,    1
+                ,2, 3, lev,  275
+                ,2, 3, mar,    0
+                ,2, 3, low,    0
+                ,2, 3, upp,  Inf
+                ,2, 3, sca,    1
+               ), c(30,4), byrow=TRUE)
+  xwantA <- list(name="x", type="variable", dim=2L,
+                 val=t,
+                 form="sparse",
+                 uels=list(iUels,jUels,fields),
+                 domains=c("i","j","_field"),
+                 field="all",
+                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+  x <- rgdx('trnsport',list(name='x',field='all'))
+  # the marginals are not bit-exact, so not identical
+  chk <- chkRgdxRes (x, xwantA, reqIdent=F)
+  if (!chk$same) {
+    stop (paste("test rgdx(x,'all',form='sparse') failed",chk$msg))
+  }
   print ("Done reading variable x")
 
-  z <- rgdx('trnsport',list(name='z'))
   zwant <- list(name="z", type="variable", dim=0L,
                 val=matrix(153.675,c(1,1)),
                 form="sparse",
@@ -155,9 +206,28 @@ tryCatch({
                 domains=character(0),
                 field="l",
                 varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+  z <- rgdx('trnsport',list(name='z'))
   chk <- chkRgdxRes (z, zwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(z,form='sparse') failed",chk$msg))
+  }
+  t <- matrix(c( lev,  153.675
+                ,mar,  0
+                ,low,  -Inf
+                ,upp,  +Inf
+                ,sca,  1
+               ), nrow=nFields, ncol=2, byrow=T)
+  zwantA <- list(name="z", type="variable", dim=0L,
+                 val=t,
+                 form="sparse",
+                 uels=list(fields),
+                 domains=c('_field'),
+                 field="all",
+                 varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+  z <- rgdx('trnsport',list(name='z',field='all'))
+  chk <- chkRgdxRes (z, zwantA, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(z,'all',form='sparse') failed",chk$msg))
   }
   print ("Done reading variable z")
 
