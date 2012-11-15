@@ -656,6 +656,52 @@ tryCatch({
   }
 
   ### ---------- reading form=full, filtered
+  # all
+  fc <- c('k1','k3','k4')
+  t <- array(0,c(length(fc),nFields),dimnames=list(fc,fields))
+  t[    ,'up'] <- 100
+  t[    ,'s' ] <- 1
+  t['k1','l' ] <- 5
+  t['k1','lo'] <- 5
+  t['k1','up'] <- 5
+  t['k3','up'] <- 15
+  uwantA <- list(name='u', type='variable', dim=1L,
+                 val=t,
+                 form='full', uels=list(fc,fields), domains=userDomf,
+                 field='all', varTypeText="integer", typeCode=GMS_VARTYPE$INTEGER)
+  u <- rgdx(fnIn,list(name='u',form='full',uels=list(fc),field='all'))
+  chk <- chkRgdxRes (u, uwantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'all',full,filtered) failed",chk$msg))
+  }
+  u <- rgdx(fnIn,list(name='u',form='full',uels=list(fc),field='all'),squeeze=F)
+  chk <- chkRgdxRes (u, uwantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(u,'all',full,filtered,squeeze=F) failed",chk$msg))
+  }
+  fc <- c('k1','k2','k3','k4')
+  t <- array(0,c(length(fc),nFields),dimnames=list(fc,fields))
+  t[    ,'lo'] <- -Inf
+  t[    ,'s' ] <- 1
+  t['k1','up'] <- Inf
+  t['k2','l' ] <- -2
+  t['k2','m' ] <- -20
+  t['k2','lo'] <- -2
+  t['k2','up'] <- -2
+  vwantA <- list(name='v', type='variable', dim=1L,
+                 val=t,
+                 form='full', uels=list(fc,fields), domains=userDomf,
+                 field='all', varTypeText="negative", typeCode=GMS_VARTYPE$NEGATIVE)
+  v <- rgdx(fnIn,list(name='v',form='full',uels=list(fc),field='all'))
+  chk <- chkRgdxRes (v, vwantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(v,'all',full,filtered) failed",chk$msg))
+  }
+  v <- rgdx(fnIn,list(name='v',form='full',uels=list(fc),field='all'),squeeze=F)
+  chk <- chkRgdxRes (v, vwantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(v,'all',full,filtered,squeeze=F) failed",chk$msg))
+  }
   # level
   f <- list(c('k1','k3','k4'))
   t <- array(0,c(3,1),dimnames=f)

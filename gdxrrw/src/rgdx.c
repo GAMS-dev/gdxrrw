@@ -1059,13 +1059,16 @@ SEXP rgdx (SEXP args)
         totalElement = dimVal[1];
 
         if (rSpec->withUel) {
-          if (all == rSpec->dField) {
-            error ("field='all' not yet implemented: 500");
-          }
           dimVal[0] = length(VECTOR_ELT(rSpec->filterUel, 0));
-          PROTECT(outValFull = allocVector(REALSXP, dimVal[0]));
+          totalElement *= dimVal[0];
+          PROTECT(outValFull = allocVector(REALSXP, totalElement));
           rgdxAlloc++;
-          sparseToFull (outValSp, outValFull, rSpec->filterUel, symType, symUser, rSpec->dField, nnz, symDim);
+          if (reuseFilter)
+            sparseToFull (outValSp, outValFull, rSpec->filterUel, symType,
+                          symUser, rSpec->dField, mrows, symDimX);
+          else
+            sparseToFull (outValSp, outValFull, outUels, symType,
+                          symUser, rSpec->dField, mrows, symDimX);
           setAttrib(outValFull, R_DimSymbol, dimVect);
           SET_VECTOR_ELT(dimNames, 0, VECTOR_ELT(rSpec->filterUel, 0));
           setAttrib(outValFull, R_DimNamesSymbol, dimNames);
@@ -1075,7 +1078,8 @@ SEXP rgdx (SEXP args)
           totalElement *= dimVal[0];
           PROTECT(outValFull = allocVector(REALSXP, totalElement));
           rgdxAlloc++;
-          sparseToFull (outValSp, outValFull, outUels, symType, symUser, rSpec->dField, mrows, symDimX);
+          sparseToFull (outValSp, outValFull, outUels, symType,
+                        symUser, rSpec->dField, mrows, symDimX);
           setAttrib(outValFull, R_DimSymbol, dimVect);
           SET_VECTOR_ELT(dimNames, 0, VECTOR_ELT(outUels, 0));
           setAttrib(outValFull, R_DimNamesSymbol, dimNames);
