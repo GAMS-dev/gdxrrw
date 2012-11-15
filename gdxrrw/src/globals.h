@@ -165,11 +165,13 @@ void
 makeStrVec (SEXP outExp, SEXP inExp);
 void
 sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
-              int symType, int symSubType, dField_t dField, int nRec, int symDim);
+              int symType, int symSubType, dField_t dField, int nRec, int symDimX);
+void
+getDefRecVar (int subType, double defRec[]);
 double
-getDefRecVar (int subType, dField_t dField);
+getDefValVar (int subType, dField_t dField);
 double
-getDefRec (int symType, int subType, dField_t dField);
+getDefVal (int symType, int subType, dField_t dField);
 
 
 /* ****** global variables ****** */

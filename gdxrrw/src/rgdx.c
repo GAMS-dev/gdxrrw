@@ -629,7 +629,7 @@ SEXP rgdx (SEXP args)
       case GMS_DT_VAR:
       case GMS_DT_EQU:
         if (all != rSpec->dField) {
-          double defVal = getDefRec (symType, symUser, rSpec->dField);
+          double defVal = getDefVal (symType, symUser, rSpec->dField);
 
           for (nnz = 0, iRec = 0;  iRec < nRecs;  iRec++) {
             gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
@@ -759,7 +759,7 @@ SEXP rgdx (SEXP args)
         case GMS_DT_VAR:
         case GMS_DT_EQU:
           if (all != rSpec->dField) {
-            double defVal = getDefRec (symType, symUser, rSpec->dField);
+            double defVal = getDefVal (symType, symUser, rSpec->dField);
 
             for (matched = 0, iRec = 0;  iRec < nRecs;  iRec++) {
               gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
@@ -906,7 +906,7 @@ SEXP rgdx (SEXP args)
           double defVal = 0;
 
           if (GMS_DT_VAR == symType)
-            defVal = getDefRecVar (symUser, rSpec->dField);
+            defVal = getDefValVar (symUser, rSpec->dField);
           else
             error  ("not implemented");
           for (iRec = 0, kRec = 0;  iRec < nRecs;  iRec++) {
@@ -1026,7 +1026,7 @@ SEXP rgdx (SEXP args)
         PROTECT(outValFull = allocVector(REALSXP, 1));
         rgdxAlloc++;
         p0 = REAL(outValFull);
-        *p0 = getDefRec (symType, symUser, rSpec->dField);
+        *p0 = getDefVal (symType, symUser, rSpec->dField);
         if (rSpec->withUel) {
           /* assume matched is always set for filtered reads */
           /* if (outValSp != R_NilValue && (REAL(outValSp) != NULL)) { */

@@ -774,10 +774,10 @@ getNonDefaultElemCount (gdxHandle_t h, int symIdx,
   defVal = 0;
   switch (symType) {
   case GMS_DT_VAR:
-    defVal = getDefRecVar (symSubType, dField);
+    defVal = getDefValVar (symSubType, dField);
     break;
   case GMS_DT_EQU:
-    /* defVal = gmsDefRecEqu[symSubType][dField]; */
+    /* defVal = gmsDefValEqu[symSubType][dField]; */
     error  ("not implemented");
     break;
   } /* end switch */
@@ -1026,16 +1026,18 @@ makeStrVec (SEXP outExp, SEXP inExp)
  */
 void
 sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
-              int symType, int symSubType, dField_t dField, int nRec, int symDim)
+              int symType, int symSubType, dField_t dField, int nRec, int symDimX)
 {
   int k, iRec;
   int fullLen;             /* length of output matrix fullVal */
   int fullCard;            /* cardinality of fully allocated matrix */
   int card[GLOBAL_MAX_INDEX_DIM];
   double defVal;           /* default value - may be nonzero */
-  double *p, *pFull;
+  double *p, *pFull, *tFull;
   int index;
+  int symDim = symDimX;
   int ii;
+  dField_t iField;
 
   pFull = REAL(fullVal);
   fullLen = length(fullVal);
@@ -1088,11 +1090,42 @@ sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
     break;
   case GMS_DT_VAR:
     if (all == dField) {
-      error  ("sparseToFull VAR all fields: not yet implemented");
+      double defRec[GMS_VAL_MAX];
+
+      symDim--;
+      fullCard = 1;
+      for (k = 0;  k < symDim;  k++) {
+        card[k] = length(VECTOR_ELT(uelLists, k)); /* number of elements in dim k */
+        fullCard *= card[k];
+      }
+      if ((fullCard * 5) != fullLen)
+        error ("sparseToFull: unexpected inputs:  fullCard*5=%d  fullLen=%d",
+               fullCard*5, fullLen);
+
+      /* step 1: initialize full matrix to the defaults */
+      getDefRecVar (symSubType, defRec);
+      for (tFull = pFull, iField = level;  iField <= scale;  iField++) {
+        if (0 == defRec[iField])
+          (void) memset (tFull, 0, fullCard * sizeof(*pFull));
+        else {
+          for (k = 0;  k < fullCard;  k++)
+            tFull[k] = defRec[iField];
+        }
+        tFull += fullCard;
+      }
+      /* step 2: loop over each record of the variable to plug in non-defaults */
+      for (iRec = 0;  iRec < nRec;  iRec++) {
+        ii = iRec + nRec*symDim;
+        for (index = p[ii]-1, k = symDim-1;  k >= 0;  k--) {
+          ii -= nRec;
+          index = (index * card[k]) + p[ii] - 1;
+        }
+        pFull[index] = p[iRec + nRec*symDimX];
+      } /* end loop over nonzeros */
     }
     else {                      /* all != dField */
       /* step 1: initialize full matrix */
-      defVal = getDefRecVar (symSubType, dField);
+      defVal = getDefValVar (symSubType, dField);
       if (0 == defVal) {
         (void) memset (pFull, 0, fullLen * sizeof(*pFull));
       }
@@ -1121,7 +1154,7 @@ sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
     } /* if all == dField .. else .. */
     break;
   case GMS_DT_EQU:
-    /* defVal = gmsDefRecEqu[symSubType][dField]; */
+    /* defVal = gmsDefValEqu[symSubType][dField]; */
     error  ("not implemented");
     break;
   default:
@@ -1131,11 +1164,50 @@ sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
   return;
 } /* sparseToFull */
 
+/* getDefRecVar: return the default record for a varialbe of type subType */
+void
+getDefRecVar (int subType, double defRec[])
+{
+  (void) memset (defRec, 0, GMS_VAL_MAX * sizeof(double));
+  defRec[scale] = 1;
+  switch (subType) {
+  case GMS_VARTYPE_BINARY:
+    defRec[upper] = 1;
+    break;
+  case GMS_VARTYPE_INTEGER:
+    defRec[upper] = 100;
+    break;
+  case GMS_VARTYPE_POSITIVE:
+  case GMS_VARTYPE_SOS1:
+  case GMS_VARTYPE_SOS2:
+    defRec[upper] = R_PosInf;
+    break;
+  case GMS_VARTYPE_NEGATIVE:
+    defRec[lower] = R_NegInf;
+    break;
+  case GMS_VARTYPE_FREE:
+    defRec[lower] = R_NegInf;
+    defRec[upper] = R_PosInf;
+    break;
+  case GMS_VARTYPE_SEMICONT:
+    defRec[lower] = 1;
+    defRec[upper] = R_PosInf;
+    break;
+  case GMS_VARTYPE_SEMIINT:
+    defRec[lower] = 1;
+    defRec[upper] = 100;
+    break;
+  } /* switch subType */
+  return;
+} /* getDefRecVar */
+
+/* getDefValVar: return the default value for field dField of a variable
+ * of type subType */
 double
-getDefRecVar (int subType, dField_t dField)
+getDefValVar (int subType, dField_t dField)
 {
   if (all == dField)
-    error ("dField = all passed to getDefRecVar: internal error");
+    error ("dField = all passed to getDefValVar: internal error");
 
   if (scale == dField)
     return 1;
@@ -1179,10 +1251,15 @@ getDefRecVar (int subType, dField_t dField)
     break;
   } /* switch subType */
   return 0;
-} /* getDefRecVar */
+} /* getDefValVar */
 
+/* getDefVal: return the default value consistent with the given
+ *   symType (e.g. GMS_DT_VAR),
+ *   subType (e.g. GMS_VARTYPE_BINARY), and
+ *   dField  (e.g. lower)
+ */
 double
-getDefRec (int symType, int subType, dField_t dField)
+getDefVal (int symType, int subType, dField_t dField)
 {
   double defVal = 0;
 
@@ -1191,12 +1268,12 @@ getDefRec (int symType, int subType, dField_t dField)
     defVal = -1;
     break;
   case GMS_DT_VAR:
-    defVal = getDefRecVar (subType, dField);
+    defVal = getDefValVar (subType, dField);
     break;
   case GMS_DT_EQU:
-    /* defVal = gmsDefRecEqu[symSubType][dField]; */
-    error  ("getDefRec not implemented for symType=GMS_DT_EQU");
+    /* defVal = gmsDefValEqu[symSubType][dField]; */
+    error  ("getDefVal not implemented for symType=GMS_DT_EQU");
     break;
   } /* end switch */
   return defVal;
-} /* getDefRec */
+} /* getDefVal */
