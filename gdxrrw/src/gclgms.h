@@ -6,6 +6,10 @@
 #if ! defined(_GCLGMS_H_)
 #     define  _GCLGMS_H_
 
+#if ! defined(_GCL_RHACK_)
+# error "this header modified to work with R extensions.  Do not use outside of R"
+#endif
+
 #define GLOBAL_MAX_INDEX_DIM       20
 #define GLOBAL_UEL_IDENT_SIZE      64  /* implies len of 63 */
 #define ITERLIM_INFINITY           2000000000
@@ -27,6 +31,10 @@
 #define GMS_VARTYPE_SEMICONT 8
 #define GMS_VARTYPE_SEMIINT  9
 #define GMS_VARTYPE_MAX      10
+
+/* base value used by GDX to store equation types:
+ * returned as userInfo value by gdxSymbolInfoX */
+#define GMS_EQU_USERINFO_BASE 53
 
 #define GMS_EQUTYPE_E        0
 #define GMS_EQUTYPE_G        1
@@ -103,6 +111,8 @@ extern const char *gmsSVText[GMS_SVIDX_MAX];
 extern const double gmsDefRecVar[GMS_VARTYPE_MAX][GMS_VAL_MAX];
 extern const double gmsDefRecEqu[GMS_EQUTYPE_MAX][GMS_VAL_MAX];
 
+int
+gmsFixEquType (int userInfo);
 #if defined(__cplusplus)
 }
 #endif

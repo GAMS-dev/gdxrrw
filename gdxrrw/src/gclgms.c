@@ -5,6 +5,10 @@
 
 #include "gclgms.h"
 
+#if ! defined(_GCL_RHACK_)
+# error "this file modified to work with R extensions.  Do not use outside of R"
+#endif
+
 const char *gmsGdxTypeText[GMS_DT_MAX] =
   {"Set","Parameter","Variable","Equation","Alias"};
 const char *gmsVarTypeText[GMS_VARTYPE_MAX] = {"unknown","binary","integer","positive","negative","free","sos1","sos2","semicont","semiint"};
@@ -34,3 +38,21 @@ const double gmsDefRecEqu[GMS_EQUTYPE_MAX][GMS_VAL_MAX] = {
   { 0.0, 0.0,         0.0,         0.0, 1.0},    /* =x= */
   { 0.0, 0.0,         0.0, GMS_SV_PINF, 1.0}     /* =c= */
 };
+
+/* extract an equation type in [GMS_EQUTYPE_E,GMS_VAL_MAX) 
+ * from the userInfo value stored for an equation symbol
+ */
+int
+gmsFixEquType (int userInfo)
+{
+  if ((userInfo >= GMS_EQU_USERINFO_BASE) &&
+      (userInfo < GMS_EQU_USERINFO_BASE + GMS_EQUTYPE_MAX))
+    /* proper value for equtype with internal base */
+    return userInfo - GMS_EQU_USERINFO_BASE;
+  /* assume 0-bases, coerce if not */
+  if (userInfo < 0)
+    userInfo = 0;
+  if (userInfo >= GMS_EQUTYPE_MAX)
+    userInfo = GMS_EQUTYPE_MAX - 1;
+  return userInfo;
+} /* gmsFixEquType */

@@ -10,6 +10,10 @@
 #define GDX_MAIN
 #include "gdxcc.h"
 
+#if ! defined(_GCL_RHACK_)
+# error "this header modified to work with R extensions.  Do not use outside of R"
+#endif
+
 #if defined(_WIN32)
 # include <windows.h>
   static char winErr[] = "Windows error";

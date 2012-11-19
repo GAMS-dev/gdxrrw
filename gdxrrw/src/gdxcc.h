@@ -6,6 +6,10 @@
 #if ! defined(_GDXCC_H_)
 #     define  _GDXCC_H_
 
+#if ! defined(_GCL_RHACK_)
+# error "this header modified to work with R extensions.  Do not use outside of R"
+#endif
+
 #define GDXAPIVERSION 7
 
 
