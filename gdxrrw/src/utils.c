@@ -1153,8 +1153,39 @@ sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
     } /* if all == dField .. else .. */
     break;
   case GMS_DT_EQU:
-    /* defVal = gmsDefValEqu[symSubType][dField]; */
-    error  ("not implemented");
+    if (all == dField) {
+      double defRec[GMS_VAL_MAX];
+      error  ("not yet implemented");
+    }
+    else {                      /* all != dField */
+      /* step 1: initialize full matrix */
+      defVal = getDefValEqu (symSubType, dField);
+      if (0 == defVal) {
+        (void) memset (pFull, 0, fullLen * sizeof(*pFull));
+      }
+      else {
+        for (k = 0;  k < fullLen;  k++)
+          pFull[k] = defVal;
+      }
+      /* step 2: loop over each row/nonzero of sparse matrix to populate full matrix */
+      fullCard = 1;
+      for (k = 0;  k < symDim;  k++) {
+        card[k] = length(VECTOR_ELT(uelLists, k)); /* number of elements in dim k */
+        fullCard *= card[k];
+      }
+      if (fullCard != fullLen)
+        error ("sparseToFull: unexpected inputs:  fullCard=%d  fullLen=%d",
+               fullCard, fullLen);
+
+      for (iRec = 0;  iRec < nRec;  iRec++) {
+        ii = iRec + nRec*(symDim-1);
+        for (index = p[ii]-1, k = symDim-2;  k >= 0;  k--) {
+          ii -= nRec;
+          index = (index * card[k]) + p[ii] - 1;
+        }
+        pFull[index] = p[iRec + nRec*symDim];
+      } /* end loop over nonzeros */
+    } /* if all == dField .. else .. */
     break;
   default:
     error("Unrecognized type of symbol found.");
