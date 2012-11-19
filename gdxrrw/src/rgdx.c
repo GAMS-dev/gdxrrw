@@ -333,7 +333,7 @@ SEXP rgdx (SEXP args)
   shortStringBuf_t msgBuf;
   shortStringBuf_t uelName;
   shortStringBuf_t gdxFileName;
-  int symIdx, symDim, symType, symNNZ, symUser = 0;
+  int symIdx, symDim, symType, symNNZ, symUser = 0, typeCode = 0;
   int symDimX;                  /* allow for additional dim on var/equ with field='all' */
   SEXP fieldUels = R_NilValue; /* UELS for addition dimension for field */
   int iDim;
@@ -488,12 +488,21 @@ SEXP rgdx (SEXP args)
       if (rSpec->compress) {
         error("Compression is not allowed when reading variables");
       }
+      typeCode = gmsFixVarType (symUser);
+      if (typeCode < 0) {
+        error ("Variable symbol '%s' has no associated type (e.g. free, binary)",
+               rSpec->name);
+      }
       break;
     case GMS_DT_EQU:
       if (rSpec->compress) {
         error("Compression is not allowed when reading equations");
       }
-      symUser = gmsFixEquType (symUser);
+      typeCode = gmsFixEquType (symUser);
+      if (typeCode < 0) {
+        error ("Equation symbol '%s' has no associated type (e.g. =E=, =G=)",
+               rSpec->name);
+      }
       break;
     case GMS_DT_ALIAS:          /* follow link to actual set */
       symIdx = symUser;
@@ -630,7 +639,7 @@ SEXP rgdx (SEXP args)
       case GMS_DT_VAR:
       case GMS_DT_EQU:
         if (all != rSpec->dField) {
-          double defVal = getDefVal (symType, symUser, rSpec->dField);
+          double defVal = getDefVal (symType, typeCode, rSpec->dField);
 
           for (nnz = 0, iRec = 0;  iRec < nRecs;  iRec++) {
             gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
@@ -760,7 +769,7 @@ SEXP rgdx (SEXP args)
         case GMS_DT_VAR:
         case GMS_DT_EQU:
           if (all != rSpec->dField) {
-            double defVal = getDefVal (symType, symUser, rSpec->dField);
+            double defVal = getDefVal (symType, typeCode, rSpec->dField);
 
             for (matched = 0, iRec = 0;  iRec < nRecs;  iRec++) {
               gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
@@ -832,7 +841,7 @@ SEXP rgdx (SEXP args)
           mrows *= 5;           /* l,m,lo,up,scale */
         }
         else if (squeezeDef) { /* potentially squeeze some out */
-          mrows = getNonDefaultElemCount(gdxHandle, symIdx, symType, symUser,
+          mrows = getNonDefaultElemCount(gdxHandle, symIdx, symType, typeCode,
                                          rSpec->dField);
         }
       }
@@ -907,9 +916,9 @@ SEXP rgdx (SEXP args)
           double defVal = 0;
 
           if (GMS_DT_VAR == symType)
-            defVal = getDefValVar (symUser, rSpec->dField);
+            defVal = getDefValVar (typeCode, rSpec->dField);
           else {
-            defVal = getDefValEqu (symUser, rSpec->dField);
+            defVal = getDefValEqu (typeCode, rSpec->dField);
           }
           for (iRec = 0, kRec = 0;  iRec < nRecs;  iRec++) {
             gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
@@ -1027,7 +1036,7 @@ SEXP rgdx (SEXP args)
           rgdxAlloc++;
           p0 = REAL(outValFull);
           if (GMS_DT_VAR == symType)
-            getDefRecVar (symUser, p0);
+            getDefRecVar (typeCode, p0);
           else
             error ("not yet implemented");
           if (rSpec->withUel) {
@@ -1051,7 +1060,7 @@ SEXP rgdx (SEXP args)
           PROTECT(outValFull = allocVector(REALSXP, 1));
           rgdxAlloc++;
           p0 = REAL(outValFull);
-          *p0 = getDefVal (symType, symUser, rSpec->dField);
+          *p0 = getDefVal (symType, typeCode, rSpec->dField);
           if (rSpec->withUel) {
             /* assume matched is always set for filtered reads */
             /* if (outValSp != R_NilValue && (REAL(outValSp) != NULL)) { */
@@ -1091,10 +1100,10 @@ SEXP rgdx (SEXP args)
           rgdxAlloc++;
           if (reuseFilter)
             sparseToFull (outValSp, outValFull, rSpec->filterUel, symType,
-                          symUser, rSpec->dField, mrows, symDimX);
+                          typeCode, rSpec->dField, mrows, symDimX);
           else
             sparseToFull (outValSp, outValFull, outUels, symType,
-                          symUser, rSpec->dField, mrows, symDimX);
+                          typeCode, rSpec->dField, mrows, symDimX);
           setAttrib(outValFull, R_DimSymbol, dimVect);
           SET_VECTOR_ELT(dimNames, 0, VECTOR_ELT(rSpec->filterUel, 0));
           setAttrib(outValFull, R_DimNamesSymbol, dimNames);
@@ -1105,7 +1114,7 @@ SEXP rgdx (SEXP args)
           PROTECT(outValFull = allocVector(REALSXP, totalElement));
           rgdxAlloc++;
           sparseToFull (outValSp, outValFull, outUels, symType,
-                        symUser, rSpec->dField, mrows, symDimX);
+                        typeCode, rSpec->dField, mrows, symDimX);
           setAttrib(outValFull, R_DimSymbol, dimVect);
           SET_VECTOR_ELT(dimNames, 0, VECTOR_ELT(outUels, 0));
           setAttrib(outValFull, R_DimNamesSymbol, dimNames);
@@ -1137,7 +1146,7 @@ SEXP rgdx (SEXP args)
           }
           PROTECT(outValFull = allocVector(REALSXP, totalElement));
           rgdxAlloc++;
-          sparseToFull (outValSp, outValFull, rSpec->filterUel, symType, symUser,
+          sparseToFull (outValSp, outValFull, rSpec->filterUel, symType, typeCode,
                         rSpec->dField, nnz, symDimX);
           setAttrib(outValFull, R_DimSymbol, dimVect);
           setAttrib(outValFull, R_DimNamesSymbol, rSpec->filterUel);
@@ -1149,7 +1158,7 @@ SEXP rgdx (SEXP args)
           }
           PROTECT(outValFull = allocVector(REALSXP, totalElement));
           rgdxAlloc++;
-          sparseToFull (outValSp, outValFull, outUels, symType, symUser,
+          sparseToFull (outValSp, outValFull, outUels, symType, typeCode,
                         rSpec->dField, mrows, symDimX);
           setAttrib(outValFull, R_DimSymbol, dimVect);
           setAttrib(outValFull, R_DimNamesSymbol, outUels);
@@ -1332,13 +1341,13 @@ SEXP rgdx (SEXP args)
 
       if (GMS_DT_VAR == symType) {
         PROTECT(tmpExp = allocVector(STRSXP, 1));
-        SET_STRING_ELT(tmpExp, 0, mkChar(gmsVarTypeText[symUser]));
+        SET_STRING_ELT(tmpExp, 0, mkChar(gmsVarTypeText[typeCode]));
         SET_VECTOR_ELT(outList, iElement, tmpExp);   iElement++;
         UNPROTECT(1);
       }
 
       PROTECT(tmpExp = allocVector(INTSXP, 1));
-      INTEGER(tmpExp)[0] = symUser;
+      INTEGER(tmpExp)[0] = typeCode;
       SET_VECTOR_ELT(outList, iElement, tmpExp);     iElement++;
       UNPROTECT(1);
     }

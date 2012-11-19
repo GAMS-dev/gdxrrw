@@ -113,6 +113,8 @@ extern const double gmsDefRecEqu[GMS_EQUTYPE_MAX][GMS_VAL_MAX];
 
 int
 gmsFixEquType (int userInfo);
+int
+gmsFixVarType (int userInfo);
 #if defined(__cplusplus)
 }
 #endif

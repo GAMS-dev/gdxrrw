@@ -39,20 +39,32 @@ const double gmsDefRecEqu[GMS_EQUTYPE_MAX][GMS_VAL_MAX] = {
   { 0.0, 0.0,         0.0, GMS_SV_PINF, 1.0}     /* =c= */
 };
 
-/* extract an equation type in [GMS_EQUTYPE_E,GMS_VAL_MAX) 
- * from the userInfo value stored for an equation symbol
+/* extract an equation type in [GMS_EQUTYPE_E,GMS_EQUTYPE_MAX)
+ * from the userInfo value stored for an equation symbol,
+ * or a negative value if the equation type was not stored
  */
 int
 gmsFixEquType (int userInfo)
 {
-  if ((userInfo >= GMS_EQU_USERINFO_BASE) &&
-      (userInfo < GMS_EQU_USERINFO_BASE + GMS_EQUTYPE_MAX))
-    /* proper value for equtype with internal base */
-    return userInfo - GMS_EQU_USERINFO_BASE;
-  /* assume 0-bases, coerce if not */
-  if (userInfo < 0)
-    userInfo = 0;
-  if (userInfo >= GMS_EQUTYPE_MAX)
-    userInfo = GMS_EQUTYPE_MAX - 1;
-  return userInfo;
+  int equType = userInfo - GMS_EQU_USERINFO_BASE;
+
+  if (equType >= GMS_EQUTYPE_MAX)
+    equType = -1;
+
+  return equType;
 } /* gmsFixEquType */
+
+/* extract a variable type in [GMS_VARTYPE_UNKNOWN,GMS_VARTYPE_MAX)
+ * from the userInfo value stored for a variable symbol,
+ * or a negative value if the variable type was not stored
+ */
+int
+gmsFixVarType (int userInfo)
+{
+  int varType = userInfo;
+
+  if (varType >= GMS_VARTYPE_MAX)
+    varType = -1;
+
+  return varType;
+} /* gmsFixVarType */
