@@ -1305,8 +1305,7 @@ getDefVal (int symType, int subType, dField_t dField)
     defVal = getDefValVar (subType, dField);
     break;
   case GMS_DT_EQU:
-    /* defVal = gmsDefValEqu[symSubType][dField]; */
-    error  ("getDefVal not implemented for symType=GMS_DT_EQU");
+    defVal = getDefValEqu (subType, dField);
     break;
   } /* end switch */
   return defVal;
