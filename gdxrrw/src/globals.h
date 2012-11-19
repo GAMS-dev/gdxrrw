@@ -169,6 +169,8 @@ sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
 void
 getDefRecVar (int subType, double defRec[]);
 double
+getDefValEqu (int subType, dField_t dField);
+double
 getDefValVar (int subType, dField_t dField);
 double
 getDefVal (int symType, int subType, dField_t dField);

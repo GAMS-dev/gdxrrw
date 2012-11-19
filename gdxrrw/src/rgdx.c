@@ -485,14 +485,15 @@ SEXP rgdx (SEXP args)
               rSpec->name);
       break;
     case GMS_DT_VAR:
+      if (rSpec->compress) {
+        error("Compression is not allowed when reading variables");
+      }
+      break;
     case GMS_DT_EQU:
       if (rSpec->compress) {
-        if (GMS_DT_VAR == symType)
-          error("Compression is not allowed when reading variables");
-        else
-          error("Compression is not allowed when reading equations");
+        error("Compression is not allowed when reading equations");
       }
-      /* no checks necessary */
+      symUser = gmsFixEquType (symUser);
       break;
     case GMS_DT_ALIAS:          /* follow link to actual set */
       symIdx = symUser;
@@ -907,8 +908,9 @@ SEXP rgdx (SEXP args)
 
           if (GMS_DT_VAR == symType)
             defVal = getDefValVar (symUser, rSpec->dField);
-          else
-            error  ("not implemented");
+          else {
+            defVal = getDefValEqu (symUser, rSpec->dField);
+          }
           for (iRec = 0, kRec = 0;  iRec < nRecs;  iRec++) {
             gdxDataReadRaw (gdxHandle, uels, values, &changeIdx);
             findrc = findInXPFilter (symDim, uels, xpFilter, outIdx);

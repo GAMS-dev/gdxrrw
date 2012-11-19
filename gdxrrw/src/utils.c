@@ -777,8 +777,7 @@ getNonDefaultElemCount (gdxHandle_t h, int symIdx,
     defVal = getDefValVar (symSubType, dField);
     break;
   case GMS_DT_EQU:
-    /* defVal = gmsDefValEqu[symSubType][dField]; */
-    error  ("not implemented");
+    defVal = getDefValEqu (symSubType, dField);
     break;
   } /* end switch */
 
@@ -1200,6 +1199,41 @@ getDefRecVar (int subType, double defRec[])
   } /* switch subType */
   return;
 } /* getDefRecVar */
+
+/* getDefValEqu: return the default value for field dField of an equation
+ * of type subType */
+double
+getDefValEqu (int subType, dField_t dField)
+{
+  if (all == dField)
+    error ("dField = all passed to getDefValEqu: internal error");
+
+  if (scale == dField)
+    return 1;
+
+  switch (subType) {
+  case GMS_EQUTYPE_E:
+  case GMS_EQUTYPE_X:
+    /* all 0 */
+    break;
+  case GMS_EQUTYPE_G:
+  case GMS_EQUTYPE_C:
+    if (upper == dField)
+      return R_PosInf;
+    break;
+  case GMS_EQUTYPE_L:
+    if (lower == dField)
+      return R_NegInf;
+    break;
+  case GMS_EQUTYPE_N:
+    if (upper == dField)
+      return R_PosInf;
+    if (lower == dField)
+      return R_NegInf;
+    break;
+  } /* switch subType */
+  return 0;
+} /* getDefValEqu */
 
 /* getDefValVar: return the default value for field dField of a variable
  * of type subType */
