@@ -51,6 +51,20 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e0,'L',unfiltered,squeeze=F) failed",chk$msg))
   }
+  e1wantL <- list(name='e1', type='equation', dim=1L,
+                 val=matrix(c(1,  -2), nrow=1, ncol=2),
+                 form='sparse', uels=cartK, domains=domK,
+                 field='l', typeCode=GMS_EQUTYPE$G)
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='L'))
+  chk <- chkRgdxRes (e1, e1wantL, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'L',unfiltered) failed",chk$msg))
+  }
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='L'),squeeze=F)
+  chk <- chkRgdxRes (e1, e1wantL, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'L',unfiltered,squeeze=F) failed",chk$msg))
+  }
   # marginal
   e0wantM <- list(name='e0', type='equation', dim=0L,
                  val=matrix(1, nrow=1, ncol=1),
@@ -65,6 +79,20 @@ tryCatch({
   chk <- chkRgdxRes (e0, e0wantM, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e0,'M',unfiltered,squeeze=F) failed",chk$msg))
+  }
+  e1wantM <- list(name='e1', type='equation', dim=1L,
+                 val=matrix(c(1,  -3.5), nrow=1, ncol=2),
+                 form='sparse', uels=cartK, domains=domK,
+                 field='m', typeCode=GMS_EQUTYPE$G)
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='M'))
+  chk <- chkRgdxRes (e1, e1wantM, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'M',unfiltered) failed",chk$msg))
+  }
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='M'),squeeze=F)
+  chk <- chkRgdxRes (e1, e1wantM, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'M',unfiltered,squeeze=F) failed",chk$msg))
   }
   # lower
   e0wantLo <- list(name='e0', type='equation', dim=0L,
@@ -82,6 +110,20 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e0,'lo',unfiltered,squeeze=F) failed",chk$msg))
   }
+  e1wantLo <- list(name='e1', type='equation', dim=1L,
+                  val=matrix(c(1,  -2), nrow=1, ncol=2),
+                  form='sparse', uels=cartK, domains=domK,
+                  field='lo', typeCode=GMS_EQUTYPE$G)
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='lO'))
+  chk <- chkRgdxRes (e1, e1wantLo, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'LO',unfiltered) failed",chk$msg))
+  }
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='lO'),squeeze=F)
+  chk <- chkRgdxRes (e1, e1wantLo, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'LO',unfiltered,squeeze=F) failed",chk$msg))
+  }
   # upper
   e0wantUp <- list(name='e0', type='equation', dim=0L,
                    val=matrix(0, nrow=0, ncol=1),
@@ -98,6 +140,21 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e0,'up',unfiltered,squeeze=F) failed",chk$msg))
   }
+  e1wantUp <- list(name='e1', type='equation', dim=1L,
+                  val=matrix(0, nrow=0, ncol=2),
+                  form='sparse', uels=cartK, domains=domK,
+                  field='up', typeCode=GMS_EQUTYPE$G)
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='Up'))
+  chk <- chkRgdxRes (e1, e1wantUp, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'UP',unfiltered) failed",chk$msg))
+  }
+  e1wantUp$val <- matrix(c(1,  Inf), nrow=1, ncol=2)
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='Up'),squeeze=F)
+  chk <- chkRgdxRes (e1, e1wantUp, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'UP',unfiltered,squeeze=F) failed",chk$msg))
+  }
   # scale
   e0wantS <- list(name='e0', type='equation', dim=0L,
                   val=matrix(1, nrow=0, ncol=1),
@@ -113,6 +170,20 @@ tryCatch({
   chk <- chkRgdxRes (e0, e0wantS, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e0,'s',unfiltered,squeeze=F) failed",chk$msg))
+  }
+  e1wantS <- list(name='e1', type='equation', dim=1L,
+                 val=matrix(c(1,  2), nrow=1, ncol=2),
+                 form='sparse', uels=cartK, domains=domK,
+                 field='s', typeCode=GMS_EQUTYPE$G)
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='S'))
+  chk <- chkRgdxRes (e1, e1wantS, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'S',unfiltered) failed",chk$msg))
+  }
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='S'),squeeze=F)
+  chk <- chkRgdxRes (e1, e1wantS, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'S',unfiltered,squeeze=F) failed",chk$msg))
   }
 
   ### ---------- reading form=sparse, filtered
@@ -290,6 +361,79 @@ tryCatch({
   chk <- chkRgdxRes (e1, e1wantL, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e1,'L',full,filtered) failed",chk$msg))
+  }
+  e1 <- rgdx(fnIn,list(name='e1',uels=f,form='full',field='L'),squeeze=F)
+  chk <- chkRgdxRes (e1, e1wantL, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'L',full,filtered,squeeze=F) failed",chk$msg))
+  }
+  # marginal
+  t <- array(0,c(kCard,1),dimnames=cartK)
+  t['k1',1] <- -3.5
+  e1wantM <- list(name='e1', type='equation', dim=1L,
+                  val=t,
+                  form='full', uels=f, domains=userDom,
+                  field='m', typeCode=GMS_EQUTYPE$G)
+  e1 <- rgdx(fnIn,list(name='e1',uels=f,form='full',field='M'))
+  chk <- chkRgdxRes (e1, e1wantM, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'M',full,filtered) failed",chk$msg))
+  }
+  e1 <- rgdx(fnIn,list(name='e1',uels=f,form='full',field='M'),squeeze=F)
+  chk <- chkRgdxRes (e1, e1wantM, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'M',full,filtered,squeeze=F) failed",chk$msg))
+  }
+  # lower
+  t <- array(0,c(kCard,1),dimnames=cartK)
+  t['k1',1] <- -2
+  e1wantLo <- list(name='e1', type='equation', dim=1L,
+                   val=t,
+                   form='full', uels=f, domains=userDom,
+                   field='lo', typeCode=GMS_EQUTYPE$G)
+  e1 <- rgdx(fnIn,list(name='e1',uels=f,form='full',field='Lo'))
+  chk <- chkRgdxRes (e1, e1wantLo, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'LO',full,filtered) failed",chk$msg))
+  }
+  e1 <- rgdx(fnIn,list(name='e1',uels=f,form='full',field='Lo'),squeeze=F)
+  chk <- chkRgdxRes (e1, e1wantLo, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'LO',full,filtered,squeeze=F) failed",chk$msg))
+  }
+  # upper
+  t <- array(0,c(kCard,1),dimnames=cartK)
+  t['k1',1] <- Inf
+  e1wantUp <- list(name='e1', type='equation', dim=1L,
+                   val=t,
+                   form='full', uels=f, domains=userDom,
+                   field='up', typeCode=GMS_EQUTYPE$G)
+  e1 <- rgdx(fnIn,list(name='e1',uels=f,form='full',field='Up'))
+  chk <- chkRgdxRes (e1, e1wantUp, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'UP',full,filtered) failed",chk$msg))
+  }
+  e1 <- rgdx(fnIn,list(name='e1',uels=f,form='full',field='Up'),squeeze=F)
+  chk <- chkRgdxRes (e1, e1wantUp, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'UP',full,filtered,squeeze=F) failed",chk$msg))
+  }
+  # scale
+  t <- array(0,c(kCard,1),dimnames=cartK)
+  t['k1',1] <- 2
+  e1wantS <- list(name='e1', type='equation', dim=1L,
+                  val=t,
+                  form='full', uels=f, domains=userDom,
+                  field='s', typeCode=GMS_EQUTYPE$G)
+  e1 <- rgdx(fnIn,list(name='e1',uels=f,form='full',field='s'))
+  chk <- chkRgdxRes (e1, e1wantS, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'s',full,filtered) failed",chk$msg))
+  }
+  e1 <- rgdx(fnIn,list(name='e1',uels=f,form='full',field='s'),squeeze=F)
+  chk <- chkRgdxRes (e1, e1wantS, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'s',full,filtered,squeeze=F) failed",chk$msg))
   }
 
 
