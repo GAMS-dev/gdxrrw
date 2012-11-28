@@ -1,5 +1,5 @@
 \documentclass{article}
-\usepackage{amsmath,graphicx,xspace}
+\usepackage{amsmath,graphicx,xspace,hyperref}
 
 \newcommand{\secref}[1]{Section~\ref{sec:#1}}
 \newcommand{\gdxrrw}{GDXRRW\xspace}
@@ -21,7 +21,7 @@
 
 \gdxrrw is a suite of utilities to import/export data between \gams
 and \R (both of which the user is assumed to have already) and to
-call \gams models from \R and get results back in \R. The software
+call \gams conveniently from \R.  The software
 gives \R users the ability to use all the optimization capabilities of
 \gams, and allows visualization and other operations on \gams data
 directly within \R.
@@ -33,17 +33,18 @@ follows the usual \R package conventions.  Mention installation,
 documentation, examples, tests, and data.
 \begin{enumerate}
   \item {\bf Installation}: The \R software is designed to be easily
-    extended.  Thousands of extension \emph{packages} are available
-    online and can be installed easily using a simple, standard
+    extended.  Thousands of extension \emph{packages} are freely and
+    conveniently available online and can be installed easily using a simple, standard
     procedure.  The \gdxrrw package is one of these.  The latest
-    version is available online at some Wiki URL in both source and binary
+    version is available from the \gdxrrw Wiki
+    \url{http://support.gams.com/doku.php?id=gdxrrw:interfacing_gams_and_r} in both source and binary
     form, along with a FAQ list,
     some hints and tips on common problems and solutions, and other
     helpful content.  For convenience, the source and binary packages
-    are also available as part of the GAMS distribution.  Or not.
+    are also available in the {\tt gdxrrw} directory of the GAMS distribution.
   \item {\bf Documentation}: The \gdxrrw documentation is installed as
     part of the \gdxrrw package and is available from within \R in the
-    usual way.  See the \gdxrrw Wiki for details.
+    usual way.  See the \gdxrrw Wiki for details and hints.
   \item {\bf Examples, tests, and data}: Like many \R packages,
     \gdxrrw comes with examples and data that help a user get started
     using the package.  The \R help system and the \gdxrrw Wiki
