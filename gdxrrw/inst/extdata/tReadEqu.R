@@ -311,12 +311,12 @@ tryCatch({
                   val=matrix(c(1, -2), nrow=1, ncol=2),
                   form='sparse', uels=f1, domains=userDom1,
                   field='l', typeCode=GMS_EQUTYPE$G)
-  e1 <- rgdx(fnIn,list(name='e1',form='sparse',uels=f))
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',uels=f1))
   chk <- chkRgdxRes (e1, e1wantL, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e1,'L',filtered) failed",chk$msg))
   }
-  e1 <- rgdx(fnIn,list(name='e1',form='sparse',uels=f),squeeze=F)
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',uels=f1),squeeze=F)
   chk <- chkRgdxRes (e1, e1wantL, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e1,'L',filtered,squeeze=F) failed",chk$msg))
@@ -355,12 +355,12 @@ tryCatch({
                   val=matrix(c(1, -3.5), nrow=1, ncol=2),
                   form='sparse', uels=f1, domains=userDom1,
                   field='m', typeCode=GMS_EQUTYPE$G)
-  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='m',uels=f))
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='m',uels=f1))
   chk <- chkRgdxRes (e1, e1wantM, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e1,'m',filtered) failed",chk$msg))
   }
-  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='m',uels=f),squeeze=F)
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='m',uels=f1),squeeze=F)
   chk <- chkRgdxRes (e1, e1wantM, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e1,'m',filtered,squeeze=F) failed",chk$msg))
@@ -402,12 +402,12 @@ tryCatch({
                    val=matrix(c(1, -2), nrow=1, ncol=2),
                    form='sparse', uels=f1, domains=userDom1,
                    field='lo', typeCode=GMS_EQUTYPE$G)
-  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='lo',uels=f))
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='lo',uels=f1))
   chk <- chkRgdxRes (e1, e1wantLo, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e1,'lo',filtered) failed",chk$msg))
   }
-  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='lo',uels=f),squeeze=F)
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='lo',uels=f1),squeeze=F)
   chk <- chkRgdxRes (e1, e1wantLo, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e1,'lo',filtered,squeeze=F) failed",chk$msg))
@@ -449,13 +449,13 @@ tryCatch({
                    val=matrix(Inf, nrow=0, ncol=2),
                    form='sparse', uels=f1, domains=userDom1,
                    field='up', typeCode=GMS_EQUTYPE$G)
-  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='up',uels=f))
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='up',uels=f1))
   chk <- chkRgdxRes (e1, e1wantUp, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e1,'up',filtered) failed",chk$msg))
   }
   e1wantUp$val <- matrix(c(1, +Inf), nrow=1, ncol=2)
-  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='up',uels=f),squeeze=F)
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='up',uels=f1),squeeze=F)
   chk <- chkRgdxRes (e1, e1wantUp, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e1,'up',filtered,squeeze=F) failed",chk$msg))
@@ -495,12 +495,12 @@ tryCatch({
                   val=matrix(c(1,2), nrow=1, ncol=2),
                   form='sparse', uels=f1, domains=userDom1,
                   field='s', typeCode=GMS_EQUTYPE$G)
-  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='S',uels=f))
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='S',uels=f1))
   chk <- chkRgdxRes (e1, e1wantS, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e1,'s',filtered) failed",chk$msg))
   }
-  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='S',uels=f),squeeze=F)
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',field='S',uels=f1),squeeze=F)
   chk <- chkRgdxRes (e1, e1wantS, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e1,'s',filtered,squeeze=F) failed",chk$msg))
