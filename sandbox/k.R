@@ -760,6 +760,7 @@ tryCatch({
   ### ---------- reading form=full, filtered
   f0 <- list()
   f <- list(kUels)
+  f3 <- list(iUels,c('j1'),kUels)
   # level
   e0wantL <- list(name='e0', type='equation', dim=0L,
                   val=0,
@@ -790,6 +791,22 @@ tryCatch({
   chk <- chkRgdxRes (e1, e1wantL, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e1,'L',full,filtered,squeeze=F) failed",chk$msg))
+  }
+  t3 <- array(0,c(iCard,1,kCard),dimnames=list(iUels,c('j1'),kUels))
+  t3['i1','j1','k1'] <- 3
+  e3wantL <- list(name='e3', type='equation', dim=3L,
+                  val=t3,
+                  form='full', uels=f3, domains=userDom3,
+                  field='l', typeCode=GMS_EQUTYPE$L)
+  e3 <- rgdx(fnIn,list(name='e3',uels=f3,form='full',field='L'))
+  chk <- chkRgdxRes (e3, e3wantL, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e3,'L',full,filtered) failed",chk$msg))
+  }
+  e3 <- rgdx(fnIn,list(name='e3',uels=f3,form='full',field='L'),squeeze=F)
+  chk <- chkRgdxRes (e3, e3wantL, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e3,'L',full,filtered,squeeze=F) failed",chk$msg))
   }
   # marginal
   e0wantM <- list(name='e0', type='equation', dim=0L,
@@ -822,6 +839,22 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e1,'M',full,filtered,squeeze=F) failed",chk$msg))
   }
+  t3 <- array(0,c(iCard,1,kCard),dimnames=list(iUels,c('j1'),kUels))
+  t3['i1','j1','k1'] <- 0
+  e3wantM <- list(name='e3', type='equation', dim=3L,
+                  val=t3,
+                  form='full', uels=f3, domains=userDom3,
+                  field='m', typeCode=GMS_EQUTYPE$L)
+  e3 <- rgdx(fnIn,list(name='e3',uels=f3,form='full',field='M'))
+  chk <- chkRgdxRes (e3, e3wantM, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e3,'M',full,filtered) failed",chk$msg))
+  }
+  e3 <- rgdx(fnIn,list(name='e3',uels=f3,form='full',field='M'),squeeze=F)
+  chk <- chkRgdxRes (e3, e3wantM, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e3,'M',full,filtered,squeeze=F) failed",chk$msg))
+  }
   # lower
   e0wantLo <- list(name='e0', type='equation', dim=0L,
                    val=0,
@@ -852,6 +885,22 @@ tryCatch({
   chk <- chkRgdxRes (e1, e1wantLo, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e1,'LO',full,filtered,squeeze=F) failed",chk$msg))
+  }
+  t3 <- array(0,c(iCard,1,kCard),dimnames=list(iUels,c('j1'),kUels))
+  t3['i1','j1','k1'] <- -Inf
+  e3wantLo <- list(name='e3', type='equation', dim=3L,
+                   val=t3,
+                   form='full', uels=f3, domains=userDom3,
+                   field='lo', typeCode=GMS_EQUTYPE$L)
+  e3 <- rgdx(fnIn,list(name='e3',uels=f3,form='full',field='LO'))
+  chk <- chkRgdxRes (e3, e3wantLo, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e3,'LO',full,filtered) failed",chk$msg))
+  }
+  e3 <- rgdx(fnIn,list(name='e3',uels=f3,form='full',field='LO'),squeeze=F)
+  chk <- chkRgdxRes (e3, e3wantLo, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e3,'LO',full,filtered,squeeze=F) failed",chk$msg))
   }
   # upper
   e0wantUp <- list(name='e0', type='equation', dim=0L,
@@ -884,6 +933,22 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e1,'UP',full,filtered,squeeze=F) failed",chk$msg))
   }
+  t3 <- array(0,c(iCard,1,kCard),dimnames=list(iUels,c('j1'),kUels))
+  t3['i1','j1','k1'] <- 4
+  e3wantUp <- list(name='e3', type='equation', dim=3L,
+                   val=t3,
+                   form='full', uels=f3, domains=userDom3,
+                   field='up', typeCode=GMS_EQUTYPE$L)
+  e3 <- rgdx(fnIn,list(name='e3',uels=f3,form='full',field='UP'))
+  chk <- chkRgdxRes (e3, e3wantUp, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e3,'UP',full,filtered) failed",chk$msg))
+  }
+  e3 <- rgdx(fnIn,list(name='e3',uels=f3,form='full',field='UP'),squeeze=F)
+  chk <- chkRgdxRes (e3, e3wantUp, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e3,'UP',full,filtered,squeeze=F) failed",chk$msg))
+  }
   # scale
   e0wantS <- list(name='e0', type='equation', dim=0L,
                   val=1,
@@ -914,6 +979,22 @@ tryCatch({
   chk <- chkRgdxRes (e1, e1wantS, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e1,'s',full,filtered,squeeze=F) failed",chk$msg))
+  }
+  t3 <- array(0,c(iCard,1,kCard),dimnames=list(iUels,c('j1'),kUels))
+  t3['i1','j1','k1'] <- 1
+  e3wantS <- list(name='e3', type='equation', dim=3L,
+                  val=t3,
+                  form='full', uels=f3, domains=userDom3,
+                  field='s', typeCode=GMS_EQUTYPE$L)
+  e3 <- rgdx(fnIn,list(name='e3',uels=f3,form='full',field='S'))
+  chk <- chkRgdxRes (e3, e3wantS, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e3,'S',full,filtered) failed",chk$msg))
+  }
+  e3 <- rgdx(fnIn,list(name='e3',uels=f3,form='full',field='S'),squeeze=F)
+  chk <- chkRgdxRes (e3, e3wantS, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e3,'S',full,filtered,squeeze=F) failed",chk$msg))
   }
 
 
