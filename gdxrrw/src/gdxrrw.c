@@ -437,7 +437,7 @@ SEXP igdx (SEXP args)
   }
   else {
     if (! isSilent)
-      Rprintf ("The GDX library has been not been loaded\n");
+      Rprintf ("The GDX library has not been loaded\n");
   }
 
   return result;
