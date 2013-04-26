@@ -3,7 +3,7 @@ Type: Package
 Title: An interface between GAMS and R
 Version: 0.3.0
 Depends: R (>= 2.14)
-Date: 2012-12-04
+Date: 2013-04-26
 Author: Original coding by Rishabh Jain.  Adopted, packaged, and extended by Steve Dirkse.
 Maintainer: Steve Dirkse <R@gams.com>
 Description: An interface between GAMS and R.  It includes functions
