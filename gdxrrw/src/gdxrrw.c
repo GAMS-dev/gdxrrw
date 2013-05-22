@@ -138,8 +138,8 @@ getGamsPath (char *dir)
 int
 callGams (const char *gamsCmd)
 {
-  char *gamsExeName;
-  char *cmdLine, *gamsPath;
+  char *gamsExeName = NULL;
+  char *cmdLine;
   int err, rc, showWindow = 0;
 #if defined(_WIN32)
   char gamsExeBaseName[] = "gams.exe";
@@ -175,19 +175,12 @@ callGams (const char *gamsCmd)
   }
 #endif /* windows */
 
-  // gamsPath = getGlobalString("path");
-  gamsPath = NULL;
-  if (NULL == gamsPath) {
-    getGamsPath (absGamsPath);
-    if ('\0' == absGamsPath[0]) {
-      gamsExeName = gamsExeBaseName;
-    }
-    else {
-      gamsExeName = absGamsPath;
-    }
+  getGamsPath (absGamsPath);
+  if ('\0' == absGamsPath[0]) {
+    gamsExeName = gamsExeBaseName;
   }
   else {
-    gamsExeName = gamsPath;
+    gamsExeName = absGamsPath;
   }
 
   if (gamsCmd == NULL) {
@@ -219,24 +212,34 @@ callGams (const char *gamsCmd)
     strcat (cmdLine, " lo=0");
   }
   err = GSExec (cmdLine, &rc, showWindow);
+  /* Rprintf("GSExec returned %d, progrc=%d\n", err, rc);
+   * Rprintf("GSExec returned %d, progrc=%d\n", err, rc);
+   * Rprintf ("  cmdLine was %s\n", cmdLine);
+   */
   if (err) {
 #if defined(_WIN32)
     const char *errMsg;
 
     errMsg = formatMessage (err);
-    if (NULL == gamsPath) {
-      if (2 == err) {
-        Rprintf("error: cannot find gams - please set path appropriately\n");
-        error( "Could not run %s: %s", gamsExeBaseName, errMsg);
-      }
+    if (2 == err) {
+      Rprintf("error: cannot find gams - please set path appropriately\n");
+      error( "Could not run %s: %s", gamsExeBaseName, errMsg);
     }
     else {
-      error("Could not run %s: %s: check gams.path",
-             gamsPath, errMsg);
+      Rprintf("error running gams: subshell could not run '%s'\n", cmdLine);
+      error("Could not run %s: %s",
+             gamsExeBaseName, errMsg);
     }
 #else
     /* non-Windows */
-    error("Could not run %s: check gams.path", gamsPath);
+    if (127 == err) {
+      Rprintf("error: cannot find gams - please set PATH appropriately\n");
+      error("Could not run %s", gamsExeBaseName);
+    }
+    else {
+      Rprintf("error running gams: subshell could not run '%s'\n", cmdLine);
+      error("Could not run %s", gamsExeBaseName);
+    }
 #endif
     return 1;
   }
