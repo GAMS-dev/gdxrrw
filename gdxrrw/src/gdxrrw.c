@@ -176,6 +176,7 @@ callGams (const char *gamsCmd)
 #endif /* windows */
 
   getGamsPath (absGamsPath);
+  RPrintf ("getGamsPath returns %s\n", absGamsPath);
   if ('\0' == absGamsPath[0]) {
     gamsExeName = gamsExeBaseName;
   }
