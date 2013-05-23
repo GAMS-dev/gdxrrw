@@ -101,55 +101,21 @@ formatMessage(int errNum)
 void
 getGamsSysdir (char dir[], int dirSiz)
 {
-#if defined(_WIN32)
-  char buf[512] = "unknown";
-  void *p;
-  int rc = 0;
-  HMODULE h = NULL;
-  WIN32_FIND_DATA FindFileData;
-  HANDLE hFind;
+  char loadPath[GMS_SSSIZE];
+  int i;
 
-  *dir = '\0';            /* signals failure */
-  if (8 == sizeof(p))
-    h = GetModuleHandle ("gams.mexw64");
-  else
-    h = GetModuleHandle ("gams.mexw32");
-  if (h)
-    rc = GetModuleFileName (h, buf, sizeof(buf));
-  if (rc) {
-    strncpy(dir, buf, strlen(buf) - 7);
-    strcat(dir, ".exe");
-    hFind = FindFirstFile(dir, &FindFileData);
-    if (hFind == INVALID_HANDLE_VALUE) {
-      *dir = '\0';            /* signals failure */
-      return;
-    }
-    else {
-      FindClose(hFind);
-    }
-  }
-#elif defined(__linux__)
-  {
-    char loadPath[GMS_SSSIZE];
-    int i;
-
-    *dir = '\0';                /* signals failure */
-    if (! gdxLibraryLoaded())
-      return;                   /* fail */
-    gdxGetLoadPath (loadPath);
-    if ('\0' == loadPath[0])
-      return;                   /* fail */
-    /* Rprintf ("DEBUG: loadPath = %s\n", loadPath); */
-    i = (int) strlen (loadPath);
-    if (i >= dirSiz)
-      return;                   /* fail */
-    strcpy (dir, loadPath);
-  }
-#else
   *dir = '\0';                  /* signals failure */
-#endif
+  if (! gdxLibraryLoaded())
+    return;                     /* fail */
+  gdxGetLoadPath (loadPath);
+  if ('\0' == loadPath[0])
+    return;                     /* fail */
+  i = (int) strlen (loadPath);
+  if (i >= dirSiz)
+    return;                     /* fail */
 
-  return;
+  strcpy (dir, loadPath);
+  return;                       /* success */
 } /* getGamsSysdir */
 
 
