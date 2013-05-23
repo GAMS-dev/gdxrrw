@@ -202,7 +202,7 @@ callGams (const char *gamsCmd)
   else {
     strcpy (absGamsExe, absGamsSysdir);
 #if defined(_WIN32)
-    strcat (absGamsExe, "\");
+    strcat (absGamsExe, "\\");
 #else
     strcat (absGamsExe, "/");
 #endif
