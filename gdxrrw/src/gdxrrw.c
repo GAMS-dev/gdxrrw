@@ -46,8 +46,10 @@ char ID[GMS_SSSIZE] = "$Id$";
 
 /* -------------------- Method declaration -----------------------*/
 
+/* return the absolute pathname for the gams sysdir,
+ * or empty if not available */
 void
-getGamsPath (char *dir);
+getGamsSysdir (char dir[], int dirSiz);
 
 int
 callGams(const char *gamsCmd);
@@ -97,7 +99,7 @@ formatMessage(int errNum)
 #endif /* #if defined(_WIN32) */
 
 void
-getGamsPath (char *dir)
+getGamsSysdir (char dir[], int dirSiz)
 {
 #if defined(_WIN32)
   char buf[512] = "unknown";
@@ -126,12 +128,29 @@ getGamsPath (char *dir)
       FindClose(hFind);
     }
   }
+#elif defined(__linux__)
+  {
+    char loadPath[GMS_SSSIZE];
+    int i;
+
+    *dir = '\0';                /* signals failure */
+    if (! gdxLibraryLoaded())
+      return;                   /* fail */
+    gdxGetLoadPath (loadPath);
+    if ('\0' == loadPath[0])
+      return;                   /* fail */
+    /* Rprintf ("DEBUG: loadPath = %s\n", loadPath); */
+    i = (int) strlen (loadPath);
+    if (i >= dirSiz)
+      return;                   /* fail */
+    strcpy (dir, loadPath);
+  }
 #else
-  *dir = '\0';            /* signals failure */
+  *dir = '\0';                  /* signals failure */
 #endif
 
   return;
-} /* getGamsPath */
+} /* getGamsSysdir */
 
 
 /* Execute GAMS command */
@@ -141,6 +160,8 @@ callGams (const char *gamsCmd)
   char *gamsExeName = NULL;
   char *cmdLine;
   int err, rc, showWindow = 0;
+  char absGamsSysdir[500];
+  char absGamsExe[512];
 #if defined(_WIN32)
   char gamsExeBaseName[] = "gams.exe";
 #else
@@ -150,7 +171,6 @@ callGams (const char *gamsCmd)
   char *word;
   shortStringBuf_t jobString;
   int loThere;
-  char absGamsPath[512];
 
 #if defined(_WIN32)
   {
@@ -175,13 +195,19 @@ callGams (const char *gamsCmd)
   }
 #endif /* windows */
 
-  getGamsPath (absGamsPath);
-  Rprintf ("getGamsPath returns %s\n", absGamsPath);
-  if ('\0' == absGamsPath[0]) {
+  getGamsSysdir (absGamsSysdir, sizeof(absGamsSysdir));
+  if ('\0' == absGamsSysdir[0]) {
     gamsExeName = gamsExeBaseName;
   }
   else {
-    gamsExeName = absGamsPath;
+    strcpy (absGamsExe, absGamsSysdir);
+#if defined(_WIN32)
+    strcat (absGamsExe, "\");
+#else
+    strcat (absGamsExe, "/");
+#endif
+    strcat (absGamsExe, gamsExeBaseName);
+    gamsExeName = absGamsExe;
   }
 
   if (gamsCmd == NULL) {
@@ -213,10 +239,11 @@ callGams (const char *gamsCmd)
     strcat (cmdLine, " lo=0");
   }
   err = GSExec (cmdLine, &rc, showWindow);
-  /* Rprintf("GSExec returned %d, progrc=%d\n", err, rc);
-   * Rprintf("GSExec returned %d, progrc=%d\n", err, rc);
-   * Rprintf ("  cmdLine was %s\n", cmdLine);
-   */
+#if 0
+  Rprintf("GSExec returned %d, progrc=%d\n", err, rc);
+  Rprintf("GSExec returned %d, progrc=%d\n", err, rc);
+  Rprintf ("  cmdLine was %s\n", cmdLine);
+#endif
   if (err) {
 #if defined(_WIN32)
     const char *errMsg;
