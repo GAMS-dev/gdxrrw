@@ -1,4 +1,4 @@
-### tGAMS.gms
+### tGAMS.R
 # test the operation of the gams() function
 
 fnIn <- "eurodist.gdx"
