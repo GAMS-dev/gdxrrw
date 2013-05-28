@@ -369,11 +369,13 @@ SEXP gams (SEXP args)
 } /* gams */
 
 
-/* gateway routine for igdx
- * With no args, print usage information and current state of GDX loading
- * With one arg (the GAMS sysdir name) attempt to get the GDX
- * interface loaded and ready.
- * result:
+/* gateway routine for igdx(gamsSysDir, silent, returnStr)
+ * If gamsSysDir==NULL, print usage information and current state of GDX loading
+ * If gamsSysDir<>NULL, attempt to get the GDX interface loaded and ready
+ * result if returnStr == TRUE:
+ *   path to GAMS sysdir if set,
+ *   empty string o/w
+ * result if returnStr <> TRUE:
  *   TRUE   if we are ready for GDX, i.e. if the GDX library is loaded,
  *   FALSE  otherwise
  */
@@ -384,20 +386,26 @@ SEXP igdx (SEXP args)
   int arglen;
   int rc, gdxLoaded;
   char loadPath[GMS_SSSIZE];
-  SEXP sysDirExp, silent;
+  SEXP sysDirExp, silent, returnStr;
   const char *sd1, *sd2;
   shortStringBuf_t sysDir, msgBuf;
   Rboolean isSilent = NA_LOGICAL;
+  Rboolean isReturnStr = NA_LOGICAL;
 
   arglen = length(args);
-  if (3 != arglen) {
-    error ("usage: %s(gamsSysDir=NULL, silent=FALSE) - incorrect arg count", funcName);
+  if (4 != arglen) {
+    error ("usage: %s(gamsSysDir=NULL, silent=FALSE, returnStr=FALSE) - incorrect arg count", funcName);
   }
   sysDirExp = CADR(args);
   silent = CADDR(args);
   isSilent = exp2Boolean (silent);
   if (NA_LOGICAL == isSilent) {
     isSilent = FALSE;
+  }
+  returnStr = CADDDR(args);
+  isReturnStr = exp2Boolean (returnStr);
+  if (NA_LOGICAL == isReturnStr) {
+    isReturnStr = FALSE;
   }
   gdxLoaded = gdxLibraryLoaded();
 
@@ -420,10 +428,8 @@ SEXP igdx (SEXP args)
     }
   }
 
+  loadPath[0] = '\0';
   gdxLoaded = gdxLibraryLoaded();
-  PROTECT(result = allocVector(INTSXP, 1));
-  INTEGER(result)[0] = gdxLoaded;
-  UNPROTECT(1);
   if (gdxLoaded) {
     if (! isSilent)
       Rprintf ("The GDX library has been loaded\n");
@@ -437,5 +443,15 @@ SEXP igdx (SEXP args)
       Rprintf ("The GDX library has not been loaded\n");
   }
 
+  if (isReturnStr) {
+    PROTECT(result = allocVector(STRSXP, 1));
+    SET_STRING_ELT(result, 0, mkChar(loadPath));
+    UNPROTECT(1);
+  }
+  else {
+    PROTECT(result = allocVector(INTSXP, 1));
+    INTEGER(result)[0] = gdxLoaded;
+    UNPROTECT(1);
+  }
   return result;
 } /* igdx */
