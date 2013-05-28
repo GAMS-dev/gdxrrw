@@ -3,6 +3,13 @@
 if (! require(gdxrrw))      stop ("gdxrrw package is not available")
 if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
+gdir <- igdx(NULL,silent=TRUE,returnStr=TRUE)
+pth <- Sys.getenv('PATH')
+Sys.setenv(PATH=paste(gdir,pth,sep=':'))
+
+rc <- source ("tgdxdiff.R")
+if (! rc$value)  stop ("The gdxdiff utility is unavailable or broken: Test run aborted.")
+
 tests <- c("tReadSparse1", "tReadFull1",
            "tRead.set", "tRead.param",
            "tReadSV", "tReadText",
@@ -43,6 +50,7 @@ for (t in tests) {
     print ("")
   }
 }
+Sys.setenv(PATH=pth)
 if (nFails) {
   print (paste("Tests complete. ", nRuns,"tests run,",nFails,"tests FAILED"))
   for (nm in names(fTests)) print(paste0('  ',nm))
