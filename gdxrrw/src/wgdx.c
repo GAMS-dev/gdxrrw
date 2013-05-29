@@ -24,6 +24,7 @@ static const char *validSymListNames[] = {
   ,"form"
   ,"dim"
   ,"ts"
+  ,"domains"
 };
 #define N_VALIDSYMLISTNAMES (sizeof(validSymListNames)/sizeof(*validSymListNames))
 static char validFieldMsg[256] = "";
@@ -385,6 +386,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
   SEXP formExp = NULL;
   SEXP dimExp = NULL;
   SEXP tsExp = NULL;
+  SEXP domExp = NULL;
   int i, j;
   int nElements;                /* number of elements in lst */
   int dimUels;
@@ -439,6 +441,9 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
     }
     else if (0 == strcmp("ts", eltName)) {
       tsExp = VECTOR_ELT(lst, i);
+    }
+    else if (0 == strcmp("domains", eltName)) {
+      domExp = VECTOR_ELT(lst, i);
     }
     else {
       Rprintf ("Input list elements must be according to this specification:\n");
@@ -543,16 +548,19 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
     if (VECSXP != TYPEOF(uelsExp)) {
       Rprintf ("List element 'uels' must be an un-named list - found %d instead\n",
                TYPEOF(uelsExp));
-      error ("Input list element 'uels' must be unnamed list.\n");
+      error ("Input list element 'uels' must be an unnamed list.\n");
     }
     dimUels = length(uelsExp);
-    if (0 == dimUels) {
-      error ("Empty input list element 'uels' is not allowed.\n");
+    if (withDim) {
+      if (wSpec->dim != dimUels)
+        error ("Inconsistent dimension found: 'dim'=%d  doesn't match '.uels' dimension=%d.\n",
+               wSpec->dim, dimUels);
     }
-    if (withDim && wSpec->dim != dimUels) {
-      error ("Inconsistent dimension found: 'dim'=%d  doesn't match '.uels' dimension=%d.\n",
-             wSpec->dim, dimUels);
+#if 0
+    else if (0 == dimUels) {
+      error ("Empty input list element 'uels' is not allowed without 'dim'=0.\n");
     }
+#endif
     PROTECT(uelOut = allocVector(VECSXP, dimUels));
     ++*protCount;
     for (j = 0;  j < dimUels;  j++) {
@@ -654,6 +662,14 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
       error ("Input list element 'val' must be a numeric matrix");
     }
   } /* valExp not NULL */
+
+  if (domExp) {
+    if (STRSXP != TYPEOF(domExp)) {
+      Rprintf ("Input list element 'domains' must be a string vector - found %d instead\n",
+               TYPEOF(domExp));
+      error ("Input list element 'domains' must be a string vector.\n");
+    }
+  }
 
 
   if (wSpec->withUel == 0 && wSpec->withVal == 1) {
