@@ -345,6 +345,9 @@ processWrArg (SEXP a, int argNum, SEXP *symList, int symListSiz, int *symListLen
   int rc;
   shortStringBuf_t msg;
 
+  if (VECSXP != TYPEOF(a)) {
+    error ("error in argument %d: valid symbol list expected, non-list found", argNum);
+  }
   lstName = getAttrib (a, R_NamesSymbol);
   if (R_NilValue == lstName) {
     /* Rprintf ("processWrArg: found potential list of lists\n"); */
