@@ -127,9 +127,18 @@ checkForValidData(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
     nrows = INTEGER(dims)[0];
     ncols = INTEGER(dims)[1];
 
-    if (dType == parameter) {
-      ncols--;
-    }
+    switch (dType) {
+    case set:
+    case parameter:
+      ncols--;                  /* skip last column containing parameter values,  */
+      break;
+    case variable:
+      ncols--;                  /* skip last column containing parameter values,  */
+      break;
+    default:
+      error ("vals input not expected/implemented this symbol type.");
+    } /* switch symbol type */
+
     if (nDimsUels != ncols) {
       error ("Number of columns in sparse data does not match with UEL dimension.");
     }
@@ -788,6 +797,13 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
 
 
   if (wSpec->withUel == 0 && wSpec->withVal == 1) {
+    switch (wSpec->dType) {
+    case set:
+    case parameter:
+      break;                    /* no problem */
+    default:
+      error ("Empty UEL list not implemented for type=%s.", CHAR(STRING_ELT(typeExp, 0)));
+    } /* switch symbol type */
     PROTECT(uelOut = allocVector(VECSXP, symDim));
     ++*protCount;
     createUelOut (valExp, uelOut, wSpec->dType, wSpec->dForm);
