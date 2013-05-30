@@ -58,6 +58,43 @@ msgInit (void) {
   k = sprintf (validFieldMsg + n, "'%s'", validSymListNames[i]);
 } /* msgInit */
 
+static char *
+typeofTxt (SEXP e, char buf[])
+{
+  int d;
+
+  d = TYPEOF(e);
+  switch (d) {
+  case NILSXP:
+    strcpy (buf, "NULL");
+    break;
+  case SYMSXP:
+    strcpy (buf, "symbol");
+    break;
+  case LGLSXP:
+    strcpy (buf, "logical");
+    break;
+  case INTSXP:
+    strcpy (buf, "integer");
+    break;
+  case REALSXP:
+    strcpy (buf, "real");
+    break;
+  case CPLXSXP:
+    strcpy (buf, "complex");
+    break;
+  case STRSXP:
+    strcpy (buf, "string");
+    break;
+  case VECSXP:
+    strcpy (buf, "generic vector");
+    break;
+  default:
+    sprintf (buf, "unknown (TYPEOF=%d)", d);
+  }
+  return buf;
+} /* typeofTxt */
+
 /* checkForValidData: check the validity of input data with input uels and dims */
 static void
 checkForValidData(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
@@ -82,7 +119,7 @@ checkForValidData(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
     pi = INTEGER(val);
   }
   else {
-    error (".val must be numeric.\n");
+    error (".val must be numeric.");
   }
   dims = getAttrib(val, R_DimSymbol);
 
@@ -250,7 +287,7 @@ registerInputUEL(SEXP uelOut, int k, SEXP uelIndex, int *protCount)
 
       rc = gdxUELRegisterStr (gdxHandle, uelString, &gi);
       if (rc != 1) {
-        error ("could not register: %s\n", uelString);
+        error ("could not register: %s", uelString);
       }
       sprintf(bufChar, "%d", gi);
       SET_STRING_ELT(subBuffer, j, mkChar(bufChar));
@@ -331,7 +368,7 @@ processWrListList (SEXP a, int argNum, SEXP *symList, int symListSiz, int *symLi
     if (0 == rc) {
       /* Rprintf ("processWrListList: argument %d element %d is a symList\n", argNum, k+1); */
       if (*symListLen >= symListSiz)
-        error ("processWrListList: internal error processing symbol list\n");
+        error ("processWrListList: internal error processing symbol list");
       symList[*symListLen] = aaa;
       ++*symListLen;
     }
@@ -364,7 +401,7 @@ processWrArg (SEXP a, int argNum, SEXP *symList, int symListSiz, int *symListLen
     if (0 == rc) {
       /* Rprintf ("processWrArg: argument %d is a symList\n", argNum); */
       if (*symListLen >= symListSiz)
-        error ("processWrArg: internal error processing symbol list\n");
+        error ("processWrArg: internal error processing symbol list");
       symList[*symListLen] = a;
       ++*symListLen;
     }
@@ -375,7 +412,23 @@ processWrArg (SEXP a, int argNum, SEXP *symList, int symListSiz, int *symListLen
   return;
 } /* processWrArg */
 
+char *
+validWriteListMsg (char buf[], int bufSiz)
+{
+  int i, n, nFree;
+  char *s;
 
+  s = buf;
+  nFree = bufSiz;
+  n = snprintf (s, nFree, "Valid input list elements: '%s'", validSymListNames[0]);
+  s += n;  nFree -= n;  if (nFree <=0) return buf;
+  for (i = 1;  i < N_VALIDSYMLISTNAMES;  i++) {
+    n = snprintf (s, nFree, ", '%s'", validSymListNames[i]);
+    s += n;  nFree -= n;  if (nFree <=0) return buf;
+  }
+  (void) snprintf (s, nFree, ".");
+  return buf;
+} /* validWriteListMsg */
 
 /* readWgdxList: read lst (aka the input request list or write specifier),
  * validate it, and store the result in *wSpecPtr.
@@ -400,6 +453,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
   int nElements;                /* number of elements in lst */
   int dimUels;
   int nCoords = 0, sz, withDim;
+  char buf[512];
   const char *tmpName;
   const char *eltName;        /* list element name */
   SEXP uelOut, bufferUel;     /* allocating temporary storage place */
@@ -458,20 +512,17 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
       fieldExp = VECTOR_ELT(lst, i);
     }
     else {
-      Rprintf ("Input list elements must be according to this specification:\n");
-      Rprintf ("'name', 'type', 'val', 'uels', 'form', 'dim', 'ts'.\n");
-      error ("Invalid input list element '%s' specified.",
-             eltName);
+      error ("Invalid input list element '%s' specified.  %s",
+             eltName, validWriteListMsg(buf,sizeof(buf)));
     }
   }
 
   /* now process the fields provided */
   if (NULL == nameExp)
-    error ("Required list element 'name' is missing. Please try again.\n");
+    error ("Required list element 'name' is missing. Please try again.");
   if (STRSXP != TYPEOF(nameExp)) {
-    Rprintf ("List element 'name' must be a string - found %d instead\n",
-             TYPEOF(nameExp));
-    error ("Input list element 'name' must be string.\n");
+    error ("Input list element 'name' must be a string - found %s instead.",
+           typeofTxt(nameExp, buf));
   }
   tmpName = CHAR(STRING_ELT(nameExp, 0));
   checkStringLength (tmpName);
@@ -479,9 +530,8 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
 
   if (tsExp) {
     if (STRSXP != TYPEOF(tsExp)) {
-      Rprintf ("List element 'ts' must be a string - found %d instead\n",
-               TYPEOF(tsExp));
-      error ("Input list element 'ts' must be string.\n");
+      error ("Input list element 'ts' must be a string - found %s instead.",
+             typeofTxt(tsExp, buf));
     }
     checkStringLength (CHAR(STRING_ELT(tsExp, 0)));
     wSpec->withTs = 1;
@@ -489,9 +539,8 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
 
   if (formExp) {
     if (STRSXP != TYPEOF(formExp)) {
-      Rprintf ("List element 'form' must be a string - found %d instead\n",
-               TYPEOF(formExp));
-      error ("Input list element 'form' must be string");
+      error ("Input list element 'form' must be a string - found %s instead.",
+             typeofTxt(formExp, buf));
     }
     tmpName = CHAR(STRING_ELT(formExp, 0));
     if (strcasecmp("full", tmpName) == 0) {
@@ -507,9 +556,8 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
 
   if (typeExp) {                /* optional */
     if (STRSXP != TYPEOF(typeExp)) {
-      Rprintf ("List element 'type' must be a string - found %d instead\n",
-               TYPEOF(typeExp));
-      error ("Input list element 'type' must be string.\n");
+      error ("Input list element 'type' must be a string - found %s instead.",
+             typeofTxt(typeExp, buf));
     }
     tmpName = CHAR(STRING_ELT(typeExp, 0));
     if (0 == strcasecmp("set", tmpName) ) {
@@ -519,58 +567,55 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
       wSpec->dType = parameter;
     }
     else {
-      Rprintf ("type found = %s\n", tmpName);
-      error ("Input list element 'type' must be either 'set' or 'parameter'.\n");
+      error ("Input list element 'type' must be either 'set' or 'parameter'.");
     }
   }
 
   if (dimExp) {                 /* optional */
     if (INTSXP == TYPEOF(dimExp)) {
       if (length(dimExp) != 1) {
-        error ("Optional input list element 'dim' must have only one element.\n");
+        error ("Optional input list element 'dim' must have only one element.");
       }
       if (INTEGER(dimExp)[0] < 0) {
-        error("Negative value is not allowed as valid input for 'dim'.\n");
+        error("Negative value is not allowed as valid input for 'dim'.");
       }
       withDim = 1;
       wSpec->dim = INTEGER(dimExp)[0];
     }
     else if (REALSXP == TYPEOF(dimExp)) {
       if (length(dimExp) != 1) {
-        error ("Optional input list element 'dim' must have only one element.\n");
+        error ("Optional input list element 'dim' must have only one element.");
       }
       if (REAL(dimExp)[0] < 0) {
-        error("Negative value is not allowed as valid input for 'dim'.\n");
+        error("Negative value is not allowed as valid input for 'dim'.");
       }
       withDim = 1;
       wSpec->dim = (int) REAL(dimExp)[0];
       if (REAL(dimExp)[0] != wSpec->dim) {
-        error("Non-integer value is not allowed as valid input for 'dim'.\n");
+        error("Non-integer value is not allowed as valid input for 'dim'.");
       }
     }
     else {
-      Rprintf ("List element 'dim' must be numeric - found %d instead\n",
-               TYPEOF(dimExp));
-      error ("Optional input list element 'dim' must be numeric.\n");
+      error ("Optional input list element 'dim' must be numeric - found %s instead.",
+             typeofTxt(dimExp, buf));
     }
   } /* dimExp */
 
   dimUels = -1;
   if (uelsExp) {                /* optional */
     if (VECSXP != TYPEOF(uelsExp)) {
-      Rprintf ("List element 'uels' must be an un-named list - found %d instead\n",
-               TYPEOF(uelsExp));
-      error ("Input list element 'uels' must be an unnamed list.\n");
+      error ("Input list element 'uels' must be an unnamed list - found %s instead.",
+             typeofTxt(uelsExp, buf));
     }
     dimUels = length(uelsExp);
     if (withDim) {
       if (wSpec->dim != dimUels)
-        error ("Inconsistent dimension found: 'dim'=%d  doesn't match '.uels' dimension=%d.\n",
+        error ("Inconsistent dimension found: 'dim'=%d  doesn't match '.uels' dimension=%d.",
                wSpec->dim, dimUels);
     }
 #if 0
     else if (0 == dimUels) {
-      error ("Empty input list element 'uels' is not allowed without 'dim'=0.\n");
+      error ("Empty input list element 'uels' is not allowed without 'dim'=0.");
     }
 #endif
     PROTECT(uelOut = allocVector(VECSXP, dimUels));
@@ -578,7 +623,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
     for (j = 0;  j < dimUels;  j++) {
       tmpUel = VECTOR_ELT(uelsExp, j);
       if (tmpUel == R_NilValue) {
-        error ("Empty input field in .uels not allowed\n");
+        error ("Empty input field in .uels not allowed");
       }
       if (TYPEOF(tmpUel) == STRSXP) {
         /*  checkStringLength( CHAR(STRING_ELT(tmp, 0)) ); */
@@ -591,7 +636,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
         SET_VECTOR_ELT (uelOut, j, bufferUel);
       }
       else {
-        error ("Input uels must be either string vectors or numeric vectors.\n");
+        error ("Input uels must be either string vectors or numeric vectors.");
       }
     }
     wSpec->withUel = 1;
@@ -610,8 +655,8 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
     if (TYPEOF(valExp) == REALSXP || TYPEOF(valExp) == INTSXP ) {
       if (wSpec->dForm == sparse) {
         if (length(dimension) != 2) {
-          Rprintf("You have entered a %d dimensional matrix.\n", length(dimension));
-          error ("Only 2-dimensional '.val' is allowed as valid input in sparse format.");
+          error ("Only 2-dimensional '.val' is allowed as valid input in sparse format: found %d-dim .val.",
+                 length(dimension));
         }
         /* getting data matrix */
         sz = INTEGER(dimension)[0];
@@ -635,13 +680,13 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
         if (withDim) {
           if (wSpec->dim != nCoords) {
             error ("Inconsistent dimensions found: '.dim' = %d doesn't match"
-                   " dimension=%d implied by '.val'\n", wSpec->dim, nCoords);
+                   " dimension=%d implied by '.val'", wSpec->dim, nCoords);
           }
         }
         else if (dimUels > 0) {
           if (dimUels != nCoords) {
             error ("Inconsistent dimensions implied by '.uels' (%d) and"
-                   " '.val' (%d)\n", dimUels, nCoords);
+                   " '.val' (%d)", dimUels, nCoords);
           }
         }
         wSpec->withVal = 1;
@@ -656,30 +701,28 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
         if (withDim) {
           if (wSpec->dim != nCoords) {
             error ("Inconsistent dimensions found: '.dim' = %d doesn't match"
-                   " '.val' dimension %d.\n", wSpec->dim, nCoords);
+                   " '.val' dimension %d.", wSpec->dim, nCoords);
           }
         }
         else if (dimUels > 0) {
           if (dimUels != nCoords) {
             error ("Inconsistent dimensions implied by '.uels' (%d) and"
-                   " '.val' (%d)\n", dimUels, nCoords);
+                   " '.val' (%d)", dimUels, nCoords);
           }
         }
         wSpec->withVal = 1;
       }
     }
     else {
-      Rprintf("List element 'val' must be a numeric matrix - found %d instead.\n",
-              TYPEOF(valExp));
-      error ("Input list element 'val' must be a numeric matrix");
+      error ("Input list element 'val' must be a numeric matrix - found %s instead.",
+             typeofTxt(valExp, buf));
     }
   } /* valExp not NULL */
 
   if (domExp) {
     if (STRSXP != TYPEOF(domExp)) {
-      Rprintf ("Input list element 'domains' must be a string vector - found %d instead\n",
-               TYPEOF(domExp));
-      error ("Input list element 'domains' must be a string vector.\n");
+      error ("Input list element 'domains' must be a string vector - found %s instead.",
+             typeofTxt(domExp, buf));
     }
   }
 
@@ -726,10 +769,10 @@ unpackWgdxArgs (SEXP *args, int argLen, SEXP **symList,
     else {
       argName = CHAR(PRINTNAME(TAG(a)));
       if (0 != strcmp("squeeze",argName)) {
-        error ("usage: wgdx: unrecognized argument name '%s'\n", argName);
+        error ("usage: wgdx: unrecognized argument name '%s'", argName);
       }
       if (i != argLen-1) {
-        error ("usage: wgdx: argument '%s' must follow symbol lists\n", argName);
+        error ("usage: wgdx: argument '%s' must follow symbol lists", argName);
       }
       switch (TYPEOF(t)) {
       case LGLSXP:
@@ -745,7 +788,7 @@ unpackWgdxArgs (SEXP *args, int argLen, SEXP **symList,
       case STRSXP:
         s = CHAR(STRING_ELT(t, 0));
         if ('\0' == s[0])
-          error ("usage: wgdx: argument '%s=<empty_string>' is invalid\n", argName);
+          error ("usage: wgdx: argument '%s=<empty_string>' is invalid", argName);
         if ('\0' == s[1]) {
           /* single character */
           switch (s[0]) {
@@ -768,7 +811,7 @@ unpackWgdxArgs (SEXP *args, int argLen, SEXP **symList,
             *zeroSqueeze = 'e';
             break;
           default:
-            error ("usage: wgdx: argument '%s=%s' is invalid\n", argName, s);
+            error ("usage: wgdx: argument '%s=%s' is invalid", argName, s);
           }
         }
         else {
@@ -792,11 +835,11 @@ unpackWgdxArgs (SEXP *args, int argLen, SEXP **symList,
                    (0 == strcmp("eps",s)) )
             *zeroSqueeze = 'e';
           else
-            error ("usage: wgdx: argument '%s=%s' is invalid\n", argName, s);
+            error ("usage: wgdx: argument '%s=%s' is invalid", argName, s);
         }
         break;
       default:
-        error ("usage: wgdx: argument '%s' is invalid\n", argName);
+        error ("usage: wgdx: argument '%s' is invalid", argName);
       } /* end switch(TYPEOF(t)) */
       stopper = argLen - 1;
     }
@@ -880,7 +923,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 
   rc = gdxUELRegisterStrStart (gdxHandle);
   if (! rc) {
-    error ("could not gdxUELRegisterStrStart\n");
+    error ("could not gdxUELRegisterStrStart");
   }
 
   PROTECT(uelIndex = allocVector(VECSXP, symListLen));
@@ -891,7 +934,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   /* check input list(s) for data validation and to create UEL list */
   for (iSym = 0;  iSym < symListLen;  iSym++) {
     if (TYPEOF(symList[iSym]) != VECSXP) {
-      error("Incorrect type of input encountered. List expected\n");
+      error("Incorrect type of input encountered. List expected");
     }
     else {
       readWgdxList (symList[iSym], iSym, uelIndex, wSpecPtr+iSym, &wgdxAlloc);
@@ -900,7 +943,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 
   rc = gdxUELRegisterDone(gdxHandle);
   if (! rc)
-    error ("could not gdxUELRegisterDone: rc = %d\n", rc);
+    error ("could not gdxUELRegisterDone: rc = %d", rc);
 
   /* start writing data to GDX file */
   memset (uelIndices, 0, sizeof(gdxUelIndex_t));
@@ -1089,7 +1132,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 	  /* could do the check in checkForValidData but
 	   * that uses an additional pass through the full matrix */
 	  if (0 != dt && 1 != dt) {
-	    error ("Only zero-one values are allowed when specifying sets with form=full\n");
+	    error ("Only zero-one values are allowed when specifying sets with form=full");
 	  }
 	}
 	if ((parameter == wSpecPtr[i]->dType) &&
@@ -1146,7 +1189,7 @@ wgdx (SEXP args)
 
   arglen = length(args);
   if (arglen == 1) {
-    error("No input is entered. Please enter valid input\n");
+    error("No input is entered. Please enter valid input");
   }
 
   args = CDR(args); fileName = CAR(args);
@@ -1155,7 +1198,7 @@ wgdx (SEXP args)
    * and second argument is of type list
    */
   if (TYPEOF(fileName) != STRSXP ) {
-    error ("The GDX filename (first argument) must be of type string.\n");
+    error ("The GDX filename (first argument) must be of type string.");
   }
 
   (void) CHAR2ShortStr (CHAR(STRING_ELT(fileName, 0)), gdxFileName);
