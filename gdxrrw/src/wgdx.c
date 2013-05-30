@@ -16,6 +16,8 @@
 #include "globals.h"
 
 static shortStringBuf_t lastErrMsg;
+
+/* N.B. this is the union of valid names, not all combinations are allowed */
 static const char *validSymListNames[] = {
   "name"
   ,"type"
@@ -25,6 +27,9 @@ static const char *validSymListNames[] = {
   ,"dim"
   ,"ts"
   ,"domains"
+  ,"field"
+  ,"varTypeText"
+  ,"typeCode"                   /* should this be subType or subTypeCode instead? */
 };
 #define N_VALIDSYMLISTNAMES (sizeof(validSymListNames)/sizeof(*validSymListNames))
 static char validFieldMsg[256] = "";
@@ -390,6 +395,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
   SEXP dimExp = NULL;
   SEXP tsExp = NULL;
   SEXP domExp = NULL;
+  SEXP fieldExp = NULL;
   int i, j;
   int nElements;                /* number of elements in lst */
   int dimUels;
@@ -410,7 +416,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
 
   nElements = length(lst);
   /* check maximum number of elements */
-  if (nElements < 1 || nElements > 7) {
+  if (nElements < 1 || nElements > 10) {
     error("Incorrect number of elements in input list argument.");
   }
 
@@ -447,6 +453,9 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
     }
     else if (0 == strcmp("domains", eltName)) {
       domExp = VECTOR_ELT(lst, i);
+    }
+    else if (0 == strcmp("field", eltName)) {
+      fieldExp = VECTOR_ELT(lst, i);
     }
     else {
       Rprintf ("Input list elements must be according to this specification:\n");
