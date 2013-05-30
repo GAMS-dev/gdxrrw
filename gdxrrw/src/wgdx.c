@@ -566,8 +566,11 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
     else if (0 == strcasecmp("parameter", tmpName) ) {
       wSpec->dType = parameter;
     }
+    else if (0 == strcasecmp("variable", tmpName) ) {
+      wSpec->dType = variable;
+    }
     else {
-      error ("Input list element 'type' must be either 'set' or 'parameter'.");
+      error ("Input list element 'type' must be either 'set', 'parameter' or 'variable'.");
     }
   }
 
@@ -609,9 +612,21 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
     }
     dimUels = length(uelsExp);
     if (withDim) {
-      if (wSpec->dim != dimUels)
-        error ("Inconsistent dimension found: 'dim'=%d  doesn't match '.uels' dimension=%d.",
-               wSpec->dim, dimUels);
+      switch (wSpec->dType) {
+      case set:
+      case parameter:
+        if (wSpec->dim != dimUels)
+          error ("Inconsistent dimension found: 'dim'=%d  doesn't match '.uels' dimension=%d.",
+                 wSpec->dim, dimUels);
+        break;
+      case variable:
+        if (wSpec->dim != (dimUels-1))
+          error ("Inconsistent dimension found: 'dim'=%d  doesn't match implied '.uels' dimension=%d.",
+                 wSpec->dim, dimUels-1);
+        break;
+      default:
+        error (".uels input not expected/implemented for type=%s.", CHAR(STRING_ELT(typeExp, 0)));
+      } /* switch symbol type */
     }
 #if 0
     else if (0 == dimUels) {
