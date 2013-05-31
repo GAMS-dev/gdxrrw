@@ -161,6 +161,7 @@ checkForValidData(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
 
     switch (dType) {
     case set:
+      break;
     case parameter:
       ncols--;    /* skip last column containing parameter values */
       break;
@@ -994,8 +995,10 @@ static void
 writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 	  char zeroSqueeze)
 {
-  SEXP uelIndex, lstNames, valData;
-  SEXP mainBuffer, subBuffer;
+  SEXP iVec;               /* UEL indices for one dim of one symbol */
+  SEXP iVecVec;            /* UEL indices for all dims of one symbol */
+  SEXP uelIndex;           /* UEL indices for all symbols */
+  SEXP lstNames, valData;
   wSpec_t **wSpecPtr;           /* was data */
   gdxUelIndex_t uelIndices;
   gdxValues_t vals;
@@ -1081,11 +1084,11 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         break;
       }
     }
-    mainBuffer = VECTOR_ELT(uelIndex, i);
+    iVecVec = VECTOR_ELT(uelIndex, i);
     if (wSpecPtr[i]->dType == set) {
       if (wSpecPtr[i]->withVal == 0 && wSpecPtr[i]->withUel == 1) {
         /* creating value for set that does not have val */
-	nColumns = length(mainBuffer);
+	nColumns = length(iVecVec);
 	PROTECT(dimVect = allocVector(REALSXP, nColumns));
 	wgdxAlloc++;
 	totalElement = 1;
@@ -1093,8 +1096,8 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 	ndimension = 0;
 
 	for (ndimension = 0; ndimension < (int)nColumns; ndimension++) {
-	  dimVal[ndimension] = length(VECTOR_ELT(mainBuffer, ndimension));
-	  totalElement = (totalElement * length(VECTOR_ELT(mainBuffer, ndimension)));
+	  dimVal[ndimension] = length(VECTOR_ELT(iVecVec, ndimension));
+	  totalElement = (totalElement * length(VECTOR_ELT(iVecVec, ndimension)));
 	}
 	PROTECT(valData = allocVector(REALSXP, totalElement));
 	wgdxAlloc++;
@@ -1147,14 +1150,14 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
       }
       for (j = 0; j < nRows; j++) {
 	for (k = 0; k < nColumns; k++) {
-	  subBuffer = VECTOR_ELT(mainBuffer, k);
+	  iVec = VECTOR_ELT(iVecVec, k);
 	  if (pd) {
 	    idx = (int) pd[k*nRows + j];
 	  }
 	  else {
 	    idx = pi[k*nRows + j];
 	  }
-	  stringUelIndex = CHAR(STRING_ELT(subBuffer, idx-1));
+	  stringUelIndex = CHAR(STRING_ELT(iVec, idx-1));
 	  uelIndices[k] = atoi(stringUelIndex);
 	}
 	if (wSpecPtr[i]->dType == parameter) {
@@ -1191,7 +1194,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
     else {                    /* form = full */
       total_num_of_elements = length(valData);
       dimVect = getAttrib(valData, R_DimSymbol);
-      nColumns = length(mainBuffer);
+      nColumns = length(iVecVec);
       subscript = malloc(nColumns*sizeof(*subscript));
       if (wSpecPtr[i]->dType == parameter) {
 	rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
@@ -1220,13 +1223,13 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 	subindex = index;
 	if (nColumns > 0) {
 	  for (d = nColumns-1; ; d--) {
-	    subBuffer = VECTOR_ELT(mainBuffer, d);
+	    iVec = VECTOR_ELT(iVecVec, d);
 	    for (total=1, inner=0; inner<d; inner++) {
 	      total *= INTEGER(dimVect)[inner];
 	    }
 	    subscript[d] = subindex / total;
 
-	    stringUelIndex = CHAR(STRING_ELT(subBuffer, subscript[d]));
+	    stringUelIndex = CHAR(STRING_ELT(iVec, subscript[d]));
 
 	    uelIndices[d] = atoi(stringUelIndex);
 
