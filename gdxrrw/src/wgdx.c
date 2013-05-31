@@ -95,6 +95,38 @@ typeofTxt (SEXP e, char buf[])
   return buf;
 } /* typeofTxt */
 
+/* checkSymType2: make sure dType is one we've implemented 
+ * the calling code block for */
+static void
+checkSymType2 (dType_t dType)
+{
+  switch (dType) {
+  case set:
+  case parameter:
+    break;
+  case variable:
+    error ("wgdx: not yet implemented for symbol type 'variable'");
+    break;
+  default:
+    error ("wgdx: not yet implemented for symbol type <unknown>");
+  } /* end switch */
+} /* checkSymType2 */
+
+/* checkSymType3: make sure dType is one we've implemented 
+ * the calling code block for */
+static void
+checkSymType3 (dType_t dType)
+{
+  switch (dType) {
+  case set:
+  case parameter:
+  case variable:
+    break;
+  default:
+    error ("wgdx: not yet implemented for symbol type <unknown>");
+  } /* end switch */
+} /* checkSymType3 */
+
 /* checkForValidData: check the validity of input data with input uels and dims */
 static void
 checkForValidData(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
@@ -130,10 +162,10 @@ checkForValidData(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
     switch (dType) {
     case set:
     case parameter:
-      ncols--;                  /* skip last column containing parameter values,  */
+      ncols--;    /* skip last column containing parameter values */
       break;
     case variable:
-      ncols--;                  /* skip last column containing parameter values,  */
+      ncols--;    /* skip last column containing parameter values */
       break;
     default:
       error ("vals input not expected/implemented this symbol type.");
@@ -207,6 +239,7 @@ createUelOut(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
   if (dForm == sparse) {
     nrows = INTEGER(dims)[0];
     ncols = INTEGER(dims)[1];
+    checkSymType2 (dType);
     if (dType == parameter) {
       ncols--;
     }
@@ -269,43 +302,54 @@ createUelOut(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
   } /* if sparse .. else .. */
 } /* createUelOut */
 
+/* registerInputUEL: take the strings in uelOut and register them,
+ * in the process storing their GDX indices in uelIndex[kk]
+ * uelOut is a vector of string vectors,
+ * one string vector for each symbol dimension
+ */
 static void
-registerInputUEL(SEXP uelOut, int k, SEXP uelIndex, int *protCount)
+registerInputUEL(SEXP uelOut, int kk, SEXP uelIndex, int *protCount)
 {
-  int i, j, rc, gi;
+  int i, k, rc, gi;
   char bufChar[256];
-  const  char *uelString;
-  int nCols, nSubElements;
-  SEXP mainBuffer, subBuffer, dummy;
+  const char *uelString;
+  int uelDim;               /* should be same as the GDX symbol dim */
+  int vecLen;               /* length of sVec */
+  SEXP sVec;                /* vector of UEL labels: input */
+  SEXP iVec;                /* GDX indices for sVec labels */
+  SEXP iVecVec;             /* one iVec for each index position */
 
-  nCols = length(uelOut);
-  PROTECT( mainBuffer = allocVector(VECSXP, nCols));
+  uelDim = length(uelOut);
+  PROTECT( iVecVec = allocVector(VECSXP, uelDim));
   ++*protCount;
+  /* Rprintf ("DEBUG registerInputUEL: uelDim=%d\n", uelDim); */
 
-  for (i = 0; i < nCols; i++) {
-    dummy = VECTOR_ELT(uelOut, i);
+  for (i = 0;  i < uelDim;  i++) {
+    sVec = VECTOR_ELT(uelOut, i); /* UELs for i'th index position */
+    vecLen = length(sVec);
+    /* Rprintf ("DEBUG registerInputUEL: i=%d  vecLen=%d\n", i, vecLen); */
 
-    nSubElements = length(dummy);
+    PROTECT(iVec = allocVector(STRSXP, vecLen));
 
-    PROTECT(subBuffer = allocVector(STRSXP, nSubElements));
-
-    for (j = 0; j < nSubElements; j++) {
+    for (k = 0; k < vecLen; k++) {
       /* get string and register to gdx */
-      uelString = CHAR(STRING_ELT(dummy, j));
-      /* Rprintf("str at %d is %s\n", j, uelString); */
+      uelString = CHAR(STRING_ELT(sVec, k));
+      /* Rprintf("str at %d is %s\n", k, uelString); */
 
       rc = gdxUELRegisterStr (gdxHandle, uelString, &gi);
       if (rc != 1) {
         error ("could not register: %s", uelString);
       }
+      /* Rprintf("  input: %s  output from gdx: %d\n", uelString, gi); */
       sprintf(bufChar, "%d", gi);
-      SET_STRING_ELT(subBuffer, j, mkChar(bufChar));
+      SET_STRING_ELT(iVec, k, mkChar(bufChar));
     }
 
-    SET_VECTOR_ELT(mainBuffer, i, subBuffer);
+    SET_VECTOR_ELT(iVecVec, i, iVec);
     UNPROTECT(1);
   }
-  SET_VECTOR_ELT(uelIndex, k, mainBuffer);
+  /* store UEL indices for k'th symbol */
+  SET_VECTOR_ELT(uelIndex, kk, iVecVec);
 } /* registerInputUEL */
 
 /* checkWrSymList: checks if a is potentially a valid symList
@@ -764,6 +808,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
         }
         else if (dimUels > 0) {
           int ddd = dimUels;
+          checkSymType3 (wSpec->dType);
           switch (wSpec->dType) {
           case set:
           case parameter:
