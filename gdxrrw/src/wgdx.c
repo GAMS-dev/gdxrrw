@@ -158,7 +158,7 @@ checkForValidData(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
   if (dForm == sparse) {
     nrows = INTEGER(dims)[0];
     ncols = INTEGER(dims)[1];
-
+    checkSymType3(dType);
     switch (dType) {
     case set:
       break;
@@ -169,7 +169,7 @@ checkForValidData(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
       ncols--;    /* skip last column containing parameter values */
       break;
     default:
-      error ("vals input not expected/implemented this symbol type.");
+      error ("vals input not expected/implemented for this symbol type.");
     } /* switch symbol type */
 
     if (nDimsUels != ncols) {
@@ -302,6 +302,35 @@ createUelOut(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
     }
   } /* if sparse .. else .. */
 } /* createUelOut */
+
+/* dumpUELs: dump the strings in uelOut
+ * uelOut is the UEL info for one symbol: a vector of string vectors,
+ * one string vector for each symbol dimension
+ */
+static void
+dumpUELs (SEXP uelOut, wSpec_t *wSpec)
+{
+  int i, k;
+  int uelDim;               /* should be same as the GDX symbol dim, at least for params and sets */
+  int vecLen;               /* length of sVec */
+  const char *uelString;
+  SEXP sVec;                /* vector of UEL labels: input */
+
+  uelDim = length(uelOut);
+  Rprintf ("\n");
+  Rprintf ("--------------------------------------------\n");
+  Rprintf ("dumpUELs for symbol '%s', uelDim=%d\n", wSpec->name, uelDim);
+
+  for (i = 0;  i < uelDim;  i++) {
+    sVec = VECTOR_ELT(uelOut, i); /* UELs for i'th index position */
+    vecLen = length(sVec);
+    Rprintf (" dim %d lenth=%d\n", i, vecLen);
+    for (k = 0;  k < vecLen;  k++) {
+      uelString = CHAR(STRING_ELT(sVec, k));
+      Rprintf("    %s\n", uelString);
+    }
+  }
+} /* dumpUELs */
 
 /* registerInputUEL: take the strings in uelOut and register them,
  * in the process storing their GDX indices in uelIndex[kk]
@@ -504,15 +533,14 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
   int i, j;
   int nElements;                /* number of elements in lst */
   int dimUels;
-  int symDim = 0; /* consistent with GDX or GAMS idea of symbol dim */
-  int sz, withDim;
+  int symDimTmp = 0; /* consistent with GDX or GAMS idea of symbol dim */
+  int sz;
   char buf[512];
   const char *tmpName;
   const char *eltName;        /* list element name */
   SEXP uelOut, bufferUel;     /* allocating temporary storage place */
   wSpec_t *wSpec;
 
-  withDim = 0;
   uelOut = R_NilValue;
 
   wSpec = (wSpec_t *) malloc(sizeof(*wSpec));
@@ -520,6 +548,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
   memset (wSpec, 0, sizeof(*wSpec));
   wSpec->dForm = sparse;
   wSpec->dType = set;
+  wSpec->symDim = -1;           /* not yet known */
 
   nElements = length(lst);
   /* check maximum number of elements */
@@ -635,8 +664,8 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
       if (INTEGER(dimExp)[0] < 0) {
         error("Negative value is not allowed as valid input for 'dim'.");
       }
-      withDim = 1;
-      wSpec->dim = INTEGER(dimExp)[0];
+      wSpec->withDim = 1;
+      wSpec->symDim = wSpec->dim = INTEGER(dimExp)[0];
     }
     else if (REALSXP == TYPEOF(dimExp)) {
       if (length(dimExp) != 1) {
@@ -645,8 +674,8 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
       if (REAL(dimExp)[0] < 0) {
         error("Negative value is not allowed as valid input for 'dim'.");
       }
-      withDim = 1;
-      wSpec->dim = (int) REAL(dimExp)[0];
+      wSpec->withDim = 1;
+      wSpec->symDim = wSpec->dim = (int) REAL(dimExp)[0];
       if (REAL(dimExp)[0] != wSpec->dim) {
         error("Non-integer value is not allowed as valid input for 'dim'.");
       }
@@ -664,7 +693,8 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
              typeofTxt(uelsExp, buf));
     }
     dimUels = length(uelsExp);
-    if (withDim) {
+    checkSymType3(wSpec->dType);
+    if (wSpec->withDim) {
       switch (wSpec->dType) {
       case set:
       case parameter:
@@ -680,6 +710,24 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
       default:
         error ("uels input not expected/implemented for type=%s.", CHAR(STRING_ELT(typeExp, 0)));
       } /* switch symbol type */
+    }
+    else {
+      /* no 'dim' element, so uels imply symDim */
+      switch (wSpec->dType) {
+      case set:
+      case parameter:
+        wSpec->symDim = dimUels;
+        break;
+      case variable:
+        wSpec->symDim = dimUels - 1;
+        break;
+      default:
+        error ("uels input not expected/implemented for type=%s.", CHAR(STRING_ELT(typeExp, 0)));
+      } /* switch symbol type */
+      if (wSpec->symDim > GMS_MAX_INDEX_DIM) {
+        error ("Input list element 'uels' implies symbol dimension of %d, exceeding GDX dimension limit of %d.",
+               wSpec->symDim, GMS_MAX_INDEX_DIM);
+      }
     }
 #if 0
     else if (0 == dimUels) {
@@ -711,11 +759,13 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
   } /* uelsExp */
 
   if (NULL == valExp) {         /* .val field missing */
-    if (parameter == wSpec->dType) {
-      error ("Missing 'val' is a required list element for parameters.");
+    if (set == wSpec->dType) {
+      if (0 == wSpec->withUel) {
+        error ("Missing 'val' is a required list element for sets with no UELs.");
+      }
     }
-    if (set == wSpec->dType && 0 == wSpec->withUel) {
-      error ("Missing 'val' is a required list element for sets with no UELs.");
+    else {
+      error ("Missing 'val' is a required list element for type=%s.", CHAR(STRING_ELT(typeExp, 0)));
     }
   }
   else {
@@ -737,90 +787,78 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
           error ("Input list element 'val' exceeds column limit of %d",
                  INT_MAX);
         }
-        symDim = sz;
+        symDimTmp = sz;
+        checkSymType3 (wSpec->dType);
         switch (wSpec->dType) {
         case set:
           break;                /* no adjustment */
         case parameter:
-          symDim--;
+          symDimTmp--;
           break;
         case variable:
-          symDim -= 2;
-          if (symDim < 0)
+          symDimTmp -= 2;
+          if (symDimTmp < 0)
             error ("val input must have at least 2 cols when writing variables in sparse form.");
           break;
         default:
           error ("val input not expected/implemented for type=%s.", CHAR(STRING_ELT(typeExp, 0)));
         } /* switch symbol type */
-        if (symDim > GMS_MAX_INDEX_DIM) {
-          error ("Input list element 'val' implies symbol dimension exceeding GDX dimension limit of %d.",
-                 GMS_MAX_INDEX_DIM);
+        if (symDimTmp > GMS_MAX_INDEX_DIM) {
+          error ("Input list element 'val' implies symbol dimension of %d, exceeding GDX dimension limit of %d.",
+                 symDimTmp, GMS_MAX_INDEX_DIM);
         }
-        if (withDim) {
-          if (wSpec->dim != symDim) {
+        /* previous checks set symDim by 'dim' or 'uels' */
+        if (wSpec->withDim) {
+          if (wSpec->dim != symDimTmp) {
             error ("Inconsistent dimensions found: 'dim'=%d doesn't match"
-                   " dimension=%d implied by 'val'", wSpec->dim, symDim);
+                   " dimension=%d implied by 'val'", wSpec->dim, symDimTmp);
           }
         }
         else if (dimUels > 0) {
-          int ddd = dimUels;
-
-          switch (wSpec->dType) {
-          case set:
-          case parameter:
-            break;
-          case variable:
-            ddd--;                /* account for _field labels */
-            break;
-          default:
-            error ("val input not expected/implemented for type=%s.", CHAR(STRING_ELT(typeExp, 0)));
-          } /* switch symbol type */
-          if (ddd != symDim) {
+          /* symDim implies already by 'uels' */
+          if (wSpec->symDim < 0)
+            error ("Internal error: symDim should already be set positive");
+          if (wSpec->symDim != symDimTmp) {
             error ("Inconsistent dimensions implied by 'uels' (%d) and"
-                   " 'val' (%d)", ddd, symDim);
+                   " 'val' (%d)", wSpec->symDim, symDimTmp);
           }
+        }
+        else {
+          wSpec->symDim = symDimTmp;
         }
         wSpec->withVal = 1;
       } /* if sparse */
       else {
         /* This is for Full/Dense data */
-        symDim = length(dimension);
+        symDimTmp = length(dimension);
         switch (wSpec->dType) {
         case set:
         case parameter:
           break;                /* no adjustment */
         case variable:
-          symDim--;             /* account for _field dimension */
+          symDimTmp--;          /* account for _field dimension */
           break;
         default:
           error ("val input not expected/implemented for type=%s.", CHAR(STRING_ELT(typeExp, 0)));
         } /* switch symbol type */
-        if (symDim > GMS_MAX_INDEX_DIM) {
-          error ("Input list element 'val' implies symbol dimension exceeding GDX dimension limit of %d.",
-                 GMS_MAX_INDEX_DIM);
+        if (symDimTmp > GMS_MAX_INDEX_DIM) {
+          error ("Input list element 'val' implies symbol dimension of %d, exceeding GDX dimension limit of %d.",
+                 symDimTmp, GMS_MAX_INDEX_DIM);
         }
-        if (withDim) {
-          if (wSpec->dim != symDim) {
+        /* previous checks set symDim by 'dim' or 'uels' */
+        if (wSpec->withDim) {
+          if (wSpec->dim != symDimTmp) {
             error ("Inconsistent dimensions found: 'dim'=%d doesn't match"
-                   " dimension=%d implied by 'val'", wSpec->dim, symDim);
+                   " dimension=%d implied by 'val'", wSpec->dim, symDimTmp);
           }
         }
         else if (dimUels > 0) {
-          int ddd = dimUels;
-          checkSymType3 (wSpec->dType);
-          switch (wSpec->dType) {
-          case set:
-          case parameter:
-            break;
-          case variable:
-            ddd--;                /* account for _field labels */
-            break;
-          default:
-            error ("val input not expected/implemented for type=%s.", CHAR(STRING_ELT(typeExp, 0)));
-          } /* switch symbol type */
-          if (ddd != symDim) {
+          /* symDim implies already by 'uels' */
+          if (wSpec->symDim < 0)
+            error ("Internal error: symDim should already be set positive");
+          if (wSpec->symDim != symDimTmp) {
             error ("Inconsistent dimensions implied by 'uels' (%d) and"
-                   " 'val' (%d)", ddd, symDim);
+                   " 'val' (%d)", wSpec->symDim, symDimTmp);
           }
         }
         wSpec->withVal = 1;
@@ -846,9 +884,9 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
     case parameter:
       break;                    /* no problem */
     default:
-      error ("Empty UEL list not implemented for type=%s.", CHAR(STRING_ELT(typeExp, 0)));
+      error ("Empty UEL list not yet implemented for type=%s.", CHAR(STRING_ELT(typeExp, 0)));
     } /* switch symbol type */
-    PROTECT(uelOut = allocVector(VECSXP, symDim));
+    PROTECT(uelOut = allocVector(VECSXP, wSpec->symDim)); /* or should this be a different dimension?? */
     ++*protCount;
     createUelOut (valExp, uelOut, wSpec->dType, wSpec->dForm);
   }
@@ -856,6 +894,10 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
   if (wSpec->withVal == 1) {
     checkForValidData (valExp, uelOut, wSpec->dType, wSpec->dForm);
   }
+
+  /* debugging function */
+  /* dumpUELs (uelOut, wSpec); */
+
   registerInputUEL (uelOut, iSym, uelIndex, protCount);
 } /* readWgdxList */
 

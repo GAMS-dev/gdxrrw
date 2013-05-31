@@ -61,10 +61,12 @@ typedef struct wSpec {
   char name[1024];
   dForm_t dForm;
   dType_t dType;
-  int withVal;
-  int withTs;
-  int withUel;
-  int dim;
+  int withDim;                  /* input list had 'dim' element */
+  int withVal;                  /* input list had 'val' element */
+  int withTs;                   /* input list had 'ts' element */
+  int withUel;                  /* input list had 'uel' element */
+  int dim;                      /* as read from input list element 'dim' */
+  int symDim;                   /* consistent with GDX or GAMS idea of symbol dim */
 } wSpec_t;
 typedef unsigned long long int uint64_t;
 typedef union d64 {
