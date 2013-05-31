@@ -312,7 +312,6 @@ static void
 registerInputUEL(SEXP uelOut, int kk, SEXP uelIndex, int *protCount)
 {
   int i, k, rc, gi;
-  char bufChar[256];
   const char *uelString;
   int uelDim;               /* should be same as the GDX symbol dim */
   int vecLen;               /* length of sVec */
@@ -330,7 +329,7 @@ registerInputUEL(SEXP uelOut, int kk, SEXP uelIndex, int *protCount)
     vecLen = length(sVec);
     /* Rprintf ("DEBUG registerInputUEL: i=%d  vecLen=%d\n", i, vecLen); */
 
-    PROTECT(iVec = allocVector(STRSXP, vecLen));
+    PROTECT(iVec = allocVector(INTSXP, vecLen));
 
     for (k = 0; k < vecLen; k++) {
       /* get string and register to gdx */
@@ -342,8 +341,7 @@ registerInputUEL(SEXP uelOut, int kk, SEXP uelIndex, int *protCount)
         error ("could not register: %s", uelString);
       }
       /* Rprintf("  input: %s  output from gdx: %d\n", uelString, gi); */
-      sprintf(bufChar, "%d", gi);
-      SET_STRING_ELT(iVec, k, mkChar(bufChar));
+      INTEGER(iVec)[k] = gi;
     }
 
     SET_VECTOR_ELT(iVecVec, i, iVec);
@@ -1006,13 +1004,13 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   d64_t d64;
   shortStringBuf_t msgBuf;
   shortStringBuf_t expText;
-  const char *stringUelIndex;
   int rc, errNum;
   int i, j, k;
   int iSym;
   int idx;
   SEXP dimVect;
-  int totalElement, total,  nColumns, nRows, ndimension, index, total_num_of_elements;
+  int iDim;
+  int totalElement, total, nColumns, nRows, index, total_num_of_elements;
   int d, subindex, inner;
   double *dimVal, *pd, dt, posInf, negInf;
   int *pi;
@@ -1093,11 +1091,9 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 	wgdxAlloc++;
 	totalElement = 1;
 	dimVal = REAL(dimVect);
-	ndimension = 0;
-
-	for (ndimension = 0; ndimension < (int)nColumns; ndimension++) {
-	  dimVal[ndimension] = length(VECTOR_ELT(iVecVec, ndimension));
-	  totalElement = (totalElement * length(VECTOR_ELT(iVecVec, ndimension)));
+	for (iDim = 0;  iDim < nColumns;  iDim++) {
+	  dimVal[iDim] = length(VECTOR_ELT(iVecVec, iDim));
+	  totalElement *= dimVal[iDim];
 	}
 	PROTECT(valData = allocVector(REALSXP, totalElement));
 	wgdxAlloc++;
@@ -1157,8 +1153,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 	  else {
 	    idx = pi[k*nRows + j];
 	  }
-	  stringUelIndex = CHAR(STRING_ELT(iVec, idx-1));
-	  uelIndices[k] = atoi(stringUelIndex);
+          uelIndices[k] = INTEGER(iVec)[idx-1];
 	}
 	if (wSpecPtr[i]->dType == parameter) {
 	  if (pd) {
@@ -1228,10 +1223,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 	      total *= INTEGER(dimVect)[inner];
 	    }
 	    subscript[d] = subindex / total;
-
-	    stringUelIndex = CHAR(STRING_ELT(iVec, subscript[d]));
-
-	    uelIndices[d] = atoi(stringUelIndex);
+            uelIndices[d] = INTEGER(iVec)[subscript[d]];
 
 	    subindex = subindex % total;
 	    if (d == 0) {
