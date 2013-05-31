@@ -127,20 +127,20 @@ checkSymType3 (dType_t dType)
   } /* end switch */
 } /* checkSymType3 */
 
-/* checkForValidData: check the validity of input data with input uels and dims */
+/* checkForValidData: check the validity of val/uels and dims */
 static void
-checkForValidData(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
+checkForValidData(SEXP val, SEXP uels, dType_t dType, dForm_t dForm)
 {
   SEXP dims;
   int i, j, k;
   double *pd;
   int *pi;
   double dt;
-  int nDimsData, nDimsUels;
+  int nDimsData, symDim;
   int ncols, nrows;
   int mx;
 
-  nDimsUels = length(uelOut);
+  symDim = length(uels);
 
   pd = NULL;
   pi = NULL;
@@ -166,14 +166,14 @@ checkForValidData(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
       ncols--;    /* skip last column containing parameter values */
       break;
     case variable:
-      ncols--;    /* skip last column containing parameter values */
+      ncols -= 2;   /* skip last two columns: field index and level/marginal/etc values */
       break;
     default:
       error ("vals input not expected/implemented for this symbol type.");
     } /* switch symbol type */
 
-    if (nDimsUels != ncols) {
-      error ("Number of columns in sparse data does not match with UEL dimension.");
+    if (symDim != ncols) {
+      error ("Number of columns in sparse data not consistent with symbol dimension.");
     }
     /* the matrix of vals is stored column-major */
     for (j = 0;  j < ncols;  j++) {
@@ -204,24 +204,18 @@ checkForValidData(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
           mx = k;
         }
       }
-      if (mx > (int)length(VECTOR_ELT(uelOut, j))) {
+      if (mx > (int)length(VECTOR_ELT(uels, j))) {
         error ("Row index in sparse matrix exceeds number of elements in UEL for that column.");
       }
     } /* end loop over cols */
   }   /* end sparse */
   else {
-    /* get dimension of full matrix == number of columns in uels */
+    /* compare dimension of full matrix and number of columns in uels */
+    checkSymType2(dType);
     nDimsData = length(dims);
-    if (nDimsUels != nDimsData) {
-      error ("Number of dimension in full data does not match number of dimensions in uels.");
+    if (symDim != nDimsData) {
+      error ("Dimension of full 'val' data does not match dimensions of uels.");
     }
-    /* number of elements in each dimension == number of elements in UEL
-       for (i = 0;  i < nDimsUels;  i++) {
-       if ( !( INTEGER(dims)[i] == 1 &&  (int)mxGetN(mxGetCell(uelOut, i )) == 0)
-       && INTEGER(dims)[i] > mxGetN(mxGetCell(uelOut, i ))) {
-       error("Number of element in full format data exceeds corresponding elements in UEL.");
-       }
-     } */
   }
 } /* checkForValidData */
 
@@ -303,26 +297,26 @@ createUelOut(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
   } /* if sparse .. else .. */
 } /* createUelOut */
 
-/* dumpUELs: dump the strings in uelOut
- * uelOut is the UEL info for one symbol: a vector of string vectors,
+/* dumpUELs: dump the strings in sVecVec
+ * sVecVec is the UEL info for one symbol: a vector of string vectors,
  * one string vector for each symbol dimension
  */
 static void
-dumpUELs (SEXP uelOut, wSpec_t *wSpec)
+dumpUELs (SEXP sVecVec, wSpec_t *wSpec)
 {
   int i, k;
-  int uelDim;               /* should be same as the GDX symbol dim, at least for params and sets */
+  int dim;                  /* should be same as the GDX symbol dim */
   int vecLen;               /* length of sVec */
   const char *uelString;
   SEXP sVec;                /* vector of UEL labels: input */
 
-  uelDim = length(uelOut);
+  dim = length(sVecVec);
   Rprintf ("\n");
   Rprintf ("--------------------------------------------\n");
-  Rprintf ("dumpUELs for symbol '%s', uelDim=%d\n", wSpec->name, uelDim);
+  Rprintf ("dumpUELs for symbol '%s', dim=%d\n", wSpec->name, dim);
 
-  for (i = 0;  i < uelDim;  i++) {
-    sVec = VECTOR_ELT(uelOut, i); /* UELs for i'th index position */
+  for (i = 0;  i < dim;  i++) {
+    sVec = VECTOR_ELT(sVecVec, i); /* UELs for i'th index position */
     vecLen = length(sVec);
     Rprintf (" dim %d lenth=%d\n", i, vecLen);
     for (k = 0;  k < vecLen;  k++) {
@@ -332,35 +326,35 @@ dumpUELs (SEXP uelOut, wSpec_t *wSpec)
   }
 } /* dumpUELs */
 
-/* registerInputUEL: take the strings in uelOut and register them,
+/* registerInputUEL: take the UEL strings in sVecVec and register them,
  * in the process storing their GDX indices in uelIndex[kk]
- * uelOut is a vector of string vectors,
+ * sVecVec is the UEL info for one symbol: a vector of string vectors,
  * one string vector for each symbol dimension
  */
 static void
-registerInputUEL(SEXP uelOut, int kk, SEXP uelIndex, int *protCount)
+registerInputUEL(SEXP sVecVec, int kk, SEXP uelIndex, int *protCount)
 {
   int i, k, rc, gi;
   const char *uelString;
-  int uelDim;               /* should be same as the GDX symbol dim */
+  int dim;                  /* should be same as the GDX symbol dim */
   int vecLen;               /* length of sVec */
   SEXP sVec;                /* vector of UEL labels: input */
   SEXP iVec;                /* GDX indices for sVec labels */
   SEXP iVecVec;             /* one iVec for each index position */
 
-  uelDim = length(uelOut);
-  PROTECT( iVecVec = allocVector(VECSXP, uelDim));
+  dim = length(sVecVec);
+  PROTECT( iVecVec = allocVector(VECSXP, dim));
   ++*protCount;
-  /* Rprintf ("DEBUG registerInputUEL: uelDim=%d\n", uelDim); */
+  /* Rprintf ("DEBUG registerInputUEL: dim=%d\n", dim); */
 
-  for (i = 0;  i < uelDim;  i++) {
-    sVec = VECTOR_ELT(uelOut, i); /* UELs for i'th index position */
+  for (i = 0;  i < dim;  i++) {
+    sVec = VECTOR_ELT(sVecVec, i); /* UELs for i'th index position */
     vecLen = length(sVec);
     /* Rprintf ("DEBUG registerInputUEL: i=%d  vecLen=%d\n", i, vecLen); */
 
     PROTECT(iVec = allocVector(INTSXP, vecLen));
 
-    for (k = 0; k < vecLen; k++) {
+    for (k = 0;  k < vecLen;  k++) {
       /* get string and register to gdx */
       uelString = CHAR(STRING_ELT(sVec, k));
       /* Rprintf("str at %d is %s\n", k, uelString); */
@@ -538,10 +532,11 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
   char buf[512];
   const char *tmpName;
   const char *eltName;        /* list element name */
-  SEXP uelOut, bufferUel;     /* allocating temporary storage place */
+  SEXP symUels;               /* UEL strings, either from user or created here from indices */
+  SEXP bufferUel;             /* allocating temporary storage place */
   wSpec_t *wSpec;
 
-  uelOut = R_NilValue;
+  symUels = R_NilValue;
 
   wSpec = (wSpec_t *) malloc(sizeof(*wSpec));
   *wSpecPtr = wSpec;
@@ -734,22 +729,22 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
       error ("Empty input list element 'uels' is not allowed without 'dim'=0.");
     }
 #endif
-    PROTECT(uelOut = allocVector(VECSXP, dimUels));
+    PROTECT(symUels = allocVector(VECSXP, wSpec->symDim));
     ++*protCount;
-    for (j = 0;  j < dimUels;  j++) {
+    for (j = 0;  j < wSpec->symDim;  j++) {
       tmpUel = VECTOR_ELT(uelsExp, j);
       if (tmpUel == R_NilValue) {
         error ("Empty input field in list element 'uels' not allowed");
       }
       if (TYPEOF(tmpUel) == STRSXP) {
         /*  checkStringLength( CHAR(STRING_ELT(tmp, 0)) ); */
-        SET_VECTOR_ELT (uelOut, j, tmpUel);
+        SET_VECTOR_ELT (symUels, j, tmpUel);
       }
       else if (TYPEOF(tmpUel) == REALSXP || TYPEOF(tmpUel) == INTSXP) {
         /* Convert to output */
         bufferUel = allocVector(STRSXP, length(tmpUel));
         makeStrVec (bufferUel, tmpUel);
-        SET_VECTOR_ELT (uelOut, j, bufferUel);
+        SET_VECTOR_ELT (symUels, j, bufferUel);
       }
       else {
         error ("Input uels must be either string vectors or numeric vectors.");
@@ -814,7 +809,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
                    " dimension=%d implied by 'val'", wSpec->dim, symDimTmp);
           }
         }
-        else if (dimUels > 0) {
+        else if (dimUels >= 0) {
           /* symDim implies already by 'uels' */
           if (wSpec->symDim < 0)
             error ("Internal error: symDim should already be set positive");
@@ -852,7 +847,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
                    " dimension=%d implied by 'val'", wSpec->dim, symDimTmp);
           }
         }
-        else if (dimUels > 0) {
+        else if (dimUels >= 0) {
           /* symDim implies already by 'uels' */
           if (wSpec->symDim < 0)
             error ("Internal error: symDim should already be set positive");
@@ -886,19 +881,19 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex,
     default:
       error ("Empty UEL list not yet implemented for type=%s.", CHAR(STRING_ELT(typeExp, 0)));
     } /* switch symbol type */
-    PROTECT(uelOut = allocVector(VECSXP, wSpec->symDim)); /* or should this be a different dimension?? */
+    PROTECT(symUels = allocVector(VECSXP, wSpec->symDim)); /* or should this be a different dimension?? */
     ++*protCount;
-    createUelOut (valExp, uelOut, wSpec->dType, wSpec->dForm);
+    createUelOut (valExp, symUels, wSpec->dType, wSpec->dForm);
   }
 
   if (wSpec->withVal == 1) {
-    checkForValidData (valExp, uelOut, wSpec->dType, wSpec->dForm);
+    checkForValidData (valExp, symUels, wSpec->dType, wSpec->dForm);
   }
 
   /* debugging function */
-  /* dumpUELs (uelOut, wSpec); */
+  /* dumpUELs (symUels, wSpec); */
 
-  registerInputUEL (uelOut, iSym, uelIndex, protCount);
+  registerInputUEL (symUels, iSym, uelIndex, protCount);
 } /* readWgdxList */
 
 
@@ -1108,6 +1103,8 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   rc = gdxUELRegisterDone(gdxHandle);
   if (! rc)
     error ("could not gdxUELRegisterDone: rc = %d", rc);
+
+  Rprintf ("DEBUG 200\n");
 
   /* start writing data to GDX file */
   memset (uelIndices, 0, sizeof(gdxUelIndex_t));
