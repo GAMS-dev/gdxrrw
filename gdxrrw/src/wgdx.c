@@ -1033,7 +1033,7 @@ unpackWgdxArgs (SEXP *args, int argLen, SEXP **symList,
  */
 static void
 writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
-	  char zeroSqueeze)
+          char zeroSqueeze)
 {
   SEXP iVec;               /* UEL indices for one dim of one symbol */
   SEXP iVecVec;            /* UEL indices for all dims of one symbol */
@@ -1128,34 +1128,34 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
     if (wSpecPtr[i]->dType == set) {
       if (wSpecPtr[i]->withVal == 0 && wSpecPtr[i]->withUel == 1) {
         /* creating value for set that does not have val */
-	nColumns = length(iVecVec);
-	PROTECT(dimVect = allocVector(REALSXP, nColumns));
-	wgdxAlloc++;
-	totalElement = 1;
-	dimVal = REAL(dimVect);
-	for (iDim = 0;  iDim < nColumns;  iDim++) {
-	  dimVal[iDim] = length(VECTOR_ELT(iVecVec, iDim));
-	  totalElement *= dimVal[iDim];
-	}
-	PROTECT(valData = allocVector(REALSXP, totalElement));
-	wgdxAlloc++;
-	pd = REAL(valData);
-	for (index = 0; index < totalElement; index++) {
-	  pd[index] = 1;
-	}
-	setAttrib(valData, R_DimSymbol, dimVect);
-	index = 0;
-	wSpecPtr[i]->dForm = full;
+        nColumns = length(iVecVec);
+        PROTECT(dimVect = allocVector(REALSXP, nColumns));
+        wgdxAlloc++;
+        totalElement = 1;
+        dimVal = REAL(dimVect);
+        for (iDim = 0;  iDim < nColumns;  iDim++) {
+          dimVal[iDim] = length(VECTOR_ELT(iVecVec, iDim));
+          totalElement *= dimVal[iDim];
+        }
+        PROTECT(valData = allocVector(REALSXP, totalElement));
+        wgdxAlloc++;
+        pd = REAL(valData);
+        for (index = 0; index < totalElement; index++) {
+          pd[index] = 1;
+        }
+        setAttrib(valData, R_DimSymbol, dimVect);
+        index = 0;
+        wSpecPtr[i]->dForm = full;
       }
     }
     (void) CHAR2ShortStr ("R data from GDXRRW", expText);
     if (wSpecPtr[i]->withTs == 1) {
       /* Looking for 'ts' */
       for (j = 0;  j < length(symList[i]);  j++) {
-	if (strcmp("ts", CHAR(STRING_ELT(lstNames, j))) == 0) {
+        if (strcmp("ts", CHAR(STRING_ELT(lstNames, j))) == 0) {
           (void) CHAR2ShortStr (CHAR(STRING_ELT( VECTOR_ELT(symList[i], j), 0)), expText);
-	  break;
-	}
+          break;
+        }
       }
     }
 
@@ -1165,67 +1165,67 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
       nRows = INTEGER(dimVect)[0];
 
       if (wSpecPtr[i]->dType == parameter) {
-	nColumns--;
-	rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
-				   nColumns, GMS_DT_PAR, 0);
+        nColumns--;
+        rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
+                                   nColumns, GMS_DT_PAR, 0);
       }
       else {
-	rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
-				   nColumns, GMS_DT_SET, 0);
-	vals[0] = 0;
+        rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
+                                   nColumns, GMS_DT_SET, 0);
+        vals[0] = 0;
       }
       if (!rc) {
-	error("Could not write data with gdxDataWriteMapStart");
+        error("Could not write data with gdxDataWriteMapStart");
       }
 
       pd = NULL;
       pi = NULL;
       if (TYPEOF(valData) == REALSXP) {
-	pd = REAL(valData);
+        pd = REAL(valData);
       }
       else if (TYPEOF(valData) == INTSXP) {
-	pi = INTEGER(valData);
+        pi = INTEGER(valData);
       }
       for (j = 0; j < nRows; j++) {
-	for (k = 0; k < nColumns; k++) {
-	  iVec = VECTOR_ELT(iVecVec, k);
-	  if (pd) {
-	    idx = (int) pd[k*nRows + j];
-	  }
-	  else {
-	    idx = pi[k*nRows + j];
-	  }
+        for (k = 0; k < nColumns; k++) {
+          iVec = VECTOR_ELT(iVecVec, k);
+          if (pd) {
+            idx = (int) pd[k*nRows + j];
+          }
+          else {
+            idx = pi[k*nRows + j];
+          }
           uelIndices[k] = INTEGER(iVec)[idx-1];
-	}
-	if (wSpecPtr[i]->dType == parameter) {
-	  if (pd) {
-	    vals[0] = pd[nColumns*nRows + j];
-	  }
-	  else {
-	    vals[0] = pi[nColumns*nRows + j];
-	  }
+        }
+        if (wSpecPtr[i]->dType == parameter) {
+          if (pd) {
+            vals[0] = pd[nColumns*nRows + j];
+          }
+          else {
+            vals[0] = pi[nColumns*nRows + j];
+          }
 #if 1
-	  if (ISNA(vals[0])) {
-	    vals[0] = sVals[GMS_SVIDX_NA];
-	  }
+          if (ISNA(vals[0])) {
+            vals[0] = sVals[GMS_SVIDX_NA];
+          }
 #endif
-	}
-	if ((parameter == wSpecPtr[i]->dType) &&
-	    (0 == vals[0]) && ('e' == zeroSqueeze))
-	  vals[0] = sVals[GMS_SVIDX_EPS];
-	if ((set == wSpecPtr[i]->dType) ||
-	    ('n' == zeroSqueeze) ||
-	    (0 != vals[0])) {
-	  /* write the value to GDX */
-	  rc = gdxDataWriteMap (gdxHandle, uelIndices, vals);
-	  if (!rc) {
-	    error("Could not write parameter MAP with gdxDataWriteMap");
-	  }
-	}
+        }
+        if ((parameter == wSpecPtr[i]->dType) &&
+            (0 == vals[0]) && ('e' == zeroSqueeze))
+          vals[0] = sVals[GMS_SVIDX_EPS];
+        if ((set == wSpecPtr[i]->dType) ||
+            ('n' == zeroSqueeze) ||
+            (0 != vals[0])) {
+          /* write the value to GDX */
+          rc = gdxDataWriteMap (gdxHandle, uelIndices, vals);
+          if (!rc) {
+            error("Could not write parameter MAP with gdxDataWriteMap");
+          }
+        }
       }
 
       if (!gdxDataWriteDone(gdxHandle)) {
-	error ("Could not end writing parameter with gdxDataWriteMapStart");
+        error ("Could not end writing parameter with gdxDataWriteMapStart");
       }
     } /* if sparse */
     else {                    /* form = full */
@@ -1234,81 +1234,81 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
       nColumns = length(iVecVec);
       subscript = malloc(nColumns*sizeof(*subscript));
       if (wSpecPtr[i]->dType == parameter) {
-	rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
-				   nColumns, GMS_DT_PAR, 0);
+        rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
+                                   nColumns, GMS_DT_PAR, 0);
       }
       else {
-	rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
-				   nColumns, GMS_DT_SET, 0);
-	vals[0] = 0;
+        rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
+                                   nColumns, GMS_DT_SET, 0);
+        vals[0] = 0;
       }
       if (!rc) {
-	error("Could not write data with gdxDataWriteMapStart");
+        error("Could not write data with gdxDataWriteMapStart");
       }
       pd = NULL;
       pi = NULL;
       if (TYPEOF(valData) == REALSXP) {
-	pd = REAL(valData);
+        pd = REAL(valData);
       }
       else if (TYPEOF(valData) == INTSXP) {
-	pi = INTEGER(valData);
+        pi = INTEGER(valData);
       }
       else {
-	error ("internal error: unrecognized valData type");
+        error ("internal error: unrecognized valData type");
       }
       for (index = 0; index < total_num_of_elements; index++) {
-	subindex = index;
-	if (nColumns > 0) {
-	  for (d = nColumns-1; ; d--) {
-	    iVec = VECTOR_ELT(iVecVec, d);
-	    for (total=1, inner=0; inner<d; inner++) {
-	      total *= INTEGER(dimVect)[inner];
-	    }
-	    subscript[d] = subindex / total;
+        subindex = index;
+        if (nColumns > 0) {
+          for (d = nColumns-1; ; d--) {
+            iVec = VECTOR_ELT(iVecVec, d);
+            for (total=1, inner=0; inner<d; inner++) {
+              total *= INTEGER(dimVect)[inner];
+            }
+            subscript[d] = subindex / total;
             uelIndices[d] = INTEGER(iVec)[subscript[d]];
 
-	    subindex = subindex % total;
-	    if (d == 0) {
-	      break;
-	    }
-	  } /* for loop over "d" */
-	}
+            subindex = subindex % total;
+            if (d == 0) {
+              break;
+            }
+          } /* for loop over "d" */
+        }
 
-	if (pd) {
-	  dt = pd[index];
-	}
-	else {
-	  dt = pi[index];
-	}
-	if (wSpecPtr[i]->dType == parameter) {
-	  vals[0] = dt;
-	  if (ISNA(vals[0])) {
-	    vals[0] = sVals[GMS_SVIDX_NA];
-	  }
-	}
-	else if (set == wSpecPtr[i]->dType) {
-	  /* could do the check in checkForValidData but
-	   * that uses an additional pass through the full matrix */
-	  if (0 != dt && 1 != dt) {
-	    error ("Only zero-one values are allowed when specifying sets with form=full");
-	  }
-	}
-	if ((parameter == wSpecPtr[i]->dType) &&
-	    (0 == vals[0]) && ('e' == zeroSqueeze))
-	  vals[0] = sVals[GMS_SVIDX_EPS];
-	if (((set == wSpecPtr[i]->dType) && (0 != dt))  ||
-	    ((parameter == wSpecPtr[i]->dType) &&
-	     (('n' == zeroSqueeze) ||
-	      (0 != vals[0]))) ) {
-	  /* write the value to GDX */
-	  rc = gdxDataWriteMap(gdxHandle, uelIndices, vals);
-	  if (!rc) {
-	    error("Could not write parameter MAP with gdxDataWriteMap");
-	  }
-	}
+        if (pd) {
+          dt = pd[index];
+        }
+        else {
+          dt = pi[index];
+        }
+        if (wSpecPtr[i]->dType == parameter) {
+          vals[0] = dt;
+          if (ISNA(vals[0])) {
+            vals[0] = sVals[GMS_SVIDX_NA];
+          }
+        }
+        else if (set == wSpecPtr[i]->dType) {
+          /* could do the check in checkForValidData but
+           * that uses an additional pass through the full matrix */
+          if (0 != dt && 1 != dt) {
+            error ("Only zero-one values are allowed when specifying sets with form=full");
+          }
+        }
+        if ((parameter == wSpecPtr[i]->dType) &&
+            (0 == vals[0]) && ('e' == zeroSqueeze))
+          vals[0] = sVals[GMS_SVIDX_EPS];
+        if (((set == wSpecPtr[i]->dType) && (0 != dt))  ||
+            ((parameter == wSpecPtr[i]->dType) &&
+             (('n' == zeroSqueeze) ||
+              (0 != vals[0]))) ) {
+          /* write the value to GDX */
+          rc = gdxDataWriteMap(gdxHandle, uelIndices, vals);
+          if (!rc) {
+            error("Could not write parameter MAP with gdxDataWriteMap");
+          }
+        }
       } /* for loop over "index" */
       if (!gdxDataWriteDone(gdxHandle)) {
-	error("Could not end writing data with gdxDataWriteMapStart");
+        error("Could not end writing data with gdxDataWriteMapStart");
       }
     } /* end of writing full data */
   } /* for (i) loop over symbols */
