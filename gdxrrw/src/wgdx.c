@@ -127,6 +127,36 @@ checkSymType3 (dType_t dType, int lineNum)
   } /* end switch */
 } /* checkSymType3 */
 
+/* idxCmp: compare indices from sparse-form 'val'
+ * return:
+ *    0 if the same (including if dim=0)
+ *    < 0 if u1 < u2
+ *    > 0 if u1 > u2
+ */
+static int idxCmp (int dim,  valIndex_t u1, valIndex_t u2)
+{
+  int i;
+  int res;
+
+#if 0
+  Rprintf (" DEBUG idxCmp: dim = %d\n", dim);
+  Rprintf ("   u1 =");
+  for (i = 0;  i < dim;  i++)
+    Rprintf (" %d", u1[i]);
+  Rprintf ("\n");
+  Rprintf ("   u2 =");
+  for (i = 0;  i < dim;  i++)
+    Rprintf (" %d", u2[i]);
+  Rprintf ("\n");
+#endif
+  for (i = 0;  i < dim;  i++) {
+    res = u1[i] - u2[i];
+    if (res)
+      return res;
+  }
+  return 0;
+} /* idxCmp */
+
 static void
 getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCount)
 {
@@ -137,7 +167,7 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
   const char *fieldName;
   double dt;
   int i, k;
-  int ncols, nrows, nLabs;
+  int nCols, nRows, nLabs;
 
   /* labels must be a string vector */
   if (R_NilValue == labels) {
@@ -167,18 +197,18 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
   }
   dims = getAttrib(val, R_DimSymbol);
   if (sparse == wSpec->dForm) {
-    nrows = INTEGER(dims)[0];
-    ncols = INTEGER(dims)[1];
+    nRows = INTEGER(dims)[0];
+    nCols = INTEGER(dims)[1];
     checkSymType3 (wSpec->dType, __LINE__);
     if (variable != wSpec->dType)
       error ("Only implemented for symbol type variable");
-    ncols -= 2;   /* last two columns are field index and level/marginal/etc values */
-    if (ncols != wSpec->symDim) {
+    nCols -= 2;   /* last two columns are field index and level/marginal/etc values */
+    if (nCols != wSpec->symDim) {
       error ("Number of columns in sparse data not consistent with symbol dimension.");
     }
-    for (i = 0;  i < nrows;  i++) {
+    for (i = 0;  i < nRows;  i++) {
       if (pd) {
-        dt = pd[i + ncols*nrows];
+        dt = pd[i + nCols*nRows];
         if (dt < 1) {
           error ("Non-positive coordinates are not allowed in index columns of sparse data");
         }
@@ -191,14 +221,14 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
         }
       }
       else {
-        k = pi[i + ncols*nrows];
+        k = pi[i + nCols*nRows];
         if (k < 1) {
           error ("Non-positive coordinates are not allowed in index columns of sparse data");
         }
       }
       if (k > nLabs) {
         error ("field index in column %d of sparse 'val' matrix exceeds number of UEL strings for that dimension.",
-               ncols+1);
+               nCols+1);
       }
       fieldName = CHAR(STRING_ELT(labels, k-1));
       Rprintf ("Field indices: row i=%d  idx=%d  fieldName=%s\n", i, k, fieldName);
@@ -227,35 +257,27 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
   }
 } /* getFieldMapping */
 
-#if 0
 /* checkVals: check validity of input 'val'
- * no return: calls error if not valid
+ * no return: calls error() if not valid
  * checks include:
+ *   vals must be numeric
  *   order: for sparse form, index cols must be in order,
  *          as determined by the GDX indices for each
  */
 static void
-checkVals (SEXP val, SEXP uels, wSpec_t *wSpec)
-{
-  return;
-} /* checkVals */
-#endif
-
-/* checkForValidData: check the validity of val/uels and dims */
-static void
-checkForValidData(SEXP val, SEXP uels, dType_t dType, dForm_t dForm)
+checkVals (SEXP val, SEXP uels, wSpec_t *wSpec, int checkSort)
 {
   SEXP dims;
-  int i, j, k;
   double *pd;
   int *pi;
   double dt;
-  int nDimsData, symDim;
-  int ncols, nrows;
-  int mx;
+  valIndex_t prevInd, currInd;
+  int nRows, nCols;
+  int i, j, k;
+  int isSorted = 1;
+  int mx[GMS_MAX_INDEX_DIM];
 
-  symDim = length(uels);
-
+  memset (mx, 0, sizeof(mx));
   pd = NULL;
   pi = NULL;
   if (TYPEOF(val) == REALSXP) {
@@ -265,35 +287,38 @@ checkForValidData(SEXP val, SEXP uels, dType_t dType, dForm_t dForm)
     pi = INTEGER(val);
   }
   else {
-    error (".val must be numeric.");
+    error ("Input list element 'val' must be numeric.");
   }
   dims = getAttrib(val, R_DimSymbol);
 
-  if (dForm == sparse) {
-    nrows = INTEGER(dims)[0];
-    ncols = INTEGER(dims)[1];
-    checkSymType3 (dType, __LINE__);
-    switch (dType) {
+  if (wSpec->dForm == sparse) {
+    nRows = INTEGER(dims)[0];
+    nCols = INTEGER(dims)[1];
+    checkSymType3 (wSpec->dType, __LINE__);
+    switch (wSpec->dType) {
     case set:
       break;
     case parameter:
-      ncols--;    /* skip last column containing parameter values */
+      nCols--;    /* skip last column containing parameter values */
       break;
     case variable:
-      ncols -= 2;   /* skip last two columns: field index and level/marginal/etc values */
+      nCols -= 2;   /* skip last two columns: field index and level/marginal/etc values */
       break;
     default:
       error ("vals input not expected/implemented for this symbol type.");
     } /* switch symbol type */
-
-    if (symDim != ncols) {
-      error ("Number of columns in sparse data not consistent with symbol dimension.");
+    if (wSpec->symDim != nCols) {
+      error ("Number of columns in sparse 'val' data not consistent with symbol dimension.");
     }
+
     /* the matrix of vals is stored column-major */
-    for (j = 0;  j < ncols;  j++) {
-      for (mx = 0, i = 0;  i < nrows;  i++) {
+    memset (prevInd, 0, sizeof(valIndex_t));
+    memset (currInd, 0, sizeof(valIndex_t));
+    isSorted = 1;
+    for (i = 0;  i < nRows;  i++) {
+      for (j = 0;  j < nCols;  j++) {
         if (pd) {
-          dt = pd[i + j*nrows];
+          dt = pd[i + j*nRows];
           if (dt < 1) {
             error ("Non-positive coordinates are not allowed in index columns of sparse data");
           }
@@ -306,33 +331,40 @@ checkForValidData(SEXP val, SEXP uels, dType_t dType, dForm_t dForm)
           }
         }
         else {
-          k = pi[i + j*nrows];
+          k = pi[i + j*nRows];
           if (k < 1) {
             error ("Non-positive coordinates are not allowed in index columns of sparse data");
           }
         }
-        /* if (!mxIsFinite(P[j + i*nrows])) {
-           error("Only finite numbers are allowed in index columns of sparse data");
-           } */
-        if (k > mx) {
-          mx = k;
+        currInd[j] = k;
+        if (k > mx[j])
+          mx[j] = k;
+      } /* loop over cols */
+      if (checkSort) {
+        int r = idxCmp(nCols, prevInd, currInd);
+        if (r > 0)
+          error ("Unsorted input 'val' not yet implemented");
+        if (r < 0) {
+          memcpy (prevInd, currInd, nCols * sizeof(prevInd[0]));
         }
-      }
-      if (mx > (int)length(VECTOR_ELT(uels, j))) {
+      } /* if checkSort */
+    } /* loop over rows */
+    for (j = 0;  j < nCols;  j++) {
+      if (mx[j] > length(VECTOR_ELT(uels, j))) {
         error ("UEL index in column %d of sparse 'val' matrix exceeds number of UEL strings for that dimension.",
                j+1);
       }
-    } /* end loop over cols */
-  }   /* end sparse */
+    }
+  } /* sparse form */
   else {
     /* compare dimension of full matrix and number of columns in uels */
-    checkSymType2 (dType, __LINE__);
-    nDimsData = length(dims);
-    if (symDim != nDimsData) {
-      error ("Dimension of full 'val' data does not match dimensions of uels.");
+    checkSymType2 (wSpec->dType, __LINE__);
+    if (wSpec->symDim != length(dims)) {
+      error ("Dimension of full 'val' data does not match dimensions of uels or symbol.");
     }
   }
-} /* checkForValidData */
+  return;
+} /* checkVals */
 
 static void
 createUelOut(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
@@ -342,25 +374,25 @@ createUelOut(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
   double *P;
   int *intVal;
   char buffer [256];
-  int ncols, nrows, ndims;
+  int nCols, nRows, ndims;
   int mx;
 
   dims = getAttrib(val, R_DimSymbol);
   if (dForm == sparse) {
-    nrows = INTEGER(dims)[0];
-    ncols = INTEGER(dims)[1];
+    nRows = INTEGER(dims)[0];
+    nCols = INTEGER(dims)[1];
     checkSymType2 (dType, __LINE__);
     if (dType == parameter) {
-      ncols--;
+      nCols--;
     }
 
     if (TYPEOF(val) == REALSXP) {
       P = REAL(val);
-      for (i = 0; i < ncols; i++) {
+      for (i = 0; i < nCols; i++) {
         mx = 0;
-        for (j = 0; j < nrows; j++) {
-          if (P[j + i*nrows] > mx) {
-            mx = (int) P[j + i*nrows];
+        for (j = 0; j < nRows; j++) {
+          if (P[j + i*nRows] > mx) {
+            mx = (int) P[j + i*nRows];
           }
         }
         PROTECT(bufferUel = allocVector(STRSXP, mx));
@@ -375,11 +407,11 @@ createUelOut(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
     else if (TYPEOF(val) == INTSXP) {
       intVal = INTEGER(val);
 
-      for (i = 0; i < ncols; i++) {
+      for (i = 0; i < nCols; i++) {
         mx = 0;
-        for (j = 0; j < nrows; j++) {
-          if (intVal[j + i*nrows] > mx) {
-            mx = intVal[j + i*nrows];
+        for (j = 0; j < nRows; j++) {
+          if (intVal[j + i*nRows] > mx) {
+            mx = intVal[j + i*nRows];
           }
         }
         PROTECT(bufferUel = allocVector(STRSXP, mx));
@@ -981,6 +1013,9 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex,
                    " 'val' (%d)", wSpec->symDim, symDimTmp);
           }
         }
+        else {
+          wSpec->symDim = symDimTmp;
+        }
         wSpec->withVal = 1;
       }
     }
@@ -1051,11 +1086,19 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex,
   }
 
   if (wSpec->withVal == 1) {
-    checkForValidData (valExp, symUels, wSpec->dType, wSpec->dForm);
-    if (variable == wSpec->dType) {
+    switch (wSpec->dType) {
+    case set:
+    case parameter:
+      checkVals (valExp, symUels, wSpec, 0);
+      break;                    /* no problem */
+    case variable:
+      checkVals (valExp, symUels, wSpec, 1);
       /* check out field column */
       getFieldMapping (valExp, VECTOR_ELT(uelsExp, wSpec->symDim), &fVec, wSpec, protCount);
-    }
+      break;
+    default:
+      error ("checkVals not implemented type=%s.", CHAR(STRING_ELT(typeExp, 0)));
+    } /* switch symbol type */
   }
 
   /* debugging function */
@@ -1188,38 +1231,6 @@ unpackWgdxArgs (SEXP *args, int argLen, SEXP **symList,
 
   return;
 } /* unpackWgdxArgs */
-
-
-
-/* idxCmp: compare indices from sparse-form 'val'
- * return:
- *    0 if the same (including if dim=0)
- *    < 0 if u1 < u2
- *    > 0 if u1 > u2
- */
-static int idxCmp (int dim,  valIndex_t u1, valIndex_t u2)
-{
-  int i;
-  int res;
-
-#if 0
-  Rprintf (" DEBUG idxCmp: dim = %d\n", dim);
-  Rprintf ("   u1 =");
-  for (i = 0;  i < dim;  i++)
-    Rprintf (" %d", u1[i]);
-  Rprintf ("\n");
-  Rprintf ("   u2 =");
-  for (i = 0;  i < dim;  i++)
-    Rprintf (" %d", u2[i]);
-  Rprintf ("\n");
-#endif
-  for (i = 0;  i < dim;  i++) {
-    res = u1[i] - u2[i];
-    if (res)
-      return res;
-  }
-  return 0;
-} /* idxCmp */
 
 
 /* writeGdx
