@@ -67,6 +67,7 @@ typedef struct wSpec {
   int withUel;                  /* input list had 'uel' element */
   int dim;                      /* as read from input list element 'dim' */
   int symDim;                   /* consistent with GDX or GAMS idea of symbol dim */
+  int typeCode;                 /* to send to GDX */
 } wSpec_t;
 typedef unsigned long long int uint64_t;
 typedef union d64 {
