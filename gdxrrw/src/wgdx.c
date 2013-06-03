@@ -1191,13 +1191,13 @@ unpackWgdxArgs (SEXP *args, int argLen, SEXP **symList,
 
 
 
-/* uelsCmp: compare GDX index vectors
+/* idxCmp: compare indices from sparse-form 'val'
  * return:
  *    0 if the same (including if dim=0)
  *    < 0 if u1 < u2
  *    > 0 if u1 > u2
  */
-static int uelsCmp (int dim,  gdxUelIndex_t *u1, gdxUelIndex_t *u2)
+static int idxCmp (int dim,  valIndex_t *u1, valIndex_t *u2)
 {
   int i;
   int res;
@@ -1208,7 +1208,7 @@ static int uelsCmp (int dim,  gdxUelIndex_t *u1, gdxUelIndex_t *u2)
       return res;
   }
   return 0;
-} /* uelsCmp */
+} /* idxCmp */
 
 
 /* writeGdx
@@ -1228,9 +1228,9 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   SEXP lstNames, valData;
   wSpec_t **wSpecPtr;           /* was data */
   gdxUelIndex_t uelIndices;
-  gdxUelIndex_t prevIndices;
   gdxValues_t vals;
   gdxSVals_t sVals;
+  valIndex_t prevInd, currInd;
   d64_t d64;
   shortStringBuf_t msgBuf;
   shortStringBuf_t expText;
@@ -1305,7 +1305,8 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 
   /* start writing data to GDX file */
   memset (uelIndices, 0, sizeof(gdxUelIndex_t));
-  memset (prevIndices, 0, sizeof(gdxUelIndex_t));
+  memset (prevInd, 0, sizeof(valIndex_t));
+  memset (currInd, 0, sizeof(valIndex_t));
   memset (vals, 0, sizeof(gdxValues_t));
 
   i=0;
@@ -1451,7 +1452,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
             else {
               idx = pi[k*nRows + j];
             }
-            uelIndices[k] = INTEGER(iVec)[idx-1];
+            currInd[k] = idx;
           }
           if (pd) {
             fieldIdx = (int) pd[k*nRows + j];
@@ -1467,10 +1468,10 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
           if (empty) {
             Rprintf ("  fieldIdx = %d   GMS_VAL_XX = %d   v = %g  into empty\n", fieldIdx, fieldVal, v);
             empty = 0;
-            memcpy (prevIndices, uelIndices, sizeof(gdxUelIndex_t));
+            memcpy (prevInd, currInd, nColumns * sizeof(prevInd[0]));
           }
           else {
-            int r = uelsCmp(nColumns, &prevIndices, &uelIndices);
+            int r = idxCmp(nColumns, &prevInd, &currInd);
             if (r > 0)
               error ("Unsorted input 'val' not yet implemented");
             /* flush and clear */
@@ -1478,12 +1479,17 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
                      fieldIdx, fieldVal, v);
             if (r) {
               Rprintf ("  flushing\n");
+              for (k = 0; k < nColumns; k++) {
+                iVec = VECTOR_ELT(iVecVec, k);
+                idx = currInd[k];
+                uelIndices[k] = INTEGER(iVec)[idx-1];
+              }
               rc = gdxDataWriteMap (gdxHandle, uelIndices, vals);
               if (!rc)
                 error("Error calling gdxDataWriteMap for symbol '%'", wSpecPtr[i]->name);
               memset (vals, 0, sizeof(gdxValues_t));
-              memcpy (prevIndices, uelIndices, sizeof(gdxUelIndex_t));
-              memset (uelIndices, 0, sizeof(gdxUelIndex_t));
+              memcpy (prevInd, currInd, nColumns * sizeof(prevInd[0]));
+              memset (currInd, 0, sizeof(valIndex_t)); /* not really needed */
             }
           }
           vals[fieldVal] = v;
@@ -1494,6 +1500,11 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 
         if (! empty) {
           Rprintf ("  flushing at end\n");
+          for (k = 0; k < nColumns; k++) {
+            iVec = VECTOR_ELT(iVecVec, k);
+            idx = currInd[k];
+            uelIndices[k] = INTEGER(iVec)[idx-1];
+          }
           rc = gdxDataWriteMap (gdxHandle, uelIndices, vals);
           if (!rc)
             error("Error calling gdxDataWriteMap for symbol '%'", wSpecPtr[i]->name);

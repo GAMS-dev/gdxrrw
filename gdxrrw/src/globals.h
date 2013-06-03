@@ -24,6 +24,7 @@
 # define MEMCPY memcpy
 #endif
 
+typedef int valIndex_t[GMS_MAX_INDEX_DIM]; /* data indices from sparse 'val' */
 typedef char shortStringBuf_t[GMS_SSSIZE];
 typedef void (GDX_CALLCONV *gdxGetLoadPath_t) (char *s);
 typedef enum dType {
