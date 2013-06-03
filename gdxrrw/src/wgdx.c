@@ -257,15 +257,16 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
   }
 } /* getFieldMapping */
 
-/* checkVals: check validity of input 'val'
+/* checkVals: check validity of set index columns in input 'val'
  * no return: calls error() if not valid
  * checks include:
  *   vals must be numeric
- *   order: for sparse form, index cols must be in order,
- *          as determined by the GDX indices for each
+ *   index vals must be integral, positive, not larger than uel list for that dimension
+ * isSorted is input/output: if true on input,
+ *  a check is made that index vals are sorted, result returned in isSorted
  */
 static void
-checkVals (SEXP val, SEXP uels, wSpec_t *wSpec, int checkSort)
+checkVals (SEXP val, SEXP uels, wSpec_t *wSpec, int *isSorted)
 {
   SEXP dims;
   double *pd;
@@ -274,7 +275,6 @@ checkVals (SEXP val, SEXP uels, wSpec_t *wSpec, int checkSort)
   valIndex_t prevInd, currInd;
   int nRows, nCols;
   int i, j, k;
-  int isSorted = 1;
   int mx[GMS_MAX_INDEX_DIM];
 
   memset (mx, 0, sizeof(mx));
@@ -314,7 +314,6 @@ checkVals (SEXP val, SEXP uels, wSpec_t *wSpec, int checkSort)
     /* the matrix of vals is stored column-major */
     memset (prevInd, 0, sizeof(valIndex_t));
     memset (currInd, 0, sizeof(valIndex_t));
-    isSorted = 1;
     for (i = 0;  i < nRows;  i++) {
       for (j = 0;  j < nCols;  j++) {
         if (pd) {
@@ -340,14 +339,15 @@ checkVals (SEXP val, SEXP uels, wSpec_t *wSpec, int checkSort)
         if (k > mx[j])
           mx[j] = k;
       } /* loop over cols */
-      if (checkSort) {
+      if (*isSorted) {
         int r = idxCmp(nCols, prevInd, currInd);
-        if (r > 0)
-          error ("Unsorted input 'val' not yet implemented");
+        if (r > 0) {
+          *isSorted = 0;
+        }
         if (r < 0) {
           memcpy (prevInd, currInd, nCols * sizeof(prevInd[0]));
         }
-      } /* if checkSort */
+      } /* if *isSorted */
     } /* loop over rows */
     for (j = 0;  j < nCols;  j++) {
       if (mx[j] > length(VECTOR_ELT(uels, j))) {
@@ -658,7 +658,7 @@ validWriteListMsg (char buf[], int bufSiz)
  * for variables and equations, also create mapping from field index to
  */
 static void
-readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex,
+readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
               wSpec_t **wSpecPtr, int *protCount)
 {
   SEXP lstNames, tmpUel;
@@ -1085,14 +1085,21 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex,
     createUelOut (valExp, symUels, wSpec->dType, wSpec->dForm);
   }
 
+  SET_VECTOR_ELT(rowPerms, iSym, R_NilValue);
   if (wSpec->withVal == 1) {
+    int isSorted = 0;
+
     switch (wSpec->dType) {
     case set:
     case parameter:
-      checkVals (valExp, symUels, wSpec, 0);
+      checkVals (valExp, symUels, wSpec, &isSorted);
       break;                    /* no problem */
     case variable:
-      checkVals (valExp, symUels, wSpec, 1);
+      isSorted = 1;             /* check sort order */
+      checkVals (valExp, symUels, wSpec, &isSorted);
+      if (! isSorted) {
+        error ("readWgdxList: go implement a sorter and save in rowPerms");
+      }
       /* check out field column */
       getFieldMapping (valExp, VECTOR_ELT(uelsExp, wSpec->symDim), &fVec, wSpec, protCount);
       break;
@@ -1247,6 +1254,8 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   SEXP uelIndex;           /* UEL indices for all symbols */
   SEXP fVec;               /* field indices for one symbol */
   SEXP fieldIndex;         /* field indices for all symbols */
+  SEXP rowPerm;            /* row permutation for sparse 'val' rows of one symbol */
+  SEXP rowPerms;           /* vector of rowPerm's, one per symbol */
   SEXP lstNames, valData;
   wSpec_t **wSpecPtr;           /* was data */
   gdxUelIndex_t uelIndices;
@@ -1308,6 +1317,8 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   wgdxAlloc++;
   PROTECT(fieldIndex = allocVector(VECSXP, symListLen));
   wgdxAlloc++;
+  PROTECT(rowPerms = allocVector(VECSXP, symListLen));
+  wgdxAlloc++;
 
   wSpecPtr = (wSpec_t **) malloc (symListLen * sizeof(wSpecPtr[0]));
 
@@ -1317,7 +1328,8 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
       error("Incorrect type of input encountered. List expected");
     }
     else {
-      readWgdxList (symList[iSym], iSym, uelIndex, fieldIndex, wSpecPtr+iSym, &wgdxAlloc);
+      SET_VECTOR_ELT(rowPerms, iSym, R_NilValue); /* readWgdxList may install a row permuation */
+      readWgdxList (symList[iSym], iSym, uelIndex, fieldIndex, rowPerms, wSpecPtr+iSym, &wgdxAlloc);
     }
   }
 
@@ -1343,6 +1355,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
       }
     }
     iVecVec = VECTOR_ELT(uelIndex, i);
+    rowPerm = VECTOR_ELT(rowPerms, i);
     if (wSpecPtr[i]->dType == set) {
       if (wSpecPtr[i]->withVal == 0 && wSpecPtr[i]->withUel == 1) {
         /* creating value for set that does not have val */
@@ -1494,8 +1507,13 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
           }
           else {
             int r = idxCmp(nColumns, prevInd, currInd);
-            if (r > 0)
+            if (r > 0) {
+              if (R_NilValue == rowPerm)
+                Rprintf ("DEBUG: rowPerm is NULL\n");
+              else
+                Rprintf ("DEBUG: rowPerm is non-NULL\n");
               error ("Unsorted input 'val' not yet implemented");
+            }
             /* flush and clear */
             Rprintf ("  fieldIdx = %d   GMS_VAL_XX = %d   v = %g\n",
                      fieldIdx, fieldVal, v);
