@@ -1197,11 +1197,22 @@ unpackWgdxArgs (SEXP *args, int argLen, SEXP **symList,
  *    < 0 if u1 < u2
  *    > 0 if u1 > u2
  */
-static int idxCmp (int dim,  valIndex_t *u1, valIndex_t *u2)
+static int idxCmp (int dim,  valIndex_t u1, valIndex_t u2)
 {
   int i;
   int res;
 
+#if 0
+  Rprintf (" DEBUG idxCmp: dim = %d\n", dim);
+  Rprintf ("   u1 =");
+  for (i = 0;  i < dim;  i++)
+    Rprintf (" %d", u1[i]);
+  Rprintf ("\n");
+  Rprintf ("   u2 =");
+  for (i = 0;  i < dim;  i++)
+    Rprintf (" %d", u2[i]);
+  Rprintf ("\n");
+#endif
   for (i = 0;  i < dim;  i++) {
     res = u1[i] - u2[i];
     if (res)
@@ -1437,15 +1448,14 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
                                    nColumns, GMS_DT_VAR, wSpecPtr[i]->typeCode);
         if (!rc)
-          error("Error calling gdxDataWriteMapStart for symbol '%'", wSpecPtr[i]->name);
+          error("Error calling gdxDataWriteMapStart for symbol '%s'", wSpecPtr[i]->name);
 
         idx = -1;
         empty = 1;
         for (j = 0; j < nRows; j++) {
           int fieldVal;
 
-          for (k = 0; k < nColumns; k++) {
-            iVec = VECTOR_ELT(iVecVec, k);
+          for (k = 0;  k < nColumns;  k++) {
             if (pd) {
               idx = (int) pd[k*nRows + j];
             }
@@ -1469,24 +1479,25 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
             Rprintf ("  fieldIdx = %d   GMS_VAL_XX = %d   v = %g  into empty\n", fieldIdx, fieldVal, v);
             empty = 0;
             memcpy (prevInd, currInd, nColumns * sizeof(prevInd[0]));
+            /* Rprintf ("  prevInd = %d  %d\n", prevInd[0], prevInd[1]); */
           }
           else {
-            int r = idxCmp(nColumns, &prevInd, &currInd);
+            int r = idxCmp(nColumns, prevInd, currInd);
             if (r > 0)
               error ("Unsorted input 'val' not yet implemented");
             /* flush and clear */
             Rprintf ("  fieldIdx = %d   GMS_VAL_XX = %d   v = %g\n",
                      fieldIdx, fieldVal, v);
             if (r) {
-              Rprintf ("  flushing\n");
-              for (k = 0; k < nColumns; k++) {
+              for (k = 0;  k < nColumns;  k++) {
                 iVec = VECTOR_ELT(iVecVec, k);
-                idx = currInd[k];
+                idx = prevInd[k];
                 uelIndices[k] = INTEGER(iVec)[idx-1];
               }
+              Rprintf ("  flushing\n");
               rc = gdxDataWriteMap (gdxHandle, uelIndices, vals);
               if (!rc)
-                error("Error calling gdxDataWriteMap for symbol '%'", wSpecPtr[i]->name);
+                error("Error calling gdxDataWriteMap for symbol '%s'", wSpecPtr[i]->name);
               memset (vals, 0, sizeof(gdxValues_t));
               memcpy (prevInd, currInd, nColumns * sizeof(prevInd[0]));
               memset (currInd, 0, sizeof(valIndex_t)); /* not really needed */
@@ -1499,18 +1510,18 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         } /* end loop over rows */
 
         if (! empty) {
-          Rprintf ("  flushing at end\n");
-          for (k = 0; k < nColumns; k++) {
+          for (k = 0;  k < nColumns;  k++) {
             iVec = VECTOR_ELT(iVecVec, k);
             idx = currInd[k];
             uelIndices[k] = INTEGER(iVec)[idx-1];
           }
+          Rprintf ("  flushing at end\n");
           rc = gdxDataWriteMap (gdxHandle, uelIndices, vals);
           if (!rc)
-            error("Error calling gdxDataWriteMap for symbol '%'", wSpecPtr[i]->name);
+            error("Error calling gdxDataWriteMap for symbol '%s'", wSpecPtr[i]->name);
         }
         if (!gdxDataWriteDone(gdxHandle))
-          error ("Error calling gdxDataWriteDone for symbol '%'", wSpecPtr[i]->name);
+          error ("Error calling gdxDataWriteDone for symbol '%s'", wSpecPtr[i]->name);
         /* checkSymType2 (wSpecPtr[i]->dType, __LINE__); */
       }
     } /* if sparse */
