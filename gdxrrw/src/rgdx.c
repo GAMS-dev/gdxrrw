@@ -340,7 +340,7 @@ SEXP rgdx (SEXP args)
   int rc, findrc, errNum, nUEL, iUEL;
   int mrows = 0;                /* NNZ count, i.e. number of rows in
                                  * $val when form='sparse' */
-  int ncols;                    /* number of cols in $val when form='sparse' */
+  int nCols;                    /* number of cols in $val when form='sparse' */
   int kk, iRec, nRecs, index, changeIdx, kRec;
   int rgdxAlloc;                /* PROTECT count: undo this many on exit */
   int UELUserMapping, highestMappedUEL;
@@ -553,16 +553,16 @@ SEXP rgdx (SEXP args)
       hpFilter[iDim].fType = identity;
     }
 
-    ncols = symDim + 1;         /* usual index cols + data col */
+    nCols = symDim + 1;         /* usual index cols + data col */
     symDimX = symDim;
     switch (symType) {
     case GMS_DT_SET:
-      ncols = symDim;           /* no data col */
+      nCols = symDim;           /* no data col */
       break;
     case GMS_DT_VAR:
     case GMS_DT_EQU:
       if (all == rSpec->dField) { /* additional 'field' col */
-        ncols++;
+        nCols++;
         symDimX++;
         PROTECT(fieldUels = allocVector(STRSXP, GMS_VAL_MAX));
         rgdxAlloc++;
@@ -681,7 +681,7 @@ SEXP rgdx (SEXP args)
           mrows *= 5;           /* l,m,lo,up,scale */
 
       /* Allocating memory for 2D sparse matrix */
-      PROTECT(outValSp = allocMatrix(REALSXP, mrows, ncols));
+      PROTECT(outValSp = allocMatrix(REALSXP, mrows, nCols));
       rgdxAlloc++;
       p = REAL(outValSp);
 
@@ -846,7 +846,7 @@ SEXP rgdx (SEXP args)
         }
       }
       /* Create 2D sparse R array */
-      PROTECT(outValSp = allocMatrix(REALSXP, mrows, ncols));
+      PROTECT(outValSp = allocMatrix(REALSXP, mrows, nCols));
       rgdxAlloc++;
       p = REAL(outValSp);
 
@@ -979,7 +979,7 @@ SEXP rgdx (SEXP args)
         double *newp;
         double *from, *to;
 
-        PROTECT(newCV = allocMatrix(REALSXP, kRec, ncols));
+        PROTECT(newCV = allocMatrix(REALSXP, kRec, nCols));
         newp = REAL(newCV);
         for (kk = 0;  kk <= symDim;  kk++) {
           from = p    + kk*mrows;
