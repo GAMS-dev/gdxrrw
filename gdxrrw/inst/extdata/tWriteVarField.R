@@ -19,6 +19,9 @@ tryCatch({
   }
 
   xIn <- rgdx(fnIn,list(name='x',form='sparse',field='all'))
+  if (xIn$field != 'all') {
+    stop (paste("FAIL: rgdx output '$field' not 'all' as expected"))
+  }
 
   ## test field='all'
   wgdx (fnOut, xIn)
@@ -50,20 +53,21 @@ tryCatch({
     print ("gdxdiff call succeeded")
   }
 
-  msg <- "wgdx test for variable with bogus field specifier"
-  x2$field <- 'notGood'
-  tcr <- tryCatch({
-    wgdx(fnOut, x2) ; FALSE
+  for (ff in c('notGood','l','m','lo','up','s')) {
+    msg <- paste0("wgdx test for variable handling bogus field specifier '", ff, "'")
+    x2$field <- ff
+    tcr <- tryCatch({
+      wgdx(fnOut, x2) ; FALSE
     },
     error = function(e) { print(paste(' Caught error: msg =',e)) ; TRUE }
-  )
-  if (tcr) {
-    print(paste(msg,": passed",sep=""))
-  }
-  else {
-    stop (paste(msg, ": failed",sep=""))
-  }
-
+    )
+    if (tcr) {
+      print(paste(msg,": passed",sep=""))
+    }
+    else {
+      stop (paste(msg, ": failed",sep=""))
+    }
+  } # for loop
 
   print ("test of wgdx on 'field' list element for variable passed")
   TRUE   ## all tests passed: return TRUE

@@ -1135,6 +1135,21 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
     }
   }
 
+  if (fieldExp) {
+    if (STRSXP != TYPEOF(fieldExp)) {
+      error ("Optional input list element 'field' must be a string vector - found %s instead.",
+             typeofTxt(fieldExp, buf));
+    }
+    checkSymType3 (wSpec->dType, __LINE__);
+    if (variable == wSpec->dType) {
+      tmpName = CHAR(STRING_ELT(fieldExp, 0));
+      if (0 != strcasecmp("all", tmpName)) {
+        error ("Optional input list element 'field' must be 'all':"
+               " found '%s' instead.", tmpName);
+      }
+    }
+  } /* if fieldExp */
+
   if (typeCodeExp) {
     checkSymType3 (wSpec->dType, __LINE__);
     /* ignore if not needed for this parameter type */
