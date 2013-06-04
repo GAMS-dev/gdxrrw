@@ -1570,7 +1570,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         fVec = VECTOR_ELT(fieldIndex, iSym);
         fPtr = INTEGER(fVec);
         rowPerm = VECTOR_ELT(rowPerms, iSym);
-        rowPermPtr = INTEGER(rowPerm);
+        rowPermPtr = (R_NilValue != rowPerm) ? INTEGER(rowPerm) : NULL;
         pd = NULL;
         pi = NULL;
         if (TYPEOF(valData) == REALSXP) {
@@ -1587,11 +1587,8 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         empty = 1;
         for (iRow = 0;  iRow < nRows;  iRow++) {
           int fieldVal;
-          int ii = iRow;
+          int ii = rowPermPtr ? rowPermPtr[iRow] : iRow;
 
-          if (R_NilValue != rowPerm) {
-            ii = rowPermPtr[iRow];
-          }
           for (k = 0;  k < nColumns;  k++) {
             if (pd) {
               idx = (int) pd[k*nRows + ii];
