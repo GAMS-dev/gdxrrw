@@ -73,6 +73,7 @@ tryCatch({
     print ("gdxdiff call succeeded")
   }
 
+
   print ("test of wgdx on sorted and unsorted variable writes passed")
   TRUE   ## all tests passed: return TRUE
 },

@@ -20,6 +20,7 @@ tests <- c("tReadSparse1", "tReadFull1",
            "tReadEqu",
            "tWriteSparse1", "tWriteSparse2", "tWriteFull1", "tWriteFull2",
            "tWriteSV",
+           "tWriteVarSort",
            "tWrap",
            "tInfo1", "tInfo2",
            "tLS")
