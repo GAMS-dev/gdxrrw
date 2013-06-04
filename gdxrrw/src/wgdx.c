@@ -782,6 +782,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
   int sz;
   char buf[512];
   const char *tmpName;
+  char typeName[16];          /* symbol type we are reading */
   const char *eltName;        /* list element name */
   SEXP symUels;               /* UEL strings, either from user or created here from indices */
   SEXP bufferUel;             /* allocating temporary storage place */
@@ -797,6 +798,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
   memset (wSpec, 0, sizeof(*wSpec));
   wSpec->dForm = sparse;
   wSpec->dType = set;
+  strcpy (typeName, "set");
   wSpec->symDim = -1;           /* not yet known */
 
   nElements = length(lst);
@@ -909,6 +911,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
     else {
       error ("Input list element 'type' must be either 'set', 'parameter' or 'variable'.");
     }
+    strcpy (typeName, tmpName);
   }
 
   if (dimExp) {                 /* optional */
@@ -963,7 +966,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
                  wSpec->dim, dimUels-1);
         break;
       default:
-        error ("uels input not expected/implemented for type=%s.", CHAR(STRING_ELT(typeExp, 0)));
+        error ("uels input not expected/implemented for type=%s.", typeName);
       } /* switch symbol type */
     }
     else {
@@ -977,7 +980,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
         wSpec->symDim = dimUels - 1;
         break;
       default:
-        error ("uels input not expected/implemented for type=%s.", CHAR(STRING_ELT(typeExp, 0)));
+        error ("uels input not expected/implemented for type=%s.", typeName);
       } /* switch symbol type */
       if (wSpec->symDim > GMS_MAX_INDEX_DIM) {
         error ("Input list element 'uels' implies symbol dimension of %d, exceeding GDX dimension limit of %d.",
@@ -1020,7 +1023,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
       }
     }
     else {
-      error ("Missing 'val' is a required list element for type=%s.", CHAR(STRING_ELT(typeExp, 0)));
+      error ("Missing 'val' is a required list element for type=%s.", typeName);
     }
   }
   else {
@@ -1056,7 +1059,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
             error ("val input must have at least 2 cols when writing variables in sparse form.");
           break;
         default:
-          error ("val input not expected/implemented for type=%s.", CHAR(STRING_ELT(typeExp, 0)));
+          error ("val input not expected/implemented for type=%s.", typeName);
         } /* switch symbol type */
         if (symDimTmp > GMS_MAX_INDEX_DIM) {
           error ("Input list element 'val' implies symbol dimension of %d, exceeding GDX dimension limit of %d.",
@@ -1094,7 +1097,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
           symDimTmp--;          /* account for _field dimension */
           break;
         default:
-          error ("val input not expected/implemented for type=%s.", CHAR(STRING_ELT(typeExp, 0)));
+          error ("val input not expected/implemented for type=%s.", typeName);
         } /* switch symbol type */
         if (symDimTmp > GMS_MAX_INDEX_DIM) {
           error ("Input list element 'val' implies symbol dimension of %d, exceeding GDX dimension limit of %d.",
@@ -1196,7 +1199,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
     case parameter:
       break;                    /* no problem */
     default:
-      error ("Empty UEL list not yet implemented for type=%s.", CHAR(STRING_ELT(typeExp, 0)));
+      error ("Empty UEL list not yet implemented for type=%s.", typeName);
     } /* switch symbol type */
     PROTECT(symUels = allocVector(VECSXP, wSpec->symDim)); /* or should this be a different dimension?? */
     ++*protCount;
@@ -1223,7 +1226,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
       getFieldMapping (valExp, VECTOR_ELT(uelsExp, wSpec->symDim), &fVec, wSpec, protCount);
       break;
     default:
-      error ("checkVals not implemented type=%s.", CHAR(STRING_ELT(typeExp, 0)));
+      error ("checkVals not implemented type=%s.", typeName);
     } /* switch symbol type */
   }
 
@@ -1391,7 +1394,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   int iSym;
   int idx;
   SEXP dimVect;
-  int iDim;
+  int iDim, symDim;
   int totalElement, total, nColumns, nRows, index, total_num_of_elements;
   int d, subindex, inner;
   int fieldIdx;
@@ -1477,15 +1480,15 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
     }
     iVecVec = VECTOR_ELT(uelIndex, iSym);
     rowPerm = VECTOR_ELT(rowPerms, iSym);
+    symDim = wSpecPtr[iSym]->symDim;
     if (wSpecPtr[iSym]->dType == set) {
       if (wSpecPtr[iSym]->withVal == 0 && wSpecPtr[iSym]->withUel == 1) {
         /* creating value for set that does not have val */
-        nColumns = length(iVecVec);
-        PROTECT(dimVect = allocVector(REALSXP, nColumns));
+        PROTECT(dimVect = allocVector(REALSXP, symDim));
         wgdxAlloc++;
         totalElement = 1;
         dimVal = REAL(dimVect);
-        for (iDim = 0;  iDim < nColumns;  iDim++) {
+        for (iDim = 0;  iDim < symDim;  iDim++) {
           dimVal[iDim] = length(VECTOR_ELT(iVecVec, iDim));
           totalElement *= dimVal[iDim];
         }
