@@ -366,6 +366,108 @@ checkVals (SEXP val, SEXP uels, wSpec_t *wSpec, int *isSorted)
   return;
 } /* checkVals */
 
+/* this is very un-thread-safe */
+static int qNRows = 0;
+static int qNCols = 0;
+static int *qpInt = NULL;
+static double *qpDbl = NULL;
+
+/* qsort's comparison: return *p1 - *p2 */
+static int
+idxSortCmpDbl (const void *p1, const void *p2)
+{
+  int i1 = * (const int *)p1;
+  int i2 = * (const int *)p2;
+  int j, k1, k2;
+
+  for (j = 0;  j < qNCols;  j++) {
+    k1 = (int) qpDbl[i1 + j*qNRows];
+    k2 = (int) qpDbl[i2 + j*qNRows];
+    if (k1 > k2)
+      return 1;
+    else if (k1 < k2)
+      return -1;
+  }
+  return 0;
+} /* idxSortCmpDbl */
+
+/* qsort's comparison: return *p1 - *p2 */
+static int
+idxSortCmpInt (const void *p1, const void *p2)
+{
+  int i1 = * (const int *)p1;
+  int i2 = * (const int *)p2;
+  int j, k1, k2;
+
+  for (j = 0;  j < qNCols;  j++) {
+    k1 = qpInt[i1 + j*qNRows];
+    k2 = qpInt[i2 + j*qNRows];
+    if (k1 > k2)
+      return 1;
+    else if (k1 < k2)
+      return -1;
+  }
+  return 0;
+} /* idxSortCmpInt */
+
+static void
+sortVals (SEXP val, wSpec_t *wSpec, int *protCount, SEXP *rowPerm)
+{
+  SEXP dims;
+  double *pd = NULL;
+  int *pi = NULL;
+  int *base;
+  int i, nRows, nCols;
+
+  if (wSpec->dForm != sparse)
+    error ("wgdx internal error: sortVals called with non-sparse input");
+
+  if (TYPEOF(val) == REALSXP) {
+    pd = REAL(val);
+  }
+  else if (TYPEOF(val) == INTSXP) {
+    pi = INTEGER(val);
+  }
+  else {
+    error ("Input list element 'val' must be numeric.");
+  }
+  dims = getAttrib(val, R_DimSymbol);
+  nRows = INTEGER(dims)[0];
+  nCols = INTEGER(dims)[1];
+  checkSymType3 (wSpec->dType, __LINE__);
+  switch (wSpec->dType) {
+  case set:
+    break;
+  case parameter:
+    nCols--;    /* skip last column containing parameter values */
+    break;
+  case variable:
+    nCols -= 2;   /* skip last two columns: field index and level/marginal/etc values */
+    break;
+  default:
+    error ("vals input not expected/implemented for this symbol type.");
+  } /* switch symbol type */
+
+  PROTECT((*rowPerm) = allocVector(INTSXP, nRows));
+  ++*protCount;
+  base = INTEGER(*rowPerm);
+  for (i = 0;  i < nRows;  i++) {
+    base[i] = i;
+  }
+
+  qNRows = nRows;
+  qNCols = nCols;
+
+  if (pi) {
+    qpInt = pi;
+    qsort (base, nRows, sizeof(base[0]), idxSortCmpInt);
+  }
+  else {
+    qpDbl = pd;
+    qsort (base, nRows, sizeof(base[0]), idxSortCmpDbl);
+  }
+} /* sortVals */
+
 static void
 createUelOut(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
 {
@@ -684,6 +786,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
   SEXP symUels;               /* UEL strings, either from user or created here from indices */
   SEXP bufferUel;             /* allocating temporary storage place */
   SEXP fVec;                  /* integer vector mapping field indices in 'val' to GMS_VAL_XXX */
+  SEXP rowPerm;               /* row permutation for sparse 'val' rows of one symbol */
   wSpec_t *wSpec;
 
   symUels = R_NilValue;
@@ -1036,7 +1139,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
     checkSymType3 (wSpec->dType, __LINE__);
     /* ignore if not needed for this parameter type */
     if (variable == wSpec->dType) {
-      int typeCode;
+      int typeCode = 0;
 
       if (INTSXP == TYPEOF(typeCodeExp)) {
         if (length(typeCodeExp) != 1)
@@ -1085,7 +1188,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
     createUelOut (valExp, symUels, wSpec->dType, wSpec->dForm);
   }
 
-  SET_VECTOR_ELT(rowPerms, iSym, R_NilValue);
+  rowPerm = R_NilValue;
   if (wSpec->withVal == 1) {
     int isSorted = 0;
 
@@ -1098,7 +1201,8 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
       isSorted = 1;             /* check sort order */
       checkVals (valExp, symUels, wSpec, &isSorted);
       if (! isSorted) {
-        error ("readWgdxList: go implement a sorter and save in rowPerms");
+        sortVals (valExp, wSpec, protCount, &rowPerm);
+        /* error ("readWgdxList: go implement a sorter and save in rowPerms"); */
       }
       /* check out field column */
       getFieldMapping (valExp, VECTOR_ELT(uelsExp, wSpec->symDim), &fVec, wSpec, protCount);
@@ -1113,6 +1217,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
 
   registerInputUEL (symUels, iSym, uelIndex, protCount);
   SET_VECTOR_ELT(fieldIndex, iSym, fVec);
+  SET_VECTOR_ELT(rowPerms, iSym, rowPerm);
 } /* readWgdxList */
 
 
@@ -1266,7 +1371,8 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   shortStringBuf_t msgBuf;
   shortStringBuf_t expText;
   int rc, errNum, empty;
-  int i, j, k;
+  int k;
+  int iRow;
   int iSym;
   int idx;
   SEXP dimVect;
@@ -1279,6 +1385,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   int *pi;
   int *subscript;
   int *fPtr;
+  int *rowPermPtr;
   int wgdxAlloc = 0;
   char buf[512];
 
@@ -1343,21 +1450,20 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   memset (currInd, 0, sizeof(valIndex_t));
   memset (vals, 0, sizeof(gdxValues_t));
 
-  i=0;
   /* write data in GDX file */
-  for (i = 0;  i < symListLen;  i++) {
-    lstNames = getAttrib(symList[i], R_NamesSymbol);
+  for (iSym = 0;  iSym < symListLen;  iSym++) {
+    lstNames = getAttrib(symList[iSym], R_NamesSymbol);
     valData = NULL;
-    for (j = 0; j < length(symList[i]); j++) {
-      if (strcmp("val", CHAR(STRING_ELT(lstNames, j))) == 0) {
-        valData = VECTOR_ELT(symList[i], j);
+    for (k = 0;  k < length(symList[iSym]);  k++) {
+      if (strcmp("val", CHAR(STRING_ELT(lstNames, k))) == 0) {
+        valData = VECTOR_ELT(symList[iSym], k);
         break;
       }
     }
-    iVecVec = VECTOR_ELT(uelIndex, i);
-    rowPerm = VECTOR_ELT(rowPerms, i);
-    if (wSpecPtr[i]->dType == set) {
-      if (wSpecPtr[i]->withVal == 0 && wSpecPtr[i]->withUel == 1) {
+    iVecVec = VECTOR_ELT(uelIndex, iSym);
+    rowPerm = VECTOR_ELT(rowPerms, iSym);
+    if (wSpecPtr[iSym]->dType == set) {
+      if (wSpecPtr[iSym]->withVal == 0 && wSpecPtr[iSym]->withUel == 1) {
         /* creating value for set that does not have val */
         nColumns = length(iVecVec);
         PROTECT(dimVect = allocVector(REALSXP, nColumns));
@@ -1376,33 +1482,34 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         }
         setAttrib(valData, R_DimSymbol, dimVect);
         index = 0;
-        wSpecPtr[i]->dForm = full;
+        wSpecPtr[iSym]->dForm = full;
       }
     }
     (void) CHAR2ShortStr ("R data from GDXRRW", expText);
-    if (wSpecPtr[i]->withTs == 1) {
+    if (wSpecPtr[iSym]->withTs == 1) {
       /* Looking for 'ts' */
-      for (j = 0;  j < length(symList[i]);  j++) {
-        if (strcmp("ts", CHAR(STRING_ELT(lstNames, j))) == 0) {
-          (void) CHAR2ShortStr (CHAR(STRING_ELT( VECTOR_ELT(symList[i], j), 0)), expText);
+      for (k = 0;  k < length(symList[iSym]);  k++) {
+        if (strcmp("ts", CHAR(STRING_ELT(lstNames, k))) == 0) {
+          (void) CHAR2ShortStr (CHAR(STRING_ELT( VECTOR_ELT(symList[iSym], k), 0)), expText);
           break;
         }
       }
     }
 
-    if (wSpecPtr[i]->dForm == sparse) {
+    if (wSpecPtr[iSym]->dForm == sparse) {
       dimVect = getAttrib(valData, R_DimSymbol);
       nColumns = INTEGER(dimVect)[1];
       nRows = INTEGER(dimVect)[0];
 
-      if ((parameter == wSpecPtr[i]->dType) || (set == wSpecPtr[i]->dType)) {
-        if (parameter == wSpecPtr[i]->dType) {
+      if ((parameter == wSpecPtr[iSym]->dType) ||
+          (set == wSpecPtr[iSym]->dType)) {
+        if (parameter == wSpecPtr[iSym]->dType) {
           nColumns--;
-          rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
+          rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[iSym]->name, expText,
                                      nColumns, GMS_DT_PAR, 0);
         }
         else {
-          rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
+          rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[iSym]->name, expText,
                                      nColumns, GMS_DT_SET, 0);
           vals[0] = 0;
         }
@@ -1417,32 +1524,32 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         else if (TYPEOF(valData) == INTSXP) {
           pi = INTEGER(valData);
         }
-        for (j = 0; j < nRows; j++) {
-          for (k = 0; k < nColumns; k++) {
+        for (iRow = 0;  iRow < nRows;  iRow++) {
+          for (k = 0;  k < nColumns;  k++) {
             iVec = VECTOR_ELT(iVecVec, k);
             if (pd) {
-              idx = (int) pd[k*nRows + j];
+              idx = (int) pd[k*nRows + iRow];
             }
             else {
-              idx = pi[k*nRows + j];
+              idx = pi[k*nRows + iRow];
             }
             uelIndices[k] = INTEGER(iVec)[idx-1];
           }
-          if (wSpecPtr[i]->dType == parameter) {
+          if (wSpecPtr[iSym]->dType == parameter) {
             if (pd) {
-              vals[0] = pd[nColumns*nRows + j];
+              vals[0] = pd[nColumns*nRows + iRow];
             }
             else {
-              vals[0] = pi[nColumns*nRows + j];
+              vals[0] = pi[nColumns*nRows + iRow];
             }
             if (ISNA(vals[0])) {
               vals[0] = sVals[GMS_SVIDX_NA];
             }
           }
-          if ((parameter == wSpecPtr[i]->dType) &&
+          if ((parameter == wSpecPtr[iSym]->dType) &&
               (0 == vals[0]) && ('e' == zeroSqueeze))
             vals[0] = sVals[GMS_SVIDX_EPS];
-          if ((set == wSpecPtr[i]->dType) ||
+          if ((set == wSpecPtr[iSym]->dType) ||
               ('n' == zeroSqueeze) ||
               (0 != vals[0])) {
             /* write the value to GDX */
@@ -1458,10 +1565,12 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         }
       }    /* if set or parameter */
       else {
-        fVec = VECTOR_ELT(fieldIndex, i);
         Rprintf ("typeof(valData) = %s\n", typeofTxt(valData, buf));
         Rprintf ("\n");
+        fVec = VECTOR_ELT(fieldIndex, iSym);
         fPtr = INTEGER(fVec);
+        rowPerm = VECTOR_ELT(rowPerms, iSym);
+        rowPermPtr = INTEGER(rowPerm);
         pd = NULL;
         pi = NULL;
         if (TYPEOF(valData) == REALSXP) {
@@ -1469,34 +1578,38 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         }
 
         nColumns -= 2;
-        rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
-                                   nColumns, GMS_DT_VAR, wSpecPtr[i]->typeCode);
+        rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[iSym]->name, expText,
+                                   nColumns, GMS_DT_VAR, wSpecPtr[iSym]->typeCode);
         if (!rc)
-          error("Error calling gdxDataWriteMapStart for symbol '%s'", wSpecPtr[i]->name);
+          error("Error calling gdxDataWriteMapStart for symbol '%s'", wSpecPtr[iSym]->name);
 
         idx = -1;
         empty = 1;
-        for (j = 0; j < nRows; j++) {
+        for (iRow = 0;  iRow < nRows;  iRow++) {
           int fieldVal;
+          int ii = iRow;
 
+          if (R_NilValue != rowPerm) {
+            ii = rowPermPtr[iRow];
+          }
           for (k = 0;  k < nColumns;  k++) {
             if (pd) {
-              idx = (int) pd[k*nRows + j];
+              idx = (int) pd[k*nRows + ii];
             }
             else {
-              idx = pi[k*nRows + j];
+              idx = pi[k*nRows + ii];
             }
             currInd[k] = idx;
           }
           if (pd) {
-            fieldIdx = (int) pd[k*nRows + j];
+            fieldIdx = (int) pd[k*nRows + ii];
             k++;
-            v = pd[k*nRows + j];
+            v = pd[k*nRows + ii];
           }
           else {
-            fieldIdx = pi[k*nRows + j];
+            fieldIdx = pi[k*nRows + ii];
             k++;
-            v = pi[k*nRows + j];
+            v = pi[k*nRows + ii];
           }
           fieldVal = fPtr[fieldIdx-1];
           if (empty) {
@@ -1526,7 +1639,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
               Rprintf ("  flushing\n");
               rc = gdxDataWriteMap (gdxHandle, uelIndices, vals);
               if (!rc)
-                error("Error calling gdxDataWriteMap for symbol '%s'", wSpecPtr[i]->name);
+                error("Error calling gdxDataWriteMap for symbol '%s'", wSpecPtr[iSym]->name);
               memset (vals, 0, sizeof(gdxValues_t));
               memcpy (prevInd, currInd, nColumns * sizeof(prevInd[0]));
               memset (currInd, 0, sizeof(valIndex_t)); /* not really needed */
@@ -1547,10 +1660,10 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
           Rprintf ("  flushing at end\n");
           rc = gdxDataWriteMap (gdxHandle, uelIndices, vals);
           if (!rc)
-            error("Error calling gdxDataWriteMap for symbol '%s'", wSpecPtr[i]->name);
+            error("Error calling gdxDataWriteMap for symbol '%s'", wSpecPtr[iSym]->name);
         }
         if (!gdxDataWriteDone(gdxHandle))
-          error ("Error calling gdxDataWriteDone for symbol '%s'", wSpecPtr[i]->name);
+          error ("Error calling gdxDataWriteDone for symbol '%s'", wSpecPtr[iSym]->name);
         /* checkSymType2 (wSpecPtr[i]->dType, __LINE__); */
       }
     } /* if sparse */
@@ -1559,12 +1672,12 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
       dimVect = getAttrib(valData, R_DimSymbol);
       nColumns = length(iVecVec);
       subscript = malloc(nColumns*sizeof(*subscript));
-      if (wSpecPtr[i]->dType == parameter) {
-        rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
+      if (wSpecPtr[iSym]->dType == parameter) {
+        rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[iSym]->name, expText,
                                    nColumns, GMS_DT_PAR, 0);
       }
       else {
-        rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[i]->name, expText,
+        rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[iSym]->name, expText,
                                    nColumns, GMS_DT_SET, 0);
         vals[0] = 0;
       }
@@ -1606,24 +1719,24 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         else {
           dt = pi[index];
         }
-        if (wSpecPtr[i]->dType == parameter) {
+        if (wSpecPtr[iSym]->dType == parameter) {
           vals[0] = dt;
           if (ISNA(vals[0])) {
             vals[0] = sVals[GMS_SVIDX_NA];
           }
         }
-        else if (set == wSpecPtr[i]->dType) {
+        else if (set == wSpecPtr[iSym]->dType) {
           /* could do the check in checkForValidData but
            * that uses an additional pass through the full matrix */
           if (0 != dt && 1 != dt) {
             error ("Only zero-one values are allowed when specifying sets with form=full");
           }
         }
-        if ((parameter == wSpecPtr[i]->dType) &&
+        if ((parameter == wSpecPtr[iSym]->dType) &&
             (0 == vals[0]) && ('e' == zeroSqueeze))
           vals[0] = sVals[GMS_SVIDX_EPS];
-        if (((set == wSpecPtr[i]->dType) && (0 != dt))  ||
-            ((parameter == wSpecPtr[i]->dType) &&
+        if (((set == wSpecPtr[iSym]->dType) && (0 != dt))  ||
+            ((parameter == wSpecPtr[iSym]->dType) &&
              (('n' == zeroSqueeze) ||
               (0 != vals[0]))) ) {
           /* write the value to GDX */
