@@ -1395,13 +1395,12 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   int idx;
   SEXP dimVect;
   int iDim, symDim;
-  int totalElement, total, nColumns, nRows, index, total_num_of_elements;
-  int d, subindex, inner;
+  int totalElement, nColumns, nRows, index;
   int fieldIdx;
   double v;
   double *dimVal, *pd, dt, posInf, negInf;
+  int *dimVals;
   int *pi;
-  int *subscript;
   int *fPtr;
   int *rowPermPtr;
   int wgdxAlloc = 0;
@@ -1409,8 +1408,6 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 
   /* shut up compiler warnings */
   valData = NULL;
-
-  total = 1;
 
   loadGDX();
   rc = gdxCreate (&gdxHandle, msgBuf, sizeof(msgBuf));
@@ -1683,10 +1680,18 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
       }
     } /* if sparse */
     else {                    /* form = full */
-      total_num_of_elements = length(valData);
+      checkSymType2 (wSpecPtr[iSym]->dType, __LINE__);
       dimVect = getAttrib(valData, R_DimSymbol);
+      dimVals = (symDim > 0) ? INTEGER(dimVect) : NULL;
+      for (iDim = 0, totalElement = 1;  iDim < symDim;  iDim++) {
+        totalElement *= dimVals[iDim];
+      }
+      /* these next are just to be sure */
       nColumns = length(iVecVec);
-      subscript = malloc(nColumns*sizeof(*subscript));
+      if (nColumns != symDim)
+        error ("Internal error: dimension mismatch writing to GDX with form='full'");
+      if (length(valData) != totalElement)
+        error ("Internal error: data mismatch writing to GDX with form='full'");
       if (wSpecPtr[iSym]->dType == parameter) {
         rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[iSym]->name, expText,
                                    nColumns, GMS_DT_PAR, 0);
@@ -1710,23 +1715,15 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
       else {
         error ("internal error: unrecognized valData type");
       }
-      for (index = 0; index < total_num_of_elements; index++) {
-        subindex = index;
-        if (nColumns > 0) {
-          for (d = nColumns-1; ; d--) {
-            iVec = VECTOR_ELT(iVecVec, d);
-            for (total=1, inner=0; inner<d; inner++) {
-              total *= INTEGER(dimVect)[inner];
-            }
-            subscript[d] = subindex / total;
-            uelIndices[d] = INTEGER(iVec)[subscript[d]];
-
-            subindex = subindex % total;
-            if (d == 0) {
-              break;
-            }
-          } /* for loop over "d" */
-        }
+      for (index = 0; index < totalElement; index++) {
+        int indexTmp = index, totalTmp = totalElement;
+        for (iDim = symDim-1;  iDim >= 0;  iDim--) {
+          iVec = VECTOR_ELT(iVecVec, iDim);
+          totalTmp /= dimVals[iDim];
+          idx = indexTmp / totalTmp;
+          uelIndices[iDim] = INTEGER(iVec)[idx];
+          indexTmp = indexTmp % totalTmp;
+        } /* for loop over "d" */
 
         if (pd) {
           dt = pd[index];
