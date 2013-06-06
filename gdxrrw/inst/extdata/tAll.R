@@ -12,7 +12,7 @@ if (! rc$value)  stop ("The gdxdiff utility is unavailable or broken: Test run a
 
 tests <- c("tReadSparse1", "tReadFull1",
            "tRead.set", "tRead.param",
-           "tReadSV", "tReadText",
+           "tReadSV", "tReadText", "tReadCase",
            "tReadErr",
            "tReadWithDomainInfo", "tReadPreDomainInfo",
            "tReadCompressWithoutDomInfo", "tReadCompressWithDomInfo",
