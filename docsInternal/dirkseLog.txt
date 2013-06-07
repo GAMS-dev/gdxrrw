@@ -68,3 +68,7 @@ R CMD build gdxrrw && R CMD check gdxrrw_X.Y.Z.tar.gz ; echo "check rc = $?"
 ================ Misc ================
 > .First <- function() { library(gdxrrw) ; igdx("/home/steve/leg_alpha/gmstest")}
 > library(gdxrrw)  but this can go in .First as above
+
+To debug a script, try one of these:
+R -d valgrind --vanilla < foo.R
+R -d "valgrind --tool=memcheck --leak-check=full" --vanilla < foo.R

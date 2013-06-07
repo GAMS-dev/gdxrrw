@@ -192,7 +192,7 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
     pi = INTEGER(val);
   }
   else {
-    error ("'val' must be numeric.");
+    error ("'val' must be real or integer.");
   }
   dims = getAttrib(val, R_DimSymbol);
   if (sparse == wSpec->dForm) {
@@ -285,7 +285,7 @@ checkVals (SEXP val, SEXP uels, wSpec_t *wSpec, int *isSorted)
     pi = INTEGER(val);
   }
   else {
-    error ("Input list element 'val' must be numeric.");
+    error ("Input list element 'val' must be real or integer.");
   }
   dims = getAttrib(val, R_DimSymbol);
 
@@ -427,7 +427,7 @@ sortVals (SEXP val, wSpec_t *wSpec, int *protCount, SEXP *rowPerm)
     pi = INTEGER(val);
   }
   else {
-    error ("Input list element 'val' must be numeric.");
+    error ("Input list element 'val' must be real or integer.");
   }
   dims = getAttrib(val, R_DimSymbol);
   nRows = INTEGER(dims)[0];
@@ -937,7 +937,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
       }
     }
     else {
-      error ("Optional input list element 'dim' must be numeric - found %s instead.",
+      error ("Optional input list element 'dim' must be real or integer - found %s instead.",
              typeofTxt(dimExp, buf));
     }
   } /* dimExp */
@@ -1124,14 +1124,14 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
       }
     }
     else {
-      error ("Input list element 'val' must be a numeric matrix - found %s instead.",
+      error ("Input list element 'val' must be a real or integer matrix - found %s instead.",
              typeofTxt(valExp, buf));
     }
   } /* valExp not NULL */
 
   if (domExp) {
     if (STRSXP != TYPEOF(domExp)) {
-      error ("Input list element 'domains' must be a string vector - found %s instead.",
+      error ("Input list element 'domains' must be a real or integer vector - found %s instead.",
              typeofTxt(domExp, buf));
     }
   }
@@ -1171,7 +1171,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
         }
       }
       else {
-        error ("Input list element 'typeCode' must be numeric - found %s instead.",
+        error ("Input list element 'typeCode' must be real or integer - found %s instead.",
                typeofTxt(dimExp, buf));
       }
       if ((typeCode > 0) && (typeCode < GMS_VARTYPE_MAX))
@@ -1586,6 +1586,12 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         pi = NULL;
         if (TYPEOF(valData) == REALSXP) {
           pd = REAL(valData);
+        }
+        else if (TYPEOF(valData) == INTSXP) {
+          pi = INTEGER(valData);
+        }
+        else {
+          error ("Input list element 'val' must be real or integer.");
         }
 
         nColumns -= 2;
