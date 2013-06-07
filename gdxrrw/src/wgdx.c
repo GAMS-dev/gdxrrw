@@ -791,7 +791,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
   symUels = R_NilValue;
   fVec = R_NilValue;
 
-  wSpec = (wSpec_t *) malloc(sizeof(*wSpec));
+  wSpec = (wSpec_t *) R_alloc(1, sizeof(*wSpec));
   *wSpecPtr = wSpec;
   memset (wSpec, 0, sizeof(*wSpec));
   wSpec->dForm = sparse;
@@ -1348,7 +1348,7 @@ unpackWgdxArgs (SEXP *args, int argLen, SEXP **symList,
   Rprintf ("DEBUG: R_NilValue = %p\n", R_NilValue);
 #endif
 
-  *symList = malloc (*symListSiz * sizeof(**symList));
+  *symList = R_alloc (*symListSiz, sizeof(**symList));
   memset (*symList, 0, *symListSiz * sizeof(**symList));
 
   for (a = *args, i = 2;  i < stopper;  i++) {
@@ -1440,7 +1440,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   PROTECT(rowPerms = allocVector(VECSXP, symListLen));
   wgdxAlloc++;
 
-  wSpecPtr = (wSpec_t **) malloc (symListLen * sizeof(wSpecPtr[0]));
+  wSpecPtr = (wSpec_t **) R_alloc (symListLen, sizeof(wSpecPtr[0]));
 
   /* check input list(s) for data validation and to create UEL list */
   for (iSym = 0;  iSym < symListLen;  iSym++) {
@@ -1767,8 +1767,6 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   }
   (void) gdxFree (&gdxHandle);
 
-  /* free memory */
-  free(wSpecPtr);
   UNPROTECT(wgdxAlloc);
 } /* writeGdx */
 
@@ -1820,7 +1818,6 @@ wgdx (SEXP args)
 
   /* check and write data to gdxfile */
   writeGdx (gdxFileName, symListLen, symList, zeroSqueeze);
-  free (symList);
   return R_NilValue;
 } /* wgdx */
 
