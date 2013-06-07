@@ -84,7 +84,7 @@ gdxInfo (SEXP args)
   double dv[GMS_VAL_MAX];
   int Keys[GMS_MAX_INDEX_DIM];
   char *dn, c;
-  char mexPath[512];
+  char loadPath[GMS_SSSIZE];
 
 #if 0
   SEXP ap, el;
@@ -136,8 +136,8 @@ gdxInfo (SEXP args)
     rc = gdxCreate (&gdxHandle, msg, sizeof(msg));
     if (0 == rc)
       error ("Error creating GDX object: %s", msg);
-    mexPath[0] = '\0';
-    Rprintf ("* Library location: %s\n", *mexPath ? mexPath : "unknown");
+    gdxGetLoadPath (loadPath);
+    Rprintf ("* Library location: %s\n", *loadPath ? loadPath : "unknown");
     gdxGetDLLVersion (gdxHandle, msg);
     Rprintf ("*  Library version: %s\n", msg);
     (void) gdxFree (&gdxHandle);
