@@ -177,7 +177,6 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
     error ("List of field labels in list element 'uels' must be strings");
   }
   nLabs = length(labels);
-  Rprintf ("DEBUG getFieldMapping: nLabs=%d\n", nLabs);
   PROTECT((*fVec) = allocVector(INTSXP, nLabs));
   ++*protCount;
   fPtr = INTEGER(*fVec);
@@ -231,7 +230,6 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
                nCols+1);
       }
       fieldName = CHAR(STRING_ELT(labels, k-1));
-      Rprintf ("Field indices: row i=%d  idx=%d  fieldName=%s\n", i, k, fieldName);
       if      (strcasecmp("l", fieldName) == 0) {
         fPtr[k-1] = GMS_VAL_LEVEL;
       }
@@ -1580,8 +1578,6 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         }
       }    /* if set or parameter */
       else {
-        Rprintf ("typeof(valData) = %s\n", typeofTxt(valData, buf));
-        Rprintf ("\n");
         fVec = VECTOR_ELT(fieldIndex, iSym);
         fPtr = INTEGER(fVec);
         rowPerm = VECTOR_ELT(rowPerms, iSym);
@@ -1625,7 +1621,6 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
           }
           fieldVal = fPtr[fieldIdx-1];
           if (empty) {
-            Rprintf ("  fieldIdx = %d   GMS_VAL_XX = %d   v = %g  into empty\n", fieldIdx, fieldVal, v);
             empty = 0;
             memcpy (prevInd, currInd, nColumns * sizeof(prevInd[0]));
             /* Rprintf ("  prevInd = %d  %d\n", prevInd[0], prevInd[1]); */
@@ -1633,22 +1628,15 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
           else {
             int r = idxCmp(nColumns, prevInd, currInd);
             if (r > 0) {
-              if (R_NilValue == rowPerm)
-                Rprintf ("DEBUG: rowPerm is NULL\n");
-              else
-                Rprintf ("DEBUG: rowPerm is non-NULL\n");
-              error ("Unsorted input 'val' not yet implemented");
+              error ("Internal error: Unsorted input 'val' not handled properly");
             }
             /* flush and clear */
-            Rprintf ("  fieldIdx = %d   GMS_VAL_XX = %d   v = %g\n",
-                     fieldIdx, fieldVal, v);
             if (r) {
               for (k = 0;  k < nColumns;  k++) {
                 iVec = VECTOR_ELT(iVecVec, k);
                 idx = prevInd[k];
                 uelIndices[k] = INTEGER(iVec)[idx-1];
               }
-              Rprintf ("  flushing\n");
               rc = gdxDataWriteMap (gdxHandle, uelIndices, vals);
               if (!rc)
                 error("Error calling gdxDataWriteMap for symbol '%s'", wSpecPtr[iSym]->name);
@@ -1669,7 +1657,6 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
             idx = currInd[k];
             uelIndices[k] = INTEGER(iVec)[idx-1];
           }
-          Rprintf ("  flushing at end\n");
           rc = gdxDataWriteMap (gdxHandle, uelIndices, vals);
           if (!rc)
             error("Error calling gdxDataWriteMap for symbol '%s'", wSpecPtr[iSym]->name);
