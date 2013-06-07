@@ -31,6 +31,7 @@ tryCatch({
   }
 
   ## 0. first generate things nice and ordered and simple
+  print ("case 0: easy, ordered, simple")
   nrow <- iCard * iCard * fCard
   val0 <- matrix(0,nrow=nrow,ncol=4)
   irow <- 0
@@ -96,6 +97,7 @@ tryCatch({
   }
 
   ## 1. swap order in 2nd dim: 1 -> "i2", 2 -> "i1
+  print ("case 1: swap order of UELs in 2nd dim of variable")
   iiUels <- c('i2','i1')
   uels1 <- list(iUels, iiUels, fUels)
   val1 <- val0
@@ -143,6 +145,7 @@ tryCatch({
   ##       (1,2,3,4,5) -> ("l","m","lo","up","s")
   ##    to
   ##       (500,600,700,800,801) -> ('lo','up','s','M','L')
+  print ("case 2: goofy indexing for 'field' column of $val")
   ffUels <- vector(mode="character",length=1000)
   ffMap <- vector(mode="integer",length=fCard)
   ffUels[500] <- 'lo' ; ffMap[3] <- 500
@@ -184,6 +187,51 @@ tryCatch({
     print ("gdxdiff call succeeded")
   }
 
+  ##   3. Usually, the 'val' matrix will be ordered.  But it doesn't have to be.
+  ##      We randomize it completely and test.
+  print ("case 3: permute the rows in the $val matrix from case 2")
+
+  ## first compute a reproducible permutation of 1..nrow
+  set.seed (525)
+  perm <- sample.int(nrow)
+  val3 <- matrix(0,nrow=nrow,ncol=4)
+
+  for (irow in 1:nrow) {
+    val3[perm[irow],] <- val2[irow,]
+  }  # irow loop
+  ## if we only change ordering of rows in val, no other change is necessary in vOut
+  vOut <- list(name='v',type='variable',val=val3,uels=uels2,varTypeText='free',typeCode=5)
+  wgdx (fnOut, vOut)
+  if (file_test ('-f', fnOut) == TRUE) {
+    print (paste("File", fnOut, "was created"))
+  } else {
+    stop (paste("FAIL: File", fnOut, "is not readable"))
+  }
+  rc <- system (paste("gdxdiff", fnWant, fnOut, "id=v"))
+  if (0 != rc) {
+    stop(paste("Bad return from gdxdiff: wanted 0, got",rc))
+  } else {
+    print ("gdxdiff call succeeded")
+  }
+
+  val3 <- val3 * 0
+  for (irow in 1:nrow) {
+    val3[irow,] <- val2[perm[irow],]
+  }  # irow loop
+  ## if we only change ordering of rows in val, no other change is necessary in vOut
+  vOut <- list(name='v',type='variable',val=val3,uels=uels2,varTypeText='free',typeCode=5)
+  wgdx (fnOut, vOut)
+  if (file_test ('-f', fnOut) == TRUE) {
+    print (paste("File", fnOut, "was created"))
+  } else {
+    stop (paste("FAIL: File", fnOut, "is not readable"))
+  }
+  rc <- system (paste("gdxdiff", fnWant, fnOut, "id=v"))
+  if (0 != rc) {
+    stop(paste("Bad return from gdxdiff: wanted 0, got",rc))
+  } else {
+    print ("gdxdiff call succeeded")
+  }
 
   print (paste("test of wgdx on", testName, "passed"))
   TRUE   ## all tests passed: return TRUE
