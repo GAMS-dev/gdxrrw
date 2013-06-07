@@ -213,18 +213,18 @@ gdxInfo (SEXP args)
 
     /* Symbolinfo */
     Rprintf ("$ontext\n");
-    for (i = 1;  i <= nSyms;  i++) {
-      gdxSymbolInfo (gdxHandle, i, symName, &symDim, &symType);
-      gdxSymbolInfoX (gdxHandle, i, &symCount, &rc, sText);
+    for (iSym = 1;  iSym <= nSyms;  iSym++) {
+      gdxSymbolInfo (gdxHandle, iSym, symName, &symDim, &symType);
+      gdxSymbolInfoX (gdxHandle, iSym, &symCount, &rc, sText);
       Rprintf ("%-15s %3d %-12s %s\n", symName, symDim, gmsGdxTypeText[symType], sText);
     }
     Rprintf ("$offtext\n");
 
     Rprintf ("$onempty onembedded\n");
     dn = NULL;
-    for (i = 1;  i <= nSyms;  i++) {
-      gdxSymbolInfo (gdxHandle, i, symName, &symDim, &symType);
-      gdxSymbolInfoX (gdxHandle, i, &symCount, &symUser, sText);
+    for (iSym = 1;  iSym <= nSyms;  iSym++) {
+      gdxSymbolInfo (gdxHandle, iSym, symName, &symDim, &symType);
+      gdxSymbolInfoX (gdxHandle, iSym, &symCount, &symUser, sText);
 
       if (GMS_DT_VAR == symType || GMS_DT_EQU == symType)
         Rprintf ("$ontext\n");
@@ -258,7 +258,7 @@ gdxInfo (SEXP args)
         Rprintf(" %s", symName);
         if (symDim > 0) {
           /* should probably use gdxSymbolGetDomainX instead */
-          gdxSymbolGetDomain (gdxHandle, i, Keys);
+          gdxSymbolGetDomain (gdxHandle, iSym, Keys);
           Rprintf ("(");
           for (j = 0;  j < symDim;  j++) {
             if (Keys[j]==0)
@@ -282,7 +282,7 @@ gdxInfo (SEXP args)
       }
       else {
         Rprintf ("/\n");
-        gdxDataReadRawStart (gdxHandle, i, &nRecs);
+        gdxDataReadRawStart (gdxHandle, iSym, &nRecs);
         while (gdxDataReadRaw (gdxHandle, Keys, Vals, &FDim)) {
           if ((GMS_DT_VAR == symType || GMS_DT_EQU == symType) && 0 == memcmp(Vals,dv,GMS_VAL_MAX*sizeof(double))) /* all default records */
             continue;
@@ -328,7 +328,7 @@ gdxInfo (SEXP args)
         Rprintf ("/;\n");
       } /* if 0 == symCount .. else .. */
       j = 1;
-      while (gdxSymbolGetComment (gdxHandle, i, j++, msg))
+      while (gdxSymbolGetComment (gdxHandle, iSym, j++, msg))
         Rprintf ("* %s\n", msg);
       if (GMS_DT_VAR == symType || GMS_DT_EQU == symType)
         Rprintf ("$offtext\n");

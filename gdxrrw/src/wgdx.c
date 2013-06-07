@@ -490,38 +490,38 @@ createUelOut(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
 
     if (TYPEOF(val) == REALSXP) {
       P = REAL(val);
-      for (i = 0; i < nCols; i++) {
+      for (j = 0;  j < nCols;  j++) {
         mx = 0;
-        for (j = 0; j < nRows; j++) {
-          if (P[j + i*nRows] > mx) {
-            mx = (int) P[j + i*nRows];
+        for (i = 0;  i < nRows;  i++) {
+          if (P[i + j*nRows] > mx) {
+            mx = (int) P[i + j*nRows];
           }
         }
         PROTECT(bufferUel = allocVector(STRSXP, mx));
-        for (k = 1; k <= mx; k++) {
+        for (k = 1;  k <= mx;  k++) {
           sprintf(buffer, "%d", k);
           SET_STRING_ELT(bufferUel, k-1, mkChar(buffer));
         }
-        SET_VECTOR_ELT(uelOut, i, bufferUel);
+        SET_VECTOR_ELT(uelOut, j, bufferUel);
         UNPROTECT(1);
       }
     }
     else if (TYPEOF(val) == INTSXP) {
       intVal = INTEGER(val);
 
-      for (i = 0; i < nCols; i++) {
+      for (j = 0;  j < nCols;  j++) {
         mx = 0;
-        for (j = 0; j < nRows; j++) {
-          if (intVal[j + i*nRows] > mx) {
-            mx = intVal[j + i*nRows];
+        for (i = 0;  i < nRows;  i++) {
+          if (intVal[i + j*nRows] > mx) {
+            mx = intVal[i + j*nRows];
           }
         }
         PROTECT(bufferUel = allocVector(STRSXP, mx));
-        for (k = 1; k <= mx; k++) {
+        for (k = 1;  k <= mx;  k++) {
           sprintf(buffer, "%d", k);
           SET_STRING_ELT(bufferUel, k-1, mkChar(buffer));
         }
-        SET_VECTOR_ELT(uelOut, i, bufferUel);
+        SET_VECTOR_ELT(uelOut, j, bufferUel);
         UNPROTECT(1);
       }
     }
@@ -533,10 +533,10 @@ createUelOut(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
      * of elements in each dimension is all what I need.
      */
     ndims = length(uelOut);
-    for (i = 0; i < ndims; i++) {
+    for (i = 0;  i < ndims;  i++) {
       PROTECT(bufferUel = allocVector(STRSXP, INTEGER(dims)[i]));
 
-      for (k = 1; k <= INTEGER(dims)[i]; k++) {
+      for (k = 1;  k <= INTEGER(dims)[i];  k++) {
         sprintf(buffer, "%d", k);
         SET_STRING_ELT(bufferUel, k-1, mkChar(buffer));
       }
