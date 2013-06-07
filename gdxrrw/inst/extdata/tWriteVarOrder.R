@@ -199,6 +199,8 @@ tryCatch({
   for (irow in 1:nrow) {
     val3[perm[irow],] <- val2[irow,]
   }  # irow loop
+  ## just to try it, we'll make val3 an integer matrix, not a double one
+  storage.mode(val3) <- "integer"
   ## if we only change ordering of rows in val, no other change is necessary in vOut
   vOut <- list(name='v',type='variable',val=val3,uels=uels2,varTypeText='free',typeCode=5)
   wgdx (fnOut, vOut)
@@ -214,10 +216,12 @@ tryCatch({
     print ("gdxdiff call succeeded")
   }
 
-  val3 <- val3 * 0
+  val3 <- val3 * 0L
   for (irow in 1:nrow) {
     val3[irow,] <- val2[perm[irow],]
   }  # irow loop
+  ## just to try it, we'll make val3 an integer matrix, not a double one
+  storage.mode(val3) <- "integer"
   ## if we only change ordering of rows in val, no other change is necessary in vOut
   vOut <- list(name='v',type='variable',val=val3,uels=uels2,varTypeText='free',typeCode=5)
   wgdx (fnOut, vOut)
