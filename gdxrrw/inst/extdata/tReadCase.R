@@ -30,6 +30,20 @@ tryCatch({
   if (! identical(iLst$val,upLst$val)) {
     stop ("rgdx error: unexpected return in filtered read using upUels")
   }
+  ## OK, the vals should be the same, no matter the case of the uels
+
+  ## now check that the euls are really different
+  if (identical(loUels,upUels)) {
+    stop ("rgdx error: unexpected identical uels")
+  }
+  ## and that they match what comes back in the list
+  if (! identical(loUels,loLst$uels[[1]])) {
+    stop ("rgdx error: unexpected return in filtered read using loUels")
+  }
+  if (! identical(upUels,upLst$uels[[1]])) {
+    stop ("rgdx error: unexpected return in filtered read using upUels")
+  }
+
 
   print ("test of rgdx case-insensitivity in handling of uel input filter passed")
   TRUE   ## all tests passed: return TRUE
