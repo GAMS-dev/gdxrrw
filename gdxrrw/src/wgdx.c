@@ -35,14 +35,14 @@ static const char *validSymListNames[] = {
 static char validFieldMsg[256] = "";
 
 /* assumes gdxHandle is valid */
-static void
-getGDXMsg (void)
+static char *
+getGDXErrorMsg (void)
 {
   int lastErr;
 
   lastErr = gdxGetLastError (gdxHandle);
   (void) gdxErrorStr (NULL, lastErr, lastErrMsg);
-  return;
+  return lastErrMsg;
 }
 
 static void
@@ -1526,8 +1526,10 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
                                      nColumns, GMS_DT_SET, 0);
           vals[0] = 0;
         }
-        if (!rc)
-          error("Could not write data with gdxDataWriteMapStart");
+        if (!rc) {
+          error("Error calling gdxDataWriteMapStart for symbol '%s': %s",
+                wSpecPtr[iSym]->name, getGDXErrorMsg());
+        }
 
         pd = NULL;
         pi = NULL;
@@ -1568,13 +1570,15 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
             /* write the value to GDX */
             rc = gdxDataWriteMap (gdxHandle, uelIndices, vals);
             if (!rc) {
-              error("Could not write parameter MAP with gdxDataWriteMap");
+              error("Error calling gdxDataWriteMap for symbol '%s': %s",
+                    wSpecPtr[iSym]->name, getGDXErrorMsg());
             }
           }
         } /* end loop over rows */
 
         if (!gdxDataWriteDone(gdxHandle)) {
-          error ("Could not end writing parameter with gdxDataWriteMapStart");
+          error ("Error calling gdxDataWriteDone for symbol '%s': %s",
+                 wSpecPtr[iSym]->name, getGDXErrorMsg());
         }
       }    /* if set or parameter */
       else {
@@ -1597,8 +1601,10 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         nColumns -= 2;
         rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[iSym]->name, expText,
                                    nColumns, GMS_DT_VAR, wSpecPtr[iSym]->typeCode);
-        if (!rc)
-          error("Error calling gdxDataWriteMapStart for symbol '%s'", wSpecPtr[iSym]->name);
+        if (!rc) {
+          error("Error calling gdxDataWriteMapStart for symbol '%s': %s",
+                wSpecPtr[iSym]->name, getGDXErrorMsg());
+        }
 
         idx = -1;
         empty = 1;
@@ -1645,7 +1651,8 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
               }
               rc = gdxDataWriteMap (gdxHandle, uelIndices, vals);
               if (!rc)
-                error("Error calling gdxDataWriteMap for symbol '%s'", wSpecPtr[iSym]->name);
+                error("Error calling gdxDataWriteMap for symbol '%s': %s",
+                      wSpecPtr[iSym]->name, getGDXErrorMsg());
               memset (vals, 0, sizeof(gdxValues_t));
               memcpy (prevInd, currInd, nColumns * sizeof(prevInd[0]));
               memset (currInd, 0, sizeof(valIndex_t)); /* not really needed */
@@ -1660,15 +1667,17 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         if (! empty) {
           for (k = 0;  k < nColumns;  k++) {
             iVec = VECTOR_ELT(iVecVec, k);
-            idx = currInd[k];
+            idx = prevInd[k];
             uelIndices[k] = INTEGER(iVec)[idx-1];
           }
           rc = gdxDataWriteMap (gdxHandle, uelIndices, vals);
           if (!rc)
-            error("Error calling gdxDataWriteMap for symbol '%s'", wSpecPtr[iSym]->name);
+            error("Error calling gdxDataWriteMap for symbol '%s': %s",
+                  wSpecPtr[iSym]->name, getGDXErrorMsg());
         }
         if (!gdxDataWriteDone(gdxHandle))
-          error ("Error calling gdxDataWriteDone for symbol '%s'", wSpecPtr[iSym]->name);
+          error ("Error calling gdxDataWriteDone for symbol '%s': %s",
+                 wSpecPtr[iSym]->name, getGDXErrorMsg());
         /* checkSymType2 (wSpecPtr[i]->dType, __LINE__); */
       }
     } /* if sparse */
@@ -1695,7 +1704,8 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         vals[0] = 0;
       }
       if (!rc) {
-        error("Could not write data with gdxDataWriteMapStart");
+        error("Error calling gdxDataWriteMapStart for symbol '%s': %s",
+              wSpecPtr[iSym]->name, getGDXErrorMsg());
       }
       pd = NULL;
       pi = NULL;
@@ -1747,12 +1757,14 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
           /* write the value to GDX */
           rc = gdxDataWriteMap(gdxHandle, uelIndices, vals);
           if (!rc) {
-            error("Could not write parameter MAP with gdxDataWriteMap");
+            error("Error calling gdxDataWriteMap for symbol '%s': %s",
+                  wSpecPtr[iSym]->name, getGDXErrorMsg());
           }
         }
       } /* for loop over "index" */
       if (!gdxDataWriteDone(gdxHandle)) {
-        error("Could not end writing data with gdxDataWriteMapStart");
+        error ("Error calling gdxDataWriteDone for symbol '%s': %s",
+               wSpecPtr[iSym]->name, getGDXErrorMsg());
       }
     } /* end of writing full data */
   } /* for (i) loop over symbols */
@@ -1760,7 +1772,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   /* Close GDX file */
   errNum = gdxClose (gdxHandle);
   if (errNum != 0) {
-    getGDXMsg ();
+    getGDXErrorMsg ();
     error("GDXRRW:wgdx:GDXError",
           "Could not gdxClose: %s",
           lastErrMsg);
