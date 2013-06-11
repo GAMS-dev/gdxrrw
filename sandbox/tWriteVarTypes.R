@@ -64,7 +64,7 @@ tryCatch({
     val0[i,1] <- i
     val0[i,2] <- i
   }
-  val0[1,3] <- 1.5                      # integer.L = 1
+  val0[1,3] <- 1.5                      # integer.L = 1.5
   val0[2,3] <- 0.5                      # integer.m = 0.5
   val0[3,3] <- 3                        # integer.lo = 1
   val0[4,3] <- 16                       # integer.up = 0
@@ -87,6 +87,69 @@ tryCatch({
   else {
     print(all.equal(vWant,vWrote))
     stop ("FAIL: for v_integer, vWant and vWrote do not agree")
+  }
+
+  ## write positive variable to GDX, compare with fnWant version
+  val0 <- matrix(0,nrow=5,ncol=3)
+  for (i in 1:5) {
+    val0[i,1] <- i
+    val0[i,2] <- 6-i
+  }
+  val0[5,3] <- 322                      # positive.L
+  val0[4,3] <- -1024                    # positive.m
+  val0[3,3] <- -Inf                     # positive.lo
+  val0[2,3] <- 0                        # positive.up
+  val0[1,3] <- 10                       # positive.scale
+  valPositive <- val0
+  vPositive <- list(name='v_positive',type='variable',val=valPositive,uels=uels,typeCode=3,ts='try some special values')
+  wgdx (fnOut, vPositive)
+  if (file_test ('-f', fnOut) == TRUE) {
+    print (paste("File", fnOut, "was created"))
+  } else {
+    stop (paste("FAIL: File", fnOut, "is not readable"))
+  }
+
+  vWant <- rgdx(fnWant,list(name='v_positive',form='sparse',field='all',ts=TRUE))
+  vWrote <- rgdx(fnOut,list(name='v_positive',form='sparse',field='all',ts=TRUE))
+  if (identical(vWrote$domains[1],"*"))
+    vWrote$domains[1] <- vWant$domains[1]
+  if (identical(vWant,vWrote)) {
+  }
+  else {
+    print(all.equal(vWant,vWrote))
+    stop ("FAIL: for v_positive, vWant and vWrote do not agree")
+  }
+
+  ## write negative variable to GDX, compare with fnWant version
+  val0 <- matrix(0,nrow=5,ncol=3)
+  ## this is a confusing order, tested so intentionally
+  for (i in 1:5) {
+    val0[i,1] <- 6-i
+    val0[i,2] <- i
+  }
+  val0[1,3] <- 525                      # negative('i5').L
+  val0[2,3] <- 0                        # negative('i4').up
+  val0[3,3] <- 1                        # negative('i3').lo
+  val0[4,3] <- -1                       # negative('i2').up
+  val0[5,3] <- 0.5                      # negative('i1').scale
+  valNegative <- val0
+  vNegative <- list(name='v_negative',type='variable',val=valNegative,uels=uels,typeCode=4,ts='')
+  wgdx (fnOut, vNegative)
+  if (file_test ('-f', fnOut) == TRUE) {
+    print (paste("File", fnOut, "was created"))
+  } else {
+    stop (paste("FAIL: File", fnOut, "is not readable"))
+  }
+
+  vWant <- rgdx(fnWant,list(name='v_negative',form='sparse',field='all',ts=TRUE))
+  vWrote <- rgdx(fnOut,list(name='v_negative',form='sparse',field='all',ts=TRUE))
+  if (identical(vWrote$domains[1],"*"))
+    vWrote$domains[1] <- vWant$domains[1]
+  if (identical(vWant,vWrote)) {
+  }
+  else {
+    print(all.equal(vWant,vWrote))
+    stop ("FAIL: for v_negative, vWant and vWrote do not agree")
   }
 
 
