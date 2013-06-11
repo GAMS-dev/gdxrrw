@@ -213,7 +213,7 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
   const char *fieldName;
   double dt;
   int i, k;
-  int nCols, nRows, nLabs;
+  int nCols, nRows, nLabs, fDim;
 
   /* labels must be a string vector */
   if (R_NilValue == labels) {
@@ -297,7 +297,35 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
     }
   }
   else {
-    checkSymType2 (wSpec->dType, __LINE__);
+    Rprintf ("DEBUG getFieldMapping: symDim = %d\n", wSpec->symDim);
+    fDim = INTEGER(dims)[wSpec->symDim];
+    Rprintf ("DEBUG getFieldMapping: fDim = %d  nLabs = %d\n", fDim, nLabs);
+    if (fDim != nLabs) {
+      error ("number of field uels (%d) differs from array extent for field index (%d).",
+             nLabs, fDim);
+      }
+    for (k = 0;  k < nLabs;  k++) {
+      fieldName = CHAR(STRING_ELT(labels, k));
+      if      (strcasecmp("l", fieldName) == 0) {
+        fPtr[k] = GMS_VAL_LEVEL;
+      }
+      else if (strcasecmp("m", fieldName) == 0) {
+        fPtr[k] = GMS_VAL_MARGINAL;
+      }
+      else if (strcasecmp("lo", fieldName) == 0) {
+        fPtr[k] = GMS_VAL_LOWER;
+      }
+      else if (strcasecmp("up", fieldName) == 0) {
+        fPtr[k] = GMS_VAL_UPPER;
+      }
+      else if (strcasecmp("s", fieldName) == 0) {
+        fPtr[k] = GMS_VAL_SCALE;
+      }
+      else {
+        error ("variable field name '%s' not valid");
+      }
+    } /* loop over field labels */
+    checkSymType3 (wSpec->dType, __LINE__);
   }
 } /* getFieldMapping */
 
@@ -402,10 +430,22 @@ checkVals (SEXP val, SEXP uels, wSpec_t *wSpec, int *isSorted)
   } /* sparse form */
   else {
     /* compare dimension of full matrix and number of columns in uels */
-    checkSymType2 (wSpec->dType, __LINE__);
-    if (wSpec->symDim != length(dims)) {
-      error ("Dimension of full 'val' data does not match dimensions of uels or symbol.");
-    }
+    checkSymType3 (wSpec->dType, __LINE__);
+    switch (wSpec->dType) {
+    case set:
+    case parameter:
+      if (wSpec->symDim != length(dims)) {
+        error ("Dimension of full 'val' data does not match dimensions of uels or symbol.");
+      }
+      break;
+    case variable:
+      if (wSpec->symDim != (length(dims)-1)) {
+        error ("Dimension of full 'val' data does not match dimensions of uels or symbol.");
+      }
+      break;
+    default:
+      error ("vals input not expected/implemented for this symbol type.");
+    } /* end switch */
   }
   return;
 } /* checkVals */
