@@ -16,6 +16,8 @@
 #include "globals.h"
 
 static shortStringBuf_t lastErrMsg;
+static double glbPosInf;
+static double glbNegInf;
 
 /* N.B. this is the union of valid names, not all combinations are allowed */
 static const char *validSymListNames[] = {
@@ -156,6 +158,50 @@ static int idxCmp (int dim,  valIndex_t u1, valIndex_t u2)
   }
   return 0;
 } /* idxCmp */
+
+/* set incoming vals to the default record for given variable type
+ * if typeCode is 0 or unrecognized, just set to zero
+ */
+static void
+getDefaultVarRec (int typeCode, gdxValues_t vals)
+{
+  /* set some reasonable defaults independent of vartype */
+  memset (vals, 0, sizeof(gdxValues_t));
+  vals[GMS_VAL_SCALE] = 1;
+
+  switch (typeCode) {
+  case GMS_VARTYPE_BINARY:
+    vals[GMS_VAL_UPPER] = 1;
+    break;
+  case GMS_VARTYPE_INTEGER:
+    vals[GMS_VAL_UPPER] = glbPosInf;
+    break;
+  case GMS_VARTYPE_POSITIVE:
+    vals[GMS_VAL_UPPER] = glbPosInf;
+    break;
+  case GMS_VARTYPE_NEGATIVE:
+    vals[GMS_VAL_LOWER] = glbNegInf;
+    break;
+  case GMS_VARTYPE_FREE:
+    vals[GMS_VAL_LOWER] = glbNegInf;
+    vals[GMS_VAL_UPPER] = glbPosInf;
+    break;
+  case GMS_VARTYPE_SOS1:
+  case GMS_VARTYPE_SOS2:
+    vals[GMS_VAL_UPPER] = glbPosInf;
+    break;
+  case GMS_VARTYPE_SEMICONT:
+  case GMS_VARTYPE_SEMIINT:
+    vals[GMS_VAL_LOWER] = glbNegInf;
+    vals[GMS_VAL_UPPER] = glbPosInf;
+    break;
+
+  default:
+    memset (vals, 0, sizeof(gdxValues_t));
+    /* just set all 0 */
+  }
+  return;
+} /* getDefaultVarRec */
 
 static void
 getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCount)
@@ -1348,7 +1394,7 @@ unpackWgdxArgs (SEXP *args, int argLen, SEXP **symList,
   Rprintf ("DEBUG: R_NilValue = %p\n", R_NilValue);
 #endif
 
-  *symList = R_alloc (*symListSiz, sizeof(**symList));
+  *symList = (void *) R_alloc (*symListSiz, sizeof(**symList));
   memset (*symList, 0, *symListSiz * sizeof(**symList));
 
   for (a = *args, i = 2;  i < stopper;  i++) {
@@ -1422,8 +1468,8 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   d64.u64 = 0x7fffffffffffffff; /* positive QNaN, mantissa all on */
   sVals[GMS_SVIDX_UNDEF] = d64.x;
   dt = 0.0;
-  posInf =  1 / dt;
-  negInf = -1 / dt;
+  glbPosInf = posInf =  1 / dt;
+  glbNegInf = negInf = -1 / dt;
   sVals[GMS_SVIDX_PINF] = posInf;
   sVals[GMS_SVIDX_MINF] = negInf;
   gdxSetSpecialValues (gdxHandle, sVals);
@@ -1461,7 +1507,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   memset (uelIndices, 0, sizeof(gdxUelIndex_t));
   memset (prevInd, 0, sizeof(valIndex_t));
   memset (currInd, 0, sizeof(valIndex_t));
-  memset (vals, 0, sizeof(gdxValues_t));
+  getDefaultVarRec (GMS_VARTYPE_UNKNOWN, vals);
 
   /* write data in GDX file */
   for (iSym = 0;  iSym < symListLen;  iSym++) {
@@ -1608,6 +1654,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 
         idx = -1;
         empty = 1;
+        getDefaultVarRec (wSpecPtr[iSym]->typeCode, vals);
         for (iRow = 0;  iRow < nRows;  iRow++) {
           int fieldVal;
           int ii = rowPermPtr ? rowPermPtr[iRow] : iRow;
@@ -1653,7 +1700,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
               if (!rc)
                 error("Error calling gdxDataWriteMap for symbol '%s': %s",
                       wSpecPtr[iSym]->name, getGDXErrorMsg());
-              memset (vals, 0, sizeof(gdxValues_t));
+              getDefaultVarRec (wSpecPtr[iSym]->typeCode, vals);
               memcpy (prevInd, currInd, nColumns * sizeof(prevInd[0]));
               memset (currInd, 0, sizeof(valIndex_t)); /* not really needed */
             }
