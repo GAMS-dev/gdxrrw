@@ -192,7 +192,7 @@ getDefaultVarRec (int typeCode, gdxValues_t vals)
     break;
   case GMS_VARTYPE_SEMICONT:
   case GMS_VARTYPE_SEMIINT:
-    vals[GMS_VAL_LOWER] = glbNegInf;
+    vals[GMS_VAL_LOWER] = 1;
     vals[GMS_VAL_UPPER] = glbPosInf;
     break;
 
