@@ -152,6 +152,166 @@ tryCatch({
     stop ("FAIL: for v_negative, vWant and vWrote do not agree")
   }
 
+  ## write free variable to GDX, compare with fnWant version
+  val0 <- matrix(0,nrow=5,ncol=3)
+  for (i in 1:5) {
+    val0[i,1] <- i
+    val0[i,2] <- i
+  }
+  val0[1,3] <- -12.5                    # free.L
+  val0[2,3] <- 0.5                      # free.m
+  val0[3,3] <- 3                        # free.lo
+  val0[4,3] <- -8                       # free.up
+  val0[5,3] <- 512                      # free.scale
+  valFree <- val0
+  vFree <- list(name='v_free',type='variable',val=valFree,uels=uels,typeCode=5,
+                ts='WHAT if we use a long text with special chars __ %% -- @@  ?? !! jj')
+  wgdx (fnOut, vFree)
+  if (file_test ('-f', fnOut) == TRUE) {
+    print (paste("File", fnOut, "was created"))
+  } else {
+    stop (paste("FAIL: File", fnOut, "is not readable"))
+  }
+
+  vWant <- rgdx(fnWant,list(name='v_free',form='sparse',field='all',ts=TRUE))
+  vWrote <- rgdx(fnOut,list(name='v_free',form='sparse',field='all',ts=TRUE))
+  if (identical(vWrote$domains[1],"*"))
+    vWrote$domains[1] <- vWant$domains[1]
+  if (identical(vWant,vWrote)) {
+  }
+  else {
+    print(all.equal(vWant,vWrote))
+    stop ("FAIL: for v_free, vWant and vWrote do not agree")
+  }
+
+  ## write sos1 variable to GDX, compare with fnWant version
+  val0 <- matrix(0,nrow=5,ncol=3)
+  for (i in 1:5) {
+    val0[i,1] <- i
+    val0[i,2] <- i
+  }
+  val0[1,3] <- 123                      # sos1.L
+  val0[2,3] <- -10.5                    # sos1.m
+  val0[3,3] <- 2                        # sos1.lo
+  val0[4,3] <- 10                       # sos1.up
+  val0[5,3] <- 1                        # sos1.scale
+  valSos1 <- val0
+  vSos1 <- list(name='v_sos1',type='variable',val=valSos1,uels=uels,typeCode=6,
+                ts='v_sos1')
+  wgdx (fnOut, vSos1)
+  if (file_test ('-f', fnOut) == TRUE) {
+    print (paste("File", fnOut, "was created"))
+  } else {
+    stop (paste("FAIL: File", fnOut, "is not readable"))
+  }
+
+  vWant <- rgdx(fnWant,list(name='v_sos1',form='sparse',field='all',ts=TRUE))
+  vWrote <- rgdx(fnOut,list(name='v_sos1',form='sparse',field='all',ts=TRUE))
+  if (identical(vWrote$domains[1],"*"))
+    vWrote$domains[1] <- vWant$domains[1]
+  if (identical(vWant,vWrote)) {
+  }
+  else {
+    print(all.equal(vWant,vWrote))
+    stop ("FAIL: for v_sos1, vWant and vWrote do not agree")
+  }
+
+  ## write sos2 variable to GDX, compare with fnWant version
+  val0 <- matrix(0,nrow=5,ncol=3)
+  for (i in 1:5) {
+    val0[i,1] <- i
+    val0[i,2] <- i
+  }
+  val0[1,3] <- 123                      # sos2.L
+  val0[2,3] <- -10.5                    # sos2.m
+  val0[3,3] <- 2                        # sos2.lo
+  val0[4,3] <- 10                       # sos2.up
+  val0[5,3] <- 1                        # sos2.scale
+  valSos2 <- val0
+  vSos2 <- list(name='v_sos2',type='variable',val=valSos2,uels=uels,typeCode=7,
+                ts='v_sos2')
+  wgdx (fnOut, vSos2)
+  if (file_test ('-f', fnOut) == TRUE) {
+    print (paste("File", fnOut, "was created"))
+  } else {
+    stop (paste("FAIL: File", fnOut, "is not readable"))
+  }
+
+  vWant <- rgdx(fnWant,list(name='v_sos2',form='sparse',field='all',ts=TRUE))
+  vWrote <- rgdx(fnOut,list(name='v_sos2',form='sparse',field='all',ts=TRUE))
+  if (identical(vWrote$domains[1],"*"))
+    vWrote$domains[1] <- vWant$domains[1]
+  if (identical(vWant,vWrote)) {
+  }
+  else {
+    print(all.equal(vWant,vWrote))
+    stop ("FAIL: for v_sos2, vWant and vWrote do not agree")
+  }
+
+  ## write semicont variable to GDX, compare with fnWant version
+  val0 <- matrix(0,nrow=5,ncol=3)
+  for (i in 1:5) {
+    val0[i,1] <- i
+    val0[i,2] <- i
+  }
+  val0[1,3] <- 10.5                     # semicont.L
+  val0[2,3] <- .875                     # semicont.m
+  val0[3,3] <- 13                       # semicont.lo
+  val0[4,3] <- 1000                     # semicont.up
+  val0[5,3] <- 1                        # semicont.scale
+  valSemicont <- val0
+  vSemicont <- list(name='v_semicont',type='variable',val=valSemicont,uels=uels,typeCode=8,
+                ts='v_semicont')
+  wgdx (fnOut, vSemicont)
+  if (file_test ('-f', fnOut) == TRUE) {
+    print (paste("File", fnOut, "was created"))
+  } else {
+    stop (paste("FAIL: File", fnOut, "is not readable"))
+  }
+
+  vWant <- rgdx(fnWant,list(name='v_semicont',form='sparse',field='all',ts=TRUE))
+  vWrote <- rgdx(fnOut,list(name='v_semicont',form='sparse',field='all',ts=TRUE))
+  if (identical(vWrote$domains[1],"*"))
+    vWrote$domains[1] <- vWant$domains[1]
+  if (identical(vWant,vWrote)) {
+  }
+  else {
+    print(all.equal(vWant,vWrote))
+    stop ("FAIL: for v_semicont, vWant and vWrote do not agree")
+  }
+
+  ## write semiint variable to GDX, compare with fnWant version
+  val0 <- matrix(0,nrow=5,ncol=3)
+  for (i in 1:5) {
+    val0[i,1] <- i
+    val0[i,2] <- i
+  }
+  val0[1,3] <- 10.5                     # semiint.L
+  val0[2,3] <- .875                     # semiint.m
+  val0[3,3] <- 13                       # semiint.lo
+  val0[4,3] <- 1000                     # semiint.up
+  val0[5,3] <- 1                        # semiint.scale
+  valSemiint <- val0
+  vSemiint <- list(name='v_semiint',type='variable',val=valSemiint,uels=uels,typeCode=9,
+                ts='v_semiint FIX THE TYPECODE FIELD')
+  wgdx (fnOut, vSemiint)
+  if (file_test ('-f', fnOut) == TRUE) {
+    print (paste("File", fnOut, "was created"))
+  } else {
+    stop (paste("FAIL: File", fnOut, "is not readable"))
+  }
+
+  vWant <- rgdx(fnWant,list(name='v_semiint',form='sparse',field='all',ts=TRUE))
+  vWrote <- rgdx(fnOut,list(name='v_semiint',form='sparse',field='all',ts=TRUE))
+  if (identical(vWrote$domains[1],"*"))
+    vWrote$domains[1] <- vWant$domains[1]
+  if (identical(vWant,vWrote)) {
+  }
+  else {
+    print(all.equal(vWant,vWrote))
+    stop ("FAIL: for v_semiint, vWant and vWrote do not agree")
+  }
+
 
   print (paste("test of wgdx on", testName, "passed"))
   TRUE   ## all tests passed: return TRUE
