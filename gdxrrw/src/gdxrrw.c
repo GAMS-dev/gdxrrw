@@ -155,7 +155,7 @@ callGams (const char *gamsCmd)
       /* else warning message */
       else {
         warning("To change default behavior of 'show', please enter it as 'invisible' or 'normal'\n" );
-        Rprintf("You entered it as %s.\n", consoleType);
+        Rprintf("You entered it as '%s'.\n", consoleType);
       }
     }
   }

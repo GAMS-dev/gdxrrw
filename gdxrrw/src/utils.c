@@ -108,10 +108,12 @@ checkStringLength (const char *str)
   int i;
 
   i = (int) strlen (str);
+#if 0
   if (0 == i) {
     error ("Cannot access empty field. Please try again");
   }
-  else if (i >= sizeof(shortStringBuf_t)) {
+#endif
+  if (i >= sizeof(shortStringBuf_t)) {
     error("The data entered is too long: len=%d exceeds limit=%d.",
           i, (int)sizeof(shortStringBuf_t)-1);
   }
