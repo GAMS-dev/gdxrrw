@@ -214,6 +214,8 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
   double dt;
   int i, k;
   int nCols, nRows, nLabs, fDim;
+  unsigned char fUsed[GMS_VAL_MAX];
+
 
   /* labels must be a string vector */
   if (R_NilValue == labels) {
@@ -228,6 +230,7 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
   fPtr = INTEGER(*fVec);
   for (i = 0;  i < nLabs;  i++)
     fPtr[i] = -1;
+  memset (fUsed, 0, sizeof(fUsed));
 
   pd = NULL;
   pi = NULL;
@@ -277,18 +280,38 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
       }
       fieldName = CHAR(STRING_ELT(labels, k-1));
       if      (strcasecmp("l", fieldName) == 0) {
+        if (fUsed[GMS_VAL_LEVEL]) {
+          error ("duplicate field label 'l' detected: another index value already maps to 'l'");
+        }
+        fUsed[GMS_VAL_LEVEL] = 1;
         fPtr[k-1] = GMS_VAL_LEVEL;
       }
       else if (strcasecmp("m", fieldName) == 0) {
+        if (fUsed[GMS_VAL_MARGINAL]) {
+          error ("duplicate field label 'm' detected: another index value already maps to 'm'");
+        }
+        fUsed[GMS_VAL_MARGINAL] = 1;
         fPtr[k-1] = GMS_VAL_MARGINAL;
       }
       else if (strcasecmp("lo", fieldName) == 0) {
+        if (fUsed[GMS_VAL_LOWER]) {
+          error ("duplicate field label 'lo' detected: another index value already maps to 'lo'");
+        }
+        fUsed[GMS_VAL_LOWER] = 1;
         fPtr[k-1] = GMS_VAL_LOWER;
       }
       else if (strcasecmp("up", fieldName) == 0) {
+        if (fUsed[GMS_VAL_UPPER]) {
+          error ("duplicate field label 'up' detected: another index value already maps to 'up'");
+        }
+        fUsed[GMS_VAL_UPPER] = 1;
         fPtr[k-1] = GMS_VAL_UPPER;
       }
       else if (strcasecmp("s", fieldName) == 0) {
+        if (fUsed[GMS_VAL_SCALE]) {
+          error ("duplicate field label 's' detected: another index value already maps to 's'");
+        }
+        fUsed[GMS_VAL_SCALE] = 1;
         fPtr[k-1] = GMS_VAL_SCALE;
       }
       else {
@@ -301,24 +324,44 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
     fDim = INTEGER(dims)[wSpec->symDim];
     Rprintf ("DEBUG getFieldMapping: fDim = %d  nLabs = %d\n", fDim, nLabs);
     if (fDim != nLabs) {
-      error ("number of field uels (%d) differs from array extent for field index (%d).",
+      error ("number of field labels (%d) differs from array extent for field index (%d).",
              nLabs, fDim);
       }
     for (k = 0;  k < nLabs;  k++) {
       fieldName = CHAR(STRING_ELT(labels, k));
       if      (strcasecmp("l", fieldName) == 0) {
+        if (fUsed[GMS_VAL_LEVEL]) {
+          error ("duplicate field label 'l' detected");
+        }
+        fUsed[GMS_VAL_LEVEL] = 1;
         fPtr[k] = GMS_VAL_LEVEL;
       }
       else if (strcasecmp("m", fieldName) == 0) {
+        if (fUsed[GMS_VAL_MARGINAL]) {
+          error ("duplicate field label 'm' detected");
+        }
+        fUsed[GMS_VAL_MARGINAL] = 1;
         fPtr[k] = GMS_VAL_MARGINAL;
       }
       else if (strcasecmp("lo", fieldName) == 0) {
+        if (fUsed[GMS_VAL_LOWER]) {
+          error ("duplicate field label 'lo' detected");
+        }
+        fUsed[GMS_VAL_LOWER] = 1;
         fPtr[k] = GMS_VAL_LOWER;
       }
       else if (strcasecmp("up", fieldName) == 0) {
+        if (fUsed[GMS_VAL_UPPER]) {
+          error ("duplicate field label 'up' detected");
+        }
+        fUsed[GMS_VAL_UPPER] = 1;
         fPtr[k] = GMS_VAL_UPPER;
       }
       else if (strcasecmp("s", fieldName) == 0) {
+        if (fUsed[GMS_VAL_SCALE]) {
+          error ("duplicate field label 's' detected");
+        }
+        fUsed[GMS_VAL_SCALE] = 1;
         fPtr[k] = GMS_VAL_SCALE;
       }
       else {
