@@ -37,7 +37,7 @@ tryCatch({
   val0[2,3] <- 0.5                      # binary.m = 0.5
   val0[3,3] <- 1                        # binary.lo = 1
   val0[4,3] <- 0                        # binary.up = 0
-  val0[5,3] <- 1                        # binary.scale = 1, no choice
+  val0[5,3] <- 10                       # binary.prior = 10 stored in scale
   valBinary <- val0
   vBinary <- list(name='v_binary',type='variable',val=valBinary,uels=uels,
                   typeCode=GMS_VARTYPE$BINARY,ts='text for v_binary')
@@ -69,7 +69,7 @@ tryCatch({
   val0[2,3] <- 0.5                      # integer.m = 0.5
   val0[3,3] <- 3                        # integer.lo = 1
   val0[4,3] <- 16                       # integer.up = 0
-  val0[5,3] <- 1                        # integer.scale = 1, no choice, so try .up = 0
+  val0[5,3] <- 1000                     # integer.prior = 1000 stored in scale
   valInteger <- val0
   vInteger <- list(name='v_integer',type='variable',val=valInteger,uels=uels,
                    typeCode=GMS_VARTYPE$INTEGER,ts='CHECK CASING')
@@ -199,7 +199,7 @@ tryCatch({
   val0[2,3] <- -10.5                    # sos1.m
   val0[3,3] <- 2                        # sos1.lo
   val0[4,3] <- 10                       # sos1.up
-  val0[5,3] <- 1                        # sos1.scale
+  val0[5,3] <- 100                      # sos1.prior
   valSos1 <- val0
   vSos1 <- list(name='v_sos1',type='variable',val=valSos1,uels=uels,
                 typeCode=GMS_VARTYPE$SOS1,ts='v_sos1')
@@ -231,7 +231,7 @@ tryCatch({
   val0[2,3] <- -10.5                    # sos2.m
   val0[3,3] <- 2                        # sos2.lo
   val0[4,3] <- 10                       # sos2.up
-  val0[5,3] <- 1                        # sos2.scale
+  val0[5,3] <- 100                      # sos2.prior
   valSos2 <- val0
   vSos2 <- list(name='v_sos2',type='variable',val=valSos2,uels=uels,
                 typeCode=GMS_VARTYPE$SOS2,ts='v_sos2')
@@ -263,7 +263,7 @@ tryCatch({
   val0[2,3] <- .875                     # semicont.m
   val0[3,3] <- 13                       # semicont.lo
   val0[4,3] <- 1000                     # semicont.up
-  val0[5,3] <- 1                        # semicont.scale
+  val0[5,3] <- 999                      # semicont.prior
   valSemicont <- val0
   vSemicont <- list(name='v_semicont',type='variable',val=valSemicont,uels=uels,
                     typeCode=GMS_VARTYPE$SEMICONT,ts='v_semicont')
@@ -295,7 +295,7 @@ tryCatch({
   val0[2,3] <- .875                     # semiint.m
   val0[3,3] <- 13                       # semiint.lo
   val0[4,3] <- 1000                     # semiint.up
-  val0[5,3] <- 1                        # semiint.scale
+  val0[5,3] <- 100000                   # semiint.prior
   valSemiint <- val0
   vSemiint <- list(name='v_semiint',type='variable',val=valSemiint,uels=uels,
                    typeCode=GMS_VARTYPE$SEMIINT,ts='v_semiint text')

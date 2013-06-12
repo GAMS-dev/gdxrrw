@@ -18,15 +18,15 @@ v_binary.l ('i1') = 1;
 v_binary.m ('i2') = 0.5;
 v_binary.lo('i3') = 1;
 v_binary.up('i4') = 0;
-*v_binary.scale('i5') = 1;
-v_binary.lo('i5') = eps;
+* v_binary.scale('i5') = 10; for discrete var must set .prior
+v_binary.prior('i5') = 10;
 
 v_integer.l ('i1') = 1.5;
 v_integer.m ('i2') = 0.5;
 v_integer.lo('i3') = 3;
 v_integer.up('i4') = 16;
 *v_integer.scale('i5') = 1;
-v_integer.lo('i5') = eps;
+v_integer.prior('i5') = 1000;
 
 * note the reordering
 v_positive.l ('i5') = 322;
@@ -52,26 +52,27 @@ v_sos1.l ('i1') = 123;
 v_sos1.m ('i2') = -10.5;
 v_sos1.lo('i3') = 2;
 v_sos1.up('i4') = 10;
-v_sos1.lo('i5') = eps;
+v_sos1.prior('i5') = 100;
 
 v_sos2.l ('i1') = 123;
 v_sos2.m ('i2') = -10.5;
 v_sos2.lo('i3') = 2;
 v_sos2.up('i4') = 10;
-v_sos2.lo('i5') = eps;
+v_sos2.prior('i5') = 100;
 
 v_semicont.l ('i1') = 10.5;
 v_semicont.m ('i2') = .875;
 v_semicont.lo('i3') = 13;
 v_semicont.up('i4') = 1000;
-* v_semicont.scale('i5') = 1;
-v_semicont.m('i5') = eps;
+* v_semicont.scale('i5') = 999;
+v_semicont.prior('i5') = 999;
 
 v_semiint.l ('i1') = 10.5;
 v_semiint.m ('i2') = .875;
 v_semiint.lo('i3') = 13;
 v_semiint.up('i4') = 1000;
 * v_semiint.scale('i5') = 1;
-v_semiint.m('i5') = eps;
+v_semiint.prior('i5') = 1e5;
+
 
 execute_unload 'tVarTypes';
