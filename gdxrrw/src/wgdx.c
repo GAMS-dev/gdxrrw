@@ -214,7 +214,7 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
   double dt;
   int i, k;
   int nCols, nRows, nLabs, fDim;
-  unsigned char fUsed[GMS_VAL_MAX];
+  int fUsed[GMS_VAL_MAX];
 
 
   /* labels must be a string vector */
@@ -280,46 +280,47 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
       }
       fieldName = CHAR(STRING_ELT(labels, k-1));
       if      (strcasecmp("l", fieldName) == 0) {
-        if (fUsed[GMS_VAL_LEVEL]) {
+        if ((fUsed[GMS_VAL_LEVEL]) && (k != fUsed[GMS_VAL_LEVEL])) {
           error ("duplicate field label 'l' detected: another index value already maps to 'l'");
         }
-        fUsed[GMS_VAL_LEVEL] = 1;
+        fUsed[GMS_VAL_LEVEL] = k;
         fPtr[k-1] = GMS_VAL_LEVEL;
       }
       else if (strcasecmp("m", fieldName) == 0) {
-        if (fUsed[GMS_VAL_MARGINAL]) {
+        if ((fUsed[GMS_VAL_MARGINAL]) && (k != fUsed[GMS_VAL_MARGINAL])) {
           error ("duplicate field label 'm' detected: another index value already maps to 'm'");
         }
-        fUsed[GMS_VAL_MARGINAL] = 1;
+        fUsed[GMS_VAL_MARGINAL] = k;
         fPtr[k-1] = GMS_VAL_MARGINAL;
       }
       else if (strcasecmp("lo", fieldName) == 0) {
-        if (fUsed[GMS_VAL_LOWER]) {
+        if ((fUsed[GMS_VAL_LOWER]) && (k != fUsed[GMS_VAL_LOWER])) {
           error ("duplicate field label 'lo' detected: another index value already maps to 'lo'");
         }
-        fUsed[GMS_VAL_LOWER] = 1;
+        fUsed[GMS_VAL_LOWER] = k;
         fPtr[k-1] = GMS_VAL_LOWER;
       }
       else if (strcasecmp("up", fieldName) == 0) {
-        if (fUsed[GMS_VAL_UPPER]) {
+        if ((fUsed[GMS_VAL_UPPER]) && (k != fUsed[GMS_VAL_UPPER])) {
           error ("duplicate field label 'up' detected: another index value already maps to 'up'");
         }
-        fUsed[GMS_VAL_UPPER] = 1;
+        fUsed[GMS_VAL_UPPER] = k;
         fPtr[k-1] = GMS_VAL_UPPER;
       }
       else if (strcasecmp("s", fieldName) == 0) {
-        if (fUsed[GMS_VAL_SCALE]) {
+        if ((fUsed[GMS_VAL_SCALE]) && (k != fUsed[GMS_VAL_SCALE])) {
           error ("duplicate field label 's' detected: another index value already maps to 's'");
         }
-        fUsed[GMS_VAL_SCALE] = 1;
+        fUsed[GMS_VAL_SCALE] = k;
         fPtr[k-1] = GMS_VAL_SCALE;
       }
       else {
         error ("variable field name '%s' not valid");
       }
     }
-  }
+  } /*   if (sparse == wSpec->dForm) */
   else {
+    /* form = full */
     fDim = INTEGER(dims)[wSpec->symDim];
     if (fDim != nLabs) {
       error ("number of field labels (%d) differs from array extent for field index (%d).",
@@ -1507,7 +1508,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   SEXP lstNames, valData;
   wSpec_t **wSpecPtr;           /* was data */
   gdxUelIndex_t uelIndices;
-  gdxValues_t vals;
+  gdxValues_t vals, defVals;
   gdxSVals_t sVals;
   valIndex_t prevInd, currInd;
   d64_t d64;
@@ -1734,7 +1735,8 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 
         idx = -1;
         empty = 1;
-        getDefaultVarRec (wSpecPtr[iSym]->typeCode, vals);
+        getDefaultVarRec (wSpecPtr[iSym]->typeCode, defVals);
+        memcpy(vals, defVals, sizeof(vals));
         for (iRow = 0;  iRow < nRows;  iRow++) {
           int fieldVal;
           int ii = rowPermPtr ? rowPermPtr[iRow] : iRow;
@@ -1780,7 +1782,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
               if (!rc)
                 error("Error calling gdxDataWriteMap for symbol '%s': %s",
                       wSpecPtr[iSym]->name, getGDXErrorMsg());
-              getDefaultVarRec (wSpecPtr[iSym]->typeCode, vals);
+              memcpy(vals, defVals, sizeof(vals));
               memcpy (prevInd, currInd, nColumns * sizeof(prevInd[0]));
               memset (currInd, 0, sizeof(valIndex_t)); /* not really needed */
             }
@@ -1913,6 +1915,8 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
           pi = INTEGER(valData);
         else
           error ("internal error: unrecognized valData type");
+        getDefaultVarRec (wSpecPtr[iSym]->typeCode, defVals);
+        memcpy(vals, defVals, sizeof(vals));
         for (index = 0; index < totalElement; index++) {
           int indexTmp = index, totalTmp = totalElement;
           for (iDim = symDim-1;  iDim >= 0;  iDim--) {
@@ -1922,7 +1926,6 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
             uelIndices[iDim] = INTEGER(iVec)[idx];
             indexTmp = indexTmp % totalTmp;
           } /* for loop over "d" */
-          getDefaultVarRec (wSpecPtr[iSym]->typeCode, vals);
 #if 0
           for (iDim = 0;  iDim < symDim;  iDim++)
             Rprintf (" %d", uelIndices[iDim]);
@@ -1935,10 +1938,16 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
             /* Rprintf ("   %d:%g", fPtr[kk], dt); */
             vals[fPtr[kk]] = dt;
           }
+          if (0 == memcmp(vals, defVals, sizeof(vals))) {
+            /* default record: should we skip writing it? */
+            if ('y' == zeroSqueeze)
+              continue;
+          }
           rc = gdxDataWriteMap (gdxHandle, uelIndices, vals);
           if (!rc)
             error("Error calling gdxDataWriteMap for symbol '%s': %s",
                   wSpecPtr[iSym]->name, getGDXErrorMsg());
+          memcpy(vals, defVals, sizeof(vals));
           /* Rprintf ("\n"); */
         } /* for loop over "index" */
         if (!gdxDataWriteDone(gdxHandle))
