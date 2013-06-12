@@ -37,7 +37,7 @@ tryCatch({
   val0[2,3] <- 0.5                      # binary.m = 0.5
   val0[3,3] <- 1                        # binary.lo = 1
   val0[4,3] <- 0                        # binary.up = 0
-  val0[5,3] <- 1                        # binary.scale = 1, no choice
+  val0[5,3] <- 10                       # binary.prior = 10
   valBinary <- val0
   vBinary <- list(name='v_binary',type='variable',val=valBinary,uels=uels,
                   typeCode=GMS_VARTYPE$BINARY,ts='text for v_binary')
