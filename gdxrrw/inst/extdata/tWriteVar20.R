@@ -106,6 +106,51 @@ tryCatch({
   }
 
 
+  ## full test
+  dims <- sapply(uels,length)
+  symDim <- length(dims)-1
+  step <- 2**symDim
+  vf <- array(0, dim=dims, dimnames=uels)
+  for (k in 0:(step-1)) {
+    vf[k+1   ] <- 0.75
+    vf[k+1 + step] <- 0
+    vf[k+1 + 2*step] <- -Inf
+    vf[k+1 + 3*step] <-  Inf
+    vf[k+1 + 4*step] <-  1
+  }
+  k <- 3
+  vf[k] <- 0
+  vf[k+step] <- 0.5
+
+  k <- 5
+  vf[k] <- 0
+  vf[k+2*step] <- 0
+
+  k <- 9
+  vf[k] <- 0
+  vf[k+3*step] <- 0
+
+  k <- 17
+  vf[k] <- 0
+  vf[k+4*step] <- 100
+
+  vList <- list(name='big',type='variable',val=vf,form='full',uels=uels,
+                typeCode=GMS_VARTYPE$FREE,ts='20-dim var')
+  wgdx (fnOut, vList)
+  if (file_test ('-f', fnOut) == TRUE) {
+    print (paste("File", fnOut, "was created"))
+  } else {
+    stop (paste("FAIL: File", fnOut, "is not readable"))
+  }
+  rc <- system (paste("gdxdiff", fnWant, fnOut, "id=big"))
+  if (0 != rc) {
+    stop(paste("Bad return from gdxdiff: wanted 0, got",rc))
+  } else {
+    print ("gdxdiff call succeeded")
+  }
+
+
+
   print (paste("test of wgdx on", testName, "passed"))
   TRUE   ## all tests passed: return TRUE
 },
