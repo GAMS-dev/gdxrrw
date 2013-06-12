@@ -37,7 +37,7 @@ v_positive.scale('i1') = 10;
 
 * note the reordering
 v_negative.l ('i5') = 525;
-v_negative.m ('i4') = eps;
+v_negative.m ('i4') = -4;
 v_negative.lo('i3') = 1;
 v_negative.up('i2') = -1;
 v_negative.scale('i1') = 0.5;

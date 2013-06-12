@@ -131,7 +131,7 @@ tryCatch({
     val0[i,2] <- i
   }
   val0[1,3] <- 525                      # negative('i5').L
-  val0[2,3] <- 0                        # negative('i4').up
+  val0[2,3] <- -4                       # negative('i4').m
   val0[3,3] <- 1                        # negative('i3').lo
   val0[4,3] <- -1                       # negative('i2').up
   val0[5,3] <- 0.5                      # negative('i1').scale
