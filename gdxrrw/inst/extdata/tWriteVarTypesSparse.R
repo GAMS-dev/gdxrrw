@@ -5,7 +5,7 @@
 if (! require(gdxrrw))      stop ("gdxrrw package is not available")
 if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
-testName <- 'all types of variable writes'
+testName <- 'all types of variable writes form=sparse'
 
 errFunc <- function(ex) {
   print (paste("test of wgdx on",testName,"failed"))
