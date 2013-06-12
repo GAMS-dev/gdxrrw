@@ -320,9 +320,7 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
     }
   }
   else {
-    Rprintf ("DEBUG getFieldMapping: symDim = %d\n", wSpec->symDim);
     fDim = INTEGER(dims)[wSpec->symDim];
-    Rprintf ("DEBUG getFieldMapping: fDim = %d  nLabs = %d\n", fDim, nLabs);
     if (fDim != nLabs) {
       error ("number of field labels (%d) differs from array extent for field index (%d).",
              nLabs, fDim);
@@ -1531,7 +1529,6 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   int *fPtr;
   int *rowPermPtr;
   int wgdxAlloc = 0;
-  char buf[512];
 
   /* shut up compiler warnings */
   valData = NULL;
@@ -1812,89 +1809,142 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
       }
     } /* if sparse */
     else {                    /* form = full */
-      checkSymType2 (wSpecPtr[iSym]->dType, __LINE__);
       dimVect = getAttrib(valData, R_DimSymbol);
       dimVals = (symDim > 0) ? INTEGER(dimVect) : NULL;
-      for (iDim = 0, totalElement = 1;  iDim < symDim;  iDim++) {
-        totalElement *= dimVals[iDim];
-      }
-      /* these next are just to be sure */
+      /* this next is just to be sure */
       nColumns = length(iVecVec);
       if (nColumns != symDim)
         error ("Internal error: dimension mismatch writing to GDX with form='full'");
-      if (length(valData) != totalElement)
-        error ("Internal error: data mismatch writing to GDX with form='full'");
-      if (wSpecPtr[iSym]->dType == parameter) {
-        rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[iSym]->name, expText,
-                                   nColumns, GMS_DT_PAR, 0);
-      }
-      else {
-        rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[iSym]->name, expText,
-                                   nColumns, GMS_DT_SET, 0);
-        vals[0] = 0;
-      }
-      if (!rc) {
-        error("Error calling gdxDataWriteMapStart for symbol '%s': %s",
-              wSpecPtr[iSym]->name, getGDXErrorMsg());
-      }
-      pd = NULL;
-      pi = NULL;
-      if (TYPEOF(valData) == REALSXP) {
-        pd = REAL(valData);
-      }
-      else if (TYPEOF(valData) == INTSXP) {
-        pi = INTEGER(valData);
-      }
-      else {
-        error ("internal error: unrecognized valData type");
-      }
-      for (index = 0; index < totalElement; index++) {
-        int indexTmp = index, totalTmp = totalElement;
-        for (iDim = symDim-1;  iDim >= 0;  iDim--) {
-          iVec = VECTOR_ELT(iVecVec, iDim);
-          totalTmp /= dimVals[iDim];
-          idx = indexTmp / totalTmp;
-          uelIndices[iDim] = INTEGER(iVec)[idx];
-          indexTmp = indexTmp % totalTmp;
-        } /* for loop over "d" */
-
-        if (pd) {
-          dt = pd[index];
+      if ((parameter == wSpecPtr[iSym]->dType) ||
+          (set == wSpecPtr[iSym]->dType)) {
+        for (iDim = 0, totalElement = 1;  iDim < symDim;  iDim++)
+          totalElement *= dimVals[iDim];
+        if (length(valData) != totalElement)
+          error ("Internal error: data mismatch writing to GDX with form='full'");
+        if (wSpecPtr[iSym]->dType == parameter) {
+          rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[iSym]->name, expText,
+                                     nColumns, GMS_DT_PAR, 0);
         }
         else {
-          dt = pi[index];
+          rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[iSym]->name, expText,
+                                     nColumns, GMS_DT_SET, 0);
+          vals[0] = 0;
         }
-        if (wSpecPtr[iSym]->dType == parameter) {
-          vals[0] = dt;
-          if (ISNA(vals[0])) {
-            vals[0] = sVals[GMS_SVIDX_NA];
+        if (!rc) {
+          error("Error calling gdxDataWriteMapStart for symbol '%s': %s",
+                wSpecPtr[iSym]->name, getGDXErrorMsg());
+        }
+        pd = NULL;
+        pi = NULL;
+        if (TYPEOF(valData) == REALSXP)
+          pd = REAL(valData);
+        else if (TYPEOF(valData) == INTSXP)
+          pi = INTEGER(valData);
+        else
+          error ("internal error: unrecognized valData type");
+        for (index = 0; index < totalElement; index++) {
+          int indexTmp = index, totalTmp = totalElement;
+          for (iDim = symDim-1;  iDim >= 0;  iDim--) {
+            iVec = VECTOR_ELT(iVecVec, iDim);
+            totalTmp /= dimVals[iDim];
+            idx = indexTmp / totalTmp;
+            uelIndices[iDim] = INTEGER(iVec)[idx];
+            indexTmp = indexTmp % totalTmp;
+          } /* for loop over "d" */
+
+          if (pd)
+            dt = pd[index];
+          else
+            dt = pi[index];
+          if (wSpecPtr[iSym]->dType == parameter) {
+            vals[0] = dt;
+            if (ISNA(vals[0])) {
+              vals[0] = sVals[GMS_SVIDX_NA];
+            }
           }
-        }
-        else if (set == wSpecPtr[iSym]->dType) {
-          /* could do the check in checkForValidData but
-           * that uses an additional pass through the full matrix */
-          if (0 != dt && 1 != dt) {
-            error ("Only zero-one values are allowed when specifying sets with form=full");
+          else if (set == wSpecPtr[iSym]->dType) {
+            /* could do the check in checkForValidData but
+             * that uses an additional pass through the full matrix */
+            if (0 != dt && 1 != dt) {
+              error ("Only zero-one values are allowed when specifying sets with form=full");
+            }
           }
-        }
-        if ((parameter == wSpecPtr[iSym]->dType) &&
-            (0 == vals[0]) && ('e' == zeroSqueeze))
-          vals[0] = sVals[GMS_SVIDX_EPS];
-        if (((set == wSpecPtr[iSym]->dType) && (0 != dt))  ||
-            ((parameter == wSpecPtr[iSym]->dType) &&
-             (('n' == zeroSqueeze) ||
-              (0 != vals[0]))) ) {
-          /* write the value to GDX */
-          rc = gdxDataWriteMap(gdxHandle, uelIndices, vals);
-          if (!rc) {
+          if ((parameter == wSpecPtr[iSym]->dType) &&
+              (0 == vals[0]) && ('e' == zeroSqueeze))
+            vals[0] = sVals[GMS_SVIDX_EPS];
+          if (((set == wSpecPtr[iSym]->dType) && (0 != dt))  ||
+              ((parameter == wSpecPtr[iSym]->dType) &&
+               (('n' == zeroSqueeze) ||
+                (0 != vals[0]))) ) {
+            /* write the value to GDX */
+            rc = gdxDataWriteMap(gdxHandle, uelIndices, vals);
+            if (!rc)
+              error("Error calling gdxDataWriteMap for symbol '%s': %s",
+                    wSpecPtr[iSym]->name, getGDXErrorMsg());
+          }
+        } /* for loop over "index" */
+        if (!gdxDataWriteDone(gdxHandle))
+          error ("Error calling gdxDataWriteDone for symbol '%s': %s",
+                 wSpecPtr[iSym]->name, getGDXErrorMsg());
+      } /* if a set or parameter */
+      else {
+        int fDim;  /* number of fields labels / extent of field dim */
+        int kk;
+
+        /* must be variable or equation */
+        fVec = VECTOR_ELT(fieldIndex, iSym);
+        fPtr = INTEGER(fVec);
+        checkSymType3 (wSpecPtr[iSym]->dType, __LINE__);
+        for (iDim = 0, totalElement = 1;  iDim < symDim;  iDim++)
+          totalElement *= dimVals[iDim];
+        fDim = dimVals[iDim];
+        if (length(valData) != (totalElement * fDim))
+          error ("Internal error: data mismatch writing to GDX with form='full'");
+        rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[iSym]->name, expText,
+                                   symDim, GMS_DT_VAR, wSpecPtr[iSym]->typeCode);
+        if (!rc)
+          error("Error calling gdxDataWriteMapStart for symbol '%s': %s",
+                wSpecPtr[iSym]->name, getGDXErrorMsg());
+        pd = NULL;
+        pi = NULL;
+        if (TYPEOF(valData) == REALSXP)
+          pd = REAL(valData);
+        else if (TYPEOF(valData) == INTSXP)
+          pi = INTEGER(valData);
+        else
+          error ("internal error: unrecognized valData type");
+        for (index = 0; index < totalElement; index++) {
+          int indexTmp = index, totalTmp = totalElement;
+          for (iDim = symDim-1;  iDim >= 0;  iDim--) {
+            iVec = VECTOR_ELT(iVecVec, iDim);
+            totalTmp /= dimVals[iDim];
+            idx = indexTmp / totalTmp;
+            uelIndices[iDim] = INTEGER(iVec)[idx];
+            indexTmp = indexTmp % totalTmp;
+          } /* for loop over "d" */
+          getDefaultVarRec (wSpecPtr[iSym]->typeCode, vals);
+#if 0
+          for (iDim = 0;  iDim < symDim;  iDim++)
+            Rprintf (" %d", uelIndices[iDim]);
+#endif
+          for (kk = 0;  kk < fDim;  kk++) {
+            if (pd)
+              dt = pd[index + kk*totalElement];
+            else
+              dt = pi[index + kk*totalElement];
+            /* Rprintf ("   %d:%g", fPtr[kk], dt); */
+            vals[fPtr[kk]] = dt;
+          }
+          rc = gdxDataWriteMap (gdxHandle, uelIndices, vals);
+          if (!rc)
             error("Error calling gdxDataWriteMap for symbol '%s': %s",
                   wSpecPtr[iSym]->name, getGDXErrorMsg());
-          }
-        }
-      } /* for loop over "index" */
-      if (!gdxDataWriteDone(gdxHandle)) {
-        error ("Error calling gdxDataWriteDone for symbol '%s': %s",
-               wSpecPtr[iSym]->name, getGDXErrorMsg());
+          /* Rprintf ("\n"); */
+        } /* for loop over "index" */
+        if (!gdxDataWriteDone(gdxHandle))
+          error ("Error calling gdxDataWriteDone for symbol '%s': %s",
+                 wSpecPtr[iSym]->name, getGDXErrorMsg());
+        /*  checkSymType2 (wSpecPtr[iSym]->dType, __LINE__); */
       }
     } /* end of writing full data */
   } /* for (i) loop over symbols */
