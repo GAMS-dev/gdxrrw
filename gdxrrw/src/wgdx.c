@@ -430,7 +430,7 @@ checkVals (SEXP val, SEXP uels, wSpec_t *wSpec, int *isSorted)
   if (wSpec->dForm == sparse) {
     nRows = INTEGER(dims)[0];
     nCols = INTEGER(dims)[1];
-    checkSymType3 (wSpec->dType, __LINE__);
+    checkSymType4 (wSpec->dType, __LINE__);
     switch (wSpec->dType) {
     case set:
       break;
@@ -495,7 +495,7 @@ checkVals (SEXP val, SEXP uels, wSpec_t *wSpec, int *isSorted)
   } /* sparse form */
   else {
     /* compare dimension of full matrix and number of columns in uels */
-    checkSymType3 (wSpec->dType, __LINE__);
+    checkSymType4 (wSpec->dType, __LINE__);
     switch (wSpec->dType) {
     case set:
     case parameter:
@@ -584,7 +584,7 @@ sortVals (SEXP val, wSpec_t *wSpec, int *protCount, SEXP *rowPerm)
   dims = getAttrib(val, R_DimSymbol);
   nRows = INTEGER(dims)[0];
   nCols = INTEGER(dims)[1];
-  checkSymType3 (wSpec->dType, __LINE__);
+  checkSymType4 (wSpec->dType, __LINE__);
   switch (wSpec->dType) {
   case set:
     break;
@@ -949,6 +949,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
   memset (wSpec, 0, sizeof(*wSpec));
   wSpec->dForm = sparse;
   wSpec->dType = set;
+  wSpec->typeCode = -1;         /* zero is already used for GMS_EQUTYPE_E */
   strcpy (typeName, "set");
   wSpec->symDim = -1;           /* not yet known */
 
@@ -1105,7 +1106,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
              typeofTxt(uelsExp, buf));
     }
     dimUels = length(uelsExp);
-    checkSymType3 (wSpec->dType, __LINE__);
+    checkSymType4 (wSpec->dType, __LINE__);
     if (wSpec->withDim) {
       switch (wSpec->dType) {
       case set:
@@ -1202,7 +1203,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
                  INT_MAX);
         }
         symDimTmp = sz;
-        checkSymType3 (wSpec->dType, __LINE__);
+        checkSymType4 (wSpec->dType, __LINE__);
         switch (wSpec->dType) {
         case set:
           break;                /* no adjustment */
@@ -1301,8 +1302,8 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
       error ("Optional input list element 'field' must be a string vector - found %s instead.",
              typeofTxt(fieldExp, buf));
     }
-    checkSymType3 (wSpec->dType, __LINE__);
-    if (variable == wSpec->dType) {
+    checkSymType4 (wSpec->dType, __LINE__);
+    if ((variable == wSpec->dType) || (equation == wSpec->dType)) {
       tmpName = CHAR(STRING_ELT(fieldExp, 0));
       if (0 != strcasecmp("all", tmpName)) {
         error ("Optional input list element 'field' must be 'all':"
@@ -1312,9 +1313,9 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
   } /* if fieldExp */
 
   if (typeCodeExp) {
-    checkSymType3 (wSpec->dType, __LINE__);
+    checkSymType4 (wSpec->dType, __LINE__);
     /* ignore if not needed for this parameter type */
-    if (variable == wSpec->dType) {
+    if ((variable == wSpec->dType) || (equation == wSpec->dType)) {
       int typeCode = 0;
 
       if (INTSXP == TYPEOF(typeCodeExp)) {
@@ -1334,21 +1335,33 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
         error ("Input list element 'typeCode' must be real or integer - found %s instead.",
                typeofTxt(typeCodeExp, buf));
       }
-      if ((typeCode > 0) && (typeCode < GMS_VARTYPE_MAX))
-        wSpec->typeCode = typeCode;
-      else
-        error ("Invalid typeCode %d found for symbol '%s'", typeCode, wSpec->name);
-    }
+      if (variable == wSpec->dType) {
+        if ((typeCode > 0) && (typeCode < GMS_VARTYPE_MAX))
+          wSpec->typeCode = typeCode;
+        else
+          error ("Invalid typeCode %d found for symbol '%s'", typeCode, wSpec->name);
+      }
+      else if (equation == wSpec->dType) {
+        if ((typeCode >= GMS_EQUTYPE_E) && (typeCode < GMS_EQUTYPE_MAX))
+          wSpec->typeCode = typeCode;
+        else
+          error ("Invalid typeCode %d found for symbol '%s'", typeCode, wSpec->name);
+      }
+      else {
+        error ("internal error processing typeCode");
+      }
+    } /* symbol type variable or equation */
   }
 
 
-
-  checkSymType3 (wSpec->dType, __LINE__);
-  if (variable == wSpec->dType) {
-    /* require a typeCode */
-    if (wSpec->typeCode <= 0) {
+  checkSymType4 (wSpec->dType, __LINE__);
+  if (variable == wSpec->dType) { /* require a typeCode */
+    if (wSpec->typeCode < 0)
       error ("Missing typeCode for variable symbol '%s'", wSpec->name);
-    }
+  }
+  if (equation == wSpec->dType) { /* require a typeCode */
+    if (wSpec->typeCode < 0)
+      error ("Missing typeCode for equation symbol '%s'", wSpec->name);
   }
 
   if (wSpec->withUel == 0 && wSpec->withVal == 1) {
@@ -1675,7 +1688,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
       nColumns = INTEGER(dimVect)[1];
       nRows = INTEGER(dimVect)[0];
 
-      checkSymType3 (wSpecPtr[iSym]->dType, __LINE__);
+      checkSymType4 (wSpecPtr[iSym]->dType, __LINE__);
 
       if ((parameter == wSpecPtr[iSym]->dType) ||
           (set == wSpecPtr[iSym]->dType)) {
@@ -1746,7 +1759,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
       }    /* if set or parameter */
       else {
         /* variable or equation */
-        int dtCode;
+        int dtCode = 0, symInfo = 0;
 
         fVec = VECTOR_ELT(fieldIndex, iSym);
         fPtr = INTEGER(fVec);
@@ -1767,17 +1780,20 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         switch (wSpecPtr[iSym]->dType) {
         case variable:
           dtCode = GMS_DT_VAR;
+          symInfo = wSpecPtr[iSym]->typeCode;
           getDefaultVarRec (wSpecPtr[iSym]->typeCode, defVals);
           break;
         case equation:
           dtCode = GMS_DT_EQU;
+          symInfo = wSpecPtr[iSym]->typeCode + GMS_EQU_USERINFO_BASE;
           memset (defVals, 0, sizeof(defVals));
+          getDefRecEqu (wSpecPtr[iSym]->typeCode, defVals);
           break;
         default:
           error ("internal error: unexpected symbol type");
         }
         rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[iSym]->name, expText,
-                                   nColumns, dtCode, wSpecPtr[iSym]->typeCode);
+                                   nColumns, dtCode, symInfo);
         if (!rc) {
           error("Error calling gdxDataWriteMapStart for symbol '%s': %s",
                 wSpecPtr[iSym]->name, getGDXErrorMsg());
