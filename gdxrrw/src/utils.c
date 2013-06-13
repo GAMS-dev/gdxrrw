@@ -1196,7 +1196,36 @@ sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
   return;
 } /* sparseToFull */
 
-/* getDefRecVar: return the default record for a varialbe of type subType */
+/* getDefRecEqu: return the default record for an equation of type subType
+ * Treat unrecognized subType like GMS_EQUTYPE_N, that seems to be the default
+ */
+void
+getDefRecEqu (int subType, double defRec[])
+{
+  (void) memset (defRec, 0, GMS_VAL_MAX * sizeof(double));
+  defRec[scale] = 1;
+  switch (subType) {
+  case GMS_EQUTYPE_E:
+  case GMS_EQUTYPE_X:
+    break;
+  case GMS_EQUTYPE_G:
+    defRec[upper] = R_PosInf;
+    break;
+  case GMS_EQUTYPE_L:
+    defRec[lower] = R_NegInf;
+    break;
+  case GMS_EQUTYPE_C:
+    defRec[upper] = R_PosInf;
+    break;
+  case GMS_EQUTYPE_N:
+  default:
+    defRec[upper] = R_PosInf;
+    defRec[lower] = R_NegInf;
+  } /* switch subType */
+  return;
+} /* getDefRecEqu */
+
+/* getDefRecVar: return the default record for a variable of type subType */
 void
 getDefRecVar (int subType, double defRec[])
 {
