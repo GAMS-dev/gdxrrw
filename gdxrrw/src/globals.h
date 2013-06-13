@@ -30,7 +30,8 @@ typedef void (GDX_CALLCONV *gdxGetLoadPath_t) (char *s);
 typedef enum dType {
   set = GMS_DT_SET,
   parameter = GMS_DT_PAR,
-  variable = GMS_DT_VAR
+  variable = GMS_DT_VAR,
+  equation = GMS_DT_EQU
 } dType_t;
 typedef enum dForm {
   unKnown=0,

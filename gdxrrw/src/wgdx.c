@@ -109,6 +109,9 @@ checkSymType2 (dType_t dType, int lineNum)
   case variable:
     error ("wgdx checkSymType2 line %d: not yet implemented for symbol type 'variable'", lineNum);
     break;
+  case equation:
+    error ("wgdx checkSymType2 line %d: not yet implemented for symbol type 'equation'", lineNum);
+    break;
   default:
     error ("wgdx checkSymType2 line %d: not yet implemented for symbol type <unknown>", lineNum);
   } /* end switch */
@@ -124,10 +127,30 @@ checkSymType3 (dType_t dType, int lineNum)
   case parameter:
   case variable:
     break;
+  case equation:
+    error ("wgdx checkSymType3 line %d: not yet implemented for symbol type 'equation'", lineNum);
+    break;
   default:
     error ("wgdx checkSymType3 line %d: not yet implemented for symbol type <unknown>", lineNum);
   } /* end switch */
 } /* checkSymType3 */
+
+/* checkSymType4: make sure dType is one we've implemented
+ * the calling code block for */
+static void
+checkSymType4 (dType_t dType, int lineNum)
+{
+  switch (dType) {
+  case set:
+  case parameter:
+  case variable:
+  case equation:
+    break;
+  default:
+    error ("wgdx checkSymType4 line %d: not yet implemented for symbol type <unknown>",
+           lineNum);
+  } /* end switch */
+} /* checkSymType4 */
 
 /* idxCmp: compare indices from sparse-form 'val'
  * return:
@@ -244,12 +267,12 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
     error ("'val' must be real or integer.");
   }
   dims = getAttrib(val, R_DimSymbol);
+  checkSymType4 (wSpec->dType, __LINE__);
+  if ((variable != wSpec->dType) && (equation != wSpec->dType))
+    error ("Only implemented for symbol type variable or equation");
   if (sparse == wSpec->dForm) {
     nRows = INTEGER(dims)[0];
     nCols = INTEGER(dims)[1];
-    checkSymType3 (wSpec->dType, __LINE__);
-    if (variable != wSpec->dType)
-      error ("Only implemented for symbol type variable");
     nCols -= 2;   /* last two columns are field index and level/marginal/etc values */
     if (nCols != wSpec->symDim) {
       error ("Number of columns in sparse data not consistent with symbol dimension.");
@@ -315,7 +338,7 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
         fPtr[k-1] = GMS_VAL_SCALE;
       }
       else {
-        error ("variable field name '%s' not valid");
+        error ("variable/equation field name '%s' not valid");
       }
     }
   } /*   if (sparse == wSpec->dForm) */
@@ -364,10 +387,9 @@ getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCou
         fPtr[k] = GMS_VAL_SCALE;
       }
       else {
-        error ("variable field name '%s' not valid");
+        error ("variable/equation field name '%s' not valid");
       }
     } /* loop over field labels */
-    checkSymType3 (wSpec->dType, __LINE__);
   }
 } /* getFieldMapping */
 
@@ -416,6 +438,7 @@ checkVals (SEXP val, SEXP uels, wSpec_t *wSpec, int *isSorted)
       nCols--;    /* skip last column containing parameter values */
       break;
     case variable:
+    case equation:
       nCols -= 2;   /* skip last two columns: field index and level/marginal/etc values */
       break;
     default:
@@ -481,6 +504,7 @@ checkVals (SEXP val, SEXP uels, wSpec_t *wSpec, int *isSorted)
       }
       break;
     case variable:
+    case equation:
       if (wSpec->symDim != (length(dims)-1)) {
         error ("Dimension of full 'val' data does not match dimensions of uels or symbol.");
       }
@@ -568,6 +592,7 @@ sortVals (SEXP val, wSpec_t *wSpec, int *protCount, SEXP *rowPerm)
     nCols--;    /* skip last column containing parameter values */
     break;
   case variable:
+  case equation:
     nCols -= 2;   /* skip last two columns: field index and level/marginal/etc values */
     break;
   default:
@@ -1034,8 +1059,11 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
     else if (0 == strcasecmp("variable", tmpName) ) {
       wSpec->dType = variable;
     }
+    else if (0 == strcasecmp("equation", tmpName) ) {
+      wSpec->dType = equation;
+    }
     else {
-      error ("Input list element 'type' must be either 'set', 'parameter' or 'variable'.");
+      error ("Input list element 'type' must be either 'set', 'parameter', 'variable' or 'equation'.");
     }
     strcpy (typeName, tmpName);
   }
@@ -1087,6 +1115,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
                  wSpec->dim, dimUels);
         break;
       case variable:
+      case equation:
         if (wSpec->dim != (dimUels-1))
           error ("Inconsistent dimension found: 'dim'=%d  doesn't match implied 'uels' dimension=%d.",
                  wSpec->dim, dimUels-1);
@@ -1103,6 +1132,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
         wSpec->symDim = dimUels;
         break;
       case variable:
+      case equation:
         wSpec->symDim = dimUels - 1;
         break;
       default:
@@ -1180,6 +1210,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
           symDimTmp--;
           break;
         case variable:
+        case equation:
           symDimTmp -= 2;
           if (symDimTmp < 0)
             error ("val input must have at least 2 cols when writing variables in sparse form.");
@@ -1220,6 +1251,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
         case parameter:
           break;                /* no adjustment */
         case variable:
+        case equation:
           symDimTmp--;          /* account for _field dimension */
           break;
         default:
@@ -1332,6 +1364,9 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
     createUelOut (valExp, symUels, wSpec->dType, wSpec->dForm);
   }
 
+  if ((equation == wSpec->dType) && (full == wSpec->dForm))
+    error ("form='full' is not implemented for equations.");
+
   rowPerm = R_NilValue;
   if (wSpec->withVal == 1) {
     int isSorted = 0;
@@ -1342,6 +1377,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
       checkVals (valExp, symUels, wSpec, &isSorted);
       break;                    /* no problem */
     case variable:
+    case equation:
       isSorted = 1;             /* check sort order */
       checkVals (valExp, symUels, wSpec, &isSorted);
       if (! isSorted) {
@@ -1540,10 +1576,8 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
     error ("Error creating GDX object: %s", msgBuf);
 
   rc = gdxOpenWrite (gdxHandle, gdxFileName, "GDXRRW:wgdx", &errNum);
-  if (errNum || 0 == rc) {
-    error("Could not open gdx file with gdxOpenWrite: %s",
-          lastErrMsg);
-  }
+  if (errNum || 0 == rc)
+    error("Could not open gdx file with gdxOpenWrite: %s", getGDXErrorMsg());
 
   gdxGetSpecialValues (gdxHandle, sVals);
   d64.u64 = 0x7fffffffffffffff; /* positive QNaN, mantissa all on */
@@ -1641,6 +1675,8 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
       nColumns = INTEGER(dimVect)[1];
       nRows = INTEGER(dimVect)[0];
 
+      checkSymType3 (wSpecPtr[iSym]->dType, __LINE__);
+
       if ((parameter == wSpecPtr[iSym]->dType) ||
           (set == wSpecPtr[iSym]->dType)) {
         if (parameter == wSpecPtr[iSym]->dType) {
@@ -1709,6 +1745,9 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         }
       }    /* if set or parameter */
       else {
+        /* variable or equation */
+        int dtCode;
+
         fVec = VECTOR_ELT(fieldIndex, iSym);
         fPtr = INTEGER(fVec);
         rowPerm = VECTOR_ELT(rowPerms, iSym);
@@ -1724,10 +1763,21 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         else {
           error ("Input list element 'val' must be real or integer.");
         }
-
         nColumns -= 2;
+        switch (wSpecPtr[iSym]->dType) {
+        case variable:
+          dtCode = GMS_DT_VAR;
+          getDefaultVarRec (wSpecPtr[iSym]->typeCode, defVals);
+          break;
+        case equation:
+          dtCode = GMS_DT_EQU;
+          memset (defVals, 0, sizeof(defVals));
+          break;
+        default:
+          error ("internal error: unexpected symbol type");
+        }
         rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[iSym]->name, expText,
-                                   nColumns, GMS_DT_VAR, wSpecPtr[iSym]->typeCode);
+                                   nColumns, dtCode, wSpecPtr[iSym]->typeCode);
         if (!rc) {
           error("Error calling gdxDataWriteMapStart for symbol '%s': %s",
                 wSpecPtr[iSym]->name, getGDXErrorMsg());
@@ -1735,7 +1785,6 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 
         idx = -1;
         empty = 1;
-        getDefaultVarRec (wSpecPtr[iSym]->typeCode, defVals);
         memcpy(vals, defVals, sizeof(vals));
         for (iRow = 0;  iRow < nRows;  iRow++) {
           int fieldVal;
@@ -1807,10 +1856,10 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         if (!gdxDataWriteDone(gdxHandle))
           error ("Error calling gdxDataWriteDone for symbol '%s': %s",
                  wSpecPtr[iSym]->name, getGDXErrorMsg());
-        /* checkSymType2 (wSpecPtr[i]->dType, __LINE__); */
       }
     } /* if sparse */
     else {                    /* form = full */
+      checkSymType3 (wSpecPtr[iSym]->dType, __LINE__);
       dimVect = getAttrib(valData, R_DimSymbol);
       dimVals = (symDim > 0) ? INTEGER(dimVect) : NULL;
       /* this next is just to be sure */
@@ -1953,19 +2002,15 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         if (!gdxDataWriteDone(gdxHandle))
           error ("Error calling gdxDataWriteDone for symbol '%s': %s",
                  wSpecPtr[iSym]->name, getGDXErrorMsg());
-        /*  checkSymType2 (wSpecPtr[iSym]->dType, __LINE__); */
       }
     } /* end of writing full data */
   } /* for (i) loop over symbols */
 
   /* Close GDX file */
   errNum = gdxClose (gdxHandle);
-  if (errNum != 0) {
-    getGDXErrorMsg ();
+  if (errNum != 0)
     error("GDXRRW:wgdx:GDXError",
-          "Could not gdxClose: %s",
-          lastErrMsg);
-  }
+          "Could not gdxClose: %s", getGDXErrorMsg());
   (void) gdxFree (&gdxHandle);
 
   UNPROTECT(wgdxAlloc);
