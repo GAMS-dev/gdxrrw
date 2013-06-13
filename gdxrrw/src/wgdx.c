@@ -1332,7 +1332,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
       }
       else {
         error ("Input list element 'typeCode' must be real or integer - found %s instead.",
-               typeofTxt(dimExp, buf));
+               typeofTxt(typeCodeExp, buf));
       }
       if ((typeCode > 0) && (typeCode < GMS_VARTYPE_MAX))
         wSpec->typeCode = typeCode;
