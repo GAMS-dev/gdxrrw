@@ -5,7 +5,9 @@ if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
 gdir <- igdx(NULL,silent=TRUE,returnStr=TRUE)
 pth <- Sys.getenv('PATH')
-Sys.setenv(PATH=paste(gdir,pth,sep=':'))
+sepChar <- ':'
+if (Sys.info()[[1]] == "Windows") sepChar <- ';'
+Sys.setenv(PATH=paste(gdir,pth,sep=sepChar))
 
 rc <- source ("tgdxdiff.R")
 if (! rc$value)  stop ("The gdxdiff utility is unavailable or broken: Test run aborted.")
