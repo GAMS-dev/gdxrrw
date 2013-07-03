@@ -1007,19 +1007,64 @@ tryCatch({
   t['up'] <- 0
   t['s' ] <- 1
   e0wantA <- list(name='e0', type='equation', dim=0L,
-                 val=t,
-                 form='full', uels=list(fields), domains=domF,
-                 field='all',
-                 typeCode=GMS_EQUTYPE$E)
+                  val=t,
+                  form='full', uels=list(fields), domains=domF,
+                  field='all',
+                  typeCode=GMS_EQUTYPE$E)
   e0 <- rgdx(fnIn,list(name='e0',form='full',field='all'))
   chk <- chkRgdxRes (e0, e0wantA, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e0,'all',full,unfiltered) failed",chk$msg))
   }
-  x <- rgdx(fnIn,list(name='e0',form='full',field='all'),squeeze=F)
+  e0 <- rgdx(fnIn,list(name='e0',form='full',field='all'),squeeze=F)
   chk <- chkRgdxRes (e0, e0wantA, T, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e0,'all',full,unfiltered,squeeze=F) failed",chk$msg))
+  }
+  t <- array(0,c(kCard,nFields),dimnames=cartKF)
+  t[    ,'up'] <- Inf
+  t[    ,'s' ] <- 2
+  t['k1','l' ] <- -2
+  t['k1','m' ] <- -3.5
+  t['k1','lo'] <- -2
+  e1wantA <- list(name='e1', type='equation', dim=1L,
+                  val=t,
+                  form='full', uels=cartKF, domains=domKF,
+                  field='all', typeCode=GMS_EQUTYPE$G)
+  e1 <- rgdx(fnIn,list(name='e1',form='full',field='aLL'))
+  chk <- chkRgdxRes (e1, e1wantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'all',full,unfiltered) failed",chk$msg))
+  }
+  e1 <- rgdx(fnIn,list(name='e1',form='full',field='all'),squeeze=F)
+  chk <- chkRgdxRes (e1, e1wantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'all',full,unfiltered,squeeze=F) failed",chk$msg))
+  }
+  v <- array(0,c(iCard,jCard,kCard,nFields),dimnames=cartIJKF)
+  v[iUels,'j1' ,kUels,'l' ] <- 3
+  v[iUels,'j2' ,kUels,'l' ] <- 4
+  v[iUels,'j1' ,kUels,'m' ] <- 0
+  v[iUels,'j2' ,kUels,'m' ] <- 0.5
+  v[iUels,jUels,kUels,'lo'] <- -Inf
+  v[iUels,jUels,kUels,'up'] <- 4
+  v[iUels,jUels,kUels,'s' ] <- 1
+
+  e3wantA <- list(name="e3", type="equation", dim=3L,
+                  val=v,
+                  form="full",
+                  uels=list(iUels,jUels,kUels,fields), domains=domIJKF,
+                  field='all',
+                  typeCode=GMS_EQUTYPE$L)
+  e3 <- rgdx(fnIn,list(name='e3',form='full',field='all'))
+  chk <- chkRgdxRes (e3, e3wantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e3,'all',full,unfiltered) failed",chk$msg))
+  }
+  e3 <- rgdx(fnIn,list(name='e3',form='full',field='all'),squeeze=F)
+  chk <- chkRgdxRes (e3, e3wantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e3,'all',full,unfiltered,squeeze=F) failed",chk$msg))
   }
   # level
   # marginal
