@@ -1037,8 +1037,10 @@ SEXP rgdx (SEXP args)
           p0 = REAL(outValFull);
           if (GMS_DT_VAR == symType)
             getDefRecVar (typeCode, p0);
-          else
-            error ("not yet implemented");
+          else {
+            getDefRecEqu (typeCode, p0);
+            /* error ("not yet implemented XX"); */
+          }
           if (rSpec->withUel) {
             /* assume matched is always set for filtered reads */
             if (matched > 0) {

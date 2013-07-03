@@ -27,6 +27,7 @@ jUels <- c('j1','j2')
 jCard <- length(jUels)
 kUels <- c('k1')
 kCard <- length(kUels)
+domF <- c('_field')
 domK <- c('K')
 domKF <- c('K','_field')
 domIJK <- c('I','J','K')
@@ -996,6 +997,35 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e3,'S',full,filtered,squeeze=F) failed",chk$msg))
   }
+
+  ### ---------- reading form=full, no filter
+  # all
+  t <- array(0,c(nFields),dimnames=list(fields))
+  t['l' ] <- 0
+  t['m' ] <- 1
+  t['lo'] <- 0
+  t['up'] <- 0
+  t['s' ] <- 1
+  e0wantA <- list(name='e0', type='equation', dim=0L,
+                 val=t,
+                 form='full', uels=list(fields), domains=domF,
+                 field='all',
+                 typeCode=GMS_EQUTYPE$E)
+  e0 <- rgdx(fnIn,list(name='e0',form='full',field='all'))
+  chk <- chkRgdxRes (e0, e0wantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e0,'all',full,unfiltered) failed",chk$msg))
+  }
+  x <- rgdx(fnIn,list(name='e0',form='full',field='all'),squeeze=F)
+  chk <- chkRgdxRes (e0, e0wantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e0,'all',full,unfiltered,squeeze=F) failed",chk$msg))
+  }
+  # level
+  # marginal
+  # lower
+  # upper
+  # scale
 
 
   print ("test of rgdx on equation reads passed")
