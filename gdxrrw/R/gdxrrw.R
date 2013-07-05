@@ -356,7 +356,7 @@ wgdx.lst <- function(gdxName, ilst, squeeze='y')
       olst[[i]] <- list (name=symName, type="parameter", dim=0, form="full", val=as.numeric(ilst[[i]]))
       symText <- attr(ilst[[i]], "ts", exact=TRUE)
       if (is.character(symText)) {
-        ilst[[i]]$ts <- symText
+        olst[[i]]$ts <- symText
       }
     }
     else if (is.list (ilst[[i]])) {
