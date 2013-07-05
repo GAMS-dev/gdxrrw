@@ -3,7 +3,6 @@
 #### ['all','l','m','lo','up','s']
 
 ## still to do:
-##  # form=sparse, filtered, all
 ##  # form=full  , filtered, all
 
 #### wanted lists can be produced with    dump("listName",file="")
@@ -365,6 +364,70 @@ tryCatch({
   f0 <- list()
   f1 <- list(kUels)
   f3 <- list(iUels,c('j1'),kUels)
+  # all
+  t <- matrix(c( lev,  0
+                ,mar,  1
+                ,low,  0
+                ,upp,  0
+                ,sca,  1
+               ), nrow=nFields, ncol=2, byrow=T)
+  e0wantA <- list(name='e0', type='equation', dim=0L,
+                  val=t,
+                  form='sparse', uels=list(fields), domains=domF,
+                  field='all',
+                  typeCode=GMS_EQUTYPE$E)
+  e0 <- rgdx(fnIn,list(name='e0',form='sparse',uels=f0,field='all'))
+  chk <- chkRgdxRes (e0, e0wantA, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e00,'all',filtered) failed",chk$msg))
+  }
+  e0 <- rgdx(fnIn,list(name='e0',form='sparse',uels=f0,field='all'),squeeze=F)
+  chk <- chkRgdxRes (e0, e0wantA, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e0,'all',filtered,squeeze=F) failed",chk$msg))
+  }
+  t <- matrix(c( 1, lev,   -2
+                ,1, mar,   -3.5
+                ,1, low,   -2
+                ,1, upp,   Inf
+                ,1, sca,   2
+             ), nrow=5, ncol=3, byrow=T)
+  e1wantA <- list(name='e1', type='equation', dim=1L,
+                  val=t,
+                  form='sparse', uels=list(f1[[1]],fields), domains=userDom1f,
+                  field='all', typeCode=GMS_EQUTYPE$G)
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',uels=f,field='all'))
+  chk <- chkRgdxRes (e1, e1wantA, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'all',filtered) failed",chk$msg))
+  }
+  e1 <- rgdx(fnIn,list(name='e1',field='all',form='sparse',uels=f),squeeze=F)
+  chk <- chkRgdxRes (e1, e1wantA, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'all',filtered,squeeze=F) failed",chk$msg))
+  }
+  t <- matrix(c( 1,1,1,lev,   3
+                ,1,1,1,mar,   0
+                ,1,1,1,low,   -Inf
+                ,1,1,1,upp,   4
+                ,1,1,1,sca,   1
+               ), nrow=5, ncol=5, byrow=T)
+  e3wantA <- list(name="e3", type="equation", dim=3L,
+                  val=t,
+                  form="sparse",
+                  uels=list(f3[[1]],f3[[2]],f3[[3]],fields), domains=userDom3f,
+                  field='all',
+                  typeCode=GMS_EQUTYPE$L)
+  e3 <- rgdx(fnIn,list(name='e3',form='sparse',uels=f3,field='all'))
+  chk <- chkRgdxRes (e3, e3wantA, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e3,'all',filtered) failed",chk$msg))
+  }
+  e3 <- rgdx(fnIn,list(name='e3',form='sparse',uels=f3,field='all'),squeeze=F)
+  chk <- chkRgdxRes (e3, e3wantA, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e3,'all',filtered,squeeze=F) failed",chk$msg))
+  }
   # level
   e0wantL <- list(name='e0', type='equation', dim=0L,
                   val=matrix(0, nrow=0, ncol=1),
@@ -902,6 +965,68 @@ tryCatch({
   f0 <- list()
   f <- list(kUels)
   f3 <- list(iUels,c('j1'),kUels)
+  filtercartIJKF <- list(iUels,c('j1'),kUels,fields)
+  # all
+  t <- array(0,c(nFields),dimnames=list(fields))
+  t['m' ] <- 1
+  t['s' ] <- 1
+  e0wantA <- list(name='e0', type='equation', dim=0L,
+                  val=t,
+                  form='full', uels=list(fields), domains=domF,
+                  field='all',
+                  typeCode=GMS_EQUTYPE$E)
+  e0 <- rgdx(fnIn,list(name='e0',form='full',field='all'))
+  chk <- chkRgdxRes (e0, e0wantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e0,'all',full,unfiltered) failed",chk$msg))
+  }
+  e0 <- rgdx(fnIn,list(name='e0',form='full',field='all'),squeeze=F)
+  chk <- chkRgdxRes (e0, e0wantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e0,'all',full,unfiltered,squeeze=F) failed",chk$msg))
+  }
+  t <- array(0,c(kCard,nFields),dimnames=cartKF)
+  t['k1','l' ] <- -2
+  t['k1','m' ] <- -3.5
+  t['k1','lo'] <- -2
+  t['k1','up'] <- +Inf
+  t['k1','s' ] <- 2
+  e1wantA <- list(name='e1', type='equation', dim=1L,
+                  val=t,
+                  form='full', uels=cartKF, domains=userDom1f,
+                  field='all', typeCode=GMS_EQUTYPE$G)
+  e1 <- rgdx(fnIn,list(name='e1',form='full',uels=cartK,field='all'))
+  chk <- chkRgdxRes (e1, e1wantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'all',full,filtered) failed",chk$msg))
+  }
+  e1 <- rgdx(fnIn,list(name='e1',form='full',uels=cartK,field='all'),squeeze=F)
+  chk <- chkRgdxRes (e1, e1wantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e1,'all',full,filtered,squeeze=F) failed",chk$msg))
+  }
+  v <- array(0,c(iCard,1,kCard,nFields),dimnames=list(f3[[1]],f3[[2]],f3[[3]],fields))
+  v['i1','j1','k1','l' ] <- 3
+  v['i1','j1','k1','m' ] <- 0
+  v['i1','j1','k1','lo'] <- -Inf
+  v['i1','j1','k1','up'] <- 4
+  v['i1','j1','k1','s' ] <- 1
+  e3wantA <- list(name="e3", type="equation", dim=3L,
+                  val=v,
+                  form="full",
+                  uels=filtercartIJKF, domains=userDom3f,
+                  field='all',
+                  typeCode=GMS_EQUTYPE$L)
+  e3 <- rgdx(fnIn,list(name='e3',form='full',field='all',uels=f3))
+  chk <- chkRgdxRes (e3, e3wantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e3,'all',full,filtered) failed",chk$msg))
+  }
+  e3 <- rgdx(fnIn,list(name='e3',form='full',field='all',uels=f3),squeeze=F)
+  chk <- chkRgdxRes (e3, e3wantA, T, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx(e3,'all',full,filtered,squeeze=F) failed",chk$msg))
+  }
   # level
   e0wantL <- list(name='e0', type='equation', dim=0L,
                   val=0,
@@ -1137,13 +1262,6 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e3,'S',full,filtered,squeeze=F) failed",chk$msg))
   }
-
-  ### ---------- reading form=full, no filter
-  # level
-  # marginal
-  # lower
-  # upper
-  # scale
 
 
   print ("test of rgdx on equation reads passed")
