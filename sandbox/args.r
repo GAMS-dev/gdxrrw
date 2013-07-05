@@ -3,30 +3,63 @@
 rCurr <- function(gdxName, requestList = NULL, squeeze=TRUE, useDomInfo=TRUE)
 {
   if (is.null(requestList) && (gdxName == '?')) {
-    invisible(.External(rgdxExt, gdxName=gdxName, requestList=NULL,
+    invisible(.External(gdxrrw:::rgdxExt, gdxName=gdxName, requestList=NULL,
                         squeeze=squeeze, useDomInfo=useDomInfo))
   }
   else {
-    .External(rgdxExt, gdxName=gdxName, requestList=requestList,
+    .External(gdxrrw:::rgdxExt, gdxName=gdxName, requestList=requestList,
               squeeze=squeeze, useDomInfo=useDomInfo)
   }
 } # rCurr
 
 # rNew: new interface, no attempt at backward compatibility
-rNew <- function(gdxName, symName = NULL, squeeze=TRUE, useDomInfo=TRUE)
+# possible fields in read specifier list:
+#   compress, dim, field, form, name, te, ts, uels
+rNew <- function(gdxName, symName = NULL,
+                 form = 'sparse',
+                 uels = NULL,
+                 ts = FALSE,
+                 te = FALSE,
+                 field = NULL,
+                 dim = NULL,
+                 compress = FALSE,
+                 squeeze=TRUE, useDomInfo=TRUE)
 {
   if (is.null(symName) && (gdxName == '?')) {
-    return(invisible(.External(rgdxExt, gdxName=gdxName, requestList=NULL,
+    return(invisible(.External(gdxrrw:::rgdxExt, gdxName=gdxName, requestList=NULL,
                         squeeze=squeeze, useDomInfo=useDomInfo)))
   }
   if (is.null(symName)) {
-    return(.External(rgdxExt, gdxName=gdxName, requestList=NULL,
+    return(.External(gdxrrw:::rgdxExt, gdxName=gdxName, requestList=NULL,
                      squeeze=squeeze, useDomInfo=useDomInfo))
   }
   rr <- list()
-  if (! is.null(symName)) {
-    rr$name <- symName
+  rr$name <- symName
+  rr$form <- form
+  if (! is.null(uels)) {
+    rr$uels <- uels
   }
-  return(.External(rgdxExt, gdxName=gdxName, requestList=rr,
+  rr$ts <- ts
+  rr$te <- te
+  if (! is.null(field)) {
+    rr$field <- field
+  }
+  if (! is.null(dim)) {
+    rr$dim <- dim
+  }
+  if (! is.null(compress)) {
+    rr$compress <- compress
+  }
+  return(.External(gdxrrw:::rgdxExt, gdxName=gdxName, requestList=rr,
                    squeeze=squeeze, useDomInfo=useDomInfo))
 } # rNew
+
+exercise <- function () {
+  cc1 <- rCurr('eurodist.gdx',list(name='cities'))
+  cc1
+  cc2 <- rNew('eurodist.gdx','cities')
+  cc2
+  identical(cc1,cc2)
+  sub1 <- rCurr('eurodist.gdx',list(name='cities',uels=list(c("athens","hamBurg"))))
+
+} # exercise
