@@ -40,15 +40,17 @@ if (length(f) > 0) {
 nRuns <- 0
 nFails  <- 0
 fTests <- list()
-for (t in tests) {
-  print (paste("Starting test", t))
-  rc <- source (paste(t,".R",sep=""))
+for (ttt in tests) {
+  print (paste("Starting test", ttt))
+  rc <- source (paste(ttt,".R",sep=""))
   if (rc$value) {
-    print (paste("Test", t, "result: PASS"))
+    print (paste("Test", ttt, "result: PASS"))
   } else {
-    print (paste("Test", t, "result: FAIL"))
+    print ("WTF: what is ttt??")
+    print (ttt)
+    print (paste("Test", ttt, "result: FAIL"))
     nFails  <- nFails + 1
-    fTests[[t]] <- T
+    fTests[[ttt]] <- T
   }
   nRuns  <- nRuns + 1
   if (doPrompt) {

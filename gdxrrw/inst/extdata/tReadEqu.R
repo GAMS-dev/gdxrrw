@@ -396,12 +396,12 @@ tryCatch({
                   val=t,
                   form='sparse', uels=list(f1[[1]],fields), domains=userDom1f,
                   field='all', typeCode=GMS_EQUTYPE$G)
-  e1 <- rgdx(fnIn,list(name='e1',form='sparse',uels=f,field='all'))
+  e1 <- rgdx(fnIn,list(name='e1',form='sparse',uels=f1,field='all'))
   chk <- chkRgdxRes (e1, e1wantA, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e1,'all',filtered) failed",chk$msg))
   }
-  e1 <- rgdx(fnIn,list(name='e1',field='all',form='sparse',uels=f),squeeze=F)
+  e1 <- rgdx(fnIn,list(name='e1',field='all',form='sparse',uels=f1),squeeze=F)
   chk <- chkRgdxRes (e1, e1wantA, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(e1,'all',filtered,squeeze=F) failed",chk$msg))
