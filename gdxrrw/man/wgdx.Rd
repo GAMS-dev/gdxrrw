@@ -20,22 +20,24 @@
   # write a scalar - inverse of \code{rgdx.scalar}
   wgdx.scalar(gdxName, s)
 
-  # write multiple symbols
-  wgdx.lst(gdxName, ilst, squeeze = 'y')
+  # write multiple symbols specified in list, dataframe, or scalar form
+  wgdx.lst(gdxName, ..., squeeze = 'y')
 }
 \arguments{
   \item{gdxName}{the name of the GDX file to write}
-  \item{\dots}{zero or more lists describing the sets and
-  parameters to write}
+  \item{\dots}{zero or more arguments describing the symbols to write.
+  For \code{wgdx}, each arg must be a list holding a symbol (e.g. as
+  returned by \code{rgdx)}.  For
+  \code{wgdx.lst}, each arg is also allowed to be a data frame holding a
+  symbol (e.g. as returned by \code{rgdx.param} or \code{rgdx.set}), a
+  scalar holding a symbol (e.g. as returned
+  by \code{rgdx.scalar}), or a list containing any combination of these
+  elements.}
   \item{squeeze}{if 'y'/TRUE/nonzero, squeeze out zeros: do not store
   in GDX.  If 'n'/FALSE/zero, do not squeeze out zeros: store explicit
   zeros in GDX.  If 'e', store zeros as EPS in the GDX.}
   \item{df}{data frame to write to GDX}
   \item{s}{scalar to write to GDX}
-  \item{ilst}{list of inputs, each of which can be a data frame as
-  returned by \code{rgdx.param} or \code{rgdx.set}, a scalar as
-  returned by \code{rgdx.scalar}, or a symbol list as required for
-  input to \code{wgdx}}
 }
 % \details{}
 \author{Original coding by Rishabh Jain.  Adopted and packaged by
