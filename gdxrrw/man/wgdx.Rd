@@ -1,7 +1,5 @@
 \name{wgdx}
 \alias{wgdx}
-\alias{wgdx.df}
-\alias{wgdx.scalar}
 \alias{wgdx.lst}
 \title{Write R data to GDX}
 \description{
@@ -14,13 +12,7 @@
   # generic form - each arg is a list specifying a symbol to write
   wgdx(gdxName, ..., squeeze = 'y')
 
-  # write a data frame - inverse of \code{rgdx.param} and \code{rgdx.set}
-  wgdx.df(gdxName, df, squeeze = 'y')
-
-  # write a scalar - inverse of \code{rgdx.scalar}
-  wgdx.scalar(gdxName, s)
-
-  # write multiple symbols specified in list, dataframe, or scalar form
+  # write multiple symbols specified in list, data frame, or scalar form
   wgdx.lst(gdxName, ..., squeeze = 'y')
 }
 \arguments{
@@ -36,8 +28,6 @@
   \item{squeeze}{if 'y'/TRUE/nonzero, squeeze out zeros: do not store
   in GDX.  If 'n'/FALSE/zero, do not squeeze out zeros: store explicit
   zeros in GDX.  If 'e', store zeros as EPS in the GDX.}
-  \item{df}{data frame to write to GDX}
-  \item{s}{scalar to write to GDX}
 }
 % \details{}
 \author{Original coding by Rishabh Jain.  Adopted and packaged by
@@ -46,9 +36,6 @@ Steve Dirkse.  Maintainer: \email{R@gams.com}}
   A common problem is failure to load the external GDX libraries that
   are required to interface with GDX data.  Use \code{\link{igdx}} to
   troubleshoot and solve this problem.
-
-  The routines \code{wgdx.df} and \code{wgdx.scalar} are experimental
-  and perhaps temporary.  Don't use them for production work.
 }
 \seealso{
  \code{\link{igdx}}, \code{\link{rgdx}}, \code{\link{gdxInfo}}

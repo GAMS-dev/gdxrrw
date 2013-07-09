@@ -280,80 +280,6 @@ processDF <- function(df, msg)
   o
 } # processDF
 
-wgdx.df <- function(gdxName, df, squeeze='y')
-{
-  if (! is.character(gdxName)) {
-    stop ("gdxName must be a GDX file name")
-  }
-  if (! is.data.frame(df)) {
-    stop ("df must be a data frame")
-  }
-  symName <- attr(df, "symName", exact=TRUE)
-  if (! is.character(symName)) {
-    stop ("df must be a data frame with a character symName attribute")
-  }
-  nr <- nrow(df)
-  nc <- ncol(df)
-  isSet <- TRUE
-  if (! is.factor(df[[1]])) {
-    stop ("df[[1]] must be a factor")
-  }
-  for (j in 1 + seq_len(max(0,nc-2))) {
-    if (! is.factor(df[[j]])) {
-      stop ("df[[", j, "]] must be a factor")
-    }
-  }
-  if (is.factor(df[[nc]])) {
-    symType <- "set"
-    symDim <- nc
-  }
-  else if (is.numeric(df[[nc]])) {
-    symType <- "parameter"
-    isSet <- FALSE
-    symDim <- nc-1
-  }
-  lst <- list (name=symName, type=symType, dim=symDim, form="sparse")
-  symText <- attr(df, "ts", exact=TRUE)
-  if (is.character(symText)) {
-    lst$ts <- symText
-  }
-  v <- matrix(0, nrow=nr, ncol=nc)
-  uels <- c()
-  if (! isSet) {
-    v[,symDim+1] <- df[,symDim+1]
-  }
-  for (j in c(1:symDim)) {
-    v[,j] <- as.numeric(df[,j])
-    uels <- c(uels,list(levels(df[,j])))
-  }
-  lst$val <- v
-  lst$uels <- uels
-  wgdx (gdxName, lst, squeeze=squeeze)
-} # wgdx.df
-
-wgdx.scalar <- function(gdxName, s)
-{
-  if (! is.character(gdxName)) {
-    stop ("gdxName must GDX file name")
-  }
-  if (! is.numeric(s)) {
-    stop ("s must be a scalar")
-  }
-  if (! is.null(dim(s))) {
-    stop ("s must be a scalar")
-  }
-  symName <- attr(s, "symName", exact=TRUE)
-  if (! is.character(symName)) {
-    stop ("s must be a scalar with a character symName attribute")
-  }
-  lst <- list (name=symName, type="parameter", dim=0, form="full", val=as.numeric(s))
-  symText <- attr(s, "ts", exact=TRUE)
-  if (is.character(symText)) {
-    lst$ts <- symText
-  }
-  wgdx (gdxName, lst)
-} # wgdx.scalar
-
 # wgdx.lst: write multiple symbols to a GDX file
 # the routines above write only one symbol to GDX, where the symbol info can
 # take different forms:
@@ -443,7 +369,7 @@ wgdx.lst <- function(gdxName, ..., squeeze='y')
 # write a reshaped parameter to GDX
 #
 # given an input dataframe inDF, reshape the data
-# to make it suitable for input to wgdx.df.
+# to make it suitable for input to wgdx.lst.
 # The reshaped data will be for a parameter named symName of dimension symDim.
 # The headers for the data columns of inDF will be combined in a new index
 # position named tName.
@@ -591,7 +517,7 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
   }
   else {
     if (is.character(gdxName)) {
-      wgdx.df(gdxName,outDF)
+      wgdx.lst(gdxName,outDF)
     }
     else {
       return(list(outDF))
