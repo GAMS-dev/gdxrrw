@@ -15,7 +15,9 @@ rCurr <- function(gdxName, requestList = NULL, squeeze=TRUE, useDomInfo=TRUE)
 # rNew: new interface, no attempt at backward compatibility
 # possible fields in read specifier list:
 #   compress, dim, field, form, name, te, ts, uels
-rNew <- function(gdxName, symName = NULL,
+rNew <- function(gdxName,
+                 requestList = NULL,
+                 symName = NULL,
                  form = 'sparse',
                  uels = NULL,
                  ts = FALSE,
@@ -53,6 +55,29 @@ rNew <- function(gdxName, symName = NULL,
   return(.External(gdxrrw:::rgdxExt, gdxName=gdxName, requestList=rr,
                    squeeze=squeeze, useDomInfo=useDomInfo))
 } # rNew
+
+r3 <- function(gdxName,
+               ...,
+#                 requestList = NULL,
+#                 symName = NULL,
+#                 form = 'sparse',
+#                uels = NULL,
+#                 ts = FALSE,
+#                te = FALSE,
+#                field = NULL,
+#                dim = NULL,
+#                compress = FALSE,
+                 squeeze=TRUE, useDomInfo=TRUE)
+{
+  
+}
+
+# r3 ('trns',list(name='hh'))
+# r3( 'trns',name='hh')
+vv <- list(name='hh',form='sparse')
+rNew('trns',someFunc(vv),useDomInfo=FALSE)
+>> rNew('trns',name='hh',form='sparse',useDomInfo=FALSE)
+  
 
 exercise <- function () {
   cc1 <- rCurr('eurodist.gdx',list(name='cities'))
