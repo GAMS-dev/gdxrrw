@@ -267,7 +267,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
     }
   } /* tsExp */
 
-  if (uelsExp) {
+  if (uelsExp && (R_NilValue != uelsExp)) {
     if (TYPEOF(uelsExp) != VECSXP) {
       error("List element 'uels' must be a list.");
     }
