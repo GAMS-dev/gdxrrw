@@ -41,7 +41,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
 
   nElements = length(lst);
   /* check maximum number of elements */
-  if (nElements < 1 || nElements > 7) {
+  if (nElements < 1 || nElements > 8) {
     error("Incorrect number of elements in input list argument.");
   }
 
