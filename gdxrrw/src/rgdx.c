@@ -92,7 +92,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
 
   /* now process the fields provided */
 
-  if (compressExp) {
+  if (compressExp && (R_NilValue != compressExp)) {
     if (TYPEOF(compressExp) == STRSXP) {
       tmpName = CHAR(STRING_ELT(compressExp, 0));
       if (0 == strcasecmp("true", tmpName)) {
@@ -121,7 +121,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
     }
   } /* if compressExp */
 
-  if (dimExp) {
+  if (dimExp && (R_NilValue != dimExp)) {
     if (INTSXP == TYPEOF(dimExp)) {
       if (length(dimExp) != 1) {
         error ("Optional input list element 'dim' must have only one element.");
@@ -150,7 +150,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
     }
   } /* dimExp */
 
-  if (fieldExp) {
+  if (fieldExp && (R_NilValue != fieldExp)) {
     char fieldErrorMsg[] = "Input list element 'field' must be in"
       " ['l','m','lo','up','s','all'].";
     if (TYPEOF(fieldExp) != STRSXP ) {
@@ -186,7 +186,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
      }
   } /* if fieldExp */
 
-  if (formExp) {
+  if (formExp && (R_NilValue != formExp)) {
     if (STRSXP != TYPEOF(formExp)) {
       Rprintf ("List element 'form' must be a string - found %d instead\n",
                TYPEOF(formExp));
@@ -215,7 +215,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
   checkStringLength (tmpName);
   strcpy (rSpec->name, tmpName);
 
-  if (teExp) {
+  if (teExp && (R_NilValue != teExp)) {
     if (TYPEOF(teExp) == STRSXP ) {
       tmpName = CHAR(STRING_ELT(teExp, 0));
       if (strlen(tmpName) == 0) {
@@ -242,7 +242,7 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
     }
   } /* teExp */
 
-  if (tsExp) {
+  if (tsExp && (R_NilValue != tsExp)) {
     if (TYPEOF(tsExp) == STRSXP ) {
       tmpName = CHAR(STRING_ELT(tsExp, 0));
       if (0 == strcasecmp("true", tmpName)) {
