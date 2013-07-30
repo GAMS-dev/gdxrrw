@@ -595,10 +595,10 @@ tryCatch({
   ### ---------- reading form=full, no filter
   # all
   t <- array(0,c(nFields),dimnames=list(fields))
-  t['l' ] <- 24
-  t['m' ] <- -1
-  t['up'] <- 100
-  t['s' ] <- 10
+  t[['l' ]] <- 24
+  t[['m' ]] <- -1
+  t[['up']] <- 100
+  t[['s' ]] <- 10
   xwantA <- list(name='xpos0', type='variable', dim=0L,
                  val=t,
                  form='full', uels=list(fields), domains=userDomf,
@@ -615,11 +615,11 @@ tryCatch({
     stop (paste("test rgdx(xpos0,'all',full,unfiltered,squeeze=F) failed",chk$msg))
   }
   t <- array(0,c(nFields),dimnames=list(fields))
-  t['l' ] <- 1
-  t['m' ] <- 0.5
-  t['lo'] <- 1
-  t['up'] <- 1
-  t['s' ] <- 1
+  t[['l' ]] <- 1
+  t[['m' ]] <- 0.5
+  t[['lo']] <- 1
+  t[['up']] <- 1
+  t[['s' ]] <- 1
   ywantA <- list(name='y0', type='variable', dim=0L,
                  val=t,
                  form='full', uels=list(fields), domains=userDomf,
@@ -636,11 +636,11 @@ tryCatch({
     stop (paste("test rgdx(y0,'all',full,unfiltered,squeeze=F) failed",chk$msg))
   }
   t <- array(0,c(nFields),dimnames=list(fields))
-  t['l' ] <- 26
-  t['m' ] <- 0
-  t['lo'] <- -Inf
-  t['up'] <- +Inf
-  t['s' ] <- 1
+  t[['l' ]] <- 26
+  t[['m' ]] <- 0
+  t[['lo']] <- -Inf
+  t[['up']] <- +Inf
+  t[['s' ]] <- 1
   zwantA <- list(name='z', type='variable', dim=0L,
                  val=t,
                  form='full', uels=list(fields), domains=userDomf,

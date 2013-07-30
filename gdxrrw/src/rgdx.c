@@ -1035,6 +1035,13 @@ SEXP rgdx (SEXP args)
           PROTECT(outValFull = allocVector(REALSXP, GMS_VAL_MAX));
           rgdxAlloc++;
           p0 = REAL(outValFull);
+          PROTECT(dimVect = allocVector(REALSXP, 1));
+          REAL(dimVect)[0] = 5;
+          PROTECT(dimNames = allocVector(VECSXP, 1)); /* for one-dim symbol, val is 2-dim */
+          SET_VECTOR_ELT(dimNames, 0, fieldUels);
+          setAttrib(outValFull, R_DimSymbol, dimVect);
+          setAttrib(outValFull, R_DimNamesSymbol, dimNames);
+          UNPROTECT(2);
           if (GMS_DT_VAR == symType)
             getDefRecVar (typeCode, p0);
           else {
@@ -1079,6 +1086,9 @@ SEXP rgdx (SEXP args)
         break;
 
       case 1:
+        /* caution: for 1-dim params and vars with a single field, we return a matrix!
+         * it would be more consistent to return a 1-d array in these cases
+         */
         PROTECT(dimVect = allocVector(REALSXP, 2));
         rgdxAlloc++;
         dimVal = REAL(dimVect);

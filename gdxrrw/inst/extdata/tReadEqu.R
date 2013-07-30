@@ -663,11 +663,11 @@ tryCatch({
   ### ---------- reading form=full, no filter
   # all
   t <- array(0,c(nFields),dimnames=list(fields))
-  t['l' ] <- 0
-  t['m' ] <- 1
-  t['lo'] <- 0
-  t['up'] <- 0
-  t['s' ] <- 1
+  t[['l' ]] <- 0
+  t[['m' ]] <- 1
+  t[['lo']] <- 0
+  t[['up']] <- 0
+  t[['s' ]] <- 1
   e0wantA <- list(name='e0', type='equation', dim=0L,
                   val=t,
                   form='full', uels=list(fields), domains=domF,
@@ -968,8 +968,8 @@ tryCatch({
   filtercartIJKF <- list(iUels,c('j1'),kUels,fields)
   # all
   t <- array(0,c(nFields),dimnames=list(fields))
-  t['m' ] <- 1
-  t['s' ] <- 1
+  t[['m' ]] <- 1
+  t[['s' ]] <- 1
   e0wantA <- list(name='e0', type='equation', dim=0L,
                   val=t,
                   form='full', uels=list(fields), domains=domF,
@@ -978,12 +978,12 @@ tryCatch({
   e0 <- rgdx(fnIn,list(name='e0',form='full',field='all'))
   chk <- chkRgdxRes (e0, e0wantA, T, reqIdent=reqIdent)
   if (!chk$same) {
-    stop (paste("test rgdx(e0,'all',full,unfiltered) failed",chk$msg))
+    stop (paste("test rgdx(e0,'all',full,filtered) failed",chk$msg))
   }
   e0 <- rgdx(fnIn,list(name='e0',form='full',field='all'),squeeze=F)
   chk <- chkRgdxRes (e0, e0wantA, T, reqIdent=reqIdent)
   if (!chk$same) {
-    stop (paste("test rgdx(e0,'all',full,unfiltered,squeeze=F) failed",chk$msg))
+    stop (paste("test rgdx(e0,'all',full,filtered,squeeze=F) failed",chk$msg))
   }
   t <- array(0,c(kCard,nFields),dimnames=cartKF)
   t['k1','l' ] <- -2
