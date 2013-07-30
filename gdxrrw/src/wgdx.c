@@ -1336,7 +1336,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
                typeofTxt(typeCodeExp, buf));
       }
       if (variable == wSpec->dType) {
-        if ((typeCode > GMS_VARTYPE_UNKNOWN) && (typeCode < GMS_VARTYPE_MAX))
+        if ((typeCode >= GMS_VARTYPE_UNKNOWN) && (typeCode < GMS_VARTYPE_MAX))
           wSpec->typeCode = typeCode;
         else
           error ("Invalid typeCode %d found for symbol '%s'", typeCode, wSpec->name);
