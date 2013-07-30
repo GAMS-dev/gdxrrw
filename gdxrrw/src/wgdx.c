@@ -954,9 +954,11 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
   wSpec->symDim = -1;           /* not yet known */
 
   nElements = length(lst);
-  /* check maximum number of elements */
-  if (nElements < 1 || nElements > 10) {
-    error("Incorrect number of elements in input list argument.");
+  if (nElements > N_VALIDSYMLISTNAMES) {
+    error("Too many elements in input list argument.");
+  }
+  if (nElements < 1) {
+    error("Empty input list argument.");
   }
 
   lstNames = getAttrib(lst, R_NamesSymbol);
