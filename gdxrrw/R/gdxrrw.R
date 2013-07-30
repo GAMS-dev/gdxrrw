@@ -281,8 +281,8 @@ processDF <- function(df, msg)
 } # processDF
 
 # wgdx.lst: write multiple symbols to a GDX file
-# the routines above write only one symbol to GDX, where the symbol info can
-# take different forms:
+# the routines above write only one symbol to GDX, where the symbol info 
+# takea a different form for each function:
 #   wgdx.df    : input is a data frame containing a set or param
 #   wgdx.scalar: input is a scalar
 #   wgdx       : input is one or more lists, each list holds one symbol
@@ -302,9 +302,9 @@ wgdx.lst <- function(gdxName, ..., squeeze='y')
 
   for (k in c(1:nInputs)) {
     item <- dotList[[k]]
-    print (paste("*** Processing item", k))
+    # print (paste("*** Processing item", k))
     if (is.data.frame(item)) {
-      print (" *** found a data frame")
+      # print (" *** found a data frame")
       kOut <- kOut + 1
       olst[[kOut]] <- processDF (item, paste("argument",k+1))
     }
@@ -312,20 +312,20 @@ wgdx.lst <- function(gdxName, ..., squeeze='y')
              is.numeric(item) &&
              is.null(dim(item)) ) {
       # reading a scalar
-      print (" *** found a scalar")
+      # print (" *** found a scalar")
       kOut <- kOut + 1
       olst[[kOut]] <- processScalar (item, paste("argument",k+1))
     }
     else if (is.list (item)) {
       if (is.null(names(item))) {
         ## unnamed list: each element must be a dataframe, scalar, or symbol list
-        print (" *** found an unnamed list:")
+        # print (" *** found an unnamed list:")
         nList <- length(item)
         for (kk in c(1:nList)) {
           item2 <- item[[kk]]
-          print (paste("  *** Processing item2", kk))
+          # print (paste("  *** Processing item2", kk))
           if (is.data.frame(item2)) {
-            print ("   *** found a data frame")
+            # print ("   *** found a data frame")
             kOut <- kOut + 1
             olst[[kOut]] <- processDF (item2, paste0("arg",k+1,"[[",kk,"]]"))
           }
@@ -333,7 +333,7 @@ wgdx.lst <- function(gdxName, ..., squeeze='y')
                    is.numeric(item2) &&
                    is.null(dim(item2)) ) {
                                         # reading a scalar
-            print ("   *** found a scalar")
+            # print ("   *** found a scalar")
             kOut <- kOut + 1
             olst[[kOut]] <- processScalar (item2, paste0("arg",k+1,"[[",kk,"]]"))
           }
@@ -353,7 +353,7 @@ wgdx.lst <- function(gdxName, ..., squeeze='y')
         } # loop over kk: item2 members of item list
       }
       else {
-        print (" *** found a named list:")
+        # print (" *** found a named list:")
         kOut <- kOut + 1
         olst[[kOut]] <- item
       }

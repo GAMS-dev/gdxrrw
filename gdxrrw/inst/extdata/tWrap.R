@@ -5,13 +5,21 @@
 if (! require(gdxrrw))      stop ("gdxrrw package is not available")
 if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
+testName <- 'tWrap - testing GDXRRW wrappers'
+
+errFunc <- function(ex) {
+  print (paste(testName,": FAILED"))
+  print(ex)
+  FALSE
+} # errFunc
+
 tryCatch({
   fnIn <- "trnsport.gdx"
   fnOut <- "wtransport.gdx"
   if (file_test ('-f', fnOut) == TRUE) {
     file.remove (fnOut)
   }
-  print ("Test of rgdx/wgdx wrappers")
+  print (paste("starting",testName))
   # read all the data, using various combination of options
   idf <- rgdx.set(fnIn,'i',ts=TRUE)
   jdf <- rgdx.set(fnIn,'j',names="J",compress=TRUE)
@@ -64,9 +72,9 @@ tryCatch({
     file.remove (fnOut)
   }
 
-  print ("All tests for wrappers passed")
-  return (TRUE)
-}
+  print (paste(testName, ": PASSED"))
+  TRUE   ## all tests passed: return TRUE
+},
 
-, error = function(ex) { print(ex) ; return (FALSE) }
+error = errFunc
 )
