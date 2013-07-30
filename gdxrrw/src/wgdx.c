@@ -1336,7 +1336,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
                typeofTxt(typeCodeExp, buf));
       }
       if (variable == wSpec->dType) {
-        if ((typeCode > 0) && (typeCode < GMS_VARTYPE_MAX))
+        if ((typeCode > GMS_VARTYPE_UNKNOWN) && (typeCode < GMS_VARTYPE_MAX))
           wSpec->typeCode = typeCode;
         else
           error ("Invalid typeCode %d found for symbol '%s'", typeCode, wSpec->name);
@@ -1877,13 +1877,13 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
     else {                    /* form = full */
       checkSymType3 (wSpecPtr[iSym]->dType, __LINE__);
       dimVect = getAttrib(valData, R_DimSymbol);
-      dimVals = (symDim > 0) ? INTEGER(dimVect) : NULL;
       /* this next is just to be sure */
       nColumns = length(iVecVec);
       if (nColumns != symDim)
         error ("Internal error: dimension mismatch writing to GDX with form='full'");
       if ((parameter == wSpecPtr[iSym]->dType) ||
           (set == wSpecPtr[iSym]->dType)) {
+        dimVals = (symDim > 0) ? INTEGER(dimVect) : NULL;
         for (iDim = 0, totalElement = 1;  iDim < symDim;  iDim++)
           totalElement *= dimVals[iDim];
         if (length(valData) != totalElement)
@@ -1958,7 +1958,8 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         int fDim;  /* number of fields labels / extent of field dim */
         int kk;
 
-        /* must be variable or equation */
+        /* must be variable or equation with field='all' */
+        dimVals = INTEGER(dimVect);
         fVec = VECTOR_ELT(fieldIndex, iSym);
         fPtr = INTEGER(fVec);
         checkSymType3 (wSpecPtr[iSym]->dType, __LINE__);
