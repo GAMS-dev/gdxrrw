@@ -1037,9 +1037,17 @@ SEXP rgdx (SEXP args)
           p0 = REAL(outValFull);
           PROTECT(dimVect = allocVector(REALSXP, 1));
           REAL(dimVect)[0] = 5;
-          PROTECT(dimNames = allocVector(VECSXP, 1)); /* for one-dim symbol, val is 2-dim */
+          PROTECT(dimNames = allocVector(VECSXP, 1));
           SET_VECTOR_ELT(dimNames, 0, fieldUels);
           setAttrib(outValFull, R_DimSymbol, dimVect);
+          if (R_NilValue != outDomains) {
+            setAttrib(dimNames, R_NamesSymbol, outDomains);
+          }
+          if (! reuseFilter) {
+            if (R_NilValue != outDomains) {
+              setAttrib(outUels, R_NamesSymbol, outDomains);
+            }
+          }
           setAttrib(outValFull, R_DimNamesSymbol, dimNames);
           UNPROTECT(2);
           if (GMS_DT_VAR == symType)
@@ -1063,7 +1071,6 @@ SEXP rgdx (SEXP args)
               (void) memcpy (p0, p1, GMS_VAL_MAX * sizeof(double));
             }
           }
-          setAttrib(outValFull, R_NamesSymbol, fieldUels);
         }
         else {                  /* all != dField */
           PROTECT(outValFull = allocVector(REALSXP, 1));
@@ -1173,6 +1180,9 @@ SEXP rgdx (SEXP args)
           sparseToFull (outValSp, outValFull, outUels, symType, typeCode,
                         rSpec->dField, mrows, symDimX);
           setAttrib(outValFull, R_DimSymbol, dimVect);
+          if (R_NilValue != outDomains) {
+            setAttrib(outUels, R_NamesSymbol, outDomains);
+          }
           setAttrib(outValFull, R_DimNamesSymbol, outUels);
         }
 
