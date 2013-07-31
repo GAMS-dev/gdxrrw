@@ -36,7 +36,9 @@ domKF <- c('K','_field')
 domIJK <- c('I','J','K')
 domIJKF <- c('I','J','K','_field')
 cartK <- list(kUels)
+cartKn <- cartK ; names(cartKn) <- domK
 cartKF <- list(kUels,fields)
+cartKFn <- cartKF ; names(cartKFn) <- domKF
 cartIJK <- list(iUels,jUels,kUels)
 cartIJKF <- list(iUels,jUels,kUels,fields)
 
@@ -683,7 +685,7 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e0,'all',full,unfiltered,squeeze=F) failed",chk$msg))
   }
-  t <- array(0,c(kCard,nFields),dimnames=cartKF)
+  t <- array(0,c(kCard,nFields),dimnames=cartKFn)
   t[    ,'up'] <- Inf
   t[    ,'s' ] <- 2
   t['k1','l' ] <- -2
@@ -691,7 +693,7 @@ tryCatch({
   t['k1','lo'] <- -2
   e1wantA <- list(name='e1', type='equation', dim=1L,
                   val=t,
-                  form='full', uels=cartKF, domains=domKF,
+                  form='full', uels=cartKFn, domains=domKF,
                   field='all', typeCode=GMS_EQUTYPE$G)
   e1 <- rgdx(fnIn,list(name='e1',form='full',field='aLL'))
   chk <- chkRgdxRes (e1, e1wantA, T, reqIdent=reqIdent)
@@ -745,11 +747,11 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e0,'L',full,unfiltered,squeeze=F) failed",chk$msg))
   }
-  t <- array(0,c(kCard,1),dimnames=cartK)
+  t <- array(0,c(kCard,1),dimnames=cartKn)
   t['k1',1] <- -2
   e1wantL <- list(name='e1', type='equation', dim=1L,
                   val=t,
-                  form='full', uels=cartK, domains=domK,
+                  form='full', uels=cartKn, domains=domK,
                   field='l', typeCode=GMS_EQUTYPE$G)
   e1 <- rgdx(fnIn,list(name='e1',form='full',field='L'))
   chk <- chkRgdxRes (e1, e1wantL, reqIdent=reqIdent)
@@ -796,11 +798,11 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e0,'M',full,unfiltered,squeeze=F) failed",chk$msg))
   }
-  t <- array(0,c(kCard,1),dimnames=cartK)
+  t <- array(0,c(kCard,1),dimnames=cartKn)
   t['k1',1] <- -3.5
   e1wantM <- list(name='e1', type='equation', dim=1L,
                   val=t,
-                  form='full', uels=cartK, domains=domK,
+                  form='full', uels=cartKn, domains=domK,
                   field='m', typeCode=GMS_EQUTYPE$G)
   e1 <- rgdx(fnIn,list(name='e1',form='full',field='M'))
   chk <- chkRgdxRes (e1, e1wantM, reqIdent=reqIdent)
@@ -845,11 +847,11 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e0,'Lo',full,unfiltered,squeeze=F) failed",chk$msg))
   }
-  t <- array(0,c(kCard,1),dimnames=cartK)
+  t <- array(0,c(kCard,1),dimnames=cartKn)
   t['k1',1] <- -2
   e1wantLo <- list(name='e1', type='equation', dim=1L,
                    val=t,
-                   form='full', uels=cartK, domains=domK,
+                   form='full', uels=cartKn, domains=domK,
                    field='lo', typeCode=GMS_EQUTYPE$G)
   e1 <- rgdx(fnIn,list(name='e1',form='full',field='Lo'))
   chk <- chkRgdxRes (e1, e1wantLo, reqIdent=reqIdent)
@@ -894,11 +896,11 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e0,'up',full,unfiltered,squeeze=F) failed",chk$msg))
   }
-  t <- array(0,c(kCard,1),dimnames=cartK)
+  t <- array(0,c(kCard,1),dimnames=cartKn)
   t['k1',1] <- Inf
   e1wantUp <- list(name='e1', type='equation', dim=1L,
                    val=t,
-                   form='full', uels=cartK, domains=domK,
+                   form='full', uels=cartKn, domains=domK,
                    field='up', typeCode=GMS_EQUTYPE$G)
   e1 <- rgdx(fnIn,list(name='e1',form='full',field='up'))
   chk <- chkRgdxRes (e1, e1wantUp, reqIdent=reqIdent)
@@ -943,11 +945,11 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e0,'s',full,unfiltered,squeeze=F) failed",chk$msg))
   }
-  t <- array(0,c(kCard,1),dimnames=cartK)
+  t <- array(0,c(kCard,1),dimnames=cartKn)
   t['k1',1] <- 2
   e1wantS <- list(name='e1', type='equation', dim=1L,
                   val=t,
-                  form='full', uels=cartK, domains=domK,
+                  form='full', uels=cartKn, domains=domK,
                   field='s', typeCode=GMS_EQUTYPE$G)
   e1 <- rgdx(fnIn,list(name='e1',form='full',field='s'))
   chk <- chkRgdxRes (e1, e1wantS, reqIdent=reqIdent)

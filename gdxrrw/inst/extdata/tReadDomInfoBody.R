@@ -24,6 +24,7 @@ cCard <- length(cUels)
 cText <- c("city of airport delays", "city of light", "city of dreams")
 cVals <- matrix(as.double(8:10), nrow=3, ncol=1)
 u <- c(iUels, jUels, cUels)
+un <- list(u) ; names(un) <- c("*")
 uCard <- length(u)
 
 ## ---------- reading form=sparse, no filter, no compress
@@ -289,14 +290,15 @@ if (!chk$same) {
 
 ## ---------- reading form=full, no filter, no compress
 
-v <- array(0,c(uCard,1),dimnames=list(u))
+v <- array(0,c(uCard,1),dimnames=un)
 v[(1:iCard)] <- 1
-te <- array("",c(uCard,1),dimnames=list(u))
+te <- array("",c(uCard,1),dimnames=un)
 te[(1:iCard)] <- iText
 iwant <- list(name="I", type="set", dim=1L,
               val=v,
               form="full",
-              uels=list(u), domains=c("*"), te=te)
+              uels=un,
+              domains=c("*"), te=te)
 i <- rgdx(fnIn,list(name='i',form='full',te=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (i, iwant, reqIdent=reqIdent)
 if (!chk$same) {
@@ -304,14 +306,15 @@ if (!chk$same) {
 }
 
 jblock <- iCard + (1:jCard)
-v <- array(0,c(uCard,1),dimnames=list(u))
+v <- array(0,c(uCard,1),dimnames=un)
 v[jblock] <- 1
-te <- array("",c(uCard,1),dimnames=list(u))
+te <- array("",c(uCard,1),dimnames=un)
 te[jblock] <- jText
 jwant <- list(name="J", type="set", dim=1L,
               val=v,
               form="full",
-              uels=list(u), domains=c("*"), te=te)
+              uels=un,
+              domains=c("*"), te=te)
 j <- rgdx(fnIn,list(name='j',form='full',te=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (j, jwant, reqIdent=reqIdent)
 if (!chk$same) {
@@ -319,14 +322,15 @@ if (!chk$same) {
 }
 
 cblock <- iCard + jCard + (1:cCard)
-v <- array(0,c(uCard,1),dimnames=list(u))
+v <- array(0,c(uCard,1),dimnames=un)
 v[cblock] <- 1
-te <- array("",c(uCard,1),dimnames=list(u))
+te <- array("",c(uCard,1),dimnames=un)
 te[cblock] <- cText
 cwant <- list(name="c", type="set", dim=1L,
               val=v,
               form="full",
-              uels=list(u), domains=c("*"), te=te)
+              uels=un,
+              domains=c("*"), te=te)
 c <- rgdx(fnIn,list(name='c',form='full',te=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (c, cwant, reqIdent=reqIdent)
 if (!chk$same) {
@@ -416,26 +420,30 @@ if (!chk$same) {
 
 ## ---------- reading form=full, no filter, compress=TRUE
 
-v <- array(1,c(iCard,1),dimnames=list(iUels))
-te <- array("",c(iCard,1),dimnames=list(iUels))
+ilst <- list('_compressed'=iUels)
+v <- array(1,c(iCard,1),dimnames=ilst)
+te <- array("",c(iCard,1),dimnames=ilst)
 te[(1:iCard)] <- iText
 iwant <- list(name="I", type="set", dim=1L,
               val=v,
               form="full",
-              uels=list(iUels), domains=c("_compressed"), te=te)
+              uels=ilst,
+              domains=c("_compressed"), te=te)
 i <- rgdx(fnIn,list(name='i',form='full',te=TRUE,compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (i, iwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(i,full,unfiltered,compressed) failed",chk$msg))
 }
 
-v <- array(1,c(jCard,1),dimnames=list(jUels))
-te <- array("",c(jCard,1),dimnames=list(jUels))
+jlst <- list('_compressed'=jUels)
+v <- array(1,c(jCard,1),dimnames=jlst)
+te <- array("",c(jCard,1),dimnames=jlst)
 te[(1:jCard)] <- jText
 jwant <- list(name="J", type="set", dim=1L,
               val=v,
               form="full",
-              uels=list(jUels), domains=c("_compressed"),
+              uels=jlst,
+              domains=c("_compressed"),
               te=te)
 j <- rgdx(fnIn,list(name='j',form='full',te=TRUE,compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (j, jwant, reqIdent=reqIdent)
@@ -443,13 +451,15 @@ if (!chk$same) {
   stop (paste("test rgdx(j,full,unfiltered,compressed) failed",chk$msg))
 }
 
-v <- array(1,c(cCard,1),dimnames=list(cUels))
-te <- array("",c(cCard,1),dimnames=list(cUels))
+clst <- list('_compressed'=cUels)
+v <- array(1,c(cCard,1),dimnames=clst)
+te <- array("",c(cCard,1),dimnames=clst)
 te[(1:cCard)] <- cText
 cwant <- list(name="c", type="set", dim=1L,
               val=v,
               form="full",
-              uels=list(cUels), domains=c("_compressed"),
+              uels=clst,
+              domains=c("_compressed"),
               te=te)
 c <- rgdx(fnIn,list(name='c',form='full',te=TRUE,compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (c, cwant, reqIdent=reqIdent)

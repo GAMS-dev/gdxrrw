@@ -6,11 +6,11 @@
 iUels <- c("i1", "i2", "i3", "i4", "i5", "i6", "i7")
 iCard <- length(iUels)
 iVals <- matrix(as.double(c(1:iCard)), nrow=iCard, ncol=1)
-iOnes <- matrix(1, nrow=iCard, ncol=1,dimnames=list(iUels))
+iOnes <- matrix(1, nrow=iCard, ncol=1,dimnames=list('_compressed'=iUels))
 jUels <- c("j1", "j2", "j3", "j4", "j5")
 jCard <- length(jUels)
 jVals <- matrix(as.double(c(1:jCard)), nrow=jCard, ncol=1)
-jOnes <- matrix(1, nrow=jCard, ncol=1,dimnames=list(jUels))
+jOnes <- matrix(1, nrow=jCard, ncol=1,dimnames=list('_compressed'=jUels))
 aVals <- matrix(c(1,1, 33.11,
                   2,2, 54.22), nrow=2, ncol=3, byrow=TRUE)
 aUels <- list(c("i3", "i5"), c("j3", "j4"))
@@ -60,7 +60,8 @@ for (j in 1:jCard) {
 cVals <- matrix(c(1,1.1,
                   2,5.1), nrow=2, ncol=2, byrow=TRUE)
 cUels <- list(c("j1", "j5"))
-cFull <- matrix(c(1.1, 5.1), nrow=2,ncol=1,dimnames=cUels)
+cUelsn <- cUels ; names(cUelsn) <- c('_compressed')
+cFull <- matrix(c(1.1, 5.1), nrow=2,ncol=1,dimnames=cUelsn)
 
 
 ## ---------- reading form=sparse
@@ -149,7 +150,7 @@ if (!chk$same) {
 iwant <- list(name="I", type="set", dim=1L,
               val=iOnes,
               form="full",
-              uels=list(iUels),
+              uels=list('_compressed'=iUels),
               domains=c('_compressed'))
 i <- rgdx(fnIn,list(name='i',form='full',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (i, iwant, reqIdent=reqIdent)
@@ -160,7 +161,7 @@ if (!chk$same) {
 jwant <- list(name="J", type="set", dim=1L,
               val=jOnes,
               form="full",
-              uels=list(jUels),
+              uels=list('_compressed'=jUels),
               domains=c('_compressed'))
 j <- rgdx(fnIn,list(name='j',form='full',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (j, jwant, reqIdent=reqIdent)
@@ -216,7 +217,7 @@ if (!chk$same) {
 cwant <- list(name="c", type="parameter", dim=1L,
               val=cFull,
               form="full",
-              uels=cUels,
+              uels=cUelsn,
               domains=c('_compressed'))
 c <- rgdx(fnIn,list(name='c',form='full',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (c, cwant, reqIdent=reqIdent)

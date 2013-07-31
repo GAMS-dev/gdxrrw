@@ -19,7 +19,9 @@ nFields <- length(fields)
 userDom <- c('_user')
 userDomf <- c('_user','_field')
 cart <- list(kUels)
+cartn <- cart ; names(cartn) <- dom
 cartf <- list(kUels,fields)
+cartfn <- cartf ; names(cartfn) <- domf
 lev <- 1
 mar <- 2
 low <- 3
@@ -441,7 +443,7 @@ tryCatch({
 
   ### ---------- reading form=full, no filter
   # all
-  t <- array(0,c(kCard,nFields),dimnames=cartf)
+  t <- array(0,c(kCard,nFields),dimnames=cartfn)
   t[    ,'up'] <- 100
   t[    ,'s' ] <- 1
   t['k1','l' ] <- 5
@@ -452,7 +454,7 @@ tryCatch({
   t['k3','up'] <- 15
   uwantA <- list(name='u', type='variable', dim=1L,
                  val=t,
-                 form='full', uels=cartf, domains=domf,
+                 form='full', uels=cartfn, domains=domf,
                  field='all', varTypeText="integer", typeCode=GMS_VARTYPE$INTEGER)
   u <- rgdx(fnIn,list(name='u',form='full',field='aLL'))
   chk <- chkRgdxRes (u, uwantA, T, reqIdent=reqIdent)
@@ -464,7 +466,7 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(u,'all',full,unfiltered,squeeze=F) failed",chk$msg))
   }
-  t <- array(0,c(kCard,nFields),dimnames=cartf)
+  t <- array(0,c(kCard,nFields),dimnames=cartfn)
   t[    ,'lo'] <- -Inf
   t[    ,'s' ] <- 1
   t['k1','up'] <- Inf
@@ -474,7 +476,7 @@ tryCatch({
   t['k2','up'] <- -2
   vwantA <- list(name='v', type='variable', dim=1L,
                  val=t,
-                 form='full', uels=cartf, domains=domf,
+                 form='full', uels=cartfn, domains=domf,
                  field='all', varTypeText="negative", typeCode=GMS_VARTYPE$NEGATIVE)
   v <- rgdx(fnIn,list(field='all',name='v',form='full'))
   chk <- chkRgdxRes (v, vwantA, T, reqIdent=reqIdent)
@@ -487,11 +489,11 @@ tryCatch({
     stop (paste("test rgdx(v,'all',full,unfiltered,squeeze=F) failed",chk$msg))
   }
   # level
-  t <- array(0,c(kCard,1),dimnames=cart)
+  t <- array(0,c(kCard,1),dimnames=cartn)
   t['k1',1] <- 5
   uwantL <- list(name='u', type='variable', dim=1L,
                  val=t,
-                 form='full', uels=cart, domains=dom,
+                 form='full', uels=cartn, domains=dom,
                  field='l', varTypeText="integer", typeCode=GMS_VARTYPE$INTEGER)
   u <- rgdx(fnIn,list(name='u',form='full'))
   chk <- chkRgdxRes (u, uwantL, T, reqIdent=reqIdent)
@@ -503,11 +505,11 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(u,'L',full,unfiltered,squeeze=F) failed",chk$msg))
   }
-  t <- array(0,c(kCard,1),dimnames=cart)
+  t <- array(0,c(kCard,1),dimnames=cartn)
   t['k2',1] <- -2
   vwantL <- list(name='v', type='variable', dim=1L,
                  val=t,
-                 form='full', uels=cart, domains=dom,
+                 form='full', uels=cartn, domains=dom,
                  field='l', varTypeText="negative", typeCode=GMS_VARTYPE$NEGATIVE)
   v <- rgdx(fnIn,list(name='v',form='full'))
   chk <- chkRgdxRes (v, vwantL, T, reqIdent=reqIdent)
@@ -520,11 +522,11 @@ tryCatch({
     stop (paste("test rgdx(v,'L',full,unfiltered,squeeze=F) failed",chk$msg))
   }
   # marginal
-  t <- array(0,c(kCard,1),dimnames=cart)
+  t <- array(0,c(kCard,1),dimnames=cartn)
   t['k2',1] <- 1.5
   uwantM <- list(name='u', type='variable', dim=1L,
                  val=t,
-                 form='full', uels=cart, domains=dom,
+                 form='full', uels=cartn, domains=dom,
                  field='m', varTypeText="integer", typeCode=GMS_VARTYPE$INTEGER)
   u <- rgdx(fnIn,list(name='u',form='full',field='M'))
   chk <- chkRgdxRes (u, uwantM, T, reqIdent=reqIdent)
@@ -536,11 +538,11 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(u,'M',full,unfiltered,squeeze=F) failed",chk$msg))
   }
-  t <- array(0,c(kCard,1),dimnames=cart)
+  t <- array(0,c(kCard,1),dimnames=cartn)
   t['k2',1] <- -20
   vwantM <- list(name='v', type='variable', dim=1L,
                  val=t,
-                 form='full', uels=cart, domains=dom,
+                 form='full', uels=cartn, domains=dom,
                  field='m', varTypeText="negative", typeCode=GMS_VARTYPE$NEGATIVE)
   v <- rgdx(fnIn,list(name='v',form='full',field='m'))
   chk <- chkRgdxRes (v, vwantM, T, reqIdent=reqIdent)
@@ -553,11 +555,11 @@ tryCatch({
     stop (paste("test rgdx(v,'M',full,unfiltered,squeeze=F) failed",chk$msg))
   }
   # lower
-  t <- array(0,c(kCard,1),dimnames=cart)
+  t <- array(0,c(kCard,1),dimnames=cartn)
   t['k1',1] <- 5
   uwantLo <- list(name='u', type='variable', dim=1L,
                   val=t,
-                  form='full', uels=cart, domains=dom,
+                  form='full', uels=cartn, domains=dom,
                   field='lo', varTypeText="integer", typeCode=GMS_VARTYPE$INTEGER)
   u <- rgdx(fnIn,list(name='u',form='full',field='LO'))
   chk <- chkRgdxRes (u, uwantLo, T, reqIdent=reqIdent)
@@ -569,11 +571,11 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(u,'lo',full,unfiltered,squeeze=F) failed",chk$msg))
   }
-  t <- array(-Inf,c(kCard,1),dimnames=cart)
+  t <- array(-Inf,c(kCard,1),dimnames=cartn)
   t['k2',1] <- -2
   vwantLo <- list(name='v', type='variable', dim=1L,
                   val=t,
-                  form='full', uels=cart, domains=dom,
+                  form='full', uels=cartn, domains=dom,
                   field='lo', varTypeText="negative", typeCode=GMS_VARTYPE$NEGATIVE)
   v <- rgdx(fnIn,list(name='v',form='full',field='lo'))
   chk <- chkRgdxRes (v, vwantLo, T, reqIdent=reqIdent)
@@ -586,13 +588,13 @@ tryCatch({
     stop (paste("test rgdx(v,'lo',full,unfiltered,squeeze=F) failed",chk$msg))
   }
   # upper
-  t <- array(100,c(kCard,1),dimnames=cart)
+  t <- array(100,c(kCard,1),dimnames=cartn)
   t['k1',1] <- 5
   t['k2',1] <- 15
   t['k3',1] <- 15
   uwantUp <- list(name='u', type='variable', dim=1L,
                   val=t,
-                  form='full', uels=cart, domains=dom,
+                  form='full', uels=cartn, domains=dom,
                   field='up', varTypeText="integer", typeCode=GMS_VARTYPE$INTEGER)
   u <- rgdx(fnIn,list(name='u',form='full',field='UP'))
   chk <- chkRgdxRes (u, uwantUp, T, reqIdent=reqIdent)
@@ -604,12 +606,12 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(u,'up',full,unfiltered,squeeze=F) failed",chk$msg))
   }
-  t <- array(0,c(kCard,1),dimnames=cart)
+  t <- array(0,c(kCard,1),dimnames=cartn)
   t['k1',1] <- +Inf
   t['k2',1] <- -2
   vwantUp <- list(name='v', type='variable', dim=1L,
                   val=t,
-                  form='full', uels=cart, domains=dom,
+                  form='full', uels=cartn, domains=dom,
                   field='up', varTypeText="negative", typeCode=GMS_VARTYPE$NEGATIVE)
   v <- rgdx(fnIn,list(name='v',form='full',field='up'))
   chk <- chkRgdxRes (v, vwantUp, T, reqIdent=reqIdent)
@@ -622,11 +624,11 @@ tryCatch({
     stop (paste("test rgdx(v,'up',full,unfiltered,squeeze=F) failed",chk$msg))
   }
   # scale
-  t <- array(1,c(kCard,1),dimnames=cart)
+  t <- array(1,c(kCard,1),dimnames=cartn)
   t['k3',1] <- 1
   uwantS <- list(name='u', type='variable', dim=1L,
                  val=t,
-                 form='full', uels=cart, domains=dom,
+                 form='full', uels=cartn, domains=dom,
                  field='s', varTypeText="integer", typeCode=GMS_VARTYPE$INTEGER)
   u <- rgdx(fnIn,list(name='u',form='full',field='S'))
   chk <- chkRgdxRes (u, uwantS, T, reqIdent=reqIdent)
@@ -638,11 +640,11 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(u,'s',full,unfiltered,squeeze=F) failed",chk$msg))
   }
-  t <- array(1,c(kCard,1),dimnames=cart)
+  t <- array(1,c(kCard,1),dimnames=cartn)
   t['k1',1] <- 1
   vwantS <- list(name='v', type='variable', dim=1L,
                  val=t,
-                 form='full', uels=cart, domains=dom,
+                 form='full', uels=cartn, domains=dom,
                  field='s', varTypeText="negative", typeCode=GMS_VARTYPE$NEGATIVE)
   v <- rgdx(fnIn,list(name='v',form='full',field='s'))
   chk <- chkRgdxRes (v, vwantS, T, reqIdent=reqIdent)

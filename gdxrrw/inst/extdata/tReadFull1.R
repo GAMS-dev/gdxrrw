@@ -15,10 +15,10 @@ jCard <- length(jUels)
 uUels <- c(iUels, jUels)
 uCard <- length(uUels)
 
-iVals <- matrix(0, nrow=uCard, ncol=1, dimnames=list(uUels)) ; iVals[iUels,1] <- 1
-jVals <- matrix(0, nrow=uCard, ncol=1, dimnames=list(uUels)) ; jVals[jUels,1] <- 1
-aVals <- matrix(c(350,600), nrow=iCard, ncol=1, dimnames=list(iUels,NULL))
-bVals <- matrix(c(325,300,275), nrow=jCard, ncol=1, dimnames=list(jUels,NULL))
+iVals <- matrix(0, nrow=uCard, ncol=1, dimnames=list('*'=uUels)) ; iVals[iUels,1] <- 1
+jVals <- matrix(0, nrow=uCard, ncol=1, dimnames=list('*'=uUels)) ; jVals[jUels,1] <- 1
+aVals <- matrix(c(350,600), nrow=iCard, ncol=1, dimnames=list('i'=iUels,NULL))
+bVals <- matrix(c(325,300,275), nrow=jCard, ncol=1, dimnames=list('j'=jUels,NULL))
 
 dVals <- matrix(c(2.5, 1.7, 1.8,
                   2.5, 1.8, 1.4), nrow=iCard, ncol=jCard,
@@ -47,7 +47,7 @@ tryCatch({
   iwant <- list(name="i", type="set", dim=1L,
                 val=iVals,
                 form="full",
-                uels=list(uUels),
+                uels=list('*'=uUels),
                 domains=c("*"))
   chk <- chkRgdxRes (i, iwant, reqIdent=reqIdent)
   if (!chk$same) {
@@ -59,7 +59,7 @@ tryCatch({
   jwant <- list(name="j", type="set", dim=1L,
                 val=jVals,
                 form="full",
-                uels=list(uUels),
+                uels=list('*'=uUels),
                 domains=c("*"))
   chk <- chkRgdxRes (j, jwant, reqIdent=reqIdent)
   if (!chk$same) {
@@ -83,7 +83,7 @@ tryCatch({
   awant <- list(name="a", type="parameter", dim=1L,
                 val=aVals,
                 form="full",
-                uels=list(iUels),
+                uels=list('i'=iUels),
                 domains=c("i") )
   chk <- chkRgdxRes (a, awant, reqIdent=reqIdent)
   if (!chk$same) {
@@ -95,7 +95,7 @@ tryCatch({
   bwant <- list(name="b", type="parameter", dim=1L,
                 val=bVals,
                 form="full",
-                uels=list(jUels),
+                uels=list('j'=jUels),
                 domains=c('j') )
   chk <- chkRgdxRes (b, bwant, reqIdent=reqIdent)
   if (!chk$same) {

@@ -224,14 +224,16 @@ tryCatch({
 
   ## ---------- reading form=full, no filter, no compress
 
-  v <- array(0,c(uCard,1),dimnames=list(u))
+  ulst <- list('*'=u)
+  v <- array(0,c(uCard,1),dimnames=ulst)
   v[(1:iCard)] <- 1
-  te <- array("",c(uCard,1),dimnames=list(u))
+  te <- array("",c(uCard,1),dimnames=ulst)
   te[(1:iCard)] <- iText
   iwant <- list(name="I", type="set", dim=1L,
                 val=v,
                 form="full",
-                uels=list(u), domains=c("*"),
+                uels=ulst,
+                domains=c("*"),
                 te=te)
   i <- rgdx(fnIn,list(name='i',form='full',te=TRUE))
   chk <- chkRgdxRes (i, iwant, reqIdent=reqIdent)
@@ -240,14 +242,15 @@ tryCatch({
   }
 
   jblock <- iCard + (1:jCard)
-  v <- array(0,c(uCard,1),dimnames=list(u))
+  v <- array(0,c(uCard,1),dimnames=ulst)
   v[jblock] <- 1
-  te <- array("",c(uCard,1),dimnames=list(u))
+  te <- array("",c(uCard,1),dimnames=ulst)
   te[jblock] <- jText
   jwant <- list(name="J", type="set", dim=1L,
                 val=v,
                 form="full",
-                uels=list(u), domains=c("*"), te=te)
+                uels=ulst,
+                domains=c("*"), te=te)
   j <- rgdx(fnIn,list(name='j',form='full',te=TRUE))
   chk <- chkRgdxRes (j, jwant, reqIdent=reqIdent)
   if (!chk$same) {
@@ -255,14 +258,14 @@ tryCatch({
   }
 
   cblock <- iCard + jCard + (1:cCard)
-  v <- array(0,c(uCard,1),dimnames=list(u))
+  v <- array(0,c(uCard,1),dimnames=ulst)
   v[cblock] <- 1
-  te <- array("",c(uCard,1),dimnames=list(u))
+  te <- array("",c(uCard,1),dimnames=ulst)
   te[cblock] <- cText
   cwant <- list(name="c", type="set", dim=1L,
                 val=v,
                 form="full",
-                uels=list(u), domains=c("*"), te=te)
+                uels=ulst, domains=c("*"), te=te)
   c <- rgdx(fnIn,list(name='c',form='full',te=TRUE))
   chk <- chkRgdxRes (c, cwant, reqIdent=reqIdent)
   if (!chk$same) {
@@ -318,26 +321,28 @@ tryCatch({
 
   ## ---------- reading form=full, no filter, compress=TRUE
 
-  v <- array(1,c(iCard,1),dimnames=list(iUels))
-  te <- array("",c(iCard,1),dimnames=list(iUels))
+  ilst <- list('_compressed'=iUels)
+  v <- array(1,c(iCard,1),dimnames=ilst)
+  te <- array("",c(iCard,1),dimnames=ilst)
   te[(1:iCard)] <- iText
   iwant <- list(name="I", type="set", dim=1L,
                 val=v,
                 form="full",
-                uels=list(iUels), domains=c("_compressed"), te=te)
+                uels=ilst, domains=c("_compressed"), te=te)
   i <- rgdx(fnIn,list(name='i',form='full',te=TRUE,compress=TRUE))
   chk <- chkRgdxRes (i, iwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(i,full,unfiltered,compressed) failed",chk$msg))
   }
 
-  v <- array(1,c(jCard,1),dimnames=list(jUels))
-  te <- array("",c(jCard,1),dimnames=list(jUels))
+  jlst <- list('_compressed'=jUels)
+  v <- array(1,c(jCard,1),dimnames=jlst)
+  te <- array("",c(jCard,1),dimnames=jlst)
   te[(1:jCard)] <- jText
   jwant <- list(name="J", type="set", dim=1L,
                 val=v,
                 form="full",
-                uels=list(jUels), domains=c("_compressed"),
+                uels=jlst, domains=c("_compressed"),
                 te=te)
   j <- rgdx(fnIn,list(name='j',form='full',te=TRUE,compress=TRUE))
   chk <- chkRgdxRes (j, jwant, reqIdent=reqIdent)
