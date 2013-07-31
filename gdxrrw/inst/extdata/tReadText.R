@@ -269,13 +269,13 @@ tryCatch({
     stop (paste("test rgdx(c,full,unfiltered,uncompressed) failed",chk$msg))
   }
 
-  v <- array(0,c(iCard,jCard),dimnames=list(iUels,jUels))
+  v <- array(0,c(iCard,jCard),dimnames=list('I'=iUels,'J'=jUels))
   v['i1','j1'] <- 1;
   v['i1','j3'] <- 1;
   v['i2','j2'] <- 1;
   v['i2','j3'] <- 1;
   v['i3','j3'] <- 1;
-  te <- array("",c(iCard,jCard),dimnames=list(iUels,jUels))
+  te <- array("",c(iCard,jCard),dimnames=list('I'=iUels,'J'=jUels))
   te['i1','j1'] <- "one.one";
   te['i1','j3'] <- "one.three";
   te['i2','j2'] <- "two.two";
@@ -284,7 +284,7 @@ tryCatch({
   ijwant <- list(name="IJ", type="set", dim=2L,
                  val=v,
                  form="full",
-                 uels=list(iUels,jUels), domains=c("I","J"),
+                 uels=list('I'=iUels,'J'=jUels), domains=c("I","J"),
                  ts='',
                  te=te)
   ij <- rgdx(fnIn,list(name='ij',form='full',te=TRUE,ts=TRUE))
@@ -293,13 +293,13 @@ tryCatch({
     stop (paste("test rgdx(ij,full,unfiltered,uncompressed) failed",chk$msg))
   }
 
-  v <- array(0,c(iCard,jCard,cCard),dimnames=list(iUels,jUels,cUels))
+  v <- array(0,c(iCard,jCard,cCard),dimnames=list('I'=iUels,'J'=jUels,'c'=cUels))
   v['i1','j1','berlin'] <- 1;
   v['i1','j3','berlin'] <- 1;
   v['i2','j2','paris' ] <- 1;
   v['i2','j3','paris' ] <- 1;
   v['i3','j3','vienna'] <- 1;
-  te <- array("",c(iCard,jCard,cCard),dimnames=list(iUels,jUels,cUels))
+  te <- array("",c(iCard,jCard,cCard),dimnames=list('I'=iUels,'J'=jUels,'c'=cUels))
   te['i1','j1','berlin'] <- "eins eins tempelhof";
   te['i1','j3','berlin'] <- "eins drei tempelhof";
   te['i2','j2','paris' ] <- "deux deux orly";
@@ -308,7 +308,7 @@ tryCatch({
   ijcwant <- list(name="IJc", type="set", dim=3L,
                   val=v,
                   form="full",
-                  uels=list(iUels,jUels,cUels), domains=c("I","J","c"),
+                  uels=list('I'=iUels,'J'=jUels,'c'=cUels), domains=c("I","J","c"),
                   te=te)
   ijc <- rgdx(fnIn,list(name='ijc',form='full',te=TRUE))
   chk <- chkRgdxRes (ijc, ijcwant, reqIdent=reqIdent)
@@ -345,13 +345,13 @@ tryCatch({
     stop (paste("test rgdx(j,full,unfiltered,compressed) failed",chk$msg))
   }
 
-  v <- array(0,c(i2card,jCard),dimnames=list(i2uels,jUels))
+  v <- array(0,c(i2card,jCard),dimnames=list('_compressed'=i2uels,'_compressed'=jUels))
   v['i1','j1'] <- 1;
   v['i1','j3'] <- 1;
   v['i2','j2'] <- 1;
   v['i2','j3'] <- 1;
   v['i3','j3'] <- 1;
-  te <- array("",c(i2card,jCard),dimnames=list(i2uels,jUels))
+  te <- array("",c(i2card,jCard),dimnames=list('_compressed'=i2uels,'_compressed'=jUels))
   te['i1','j1'] <- "one.one";
   te['i1','j3'] <- "one.three";
   te['i2','j2'] <- "two.two";
@@ -360,7 +360,7 @@ tryCatch({
   ijwant <- list(name="IJ", type="set", dim=2L,
                  val=v,
                  form="full",
-                 uels=list(i2uels,jUels), domains=c("_compressed","_compressed"),
+                 uels=list('_compressed'=i2uels,'_compressed'=jUels), domains=c("_compressed","_compressed"),
                  ts='',
                  te=te)
   ij <- rgdx(fnIn,list(name='ij',form='full',te=TRUE,ts=TRUE,compress=TRUE))
@@ -369,13 +369,15 @@ tryCatch({
     stop (paste("test rgdx(ij,full,unfiltered,compressed) failed",chk$msg))
   }
 
-  v <- array(0,c(i2card,jCard,cCard),dimnames=list(i2uels,jUels,cUels))
+  v <- array(0,c(i2card,jCard,cCard),
+             dimnames=list('_compressed'=i2uels,'_compressed'=jUels,'_compressed'=cUels))
   v['i1','j1','berlin'] <- 1;
   v['i1','j3','berlin'] <- 1;
   v['i2','j2','paris' ] <- 1;
   v['i2','j3','paris' ] <- 1;
   v['i3','j3','vienna'] <- 1;
-  te <- array("",c(i2card,jCard,cCard),dimnames=list(i2uels,jUels,cUels))
+  te <- array("",c(i2card,jCard,cCard),
+              dimnames=list('_compressed'=i2uels,'_compressed'=jUels,'_compressed'=cUels))
   te['i1','j1','berlin'] <- "eins eins tempelhof";
   te['i1','j3','berlin'] <- "eins drei tempelhof";
   te['i2','j2','paris' ] <- "deux deux orly";
@@ -384,7 +386,7 @@ tryCatch({
   ijcwant <- list(name="IJc", type="set", dim=3L,
                   val=v,
                   form="full",
-                  uels=list(i2uels,jUels,cUels),
+                  uels=list('_compressed'=i2uels,'_compressed'=jUels,'_compressed'=cUels),
                   domains=c("_compressed","_compressed","_compressed"),
                   te=te)
   ijc <- rgdx(fnIn,list(name='ijc',form='full',te=TRUE,compress=TRUE))

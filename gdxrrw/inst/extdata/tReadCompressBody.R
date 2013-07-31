@@ -14,9 +14,11 @@ jOnes <- matrix(1, nrow=jCard, ncol=1,dimnames=list(jUels))
 aVals <- matrix(c(1,1, 33.11,
                   2,2, 54.22), nrow=2, ncol=3, byrow=TRUE)
 aUels <- list(c("i3", "i5"), c("j3", "j4"))
+aUelsN <- aUels
+names(aUelsN) <- c('_compressed','_compressed')
 aFull <- matrix(c(33.11, 0,
                       0, 54.22), nrow=2, ncol=2, byrow=TRUE,
-                dimnames=aUels)
+                dimnames=aUelsN)
 bVals <- matrix(nrow=iCard*jCard, ncol=3)
 for (i in 1:iCard) {
   for (j in 1:jCard) {
@@ -27,7 +29,9 @@ for (i in 1:iCard) {
   }
 }
 bUels <- list(iUels,jUels)
-bFull <- matrix(525,nrow=iCard, ncol=jCard, dimnames=bUels)
+bUelsN <- bUels
+names(bUelsN) <- c('_compressed','_compressed')
+bFull <- matrix(525,nrow=iCard, ncol=jCard, dimnames=bUelsN)
 dVals <- matrix(nrow=iCard,ncol=3)
 for (i in 1:iCard) {
   dVals[i,1] <- i
@@ -46,7 +50,9 @@ for (j in 1:jCard) {
   eVals[j,3] <- (30 + j) + (10 + j)/100
 }
 eUels <- list(c('i3'),jUels)
-eFull <- matrix(nrow=1,ncol=jCard,dimnames=eUels)
+eUelsN <- eUels
+names(eUelsN) <- c('_compressed','_compressed')
+eFull <- matrix(nrow=1,ncol=jCard,dimnames=eUelsN)
 for (j in 1:jCard) {
   eFull[1,j] <- (30 + j) + (10 + j)/100
 }
@@ -165,7 +171,7 @@ if (!chk$same) {
 awant <- list(name="A", type="parameter", dim=2L,
               val=aFull,
               form="full",
-              uels=aUels,
+              uels=aUelsN,
               domains=c('_compressed','_compressed'))
 a <- rgdx(fnIn,list(name='a',form='full',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (a, awant, reqIdent=reqIdent)
@@ -176,7 +182,7 @@ if (!chk$same) {
 bwant <- list(name="B", type="parameter", dim=2L,
               val=bFull,
               form="full",
-              uels=bUels,
+              uels=bUelsN,
               domains=c('_compressed','_compressed'))
 b <- rgdx(fnIn,list(name='b',form='full',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (b, bwant, reqIdent=reqIdent)
@@ -199,7 +205,7 @@ if (!chk$same) {
 ewant <- list(name="E", type="parameter", dim=2L,
               val=eFull,
               form="full",
-              uels=eUels,
+              uels=eUelsN,
               domains=c('_compressed','_compressed'))
 e <- rgdx(fnIn,list(name='e',form='full',compress=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (e, ewant, reqIdent=reqIdent)

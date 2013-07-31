@@ -662,7 +662,7 @@ tryCatch({
 
   ### ---------- reading form=full, no filter
   # all
-  t <- array(0,c(nFields),dimnames=list(fields))
+  t <- array(0,c(nFields),dimnames=list('_field'=fields))
   t[['l' ]] <- 0
   t[['m' ]] <- 1
   t[['lo']] <- 0
@@ -670,7 +670,7 @@ tryCatch({
   t[['s' ]] <- 1
   e0wantA <- list(name='e0', type='equation', dim=0L,
                   val=t,
-                  form='full', uels=list(fields), domains=domF,
+                  form='full', uels=list('_field'=fields), domains=domF,
                   field='all',
                   typeCode=GMS_EQUTYPE$E)
   e0 <- rgdx(fnIn,list(name='e0',form='full',field='all'))
@@ -703,7 +703,8 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e1,'all',full,unfiltered,squeeze=F) failed",chk$msg))
   }
-  v <- array(0,c(iCard,jCard,kCard,nFields),dimnames=cartIJKF)
+  v <- array(0,c(iCard,jCard,kCard,nFields),
+             dimnames=list('I'=iUels,'J'=jUels,'K'=kUels,'_field'=fields))
   v[iUels,'j1' ,kUels,'l' ] <- 3
   v[iUels,'j2' ,kUels,'l' ] <- 4
   v[iUels,'j1' ,kUels,'m' ] <- 0
@@ -715,7 +716,8 @@ tryCatch({
   e3wantA <- list(name="e3", type="equation", dim=3L,
                   val=v,
                   form="full",
-                  uels=list(iUels,jUels,kUels,fields), domains=domIJKF,
+                  uels=list('I'=iUels,'J'=jUels,'K'=kUels,'_field'=fields),
+                  domains=domIJKF,
                   field='all',
                   typeCode=GMS_EQUTYPE$L)
   e3 <- rgdx(fnIn,list(name='e3',form='full',field='all'))
@@ -759,12 +761,15 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e1,'L',full,unfiltered,squeeze=F) failed",chk$msg))
   }
-  t3 <- array(0,c(iCard,jCard,kCard),dimnames=cartIJK)
+  t3 <- array(0,c(iCard,jCard,kCard),
+              dimnames=list('I'=iUels,'J'=jUels,'K'=kUels))
   t3['i1','j1','k1'] <- 3
   t3['i1','j2','k1'] <- 4
   e3wantL <- list(name='e3', type='equation', dim=3L,
                   val=t3,
-                  form='full', uels=cartIJK, domains=domIJK,
+                  form='full',
+                  uels=list('I'=iUels,'J'=jUels,'K'=kUels),
+                  domains=domIJK,
                   field='l', typeCode=GMS_EQUTYPE$L)
   e3 <- rgdx(fnIn,list(name='e3',form='full',field='L'))
   chk <- chkRgdxRes (e3, e3wantL, reqIdent=reqIdent)
@@ -811,7 +816,9 @@ tryCatch({
   t3['i1','j2','k1'] <- 0.5
   e3wantM <- list(name='e3', type='equation', dim=3L,
                   val=t3,
-                  form='full', uels=cartIJK, domains=domIJK,
+                  form='full',
+                  uels=list('I'=iUels,'J'=jUels,'K'=kUels),
+                  domains=domIJK,
                   field='m', typeCode=GMS_EQUTYPE$L)
   e3 <- rgdx(fnIn,list(name='e3',form='full',field='M'))
   chk <- chkRgdxRes (e3, e3wantM, reqIdent=reqIdent)
@@ -858,7 +865,9 @@ tryCatch({
   t3['i1','j2','k1'] <- -Inf
   e3wantLo <- list(name='e3', type='equation', dim=3L,
                    val=t3,
-                   form='full', uels=cartIJK, domains=domIJK,
+                   form='full',
+                   uels=list('I'=iUels,'J'=jUels,'K'=kUels),
+                   domains=domIJK,
                    field='lo', typeCode=GMS_EQUTYPE$L)
   e3 <- rgdx(fnIn,list(name='e3',form='full',field='LO'))
   chk <- chkRgdxRes (e3, e3wantLo, reqIdent=reqIdent)
@@ -905,7 +914,9 @@ tryCatch({
   t3['i1','j2','k1'] <- 4
   e3wantUp <- list(name='e3', type='equation', dim=3L,
                    val=t3,
-                   form='full', uels=cartIJK, domains=domIJK,
+                   form='full',
+                   uels=list('I'=iUels,'J'=jUels,'K'=kUels),
+                   domains=domIJK,
                    field='up', typeCode=GMS_EQUTYPE$L)
   e3 <- rgdx(fnIn,list(name='e3',form='full',field='UP'))
   chk <- chkRgdxRes (e3, e3wantUp, reqIdent=reqIdent)
@@ -947,7 +958,9 @@ tryCatch({
   t3['i1','j2','k1'] <- 1
   e3wantS <- list(name='e3', type='equation', dim=3L,
                   val=t3,
-                  form='full', uels=cartIJK, domains=domIJK,
+                  form='full',
+                  uels=list('I'=iUels,'J'=jUels,'K'=kUels),
+                  domains=domIJK,
                   field='s', typeCode=GMS_EQUTYPE$L)
   e3 <- rgdx(fnIn,list(name='e3',form='full',field='S'))
   chk <- chkRgdxRes (e3, e3wantS, reqIdent=reqIdent)
@@ -967,12 +980,12 @@ tryCatch({
   f3 <- list(iUels,c('j1'),kUels)
   filtercartIJKF <- list(iUels,c('j1'),kUels,fields)
   # all
-  t <- array(0,c(nFields),dimnames=list(fields))
+  t <- array(0,c(nFields),dimnames=list('_field'=fields))
   t[['m' ]] <- 1
   t[['s' ]] <- 1
   e0wantA <- list(name='e0', type='equation', dim=0L,
                   val=t,
-                  form='full', uels=list(fields), domains=domF,
+                  form='full', uels=list('_field'=fields), domains=domF,
                   field='all',
                   typeCode=GMS_EQUTYPE$E)
   e0 <- rgdx(fnIn,list(name='e0',form='full',field='all'))
@@ -1005,7 +1018,9 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e1,'all',full,filtered,squeeze=F) failed",chk$msg))
   }
-  v <- array(0,c(iCard,1,kCard,nFields),dimnames=list(f3[[1]],f3[[2]],f3[[3]],fields))
+  e3uels <- list('_user'=f3[[1]],'_user'=f3[[2]],'_user'=f3[[3]],'_field'=fields)
+  v <- array(0,c(iCard,1,kCard,nFields),
+             dimnames=e3uels)
   v['i1','j1','k1','l' ] <- 3
   v['i1','j1','k1','m' ] <- 0
   v['i1','j1','k1','lo'] <- -Inf
@@ -1014,7 +1029,8 @@ tryCatch({
   e3wantA <- list(name="e3", type="equation", dim=3L,
                   val=v,
                   form="full",
-                  uels=filtercartIJKF, domains=userDom3f,
+                  uels=e3uels,
+                  domains=userDom3f,
                   field='all',
                   typeCode=GMS_EQUTYPE$L)
   e3 <- rgdx(fnIn,list(name='e3',form='full',field='all',uels=f3))

@@ -23,7 +23,9 @@ domainsf <- c("i","j","k","_field")
 userDomains <- c("_user","_user","_user")
 userDomainsf <- c("_user","_user","_user","_field")
 cart <- list(iUels,jUels,kUels)
+cartN <- list('i'=iUels,'j'=jUels,'k'=kUels)
 cartf <- list(iUels,jUels,kUels,fields)
+cartfN <- list('i'=iUels,'j'=jUels,'k'=kUels,'_field'=fields)
 lev <- 1
 mar <- 2
 low <- 3
@@ -409,7 +411,7 @@ tryCatch({
 
   ### ---------- reading form=full, no filter
   # all
-  v <- array(0,c(iCard,jCard,kCard,nFields),dimnames=cartf)
+  v <- array(0,c(iCard,jCard,kCard,nFields),dimnames=cartfN)
   for (i in 1:iCard) {
     for (j in 1:jCard) {
       for (k in 1:kCard) {
@@ -429,7 +431,8 @@ tryCatch({
   xwantA <- list(name="x", type="variable", dim=3L,
                  val=v,
                  form="full",
-                 uels=list(iUels,jUels,kUels,fields), domains=domainsf,
+                 uels=cartfN,
+                 domains=domainsf,
                  field='all',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',field='all'))
@@ -443,7 +446,7 @@ tryCatch({
     stop (paste("test rgdx(x,'all',full,unfiltered,squeeze=F) failed",chk$msg))
   }
   # level
-  v <- array(0,c(iCard,jCard,kCard),dimnames=cart)
+  v <- array(0,c(iCard,jCard,kCard),dimnames=cartN)
   for (i in 1:iCard) {
     for (j in 1:jCard) {
       for (k in 1:kCard) {
@@ -455,7 +458,8 @@ tryCatch({
   xwantL <- list(name="x", type="variable", dim=3L,
                  val=v,
                  form="full",
-                 uels=list(iUels,jUels,kUels), domains=domains,
+                 uels=cartN,
+                 domains=domains,
                  field='l',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full'))
@@ -469,13 +473,14 @@ tryCatch({
     stop (paste("test rgdx(x,'L',full,unfiltered,squeeze=F) failed",chk$msg))
   }
   # marginal
-  v <- array(0,c(iCard,jCard,kCard),dimnames=cart)
+  v <- array(0,c(iCard,jCard,kCard),dimnames=cartN)
   v['i1','j1',2] <- .25
   v['i1','j2',2] <- .25
   xwantM <- list(name="x", type="variable", dim=3L,
                  val=v,
                  form="full",
-                 uels=list(iUels,jUels,kUels), domains=domains,
+                 uels=cartN,
+                 domains=domains,
                  field='m',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',field='m'))
@@ -489,14 +494,15 @@ tryCatch({
     stop (paste("test rgdx(x,'M',full,unfiltered,squeeze=F) failed",chk$msg))
   }
   # lower
-  v <- array(0,c(iCard,jCard,kCard),dimnames=cart)
+  v <- array(0,c(iCard,jCard,kCard),dimnames=cartN)
   v['i1','j2','k1'] <- -Inf
   v['i1','j2','k2'] <- 100
   v['i2','j2','k2'] <- 6
   xwantLo <- list(name="x", type="variable", dim=3L,
                   val=v,
                   form="full",
-                  uels=list(iUels,jUels,kUels), domains=domains,
+                  uels=cartN,
+                  domains=domains,
                   field='lo',
                   varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',field='lo'))
@@ -510,14 +516,14 @@ tryCatch({
     stop (paste("test rgdx(x,'lo',full,unfiltered,squeeze=F) failed",chk$msg))
   }
   # upper
-  v <- array(+Inf,c(iCard,jCard,kCard),dimnames=cart)
+  v <- array(+Inf,c(iCard,jCard,kCard),dimnames=cartN)
   v['i1','j1','k1'] <- 525
   v['i2','j1','k1'] <- 0
   v['i2','j2','k2'] <- 6
   xwantUp <- list(name="x", type="variable", dim=3L,
                   val=v,
                   form="full",
-                  uels=list(iUels,jUels,kUels), domains=domains,
+                  uels=cartN, domains=domains,
                   field='up',
                   varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',field='up'))
@@ -531,12 +537,13 @@ tryCatch({
     stop (paste("test rgdx(x,'up',full,unfiltered,squeeze=F) failed",chk$msg))
   }
   # scale
-  v <- array(1,c(iCard,jCard,kCard),dimnames=cart)
+  v <- array(1,c(iCard,jCard,kCard),dimnames=cartN)
   v[2,2,1] <- 10
   xwantS <- list(name="x", type="variable", dim=3L,
                  val=v,
                  form="full",
-                 uels=cart, domains=domains,
+                 uels=cartN,
+                 domains=domains,
                  field='s',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',field='s'))
@@ -553,7 +560,8 @@ tryCatch({
   ### ---------- reading form=full, filtered
   # all
   f <- list(c('i2'),jUels,kUels)
-  v <- array(0,c(1,jCard,kCard,nFields),dimnames=list(f[[1]],f[[2]],f[[3]],fields))
+  tuels <- list('_user'=f[[1]],'_user'=f[[2]],'_user'=f[[3]],'_field'=fields)
+  v <- array(0,c(1,jCard,kCard,nFields),dimnames=tuels)
   for (j in 1:jCard) {
     for (k in 1:kCard) {
       v['i2',j,k,'l'] <- 100 + 10 * (j-1) + (k-1)
@@ -567,7 +575,8 @@ tryCatch({
   xwantA <- list(name="x", type="variable", dim=3L,
                  val=v,
                  form="full",
-                 uels=list(f[[1]],jUels,kUels,fields), domains=userDomainsf,
+                 uels=tuels,
+                 domains=userDomainsf,
                  field='all',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',field='all',uels=f))

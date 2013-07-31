@@ -594,14 +594,16 @@ tryCatch({
 
   ### ---------- reading form=full, no filter
   # all
-  t <- array(0,c(nFields),dimnames=list(fields))
+  t <- array(0,c(nFields),dimnames=list('_field'=fields))
   t[['l' ]] <- 24
   t[['m' ]] <- -1
   t[['up']] <- 100
   t[['s' ]] <- 10
   xwantA <- list(name='xpos0', type='variable', dim=0L,
                  val=t,
-                 form='full', uels=list(fields), domains=userDomf,
+                 form='full',
+                 uels=list('_field'=fields),
+                 domains=userDomf,
                  field='all',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',field='all'))
@@ -614,7 +616,7 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(xpos0,'all',full,unfiltered,squeeze=F) failed",chk$msg))
   }
-  t <- array(0,c(nFields),dimnames=list(fields))
+  t <- array(0,c(nFields),dimnames=list('_field'=fields))
   t[['l' ]] <- 1
   t[['m' ]] <- 0.5
   t[['lo']] <- 1
@@ -622,7 +624,9 @@ tryCatch({
   t[['s' ]] <- 1
   ywantA <- list(name='y0', type='variable', dim=0L,
                  val=t,
-                 form='full', uels=list(fields), domains=userDomf,
+                 form='full',
+                 uels=list('_field'=fields),
+                 domains=userDomf,
                  field='all',
                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',field='all'))
@@ -635,7 +639,7 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(y0,'all',full,unfiltered,squeeze=F) failed",chk$msg))
   }
-  t <- array(0,c(nFields),dimnames=list(fields))
+  t <- array(0,c(nFields),dimnames=list('_field'=fields))
   t[['l' ]] <- 26
   t[['m' ]] <- 0
   t[['lo']] <- -Inf
@@ -643,7 +647,7 @@ tryCatch({
   t[['s' ]] <- 1
   zwantA <- list(name='z', type='variable', dim=0L,
                  val=t,
-                 form='full', uels=list(fields), domains=userDomf,
+                 form='full', uels=list('_field'=fields), domains=userDomf,
                  field='all',
                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',field='all'))
