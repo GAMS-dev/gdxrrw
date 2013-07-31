@@ -1173,13 +1173,15 @@ SEXP rgdx (SEXP args)
           PROTECT(outTeFull = allocVector(STRSXP, dimVal[0]));
           rgdxAlloc++;
           if (rSpec->withUel) {
-            createElementMatrix (outValSp, outTeSp, outTeFull, rSpec->filterUel, symDim, nnz);
+            createElementMatrix (outValSp, outTeSp, outTeFull, rSpec->filterUel,
+                                 symDim, nnz);
           }
           else {
-            createElementMatrix (outValSp, outTeSp, outTeFull, outUels, symDim, mrows);
+            createElementMatrix (outValSp, outTeSp, outTeFull, outUels,
+                                 symDim, mrows);
           }
           setAttrib(outTeFull, R_DimSymbol, dimVect); /* .te has same dimension as .val */
-          /* dimnamesnames */
+          /* dimnamesnames done */
           setAttrib(outTeFull, R_DimNamesSymbol, dimNames);
         } /* if rSpec->te */
         break;
