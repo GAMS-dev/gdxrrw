@@ -1136,6 +1136,20 @@ SEXP rgdx (SEXP args)
                         typeCode, rSpec->dField, mrows, symDimX);
           setAttrib(outValFull, R_DimSymbol, dimVect);
           SET_VECTOR_ELT(dimNames, 0, VECTOR_ELT(outUels, 0));
+          if (R_NilValue != outDomains) {
+            SEXP dimNamesNames;
+            PROTECT(dimNamesNames = allocVector(STRSXP, 2));
+            if (R_NilValue == VECTOR_ELT(dimNames, 1)) { /* no names for 2nd dimension */
+              SET_STRING_ELT(dimNamesNames, 1, mkChar(""));
+            }
+            else {
+              SET_STRING_ELT(dimNamesNames, 1, mkChar("_field"));
+            }
+            SET_STRING_ELT(dimNamesNames, 0, STRING_ELT(outDomains, 0));
+            setAttrib(dimNames, R_NamesSymbol, dimNamesNames);
+            UNPROTECT(1);
+            setAttrib(outUels, R_NamesSymbol, outDomains);
+          }
           setAttrib(outValFull, R_DimNamesSymbol, dimNames);
         }
 
