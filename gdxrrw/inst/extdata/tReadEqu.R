@@ -381,7 +381,7 @@ tryCatch({
   e0 <- rgdx(fnIn,list(name='e0',form='sparse',uels=f0,field='all'))
   chk <- chkRgdxRes (e0, e0wantA, reqIdent=reqIdent)
   if (!chk$same) {
-    stop (paste("test rgdx(e00,'all',filtered) failed",chk$msg))
+    stop (paste("test rgdx(e0,'all',filtered) failed",chk$msg))
   }
   e0 <- rgdx(fnIn,list(name='e0',form='sparse',uels=f0,field='all'),squeeze=F)
   chk <- chkRgdxRes (e0, e0wantA, reqIdent=reqIdent)
@@ -1000,7 +1000,8 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e0,'all',full,filtered,squeeze=F) failed",chk$msg))
   }
-  t <- array(0,c(kCard,nFields),dimnames=cartKF)
+  dnames <- cartKF ; names(dnames) <- userDom1f
+  t <- array(0,c(kCard,nFields),dimnames=dnames)
   t['k1','l' ] <- -2
   t['k1','m' ] <- -3.5
   t['k1','lo'] <- -2
@@ -1008,7 +1009,7 @@ tryCatch({
   t['k1','s' ] <- 2
   e1wantA <- list(name='e1', type='equation', dim=1L,
                   val=t,
-                  form='full', uels=cartKF, domains=userDom1f,
+                  form='full', uels=dnames, domains=userDom1f,
                   field='all', typeCode=GMS_EQUTYPE$G)
   e1 <- rgdx(fnIn,list(name='e1',form='full',uels=cartK,field='all'))
   chk <- chkRgdxRes (e1, e1wantA, T, reqIdent=reqIdent)
@@ -1060,11 +1061,12 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e0,'L',full,filtered,squeeze=F) failed",chk$msg))
   }
-  t <- array(0,c(kCard,1),dimnames=cartK)
+  dnames <- cartK ; names(dnames) <- userDom1
+  t <- array(0,c(kCard,1),dimnames=dnames)
   t['k1',1] <- -2
   e1wantL <- list(name='e1', type='equation', dim=1L,
                   val=t,
-                  form='full', uels=f1, domains=userDom1,
+                  form='full', uels=dnames, domains=userDom1,
                   field='l', typeCode=GMS_EQUTYPE$G)
   e1 <- rgdx(fnIn,list(name='e1',uels=f1,form='full',field='L'))
   chk <- chkRgdxRes (e1, e1wantL, reqIdent=reqIdent)
@@ -1107,11 +1109,12 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e0,'M',full,filtered,squeeze=F) failed",chk$msg))
   }
-  t <- array(0,c(kCard,1),dimnames=cartK)
+  dnames <- cartK ; names(dnames) <- userDom1
+  t <- array(0,c(kCard,1),dimnames=dnames)
   t['k1',1] <- -3.5
   e1wantM <- list(name='e1', type='equation', dim=1L,
                   val=t,
-                  form='full', uels=f1, domains=userDom1,
+                  form='full', uels=dnames, domains=userDom1,
                   field='m', typeCode=GMS_EQUTYPE$G)
   e1 <- rgdx(fnIn,list(name='e1',uels=f1,form='full',field='M'))
   chk <- chkRgdxRes (e1, e1wantM, reqIdent=reqIdent)
@@ -1154,11 +1157,12 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e0,'lo',full,filtered,squeeze=F) failed",chk$msg))
   }
-  t <- array(0,c(kCard,1),dimnames=cartK)
+  dnames <- cartK ; names(dnames) <- userDom1
+  t <- array(0,c(kCard,1),dimnames=dnames)
   t['k1',1] <- -2
   e1wantLo <- list(name='e1', type='equation', dim=1L,
                    val=t,
-                   form='full', uels=f1, domains=userDom1,
+                   form='full', uels=dnames, domains=userDom1,
                    field='lo', typeCode=GMS_EQUTYPE$G)
   e1 <- rgdx(fnIn,list(name='e1',uels=f1,form='full',field='Lo'))
   chk <- chkRgdxRes (e1, e1wantLo, reqIdent=reqIdent)
@@ -1201,11 +1205,12 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e0,'up',full,filtered,squeeze=F) failed",chk$msg))
   }
-  t <- array(0,c(kCard,1),dimnames=cartK)
+  dnames <- cartK ; names(dnames) <- userDom1
+  t <- array(0,c(kCard,1),dimnames=dnames)
   t['k1',1] <- Inf
   e1wantUp <- list(name='e1', type='equation', dim=1L,
                    val=t,
-                   form='full', uels=f1, domains=userDom1,
+                   form='full', uels=dnames, domains=userDom1,
                    field='up', typeCode=GMS_EQUTYPE$G)
   e1 <- rgdx(fnIn,list(name='e1',uels=f1,form='full',field='Up'))
   chk <- chkRgdxRes (e1, e1wantUp, reqIdent=reqIdent)
@@ -1248,11 +1253,12 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(e0,'s',full,filtered,squeeze=F) failed",chk$msg))
   }
-  t <- array(0,c(kCard,1),dimnames=cartK)
+  dnames <- cartK ; names(dnames) <- userDom1
+  t <- array(0,c(kCard,1),dimnames=dnames)
   t['k1',1] <- 2
   e1wantS <- list(name='e1', type='equation', dim=1L,
                   val=t,
-                  form='full', uels=f1, domains=userDom1,
+                  form='full', uels=dnames, domains=userDom1,
                   field='s', typeCode=GMS_EQUTYPE$G)
   e1 <- rgdx(fnIn,list(name='e1',uels=f1,form='full',field='s'))
   chk <- chkRgdxRes (e1, e1wantS, reqIdent=reqIdent)

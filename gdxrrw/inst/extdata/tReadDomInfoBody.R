@@ -556,26 +556,28 @@ if (!chk$same) {
 
 ## ---------- reading form=full, filtered, no compress
 
-v <- array(1,c(ifCard,1),dimnames=list(ifUels))
-te <- array("",c(ifCard,1),dimnames=list(ifUels))
+dnames <- list(ifUels) ; names(dnames) <- c("_user")
+v <- array(1,c(ifCard,1),dimnames=dnames)
+te <- array("",c(ifCard,1),dimnames=dnames)
 te[(1:ifCard)] <- ifText
 iwant <- list(name="I", type="set", dim=1L,
               val=v,
               form="full",
-              uels=list(ifUels), domains=c("_user"), te=te)
+              uels=dnames, domains=c("_user"), te=te)
 i <- rgdx(fnIn,list(name='i',form='full',uels=list(ifUels),te=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (i, iwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(i,full,filtered,uncompressed) failed",chk$msg))
 }
 
-v <- array(1,c(jfCard,1),dimnames=list(jfUels))
-te <- array("",c(jfCard,1),dimnames=list(jfUels))
+dnames <- list(jUels) ; names(dnames) <- c("_user")
+v <- array(1,c(jfCard,1),dimnames=dnames)
+te <- array("",c(jfCard,1),dimnames=dnames)
 te[(1:jfCard)] <- jfText
 jwant <- list(name="J", type="set", dim=1L,
               val=v,
               form="full",
-              uels=list(jfUels),
+              uels=dnames,
               domains=c("_user"),
               te=te)
 j <- rgdx(fnIn,list(name='j',form='full',te=TRUE,uels=list(jfUels)),useDomInfo=useDomInfo)
@@ -585,14 +587,15 @@ if (!chk$same) {
 }
 
 cblock <- iCard + jCard + (1:cCard)
-v <- array(0,c(uCard,1),dimnames=list(u))
+dnames <- list(u) ; names(dnames) <- c("_user")
+v <- array(0,c(uCard,1),dimnames=dnames)
 v[cblock] <- 1
-te <- array("",c(uCard,1),dimnames=list(u))
+te <- array("",c(uCard,1),dimnames=dnames)
 te[cblock] <- cText
 cwant <- list(name="c", type="set", dim=1L,
               val=v,
               form="full",
-              uels=list(u),
+              uels=dnames,
               domains=c("_user"),
               ts='cities',
               te=te)

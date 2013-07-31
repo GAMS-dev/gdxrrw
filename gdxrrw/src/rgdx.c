@@ -1113,18 +1113,33 @@ SEXP rgdx (SEXP args)
         totalElement = dimVal[1];
 
         if (rSpec->withUel) {
+          SEXP dimNamesNames;
+
           dimVal[0] = length(VECTOR_ELT(rSpec->filterUel, 0));
           totalElement *= dimVal[0];
           PROTECT(outValFull = allocVector(REALSXP, totalElement));
           rgdxAlloc++;
-          if (reuseFilter)
+          PROTECT(dimNamesNames = allocVector(STRSXP, 2));
+          if (R_NilValue == VECTOR_ELT(dimNames, 1)) /* no names for 2nd dimension */
+            SET_STRING_ELT(dimNamesNames, 1, mkChar(""));
+          else
+            SET_STRING_ELT(dimNamesNames, 1, mkChar("_field"));
+          SET_STRING_ELT(dimNamesNames, 0, STRING_ELT(outDomains, 0));
+          setAttrib(dimNames, R_NamesSymbol, dimNamesNames);
+          UNPROTECT(1);
+          if (reuseFilter) {
             sparseToFull (outValSp, outValFull, rSpec->filterUel, symType,
                           typeCode, rSpec->dField, mrows, symDimX);
-          else
+            setAttrib(rSpec->filterUel, R_NamesSymbol, outDomains);
+          }
+          else {
             sparseToFull (outValSp, outValFull, outUels, symType,
                           typeCode, rSpec->dField, mrows, symDimX);
+            setAttrib(outUels, R_NamesSymbol, outDomains);
+          }
           setAttrib(outValFull, R_DimSymbol, dimVect);
           SET_VECTOR_ELT(dimNames, 0, VECTOR_ELT(rSpec->filterUel, 0));
+          /* dimnamesnames done */
           setAttrib(outValFull, R_DimNamesSymbol, dimNames);
         }
         else {
@@ -1150,6 +1165,7 @@ SEXP rgdx (SEXP args)
             UNPROTECT(1);
             setAttrib(outUels, R_NamesSymbol, outDomains);
           }
+          /* dimnamesnames done */
           setAttrib(outValFull, R_DimNamesSymbol, dimNames);
         }
 
@@ -1163,6 +1179,7 @@ SEXP rgdx (SEXP args)
             createElementMatrix (outValSp, outTeSp, outTeFull, outUels, symDim, mrows);
           }
           setAttrib(outTeFull, R_DimSymbol, dimVect); /* .te has same dimension as .val */
+          /* dimnamesnames */
           setAttrib(outTeFull, R_DimNamesSymbol, dimNames);
         } /* if rSpec->te */
         break;
@@ -1182,6 +1199,7 @@ SEXP rgdx (SEXP args)
           sparseToFull (outValSp, outValFull, rSpec->filterUel, symType, typeCode,
                         rSpec->dField, nnz, symDimX);
           setAttrib(outValFull, R_DimSymbol, dimVect);
+          /* dimnamesnames */
           setAttrib(outValFull, R_DimNamesSymbol, rSpec->filterUel);
         }
         else {
@@ -1197,6 +1215,7 @@ SEXP rgdx (SEXP args)
           if (R_NilValue != outDomains) {
             setAttrib(outUels, R_NamesSymbol, outDomains);
           }
+          /* dimnamesnames done */
           setAttrib(outValFull, R_DimNamesSymbol, outUels);
         }
 
@@ -1206,11 +1225,13 @@ SEXP rgdx (SEXP args)
           if (rSpec->withUel) {
             createElementMatrix (outValSp, outTeSp, outTeFull, rSpec->filterUel, symDim, nnz);
             setAttrib(outTeFull, R_DimSymbol, dimVect);
+          /* dimnamesnames */
             setAttrib(outTeFull, R_DimNamesSymbol, rSpec->filterUel);
           }
           else {
             createElementMatrix (outValSp, outTeSp, outTeFull, outUels, symDim, mrows);
             setAttrib(outTeFull, R_DimSymbol, dimVect);
+            /* dimnamesnames done */
             setAttrib(outTeFull, R_DimNamesSymbol, outUels);
           }
         } /* if rSpec->te */

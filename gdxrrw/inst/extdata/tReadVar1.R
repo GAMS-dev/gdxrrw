@@ -660,7 +660,8 @@ tryCatch({
   ### ---------- reading form=full, filtered
   # all
   fc <- c('k1','k3','k4')
-  t <- array(0,c(length(fc),nFields),dimnames=list(fc,fields))
+  dnames <- list(fc,fields) ; names(dnames) <- userDomf
+  t <- array(0,c(length(fc),nFields),dimnames=dnames)
   t[    ,'up'] <- 100
   t[    ,'s' ] <- 1
   t['k1','l' ] <- 5
@@ -669,7 +670,7 @@ tryCatch({
   t['k3','up'] <- 15
   uwantA <- list(name='u', type='variable', dim=1L,
                  val=t,
-                 form='full', uels=list(fc,fields), domains=userDomf,
+                 form='full', uels=dnames, domains=userDomf,
                  field='all', varTypeText="integer", typeCode=GMS_VARTYPE$INTEGER)
   u <- rgdx(fnIn,list(name='u',form='full',uels=list(fc),field='all'))
   chk <- chkRgdxRes (u, uwantA, T, reqIdent=reqIdent)
@@ -681,8 +682,10 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(u,'all',full,filtered,squeeze=F) failed",chk$msg))
   }
+
   fc <- c('k1','k2','k3','k4')
-  t <- array(0,c(length(fc),nFields),dimnames=list(fc,fields))
+  dnames <- list(fc,fields) ; names(dnames) <- userDomf
+  t <- array(0,c(length(fc),nFields),dimnames=dnames)
   t[    ,'lo'] <- -Inf
   t[    ,'s' ] <- 1
   t['k1','up'] <- Inf
@@ -692,7 +695,7 @@ tryCatch({
   t['k2','up'] <- -2
   vwantA <- list(name='v', type='variable', dim=1L,
                  val=t,
-                 form='full', uels=list(fc,fields), domains=userDomf,
+                 form='full', uels=dnames, domains=userDomf,
                  field='all', varTypeText="negative", typeCode=GMS_VARTYPE$NEGATIVE)
   v <- rgdx(fnIn,list(name='v',form='full',uels=list(fc),field='all'))
   chk <- chkRgdxRes (v, vwantA, T, reqIdent=reqIdent)
@@ -706,11 +709,12 @@ tryCatch({
   }
   # level
   f <- list(c('k1','k3','k4'))
-  t <- array(0,c(3,1),dimnames=f)
+  dnames <- f ; names(dnames) <- userDom
+  t <- array(0,c(3,1),dimnames=dnames)
   t['k1',1] <- 5
   uwantL <- list(name='u', type='variable', dim=1L,
                  val=t,
-                 form='full', uels=f, domains=userDom,
+                 form='full', uels=dnames, domains=userDom,
                  field='l', varTypeText="integer", typeCode=GMS_VARTYPE$INTEGER)
   u <- rgdx(fnIn,list(name='u',form='full',uels=f))
   chk <- chkRgdxRes (u, uwantL, T, reqIdent=reqIdent)
@@ -723,11 +727,12 @@ tryCatch({
     stop (paste("test rgdx(u,'L',full,filtered,squeeze=F) failed",chk$msg))
   }
   f <- list(c('k1','k2','k3','k4'))
-  t <- array(0,c(4,1),dimnames=f)
+  dnames <- f ; names(dnames) <- userDom
+  t <- array(0,c(4,1),dimnames=dnames)
   t['k2',1] <- -2
   vwantL <- list(name='v', type='variable', dim=1L,
                  val=t,
-                 form='full', uels=f, domains=userDom,
+                 form='full', uels=dnames, domains=userDom,
                  field='l', varTypeText="negative", typeCode=GMS_VARTYPE$NEGATIVE)
   v <- rgdx(fnIn,list(name='v',form='full',uels=f))
   chk <- chkRgdxRes (v, vwantL, T, reqIdent=reqIdent)
@@ -741,10 +746,11 @@ tryCatch({
   }
   # marginal
   f <- list(c('k1','k3','k4'))
-  t <- array(0,c(3,1),dimnames=f)
+  dnames <- f ; names(dnames) <- userDom
+  t <- array(0,c(3,1),dimnames=dnames)
   uwantM <- list(name='u', type='variable', dim=1L,
                  val=t,
-                 form='full', uels=f, domains=userDom,
+                 form='full', uels=dnames, domains=userDom,
                  field='m', varTypeText="integer", typeCode=GMS_VARTYPE$INTEGER)
   u <- rgdx(fnIn,list(name='u',form='full',uels=f,field='M'))
   chk <- chkRgdxRes (u, uwantM, T, reqIdent=reqIdent)
@@ -757,11 +763,12 @@ tryCatch({
     stop (paste("test rgdx(u,'M',full,filtered,squeeze=F) failed",chk$msg))
   }
   f <- list(c('k1','k2','k3','k4'))
-  t <- array(0,c(4,1),dimnames=f)
+  dnames <- f ; names(dnames) <- userDom
+  t <- array(0,c(4,1),dimnames=dnames)
   t['k2',1] <- -20
   vwantM <- list(name='v', type='variable', dim=1L,
                  val=t,
-                 form='full', uels=f, domains=userDom,
+                 form='full', uels=dnames, domains=userDom,
                  field='m', varTypeText="negative", typeCode=GMS_VARTYPE$NEGATIVE)
   v <- rgdx(fnIn,list(name='v',form='full',uels=f,field='m'))
   chk <- chkRgdxRes (v, vwantM, T, reqIdent=reqIdent)
@@ -775,11 +782,12 @@ tryCatch({
   }
   # lower
   f <- list(c('k1','k3','k4'))
-  t <- array(0,c(3,1),dimnames=f)
+  dnames <- f ; names(dnames) <- userDom
+  t <- array(0,c(3,1),dimnames=dnames)
   t['k1',1] <- 5
   uwantLo <- list(name='u', type='variable', dim=1L,
                   val=t,
-                  form='full', uels=f, domains=userDom,
+                  form='full', uels=dnames, domains=userDom,
                   field='lo', varTypeText="integer", typeCode=GMS_VARTYPE$INTEGER)
   u <- rgdx(fnIn,list(name='u',form='full',uels=f,field='LO'))
   chk <- chkRgdxRes (u, uwantLo, T, reqIdent=reqIdent)
@@ -792,12 +800,13 @@ tryCatch({
     stop (paste("test rgdx(u,'lo',full,filtered,squeeze=F) failed",chk$msg))
   }
   f <- list(c('k1','k2','k3','k4'))
-  t <- array(-Inf,c(4,1),dimnames=f)
+  dnames <- f ; names(dnames) <- userDom
+  t <- array(-Inf,c(4,1),dimnames=dnames)
   t['k1',1] <- -Inf
   t['k2',1] <- -2
   vwantLo <- list(name='v', type='variable', dim=1L,
                   val=t,
-                  form='full', uels=f, domains=userDom,
+                  form='full', uels=dnames, domains=userDom,
                   field='lo', varTypeText="negative", typeCode=GMS_VARTYPE$NEGATIVE)
   v <- rgdx(fnIn,list(name='v',form='full',uels=f,field='lo'))
   chk <- chkRgdxRes (v, vwantLo, T, reqIdent=reqIdent)
@@ -811,12 +820,13 @@ tryCatch({
   }
   # upper
   f <- list(c('k1','k3','k4'))
-  t <- array(100,c(3,1),dimnames=f)
+  dnames <- f ; names(dnames) <- userDom
+  t <- array(100,c(3,1),dimnames=dnames)
   t['k1',1] <-  5
   t['k3',1] <- 15
   uwantUp <- list(name='u', type='variable', dim=1L,
                   val=t,
-                  form='full', uels=f, domains=userDom,
+                  form='full', uels=dnames, domains=userDom,
                   field='up', varTypeText="integer", typeCode=GMS_VARTYPE$INTEGER)
   u <- rgdx(fnIn,list(name='u',form='full',uels=f,field='UP'))
   chk <- chkRgdxRes (u, uwantUp, T, reqIdent=reqIdent)
@@ -829,12 +839,13 @@ tryCatch({
     stop (paste("test rgdx(u,'up',full,filtered,squeeze=F) failed",chk$msg))
   }
   f <- list(c('k1','k2','k3','k4'))
-  t <- array(0,c(4,1),dimnames=f)
+  dnames <- f ; names(dnames) <- userDom
+  t <- array(0,c(4,1),dimnames=dnames)
   t['k1',1] <- Inf
   t['k2',1] <- -2
   vwantUp <- list(name='v', type='variable', dim=1L,
                   val=t,
-                  form='full', uels=f, domains=userDom,
+                  form='full', uels=dnames, domains=userDom,
                   field='up', varTypeText="negative", typeCode=GMS_VARTYPE$NEGATIVE)
   v <- rgdx(fnIn,list(name='v',form='full',uels=f,field='up'))
   chk <- chkRgdxRes (v, vwantUp, T, reqIdent=reqIdent)
@@ -848,10 +859,11 @@ tryCatch({
   }
   # scale
   f <- list(c('k1','k3','k4'))
-  t <- array(1,c(3,1),dimnames=f)
+  dnames <- f ; names(dnames) <- userDom
+  t <- array(1,c(3,1),dimnames=dnames)
   uwantS <- list(name='u', type='variable', dim=1L,
                  val=t,
-                 form='full', uels=f, domains=userDom,
+                 form='full', uels=dnames, domains=userDom,
                  field='s', varTypeText="integer", typeCode=GMS_VARTYPE$INTEGER)
   u <- rgdx(fnIn,list(name='u',form='full',uels=f,field='S'))
   chk <- chkRgdxRes (u, uwantS, T, reqIdent=reqIdent)
@@ -864,10 +876,11 @@ tryCatch({
     stop (paste("test rgdx(u,'S',full,filtered,squeeze=F) failed",chk$msg))
   }
   f <- list(c('k1','k2','k3','k4'))
-  t <- array(1,c(4,1),dimnames=f)
+  dnames <- f ; names(dnames) <- userDom
+  t <- array(1,c(4,1),dimnames=dnames)
   vwantS <- list(name='v', type='variable', dim=1L,
                  val=t,
-                 form='full', uels=f, domains=userDom,
+                 form='full', uels=dnames, domains=userDom,
                  field='s', varTypeText="negative", typeCode=GMS_VARTYPE$NEGATIVE)
   v <- rgdx(fnIn,list(name='v',form='full',uels=f,field='s'))
   chk <- chkRgdxRes (v, vwantS, T, reqIdent=reqIdent)
