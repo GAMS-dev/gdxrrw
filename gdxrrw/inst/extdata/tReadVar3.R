@@ -560,8 +560,8 @@ tryCatch({
   ### ---------- reading form=full, filtered
   # all
   f <- list(c('i2'),jUels,kUels)
-  tuels <- list('_user'=f[[1]],'_user'=f[[2]],'_user'=f[[3]],'_field'=fields)
-  v <- array(0,c(1,jCard,kCard,nFields),dimnames=tuels)
+  dnames <- f ; dnames[[4]] <- fields ; names(dnames) <- userDomainsf
+  v <- array(0,c(1,jCard,kCard,nFields),dimnames=dnames)
   for (j in 1:jCard) {
     for (k in 1:kCard) {
       v['i2',j,k,'l'] <- 100 + 10 * (j-1) + (k-1)
@@ -575,7 +575,7 @@ tryCatch({
   xwantA <- list(name="x", type="variable", dim=3L,
                  val=v,
                  form="full",
-                 uels=tuels,
+                 uels=dnames,
                  domains=userDomainsf,
                  field='all',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
@@ -591,7 +591,8 @@ tryCatch({
   }
   # level
   f <- list(c('i2'),jUels,kUels)
-  v <- array(0,c(1,jCard,kCard),dimnames=f)
+  dnames <- f ; names(dnames) <- userDomains
+  v <- array(0,c(1,jCard,kCard),dimnames=dnames)
   for (j in 1:jCard) {
     for (k in 1:kCard) {
       v[1,j,k] <- 100 + 10 * (j-1) + (k-1)
@@ -601,7 +602,7 @@ tryCatch({
   xwantL <- list(name="x", type="variable", dim=3L,
                  val=v,
                  form="full",
-                 uels=f, domains=userDomains,
+                 uels=dnames, domains=userDomains,
                  field='l',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',uels=f))
@@ -616,12 +617,13 @@ tryCatch({
   }
   # marginal
   f <- cart
-  v <- array(0,c(iCard,jCard,kCard),f)
+  dnames <- f ; names(dnames) <- userDomains
+  v <- array(0,c(iCard,jCard,kCard),dnames)
   v['i1',jUels,'k2'] <- 0.25
   xwantM <- list(name="x", type="variable", dim=3L,
                  val=v,
                  form="full",
-                 uels=f, domains=userDomains,
+                 uels=dnames, domains=userDomains,
                  field='m',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',uels=f,field='M'))
@@ -636,14 +638,15 @@ tryCatch({
   }
   # lower
   f <- list(iUels,c('j2'),kUels)
-  v <- array(0,c(iCard,1,kCard),dimnames=f)
+  dnames <- f ; names(dnames) <- userDomains
+  v <- array(0,c(iCard,1,kCard),dimnames=dnames)
   v['i1','j2','k1'] <- -Inf
   v['i1','j2','k2'] <- 100
   v['i2','j2','k2'] <- 6
   xwantLo <- list(name="x", type="variable", dim=3L,
                   val=v,
                   form="full",
-                  uels=f, domains=userDomains,
+                  uels=dnames, domains=userDomains,
                   field='lo',
                   varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',uels=f,field='lo'))
@@ -658,14 +661,15 @@ tryCatch({
   }
   # upper
   f <- cart
-  v <- array(Inf,c(iCard,jCard,kCard),dimnames=f)
+  dnames <- f ; names(dnames) <- userDomains
+  v <- array(Inf,c(iCard,jCard,kCard),dimnames=dnames)
   v['i1','j1','k1'] <- 525
   v['i2','j1','k1'] <- 0
   v['i2','j2','k2'] <- 6
   xwantUp <- list(name="x", type="variable", dim=3L,
                   val=v,
                   form="full",
-                  uels=f, domains=userDomains,
+                  uels=dnames, domains=userDomains,
                   field='up',
                   varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',uels=f,field='up'))
@@ -680,12 +684,13 @@ tryCatch({
   }
   # scale
   f <- cart
-  v <- array(1,c(iCard,jCard,kCard),dimnames=f)
+  dnames <- f ; names(dnames) <- userDomains
+  v <- array(1,c(iCard,jCard,kCard),dimnames=dnames)
   v['i2','j2','k1'] <- 10
   xwantS <- list(name="x", type="variable", dim=3L,
                  val=v,
                  form="full",
-                 uels=f, domains=userDomains,
+                 uels=dnames, domains=userDomains,
                  field='s',
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',uels=f,field='s'))

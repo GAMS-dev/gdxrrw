@@ -1201,7 +1201,8 @@ SEXP rgdx (SEXP args)
           sparseToFull (outValSp, outValFull, rSpec->filterUel, symType, typeCode,
                         rSpec->dField, nnz, symDimX);
           setAttrib(outValFull, R_DimSymbol, dimVect);
-          /* dimnamesnames */
+          /* dimnamesnames done */
+          setAttrib(rSpec->filterUel, R_NamesSymbol, outDomains);
           setAttrib(outValFull, R_DimNamesSymbol, rSpec->filterUel);
         }
         else {
@@ -1227,7 +1228,7 @@ SEXP rgdx (SEXP args)
           if (rSpec->withUel) {
             createElementMatrix (outValSp, outTeSp, outTeFull, rSpec->filterUel, symDim, nnz);
             setAttrib(outTeFull, R_DimSymbol, dimVect);
-          /* dimnamesnames */
+            /* dimnamesnames done */
             setAttrib(outTeFull, R_DimNamesSymbol, rSpec->filterUel);
           }
           else {

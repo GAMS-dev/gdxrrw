@@ -26,6 +26,9 @@ cVals <- matrix(as.double(8:10), nrow=3, ncol=1)
 u <- c(iUels, jUels, cUels)
 un <- list(u) ; names(un) <- c("*")
 uCard <- length(u)
+udom1 <- c("_user")
+udom2 <- c("_user","_user")
+udom3 <- c("_user","_user","_user")
 
 ## ---------- reading form=sparse, no filter, no compress
 
@@ -202,7 +205,7 @@ if (!chk$same) {
 iwant <- list(name="I", type="set", dim=1L,
               val=matrix(c(1:3), nrow=3, ncol=1),
               form="sparse",
-              uels=list(ifUels), domains=c("_user"), te=ifText)
+              uels=list(ifUels), domains=udom1, te=ifText)
 i <- rgdx(fnIn,list(name='i',form='sparse',uels=list(ifUels),te=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (i, iwant)
 if (!chk$same) {
@@ -213,7 +216,7 @@ jwant <- list(name="J", type="set", dim=1L,
               val=jVals-iCard,
               form="sparse",
               uels=list(jfUels),
-              domains=c("_user"),
+              domains=udom1,
               te=jfText)
 j <- rgdx(fnIn,list(name='j',form='sparse',uels=list(jfUels),te=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (j, jwant, reqIdent=reqIdent)
@@ -225,7 +228,7 @@ cwant <- list(name="c", type="set", dim=1L,
               val=cVals,
               form="sparse",
               uels=list(u),
-              domains=c("_user"),
+              domains=udom1,
               ts='cities',
               te=cText)
 c <- rgdx(fnIn,list(name='c',form='sparse',uels=list(u),te=TRUE,ts=TRUE),useDomInfo=useDomInfo)
@@ -238,7 +241,7 @@ ijwant <- list(name="IJ", type="set", dim=2L,
                val=matrix(c(1,2, 1,3, 2,3), nrow=3, ncol=2, byrow=TRUE),
                form="sparse",
                uels=list(ifUels,jfUels),
-               domains=c("_user","_user"),
+               domains=udom2,
                ts='',
                te=c("two.two", "two.three", "three.three"))
 ij <- rgdx(fnIn,list(name='ij',form='sparse',uels=list(ifUels,jfUels),te=TRUE,ts=TRUE),useDomInfo=useDomInfo)
@@ -252,7 +255,7 @@ ijcwant <- list(name="IJc", type="set", dim=3L,
                            nrow=3, ncol=3, byrow=TRUE),
                 form="sparse",
                 uels=list(ifUels,jfUels,u),
-                domains=c("_user","_user","_user"),
+                domains=udom3,
                 te=c("deux deux orly", "deux trois orly", "drei drei schwechat"))
 ijc <- rgdx(fnIn,list(name='ijc',form='sparse',uels=list(ifUels,jfUels,u),te=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (ijc, ijcwant, reqIdent=reqIdent)
@@ -267,7 +270,7 @@ aicwant <- list(name="AIc", type="parameter", dim=2L,
                            nrow=3, ncol=3, byrow=TRUE),
                 form="sparse",
                 uels=list(ifUels,u),
-                domains=c("_user","_user") )
+                domains=udom2 )
 aic <- rgdx(fnIn,list(name='aic',form='sparse',uels=list(ifUels,u)),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (aic, aicwant, reqIdent=reqIdent)
 if (!chk$same) {
@@ -281,7 +284,7 @@ aijcwant <- list(name="AIJc", type="parameter", dim=3L,
                            nrow=3, ncol=4, byrow=TRUE),
                 form="sparse",
                 uels=list(ifUels,jfUels,u),
-                domains=c("_user","_user","_user") )
+                domains=udom3 )
 aijc <- rgdx(fnIn,list(name='aijc',form='sparse',uels=list(ifUels,jfUels,u)),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (aijc, aijcwant, reqIdent=reqIdent)
 if (!chk$same) {
@@ -556,21 +559,21 @@ if (!chk$same) {
 
 ## ---------- reading form=full, filtered, no compress
 
-dnames <- list(ifUels) ; names(dnames) <- c("_user")
+dnames <- list(ifUels) ; names(dnames) <- udom1
 v <- array(1,c(ifCard,1),dimnames=dnames)
 te <- array("",c(ifCard,1),dimnames=dnames)
 te[(1:ifCard)] <- ifText
 iwant <- list(name="I", type="set", dim=1L,
               val=v,
               form="full",
-              uels=dnames, domains=c("_user"), te=te)
+              uels=dnames, domains=udom1, te=te)
 i <- rgdx(fnIn,list(name='i',form='full',uels=list(ifUels),te=TRUE),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (i, iwant, reqIdent=reqIdent)
 if (!chk$same) {
   stop (paste("test rgdx(i,full,filtered,uncompressed) failed",chk$msg))
 }
 
-dnames <- list(jUels) ; names(dnames) <- c("_user")
+dnames <- list(jUels) ; names(dnames) <- udom1
 v <- array(1,c(jfCard,1),dimnames=dnames)
 te <- array("",c(jfCard,1),dimnames=dnames)
 te[(1:jfCard)] <- jfText
@@ -578,7 +581,7 @@ jwant <- list(name="J", type="set", dim=1L,
               val=v,
               form="full",
               uels=dnames,
-              domains=c("_user"),
+              domains=udom1,
               te=te)
 j <- rgdx(fnIn,list(name='j',form='full',te=TRUE,uels=list(jfUels)),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (j, jwant, reqIdent=reqIdent)
@@ -587,7 +590,7 @@ if (!chk$same) {
 }
 
 cblock <- iCard + jCard + (1:cCard)
-dnames <- list(u) ; names(dnames) <- c("_user")
+dnames <- list(u) ; names(dnames) <- udom1
 v <- array(0,c(uCard,1),dimnames=dnames)
 v[cblock] <- 1
 te <- array("",c(uCard,1),dimnames=dnames)
@@ -596,7 +599,7 @@ cwant <- list(name="c", type="set", dim=1L,
               val=v,
               form="full",
               uels=dnames,
-              domains=c("_user"),
+              domains=udom1,
               ts='cities',
               te=te)
 c <- rgdx(fnIn,list(name='c',form='full',uels=list(u),te=TRUE,ts=TRUE),useDomInfo=useDomInfo)
@@ -605,19 +608,20 @@ if (!chk$same) {
   stop (paste("test rgdx(c,full,filtered,uncompressed) failed",chk$msg))
 }
 
-v <- array(0,c(ifCard,jfCard),dimnames=list(ifUels,jfUels))
+dnames <- list(ifUels,jfUels) ; names(dnames) <- udom2
+v <- array(0,c(ifCard,jfCard),dimnames=dnames)
 v['i2','j2'] <- 1;
 v['i2','j3'] <- 1;
 v['i3','j3'] <- 1;
-te <- array("",c(ifCard,jfCard),dimnames=list(ifUels,jfUels))
+te <- array("",c(ifCard,jfCard),dimnames=dnames)
 te['i2','j2'] <- "two.two";
 te['i2','j3'] <- "two.three";
 te['i3','j3'] <- "three.three";
 ijwant <- list(name="IJ", type="set", dim=2L,
                val=v,
                form="full",
-               uels=list(ifUels,jfUels),
-               domains=c("_user","_user"),
+               uels=dnames,
+               domains=udom2,
                ts='',
                te=te)
 ij <- rgdx(fnIn,list(name='ij',form='full',te=TRUE,ts=TRUE,uels=list(ifUels,jfUels)),useDomInfo=useDomInfo)
@@ -626,19 +630,20 @@ if (!chk$same) {
   stop (paste("test rgdx(ij,full,filtered,uncompressed) failed",chk$msg))
 }
 
-v <- array(0,c(ifCard,jfCard,uCard),dimnames=list(ifUels,jfUels,u))
+dnames <- list(ifUels,jfUels,u) ; names(dnames) <- udom3
+v <- array(0,c(ifCard,jfCard,uCard),dimnames=dnames)
 v['i2','j2','paris' ] <- 1;
 v['i2','j3','paris' ] <- 1;
 v['i3','j3','vienna'] <- 1;
-te <- array("",c(ifCard,jfCard,uCard),dimnames=list(ifUels,jfUels,u))
+te <- array("",c(ifCard,jfCard,uCard),dimnames=dnames)
 te['i2','j2','paris' ] <- "deux deux orly";
 te['i2','j3','paris' ] <- "deux trois orly";
 te['i3','j3','vienna'] <- "drei drei schwechat";
 ijcwant <- list(name="IJc", type="set", dim=3L,
                 val=v,
                 form="full",
-                uels=list(ifUels,jfUels,u),
-                domains=c("_user","_user","_user"),
+                uels=dnames,
+                domains=udom3,
                 te=te)
 ijc <- rgdx(fnIn,list(name='ijc',form='full',te=TRUE,uels=list(ifUels,jfUels,u)),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (ijc, ijcwant, reqIdent=reqIdent)
@@ -646,15 +651,16 @@ if (!chk$same) {
   stop (paste("test rgdx(ijc,full,filtered,uncompressed) failed",chk$msg))
 }
 
-v <- array(0,c(ifCard,uCard),dimnames=list(ifUels,u))
+dnames <- list(ifUels,u) ; names(dnames) <- udom2
+v <- array(0,c(ifCard,uCard),dimnames=dnames)
 v['i2','paris' ] <- 22;
 v['i2','vienna'] <- 23;
 v['i3','vienna'] <- 33;
 aicwant <- list(name="AIc", type="parameter", dim=2L,
                 val=v,
                 form="full",
-                uels=list(ifUels,u),
-                domains=c("_user","_user"),
+                uels=dnames,
+                domains=udom2,
                 ts='')
 aic <- rgdx(fnIn,list(name='aic',form='full',ts=TRUE,uels=list(ifUels,u)),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (aic, aicwant, reqIdent=reqIdent)
@@ -662,15 +668,16 @@ if (!chk$same) {
   stop (paste("test rgdx(aic,full,filtered,uncompressed) failed",chk$msg))
 }
 
-v <- array(0,c(ifCard,jfCard,cCard),dimnames=list(ifUels,jfUels,cUels))
+dnames <- list(ifUels,jfUels,cUels) ; names(dnames) <- udom3
+v <- array(0,c(ifCard,jfCard,cCard),dimnames=dnames)
 v['i2','j2','paris' ] <- 222;
 v['i2','j3','paris' ] <- 232;
 v['i3','j3','vienna'] <- 333;
 aijcwant <- list(name="AIJc", type="parameter", dim=3L,
                 val=v,
                 form="full",
-                uels=list(ifUels,jfUels,cUels),
-                domains=c("_user","_user","_user"),
+                uels=dnames,
+                domains=udom3,
                 ts='')
 aijc <- rgdx(fnIn,list(name='aijc',form='full',ts=TRUE,uels=list(ifUels,jfUels,cUels)),useDomInfo=useDomInfo)
 chk <- chkRgdxRes (aijc, aijcwant, reqIdent=reqIdent)
