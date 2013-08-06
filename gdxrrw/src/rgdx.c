@@ -15,7 +15,7 @@
 #include "gclgms.h"
 #include "globals.h"
 
-
+static int followAlias = 1;     /* 1 is older default */
 
 /* checkRgdxList: checks the input request list for valid data
  * and updates the read specifier
@@ -293,6 +293,38 @@ checkRgdxList (const SEXP lst, rSpec_t *rSpec, int *protectCnt)
 } /* checkRgdxList */
 
 
+/* aliasReturn: construct and return an expression representing an alias
+ * You should do UNPROTECT(1) after calling this and immediately before return
+ */
+SEXP aliasReturn (const char *symName, const char *aliasFor)
+{
+  SEXP outListNames, outList, outName, outType, outFor;
+
+  PROTECT(outList = allocVector(VECSXP, 3));
+  PROTECT(outListNames = allocVector(STRSXP, 3));
+
+  SET_STRING_ELT(outListNames, 0, mkChar("name"));
+  PROTECT(outName = allocVector(STRSXP, 1));
+  SET_STRING_ELT(outName, 0, mkChar(symName));
+  SET_VECTOR_ELT(outList     , 0, outName);
+  UNPROTECT(1);
+
+  SET_STRING_ELT(outListNames, 1, mkChar("type"));
+  PROTECT(outType = allocVector(STRSXP, 1));
+  SET_STRING_ELT(outType, 0, mkChar("alias"));
+  SET_VECTOR_ELT(outList     , 1, outType);
+  UNPROTECT(1);
+
+  SET_STRING_ELT(outListNames, 2, mkChar("aliasFor"));
+  PROTECT(outFor = allocVector(STRSXP, 1));
+  SET_STRING_ELT(outFor, 0, mkChar(aliasFor));
+  SET_VECTOR_ELT(outList     , 2, outFor);
+  UNPROTECT(1);
+
+  setAttrib(outList, R_NamesSymbol, outListNames);
+  UNPROTECT(1);                 /* outListNames */
+  return outList;
+} /* aliasReturn */
 
 /* rgdx: gateway function for reading gdx, called from R via .External
  * first argument <- gdx file name
@@ -505,9 +537,25 @@ SEXP rgdx (SEXP args)
       }
       break;
     case GMS_DT_ALIAS:          /* follow link to actual set */
-      symIdx = symUser;
-      gdxSymbolInfo (gdxHandle, symIdx, symName, &symDim, &symType);
-      gdxSymbolInfoX (gdxHandle, symIdx, &symNNZ, &symUser, symText);
+      if (followAlias) {
+        symIdx = symUser;
+        gdxSymbolInfo (gdxHandle, symIdx, symName, &symDim, &symType);
+        gdxSymbolInfoX (gdxHandle, symIdx, &symNNZ, &symUser, symText);
+      }
+      else {
+        char aliasFor[GMS_SSSIZE];
+
+        gdxSymbolInfo (gdxHandle, symUser, aliasFor, &symDim, &symType);
+        outList = aliasReturn (symName, aliasFor);
+        free(rSpec);
+        errNum = gdxClose (gdxHandle);
+        if (errNum != 0) {
+          error("Errors detected when closing gdx file");
+        }
+        (void) gdxFree (&gdxHandle);
+        UNPROTECT(rgdxAlloc+1); /* 1 from aliasReturn call */
+        return outList;
+      }
       break;
     default:
       sprintf(buf, "GDX symbol %s (index=%d, symDim=%d, symType=%d)"
