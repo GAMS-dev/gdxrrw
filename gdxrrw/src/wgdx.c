@@ -26,6 +26,7 @@ static const char *validSymListNames[] = {
   ,"val"
   ,"uels"
   ,"form"
+  ,"aliasFor"
   ,"dim"
   ,"ts"
   ,"domains"
@@ -112,6 +113,9 @@ checkSymType2 (dType_t dType, int lineNum)
   case equation:
     error ("wgdx checkSymType2 line %d: not yet implemented for symbol type 'equation'", lineNum);
     break;
+  case alias:
+    error ("wgdx checkSymType2 line %d: not yet implemented for symbol type 'alias'", lineNum);
+    break;
   default:
     error ("wgdx checkSymType2 line %d: not yet implemented for symbol type <unknown>", lineNum);
   } /* end switch */
@@ -130,6 +134,9 @@ checkSymType3 (dType_t dType, int lineNum)
   case equation:
     error ("wgdx checkSymType3 line %d: not yet implemented for symbol type 'equation'", lineNum);
     break;
+  case alias:
+    error ("wgdx checkSymType3 line %d: not yet implemented for symbol type 'alias'", lineNum);
+    break;
   default:
     error ("wgdx checkSymType3 line %d: not yet implemented for symbol type <unknown>", lineNum);
   } /* end switch */
@@ -146,11 +153,32 @@ checkSymType4 (dType_t dType, int lineNum)
   case variable:
   case equation:
     break;
+  case alias:
+    error ("wgdx checkSymType4 line %d: not yet implemented for symbol type 'alias'", lineNum);
+    break;
   default:
     error ("wgdx checkSymType4 line %d: not yet implemented for symbol type <unknown>",
            lineNum);
   } /* end switch */
 } /* checkSymType4 */
+
+/* checkSymType5: make sure dType is one we've implemented
+ * the calling code block for */
+static void
+checkSymType5 (dType_t dType, int lineNum)
+{
+  switch (dType) {
+  case set:
+  case parameter:
+  case variable:
+  case equation:
+  case alias:
+    break;
+  default:
+    error ("wgdx checkSymType5 line %d: not yet implemented for symbol type <unknown>",
+           lineNum);
+  } /* end switch */
+} /* checkSymType5 */
 
 /* idxCmp: compare indices from sparse-form 'val'
  * return:
@@ -921,6 +949,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
   SEXP valExp = NULL;
   SEXP uelsExp = NULL;
   SEXP formExp = NULL;
+  SEXP aliasForExp = NULL;
   SEXP dimExp = NULL;
   SEXP tsExp = NULL;
   SEXP domExp = NULL;
@@ -985,6 +1014,9 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
     }
     else if (0 == strcmp("form", eltName)) {
       formExp = VECTOR_ELT(lst, i);
+    }
+    else if (0 == strcmp("aliasFor", eltName)) {
+      aliasForExp = VECTOR_ELT(lst, i);
     }
     else if (0 == strcmp("dim", eltName)) {
       dimExp = VECTOR_ELT(lst, i);
@@ -1065,11 +1097,26 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
     else if (0 == strcasecmp("equation", tmpName) ) {
       wSpec->dType = equation;
     }
+    else if (0 == strcasecmp("alias", tmpName) ) {
+      wSpec->dType = alias;
+    }
     else {
-      error ("Input list element 'type' must be either 'set', 'parameter', 'variable' or 'equation'.");
+      error ("Input list element 'type' must be either 'set', 'parameter',"
+             " 'variable', 'equation' or 'alias'.");
     }
     strcpy (typeName, tmpName);
   }
+
+  if (aliasForExp) {
+    if (STRSXP != TYPEOF(aliasForExp)) {
+      error ("Input list element 'aliasFor' must be a string - found %s instead.",
+             typeofTxt(aliasForExp, buf));
+    }
+    if (alias != wSpec->dType) {
+      error ("Input list element 'aliasFor' found but symbol type is not 'alias'.");
+    }
+    (void) CHAR2ShortStr (CHAR(STRING_ELT(aliasForExp, 0)), wSpec->aliasFor);
+  } /* aliasForExp */
 
   if (dimExp) {                 /* optional */
     if (INTSXP == TYPEOF(dimExp)) {
@@ -1181,7 +1228,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
         error ("Missing 'val' is a required list element for sets with no UELs.");
       }
     }
-    else {
+    else if (alias != wSpec->dType) {
       error ("Missing 'val' is a required list element for type=%s.", typeName);
     }
   }
@@ -1356,7 +1403,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
   }
 
 
-  checkSymType4 (wSpec->dType, __LINE__);
+  checkSymType5 (wSpec->dType, __LINE__);
   if (variable == wSpec->dType) { /* require a typeCode */
     if (wSpec->typeCode < 0)
       error ("Missing typeCode for variable symbol '%s'", wSpec->name);
@@ -1364,6 +1411,10 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
   if (equation == wSpec->dType) { /* require a typeCode */
     if (wSpec->typeCode < 0)
       error ("Missing typeCode for equation symbol '%s'", wSpec->name);
+  }
+  if (alias == wSpec->dType) {  /* require an aliasFor */
+    if ('\0' == wSpec->aliasFor[0])
+      error ("Missing/empty aliasFor for alias symbol '%s'", wSpec->name);
   }
 
   if (wSpec->withUel == 0 && wSpec->withVal == 1) {
@@ -1643,6 +1694,40 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   for (iSym = 0;  iSym < symListLen;  iSym++) {
     lstNames = getAttrib(symList[iSym], R_NamesSymbol);
     valData = NULL;
+    if (alias == wSpecPtr[iSym]->dType) {
+      int symIdx;
+      const char *from = wSpecPtr[iSym]->name;
+      const char *to = wSpecPtr[iSym]->aliasFor;
+
+#if 0
+      Rprintf ("Do the whole alias thing now?"
+               "  Processing '%s' -> '%s'\n",
+               from, to);
+#endif
+      rc = gdxFindSymbol (gdxHandle, wSpecPtr[iSym]->aliasFor, &symIdx);
+      if (! rc) {
+        error ("Error writing alias '%s'->'%s':"
+               " target set '%s' must be written to GDX before alias",
+               from, to, to);
+      }
+      /* Rprintf ("DEBUG: found set '%s' in GDX: symIdx = %d\n", to, symIdx); */
+      rc = gdxFindSymbol (gdxHandle, from, &symIdx);
+      if (rc) {
+        error ("Error writing alias '%s'->'%s':"
+               " alias symbol '%s' already found in GDX",
+               from, to, from);
+      }
+      rc = gdxAddAlias (gdxHandle, from, to);
+      /* Rprintf ("DEBUG: gdxAddAlias(%s,%s) returned %d\n", from , to, rc); */
+      if (! rc) {
+        error ("Error writing alias '%s'->'%s': %s",
+               from, to, getGDXErrorMsg());
+      }
+      continue;
+    }
+
+    /* the code below assumes the symbol is not an alias */
+    checkSymType4 (wSpecPtr[iSym]->dType, __LINE__);
     for (k = 0;  k < length(symList[iSym]);  k++) {
       if (strcmp("val", CHAR(STRING_ELT(lstNames, k))) == 0) {
         valData = VECTOR_ELT(symList[iSym], k);

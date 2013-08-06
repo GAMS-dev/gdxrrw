@@ -31,7 +31,8 @@ typedef enum dType {
   set = GMS_DT_SET,
   parameter = GMS_DT_PAR,
   variable = GMS_DT_VAR,
-  equation = GMS_DT_EQU
+  equation = GMS_DT_EQU,
+  alias = GMS_DT_ALIAS
 } dType_t;
 typedef enum dForm {
   unKnown=0,
@@ -61,6 +62,7 @@ typedef struct rSpec {          /* rgdx read specifier */
 } rSpec_t;
 typedef struct wSpec {
   char name[1024];
+  shortStringBuf_t aliasFor;
   dForm_t dForm;
   dType_t dType;
   int withDim;                  /* input list had 'dim' element */
