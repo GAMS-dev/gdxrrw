@@ -1443,6 +1443,6 @@ addDomInfo (const char *symName, SEXP domExp)
     // Rprintf ("  %s\n", domName);
     strcpy (domPtrs[k], domName);
   }
-  rc = gdxSymbolSetDomainX (gdxHandle, symIdx, domPtrs);
+  rc = gdxSymbolSetDomainX (gdxHandle, symIdx, (const char **) domPtrs);
   return;
 } /* addDomInfo */
