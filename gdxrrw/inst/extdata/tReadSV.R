@@ -100,8 +100,8 @@ tryCatch({
     stop ("Expected svdf4[17,'value'] to be 0")
 
   print ("all tests for reading special values and zero passed")
-  return (TRUE)
+  TRUE
 }
 
-, error = function(ex) { print(ex) ; return (FALSE) }
+, error = function(ex) { print(ex) ; FALSE }
 )

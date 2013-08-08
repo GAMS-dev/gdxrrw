@@ -58,8 +58,8 @@ tryCatch({
   if (prod(kxfc != kvfc)) stop ("mismatch in set ijk, index K")
 
   print ("All tests for rgdx.set passed")
-  return (TRUE)
+  TRUE
 }
 
-, error = function(ex) { print(ex) ; return (FALSE) }
+, error = function(ex) { print(ex) ; FALSE }
 )

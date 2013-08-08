@@ -31,8 +31,8 @@ tryCatch({
     stop ("gdxInfo: s$aliases for trnsport is bogus")
 
   print ("Successfully completed gdxInfo test 1")
-  return (TRUE)
+  TRUE
 }
 
-, error = function(ex) { print(ex) ; return (FALSE) }
+, error = function(ex) { print(ex) ; FALSE }
 )

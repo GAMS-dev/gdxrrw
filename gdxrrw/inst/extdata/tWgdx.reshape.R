@@ -235,8 +235,8 @@ structure(list(hdrC = structure(c(1L, 2L, 3L, 4L, 5L, 6L, 1L,
 
   ## -----------------------------------------------------------------------------
   print ("all tests for wgdx.reshape passed")
-  return (TRUE)
+  TRUE
 }
 
-, error = function(ex) { print(ex) ; return (FALSE) }
+, error = function(ex) { print(ex) ; FALSE }
 )

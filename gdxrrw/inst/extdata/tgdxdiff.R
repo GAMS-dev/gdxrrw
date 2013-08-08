@@ -16,8 +16,8 @@ tryCatch({
     print ("gdxdiff call succeeded: it must be available and functional")
   }
 
-  return (TRUE)
+  TRUE
 }
 
-, error = function(ex) { print(ex) ; return (FALSE) }
+, error = function(ex) { print(ex) ; FALSE }
 )

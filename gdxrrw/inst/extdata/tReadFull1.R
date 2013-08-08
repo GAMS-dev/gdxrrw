@@ -117,8 +117,8 @@ tryCatch({
 
 
   print ("Successfully completed tests")
-  return (TRUE)
+  TRUE   ## all tests passed: return TRUE
 }
 
-, error = function(ex) { print(ex) ; return (FALSE) }
+, error = function(ex) { print(ex) ; FALSE }
 )

@@ -125,8 +125,9 @@ tryCatch({
   } else {
     print ("loose gdxdiff call succeeded")
   }
-  return (TRUE)
+
+  TRUE
 }
 
-, error = function(ex) { print(ex) ; return (FALSE) }
+, error = function(ex) { print(ex) ; FALSE }
 )

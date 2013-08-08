@@ -49,8 +49,8 @@ tryCatch({
   }
 
   print ("All tests for rgdx.param passed");
-  return (TRUE)
+  TRUE
 }
 
-, error = function(ex) { print(ex) ; return (FALSE) }
+, error = function(ex) { print(ex) ; FALSE }
 )

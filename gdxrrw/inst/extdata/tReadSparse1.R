@@ -231,10 +231,9 @@ tryCatch({
   }
   print ("Done reading variable z")
 
-
-  print ("Successfully completed tests")
-  return (TRUE)
+  print ("tReadSparse1 successfully completed")
+  TRUE
 }
 
-, error = function(ex) { print(ex) ; return (FALSE) }
+, error = function(ex) { print(ex) ; FALSE }
 )

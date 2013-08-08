@@ -58,8 +58,10 @@ tryCatch({
   } else {
     print ("gdxdiff call succeeded")
   }
-  return (TRUE)
+
+  print ("tWriteFull2 successfully completed")
+  TRUE
 }
 
-, error = function(ex) { print(ex) ; return (FALSE) }
+, error = function(ex) { print(ex) ; FALSE }
 )
