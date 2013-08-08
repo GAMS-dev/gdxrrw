@@ -1,13 +1,16 @@
 
-rgdx <- function(gdxName, requestList = NULL, squeeze=TRUE, useDomInfo=TRUE)
+rgdx <- function(gdxName, requestList = NULL, squeeze=TRUE, useDomInfo=TRUE,
+                 followAlias=TRUE)
 {
   if (is.null(requestList) && (gdxName == '?')) {
     invisible(.External(rgdxExt, gdxName=gdxName, requestList=NULL,
-                        squeeze=squeeze, useDomInfo=useDomInfo))
+                        squeeze=squeeze, useDomInfo=useDomInfo,
+                        followAlias=followAlias))
   }
   else {
     .External(rgdxExt, gdxName=gdxName, requestList=requestList,
-              squeeze=squeeze, useDomInfo=useDomInfo)
+              squeeze=squeeze, useDomInfo=useDomInfo,
+              followAlias=followAlias)
   }
 }
 

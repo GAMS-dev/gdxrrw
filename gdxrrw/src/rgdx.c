@@ -15,8 +15,6 @@
 #include "gclgms.h"
 #include "globals.h"
 
-static int followAlias = 1;     /* 1 is older default */
-
 /* checkRgdxList: checks the input request list for valid data
  * and updates the read specifier
  */
@@ -332,11 +330,13 @@ SEXP aliasReturn (const char *symName, const char *aliasFor)
  * that make up a read specifier, e.g. symbol name, dim, form, etc
  * third argument <- squeeze specifier
  * fourth argument <- useDomInfo specifier
+ * fifth argument <- followAlias specifier
  * ------------------------------------------------------------------ */
 SEXP rgdx (SEXP args)
 {
   const char *funcName = "rgdx";
-  SEXP fileName, requestList, squeezeExp, udi, universe;
+  SEXP fileName, requestList, squeezeExp, udi, followAliasExp, universe;
+  SEXP targs;
   SEXP outName = R_NilValue,
     outType = R_NilValue,
     outDim = R_NilValue,
@@ -394,6 +394,7 @@ SEXP rgdx (SEXP args)
   int nnzMax;      /* maximum possible nnz for this symbol */
   Rboolean squeezeDef = NA_LOGICAL; /* squeeze out default records */
   Rboolean useDomInfo = NA_LOGICAL;
+  Rboolean followAlias = NA_LOGICAL;
 
   /* setting initial values */
   rgdxAlloc = 0;
@@ -403,15 +404,20 @@ SEXP rgdx (SEXP args)
 
   /* ----------------- Check proper number of inputs and outputs ------------
    * Function should follow specification of
-   * rgdx ('gdxFileName', requestList = NULL, squeeze = TRUE, useDomInfo=TRUE)
+   * rgdx ('gdxFileName', requestList = NULL, squeeze = TRUE, useDomInfo=TRUE,
+   *       followAlias=FALSE)
    * ------------------------------------------------------------------------ */
-  if (5 != arglen) {
-    error ("usage: %s(gdxName, requestList = NULL, squeeze = TRUE, useDomInfo = TRUE) - incorrect arg count", funcName);
+  if (6 != arglen) {
+    error ("usage: %s(gdxName, requestList = NULL, squeeze = TRUE,"
+           " useDomInfo = TRUE, followAlias = FALSE) - incorrect arg count",
+           funcName);
   }
-  fileName = CADR(args);
-  requestList = CADDR(args);
-  squeezeExp = CADDDR(args);
-  udi = CAD4R(args);
+  targs = CDR(args);
+  fileName       = CAR(targs);  targs = CDR(targs);
+  requestList    = CAR(targs);  targs = CDR(targs);
+  squeezeExp     = CAR(targs);  targs = CDR(targs);
+  udi            = CAR(targs);  targs = CDR(targs);
+  followAliasExp = CAR(targs);  targs = CDR(targs);
   if (TYPEOF(fileName) != STRSXP) {
     error ("usage: %s(gdxName, requestList = NULL) - gdxName must be a string", funcName);
   }
@@ -443,6 +449,10 @@ SEXP rgdx (SEXP args)
   useDomInfo = exp2Boolean (udi);
   if (NA_LOGICAL == useDomInfo) {
     error ("usage: %s(gdxName, requestList, squeeze = TRUE, useDomInfo = TRUE)\n    useDomInfo argument could not be interpreted as logical", funcName);
+  }
+  followAlias = exp2Boolean (followAliasExp);
+  if (NA_LOGICAL == followAlias) {
+    error ("usage: %s(gdxName, requestList, squeeze = TRUE, useDomInfo = TRUE, followAlias = FALSE)\n    followAlias argument could not be interpreted as logical", funcName);
   }
 
   /* ------------------- check if the GDX file exists --------------- */
