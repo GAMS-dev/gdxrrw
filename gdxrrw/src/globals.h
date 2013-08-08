@@ -185,6 +185,8 @@ double
 getDefValVar (int subType, dField_t dField);
 double
 getDefVal (int symType, int subType, dField_t dField);
+void
+addDomInfo (const char *symName, SEXP domExp);
 
 
 /* ****** global variables ****** */

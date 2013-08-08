@@ -1341,7 +1341,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
 
   if (domExp) {
     if (STRSXP != TYPEOF(domExp)) {
-      error ("Input list element 'domains' must be a real or integer vector - found %s instead.",
+      error ("Input list element 'domains' must be a string vector - found %s instead.",
              typeofTxt(domExp, buf));
     }
   }
@@ -1608,6 +1608,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   SEXP rowPerm;            /* row permutation for sparse 'val' rows of one symbol */
   SEXP rowPerms;           /* vector of rowPerm's, one per symbol */
   SEXP lstNames, valData;
+  SEXP domExp = NULL;
   wSpec_t **wSpecPtr;           /* was data */
   gdxUelIndex_t uelIndices;
   gdxValues_t vals, defVals;
@@ -1728,10 +1729,16 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 
     /* the code below assumes the symbol is not an alias */
     checkSymType4 (wSpecPtr[iSym]->dType, __LINE__);
+    domExp = NULL;
     for (k = 0;  k < length(symList[iSym]);  k++) {
-      if (strcmp("val", CHAR(STRING_ELT(lstNames, k))) == 0) {
+      const char *eltName;      /* list element name */
+
+      eltName = CHAR(STRING_ELT(lstNames, k));
+      if (strcmp("val", eltName) == 0) {
         valData = VECTOR_ELT(symList[iSym], k);
-        break;
+      }
+      else if (strcmp("domains", eltName) == 0) {
+        domExp = VECTOR_ELT(symList[iSym], k);
       }
     }
     iVecVec = VECTOR_ELT(uelIndex, iSym);
@@ -1839,10 +1846,10 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
           }
         } /* end loop over rows */
 
-        if (!gdxDataWriteDone(gdxHandle)) {
+        if (!gdxDataWriteDone(gdxHandle))
           error ("Error calling gdxDataWriteDone for symbol '%s': %s",
                  wSpecPtr[iSym]->name, getGDXErrorMsg());
-        }
+        addDomInfo (wSpecPtr[iSym]->name, domExp);
       }    /* if set or parameter */
       else {
         /* variable or equation */
@@ -1959,6 +1966,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         if (!gdxDataWriteDone(gdxHandle))
           error ("Error calling gdxDataWriteDone for symbol '%s': %s",
                  wSpecPtr[iSym]->name, getGDXErrorMsg());
+        addDomInfo (wSpecPtr[iSym]->name, domExp);
       }
     } /* if sparse */
     else {                    /* form = full */
@@ -2040,6 +2048,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         if (!gdxDataWriteDone(gdxHandle))
           error ("Error calling gdxDataWriteDone for symbol '%s': %s",
                  wSpecPtr[iSym]->name, getGDXErrorMsg());
+        addDomInfo (wSpecPtr[iSym]->name, domExp);
       } /* if a set or parameter */
       else {
         int fDim;  /* number of fields labels / extent of field dim */
@@ -2106,6 +2115,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         if (!gdxDataWriteDone(gdxHandle))
           error ("Error calling gdxDataWriteDone for symbol '%s': %s",
                  wSpecPtr[iSym]->name, getGDXErrorMsg());
+        addDomInfo (wSpecPtr[iSym]->name, domExp);
       }
     } /* end of writing full data */
   } /* for (i) loop over symbols */

@@ -1403,3 +1403,46 @@ getDefVal (int symType, int subType, dField_t dField)
   } /* end switch */
   return defVal;
 } /* getDefVal */
+
+/* addDomInfo: add relaxed domain info for a symbol to a GDX file
+ */
+void
+addDomInfo (const char *symName, SEXP domExp)
+{
+  int rc, k, nDoms, symDim, symType, symIdx;
+  char dummy[GMS_SSSIZE];
+  const char *domName;
+  gdxStrIndex_t domNames;
+  gdxStrIndexPtrs_t domPtrs;
+
+  if (domExp) {
+    // Rprintf ("DEBUG: found domains for symbol %s\n", symName);
+  }
+  else {
+    return;                /* nothing to do if no domains available */
+  }
+  GDXSTRINDEXPTRS_INIT (domNames, domPtrs);
+  rc = gdxFindSymbol (gdxHandle, symName, &symIdx);
+  if (! rc)
+    error ("Error writing domain info for symbol '%s':"
+           " not found in GDX", symName);
+  rc = gdxSymbolInfo (gdxHandle, symIdx, dummy, &symDim, &symType);
+  if (! rc)
+    error ("Error writing domain info for symbol '%s':"
+           " gdxSymbolInfo call failed", symName);
+
+  /* just in case, set a solid default */
+  for (k = 0;  k < GLOBAL_MAX_INDEX_DIM;  k++)
+    strcpy (domPtrs[k], "*");
+
+  nDoms = length(domExp);
+  if (nDoms > symDim)
+    nDoms = symDim;
+  for (k = 0;  k < nDoms;  k++) {
+    domName = CHAR(STRING_ELT(domExp, k));
+    // Rprintf ("  %s\n", domName);
+    strcpy (domPtrs[k], domName);
+  }
+  rc = gdxSymbolSetDomainX (gdxHandle, symIdx, domPtrs);
+  return;
+} /* addDomInfo */
