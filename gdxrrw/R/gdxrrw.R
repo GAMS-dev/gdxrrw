@@ -269,6 +269,10 @@ processDF <- function(df, msg)
   if (is.character(symText)) {
     o$ts <- symText
   }
+  domains <- attr(df, "domains", exact=TRUE)
+  if (is.character(domains) && is.vector(domains)) {
+    o$domains <- domains
+  }
   v <- matrix(0, nrow=nr, ncol=nc)
   uels <- c()
   if (! isSet) {
