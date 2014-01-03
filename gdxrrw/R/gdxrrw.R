@@ -250,9 +250,15 @@ processDF <- function(df, msg)
   if (! is.factor(df[[1]])) {
     stop ("(",msg,")[[1]] must be a factor")
   }
+  else if (any(is.na(df[[1]]))) {
+    stop ("(",msg,")[[1]] is a factor, but it contains <NA>")
+  }
   for (j in 1 + seq_len(max(0,nc-2))) {
     if (! is.factor(df[[j]])) {
       stop ("(",msg,")[[", j, "]] must be a factor")
+    }
+    else if (any(is.na(df[[j]]))) {
+      stop ("(",msg,")[[", j, "]] is a factor, but it contains <NA>")
     }
   }
   if (is.factor(df[[nc]])) {
