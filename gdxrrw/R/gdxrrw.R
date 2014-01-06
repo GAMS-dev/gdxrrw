@@ -125,7 +125,8 @@ rgdx.param <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, s
   dflist <- list()
   for (d in c(1:symDim)) {
     nUels <- length(sym$uels[[d]])
-    dflist[[fnames[[d]]]] <- factor(sym$val[,d], seq(to=nUels), labels=sym$uels[[d]])
+    # first arg to factor must be integer, not numeric: different as.character results
+    dflist[[fnames[[d]]]] <- factor(as.integer(sym$val[,d]), seq(to=nUels), labels=sym$uels[[d]])
   }
   dflist[[fnames[[symDim+1]]]] <- sym$val[,symDim+1]
   symDF <- data.frame(dflist)
@@ -209,7 +210,8 @@ rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, use
   dflist <- list()
   for (d in c(1:symDim)) {
     nUels <- length(sym$uels[[d]])
-    dflist[[fnames[[d]]]] <- factor(sym$val[,d], seq(to=nUels), labels=sym$uels[[d]])
+    # first arg to factor must be integer, not numeric: different as.character results
+    dflist[[fnames[[d]]]] <- factor(as.integer(sym$val[,d]), seq(to=nUels), labels=sym$uels[[d]])
   }
   symDF <- data.frame(dflist)
   attr(symDF,"symName") <- sym$name
