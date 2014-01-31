@@ -337,6 +337,7 @@ SEXP rgdx (SEXP args)
   const char *funcName = "rgdx";
   SEXP fileName, requestList, squeezeExp, udi, followAliasExp, universe;
   SEXP targs;
+  Rboolean inventSetText = NA_LOGICAL;
   SEXP outName = R_NilValue,
     outType = R_NilValue,
     outDim = R_NilValue,
@@ -599,6 +600,20 @@ SEXP rgdx (SEXP args)
     SET_STRING_ELT(universe, iUEL-1, mkChar(uelName));
   }
 
+  /* check relevant options */
+  if (rSpec->te) {              /* if we read set text */
+    SEXP o = GetOption1(install("gdx.inventSetText"));
+    if (R_NilValue != o) {
+      if (LGLSXP == TYPEOF(o)) {
+        inventSetText = LOGICAL(o)[0];
+      }
+      else if (asLogical(o))
+        inventSetText = TRUE;
+      else
+        inventSetText = FALSE;
+    }
+  }
+
   outElements = 6;   /* outList has at least 6 elements, maybe more */
   if (withList) { /* aa */
     /* Checking dimension of input uel and parameter in GDX file.
@@ -764,14 +779,19 @@ SEXP rgdx (SEXP args)
               SET_STRING_ELT(outTeSp, matched, mkChar(msg));
             }
             else {
-              strcpy(stringEle, "");
-              for (iDim = 0;  iDim < symDim;  iDim++) {
-                strcat(stringEle, CHAR(STRING_ELT(universe, uels[iDim]-1)));
-                if (iDim != symDim-1) {
-                  strcat(stringEle, ".");
+              if (NA_LOGICAL == inventSetText)
+                SET_STRING_ELT(outTeSp, matched, R_NaString);
+              else if (FALSE == inventSetText) /* make it "" */
+                SET_STRING_ELT(outTeSp, matched, R_BlankString);
+              else { 
+                stringEle[0] = '\0';
+                for (iDim = 0;  iDim < symDim;  iDim++) {
+                  strcat(stringEle, CHAR(STRING_ELT(universe, uels[iDim]-1)));
+                  if (iDim != symDim-1)
+                    strcat(stringEle, ".");
                 }
+                SET_STRING_ELT(outTeSp, matched, mkChar(stringEle));
               }
-              SET_STRING_ELT(outTeSp, matched, mkChar(stringEle));
             }
             matched++;
           }
@@ -936,14 +956,19 @@ SEXP rgdx (SEXP args)
               SET_STRING_ELT(outTeSp, iRec, mkChar(msg));
             }
             else {
-              strcpy(stringEle, "");
-              for (kk = 0;  kk < symDim;  kk++) {
-                strcat(stringEle, CHAR(STRING_ELT(universe, uels[kk]-1)));
-                if (kk != symDim-1) {
-                  strcat(stringEle, ".");
+              if (NA_LOGICAL == inventSetText)
+                SET_STRING_ELT(outTeSp, iRec, R_NaString);
+              else if (FALSE == inventSetText) /* make it "" */
+                SET_STRING_ELT(outTeSp, iRec, R_BlankString);
+              else {
+                stringEle[0] = '\0';
+                for (kk = 0;  kk < symDim;  kk++) {
+                  strcat(stringEle, CHAR(STRING_ELT(universe, uels[kk]-1)));
+                  if (kk != symDim-1)
+                    strcat(stringEle, ".");
                 }
-              }
-              SET_STRING_ELT(outTeSp, iRec, mkChar(stringEle));
+                SET_STRING_ELT(outTeSp, iRec, mkChar(stringEle));
+              } /* inventSetText is true */
             }
           } /* if returning set text */
         } /* loop over GDX records */
