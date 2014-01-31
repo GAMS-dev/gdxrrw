@@ -4,10 +4,15 @@ sets
     eu
   /
   c 'commodities' /
-    crn
+    crn  ''
     mlk  'raw milk'
     wht
   /
+  rc(r,c) 'not a cola' /
+    usa.mlk "America's Dairyland"
+    eu.wht
+  /
+  jjjj(r) / eu /
   ;
 
 $ontext
