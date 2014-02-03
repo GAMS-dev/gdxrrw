@@ -17,18 +17,21 @@ tryCatch({
     stop (paste("FAIL: File", fnIn, "does not exist"))
   }
 
-  ## this test assumes the old behavior for inventing names
-  options(gdx.inventSetText=TRUE)
+  ## start test assuming the default behavior for inventing names
+  options(gdx.inventSetText=NULL)
 
   iUels <- c("i1", "i2", "i3", "i4")
   iCard <- length(iUels)
   iText <- iUels                        # since no text is in GDX
+  iTextNA <- as.character(c(NA,NA,NA,NA)) # if invented set text is NA
+  iTextBL <- c("","","","")             # if invented set text is FALSE
   iVals <- matrix(c(1,2,3,4), nrow=iCard, ncol=1)
   i2uels <- iUels[1:3]                  # uels from i that appear in ij
   i2card <- length(i2uels)
   ifUels <- iUels[2:4]                  # uels from i to use in filtered read
   ifCard <- length(ifUels)
   ifText <- iText[2:4]
+  ifTextNA <- iTextNA[2:4]
   ifVals <- matrix(c(1,2,3), nrow=ifCard, ncol=1)
   jUels <- c("j1", "j2", "j3")
   jCard <- length(jUels)
@@ -52,7 +55,7 @@ tryCatch({
   iwant <- list(name="I", type="set", dim=1L,
                 val=iVals,
                 form="sparse",
-                uels=list(u), domains=c("*"), te=iText)
+                uels=list(u), domains=c("*"), te=iTextNA)
   i <- rgdx(fnIn,list(name='i',form='sparse',te=TRUE))
   chk <- chkRgdxRes (i, iwant, reqIdent=reqIdent)
   if (!chk$same) {
@@ -120,7 +123,7 @@ tryCatch({
   iwant <- list(name="I", type="set", dim=1L,
                 val=iVals,
                 form="sparse",
-                uels=list(iUels), domains=c("_compressed"), te=iText)
+                uels=list(iUels), domains=c("_compressed"), te=iTextNA)
   i <- rgdx(fnIn,list(name='i',form='sparse',te=TRUE,compress=TRUE))
   chk <- chkRgdxRes (i, iwant, reqIdent=reqIdent)
   if (!chk$same) {
@@ -174,7 +177,7 @@ tryCatch({
   iwant <- list(name="I", type="set", dim=1L,
                 val=ifVals,
                 form="sparse",
-                uels=list(ifUels), domains=udom1, te=ifText)
+                uels=list(ifUels), domains=udom1, te=ifTextNA)
   i <- rgdx(fnIn,list(name='i',form='sparse',uels=list(ifUels),te=TRUE))
   chk <- chkRgdxRes (i, iwant, reqIdent=reqIdent)
   if (!chk$same) {
@@ -229,12 +232,13 @@ tryCatch({
   }
 
   ## ---------- reading form=full, no filter, no compress
+  options(gdx.inventSetText=NA)
 
   ulst <- list('*'=u)
   v <- array(0,c(uCard,1),dimnames=ulst)
   v[(1:iCard)] <- 1
   te <- array("",c(uCard,1),dimnames=ulst)
-  te[(1:iCard)] <- iText
+  te[(1:iCard)] <- iTextNA
   iwant <- list(name="I", type="set", dim=1L,
                 val=v,
                 form="full",
@@ -326,11 +330,12 @@ tryCatch({
   }
 
   ## ---------- reading form=full, no filter, compress=TRUE
+  options(gdx.inventSetText=FALSE)
 
   ilst <- list('_compressed'=iUels)
   v <- array(1,c(iCard,1),dimnames=ilst)
   te <- array("",c(iCard,1),dimnames=ilst)
-  te[(1:iCard)] <- iText
+  te[(1:iCard)] <- iTextBL
   iwant <- list(name="I", type="set", dim=1L,
                 val=v,
                 form="full",
@@ -407,6 +412,7 @@ tryCatch({
   }
 
   ## ---------- reading form=full, filtered, no compress
+  options(gdx.inventSetText=TRUE)
 
   ilst <- list('_user'=ifUels)
   v <- array(1,c(ifCard,1),dimnames=ilst)
