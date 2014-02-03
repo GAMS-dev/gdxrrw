@@ -16,6 +16,10 @@ tryCatch({
   if (! file_test ('-f', fnIn)) {
     stop (paste("FAIL: File", fnIn, "does not exist"))
   }
+
+  ## this test assumes the old behavior for inventing names
+  options(gdx.inventSetText=TRUE)
+
   iUels <- c("i1", "i2", "i3", "i4")
   iCard <- length(iUels)
   iText <- iUels                        # since no text is in GDX
