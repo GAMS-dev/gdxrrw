@@ -149,7 +149,7 @@ chkSameVec <- function(s, v1,v2) {
   if (n != length(v2))     return (FALSE)
   if (n == 0)              return (TRUE)
   for (k in c(1:n)) {
-    if (v1[k] != v2[k]) {
+    if (! identical(v1[[k]],v2[[k]])) {
       print (paste("checking", s, ": item", k, "is wrong"))
       return (FALSE)
     }
@@ -387,7 +387,7 @@ chkSameArray <- function (v1,v2) {
       last <- last * dims1[d]
     }
     for (k in 1:last) {
-      if (v1[[k]] != v2[[k]])   return (FALSE)
+      if (! identical(v1[[k]], v2[[k]]))   return (FALSE)
     }
   }
   else if ("numeric" == mode(v1)) {
@@ -404,7 +404,7 @@ chkSameArray <- function (v1,v2) {
       last <- last * dims1[d]
     }
     for (k in 1:last) {
-      if (v1[[k]] != v2[[k]])   return (FALSE)
+      if (! identical(v1[[k]], v2[[k]]))   return (FALSE)
     }
   }
   else {
