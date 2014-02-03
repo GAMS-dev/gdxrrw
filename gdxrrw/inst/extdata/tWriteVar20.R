@@ -13,6 +13,9 @@ errFunc <- function(ex) {
 
 tryCatch({
   print (paste("testing wgdx on", testName))
+  print ("-----------------------------------------------")
+  print ("--- N.B.: This test may take a minute or so ---")
+  print ("-----------------------------------------------")
   wgdx('?')
   fnOut <- "tmp.gdx"
   fnWant <- "tVar20.gdx"
