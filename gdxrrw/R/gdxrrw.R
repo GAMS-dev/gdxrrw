@@ -54,7 +54,9 @@ igdx <- function(gamsSysDir = NULL, silent = FALSE, returnStr = FALSE)
   invisible(.External(igdxExt, gamsSysDir, silent=silent, returnStr=returnStr))
 }
 
-rgdx.param <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, squeeze=TRUE, useDomInfo=TRUE)
+rgdx.param <- function(gdxName, symName, names=NULL, compress=FALSE,
+                       ts=FALSE, squeeze=TRUE, useDomInfo=TRUE,
+                       check.names=TRUE)
 {
   sym <- rgdx(gdxName, list(name=symName,compress=compress,ts=ts),squeeze=squeeze,useDomInfo=useDomInfo)
   if (sym$type != "parameter") {
@@ -119,7 +121,9 @@ rgdx.param <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, s
       }
       fnames[[symDim+1]] <- "value"
     }
-    fnames <- make.names(fnames,unique=TRUE)
+    if (check.names) {
+      fnames <- make.names(fnames,unique=TRUE)
+    }
   }
 
   dflist <- list()
@@ -129,7 +133,7 @@ rgdx.param <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, s
     dflist[[fnames[[d]]]] <- factor(as.integer(sym$val[,d]), seq(to=nUels), labels=sym$uels[[d]])
   }
   dflist[[fnames[[symDim+1]]]] <- sym$val[,symDim+1]
-  symDF <- data.frame(dflist)
+  symDF <- data.frame(dflist, check.names=check.names)
   attr(symDF,"symName") <- sym$name
   attr(symDF,"domains") <- sym$domains
   if (ts) {
@@ -160,7 +164,8 @@ rgdx.scalar <- function(gdxName, symName, ts=FALSE)
   return(c)
 } # rgdx.scalar
 
-rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, useDomInfo=TRUE)
+rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE,
+                     ts=FALSE, useDomInfo=TRUE, check.names=TRUE)
 {
   sym <- rgdx(gdxName, list(name=symName,compress=compress,ts=ts), useDomInfo=useDomInfo)
   if (sym$type != "set") {
@@ -204,7 +209,9 @@ rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, use
         fnames[[d]] <- paste(as.character(names),d,sep=".")
       }
     }
-    fnames <- make.names(fnames,unique=TRUE)
+    if (check.names) {
+      fnames <- make.names(fnames,unique=TRUE)
+    }
   }
 
   dflist <- list()
@@ -213,7 +220,7 @@ rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, use
     # first arg to factor must be integer, not numeric: different as.character results
     dflist[[fnames[[d]]]] <- factor(as.integer(sym$val[,d]), seq(to=nUels), labels=sym$uels[[d]])
   }
-  symDF <- data.frame(dflist)
+  symDF <- data.frame(dflist, check.names=check.names)
   attr(symDF,"symName") <- sym$name
   attr(symDF,"domains") <- sym$domains
   if (ts) {

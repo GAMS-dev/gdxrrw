@@ -14,8 +14,10 @@
   rgdx(gdxName, requestList = NULL, squeeze = TRUE, useDomInfo = TRUE)
 
   # return a set or parameter in a data frame
-  rgdx.set(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, useDomInfo = TRUE)
-  rgdx.param(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE, squeeze=TRUE, useDomInfo = TRUE)
+  rgdx.set(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE,
+           useDomInfo = TRUE, check.names = TRUE)
+  rgdx.param(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE,
+             squeeze=TRUE, useDomInfo = TRUE, check.names = TRUE)
 
   # return a scalar
   rgdx.scalar(gdxName, symName, ts=FALSE)
@@ -30,6 +32,7 @@
   \item{useDomInfo}{if TRUE, the default filter will be the domain info
   in the GDX.  If no domain info is available, or if
   \code{useDomInfo=FALSE}, the default filter will be the GDX universe}
+  \item{check.names}{If TRUE then the names of the variables in the data frame are checked to ensure that they are syntactically valid variable names and are not duplicated.  If necessary they are adjusted (by \code{make.names} so that they are}
   \item{symName}{the name of the GDX symbol to read}
   \item{names}{the column names to use in the data frame returned}
   \item{compress}{if TRUE, compress the factors in the data frame so they only include required levels.  For the default compress=FALSE, each factor includes levels for the entire universe of UELs in the GDX file}
