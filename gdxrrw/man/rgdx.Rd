@@ -41,7 +41,7 @@
 \details{
   The \code{requestList} argument to \code{rgdx} is essentially a list
   of arguments specifying what symbol to read and how to read it.  Valid
-  list members are:
+  list elements are:
   \describe{
     \item{name}{name of symbol to read from GDX}
     \item{form}{specify representation to use on return: \dQuote{sparse}
@@ -56,19 +56,30 @@
       unused elements in each index position}
     \item{dim}{expected dimension of symbol to be read}
   }
+  When reading sets, one can specify that the associated text is
+  included in the return value.  The value returned for set elements
+  where no associated text exists is controlled via the \code{options()}
+  mechanism.  Setting \code{options(gdx.inventSetText=NA)} (the default)
+  returns \code{NA}, setting \code{options(gdx.inventSetText=T)} returns
+  a string made up from the UEL(s), and setting
+  \code{options(gdx.inventSetText=F)} returns an empty string \code{""}.
 }
 \value{
-  By default, the return value is a list with components describing
-  the data item or symbol returned.
-
-  \item{name}{symbol name}
-  \item{type}{symbol's data type: \code{set}, \code{parameter},
-    \code{variable} or \code{equation}}
-  \item{dim}{symbol dimension}
-  \item{val}{array containing the symbol data}
-  \item{form}{form of the data in \code{val}, i.e. \code{full} or \code{sparse}}
-  \item{uels}{vector of UEL lists, one list per symbol dimension}
-
+  By default, the return value is a list with elements describing
+  the data item or symbol returned.  Elements include:
+  \describe{
+    \item{name}{symbol name}
+    \item{type}{symbol's data type: \code{set}, \code{parameter},
+      \code{variable} or \code{equation}}
+    \item{dim}{symbol dimension}
+    \item{val}{array containing the symbol data}
+    \item{form}{form of the data in \code{val}, i.e. \code{full} or
+      \code{sparse}}
+    \item{uels}{vector of UEL lists, one list per symbol dimension}
+    \item{domains}{character vector of length \code{dim} containing the
+      symbol's domain info}
+    \item{te}{(optional) associated text for sets}
+  }
 
   The functions \code{rgdx.param} and \code{rgdx.set} are
   special-purpose wrappers that read parameters and sets,
@@ -76,9 +87,6 @@
 
   The function \code{rgdx.scalar} returns a scalar (i.e. a
   0-dimensional parameter) as a double.
-
-  The output format can be adjusted via a global option.  Documentation
-  for this is in progress.
 }
 \author{Original coding by Rishabh Jain.  Adopted and packaged by
 Steve Dirkse.  Maintainer: \email{R@gams.com}}
