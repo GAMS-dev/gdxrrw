@@ -32,6 +32,7 @@ tests <- c("tReadSparse1", "tReadFull1",
            "tReadCompressWithoutDomInfo", "tReadCompressWithDomInfo",
            "tReadVar0", "tReadVar1", "tReadVar3",
            "tReadEqu",
+           "tReadDFNames",
            "tWriteSparse1", "tWriteSparse2", "tWriteFull1", "tWriteFull2",
            "tWriteLst",
            "tWriteSV",
@@ -62,8 +63,6 @@ for (ttt in tests) {
   if (rc$value) {
     print (paste("Test", ttt, "result: PASS"))
   } else {
-    print ("WTF: what is ttt??")
-    print (ttt)
     print (paste("Test", ttt, "result: FAIL"))
     nFails  <- nFails + 1
     fTests[[ttt]] <- T
