@@ -165,9 +165,9 @@ rgdx.scalar <- function(gdxName, symName, ts=FALSE)
 } # rgdx.scalar
 
 rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE,
-                     ts=FALSE, useDomInfo=TRUE, check.names=TRUE)
+                     ts=FALSE, useDomInfo=TRUE, check.names=TRUE, te=FALSE)
 {
-  sym <- rgdx(gdxName, list(name=symName,compress=compress,ts=ts), useDomInfo=useDomInfo)
+  sym <- rgdx(gdxName, list(name=symName,compress=compress,ts=ts,te=te), useDomInfo=useDomInfo)
   if (sym$type != "set") {
     stop ("Expected to read a set: symbol ", symName, " is a ", sym$type)
   }
@@ -212,7 +212,7 @@ rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE,
     if (check.names) {
       fnames <- make.names(fnames,unique=TRUE)
     }
-  }
+  } # end processing of user-provided names
 
   dflist <- list()
   for (d in c(1:symDim)) {
@@ -220,7 +220,11 @@ rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE,
     # first arg to factor must be integer, not numeric: different as.character results
     dflist[[fnames[[d]]]] <- factor(as.integer(sym$val[,d]), seq(to=nUels), labels=sym$uels[[d]])
   }
-  symDF <- data.frame(dflist, check.names=check.names)
+  if (te) {
+    dflist[[symDim+1]] <- sym$te
+    names(dflist)[[symDim+1]] <- ".te"
+  }
+  symDF <- data.frame(dflist, check.names=check.names, stringsAsFactors=F)
   attr(symDF,"symName") <- sym$name
   attr(symDF,"domains") <- sym$domains
   if (ts) {

@@ -15,7 +15,7 @@
 
   # return a set or parameter in a data frame
   rgdx.set(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE,
-           useDomInfo = TRUE, check.names = TRUE)
+           useDomInfo = TRUE, check.names = TRUE, te = FALSE)
   rgdx.param(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE,
              squeeze=TRUE, useDomInfo = TRUE, check.names = TRUE)
 
