@@ -9,8 +9,16 @@ if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 source ("chkSame.R")
 reqIdent <- TRUE
 
+testName <- 'associated text (.te) for sets'
+
+errFunc <- function(ex) {
+  print (paste0("test of rgdx on ",testName,": FAILED"))
+  print(ex)
+  FALSE
+} # errFunc
+
 tryCatch({
-  print ("testing rgdx handling of set text")
+  print (paste("testing rgdx on", testName))
   rgdx('?')
   fnIn <- "teTest.gdx"
   if (! file_test ('-f', fnIn)) {
@@ -68,7 +76,7 @@ tryCatch({
   attr(idfwant,"symName") <- "I"
   attr(idfwant,"domains") <- c("*")
   idf <- rgdx.set(fnIn,'i',te=TRUE)
-  chk <- chkRgdxRes (idf, idfwant, reqIdent=reqIdent)
+  chk <- chkRgdxDF (idf, idfwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx.set(i,uncompressed) failed",chk$msg))
   }
@@ -87,7 +95,7 @@ tryCatch({
   attr(jdfwant,"symName") <- "J"
   attr(jdfwant,"domains") <- c("*")
   jdf <- rgdx.set(fnIn,'j',te=TRUE)
-  chk <- chkRgdxRes (jdf, jdfwant, reqIdent=reqIdent)
+  chk <- chkRgdxDF (jdf, jdfwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx.set(j,uncompressed) failed",chk$msg))
   }
@@ -107,7 +115,7 @@ tryCatch({
   attr(cdfwant,"symName") <- "c"
   attr(cdfwant,"domains") <- c("*")
   cdf <- rgdx.set(fnIn,'c',te=TRUE)
-  chk <- chkRgdxRes (cdf, cdfwant, reqIdent=reqIdent)
+  chk <- chkRgdxDF (cdf, cdfwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx.set(c,uncompressed) failed",chk$msg))
   }
@@ -133,7 +141,7 @@ tryCatch({
   attr(ijdfwant,"symName") <- "IJ"
   attr(ijdfwant,"domains") <- c("I","J")
   ijdf <- rgdx.set(fnIn,'ij',te=TRUE)
-  chk <- chkRgdxRes (ijdf, ijdfwant, reqIdent=reqIdent)
+  chk <- chkRgdxDF (ijdf, ijdfwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx.set(ij,uncompressed) failed",chk$msg))
   }
@@ -161,7 +169,7 @@ tryCatch({
   attr(ijcdfwant,"symName") <- "IJc"
   attr(ijcdfwant,"domains") <- c("I","J","c")
   ijcdf <- rgdx.set(fnIn,'ijc',te=TRUE)
-  chk <- chkRgdxRes (ijcdf, ijcdfwant, reqIdent=reqIdent)
+  chk <- chkRgdxDF (ijcdf, ijcdfwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx.set(ijc,uncompressed) failed",chk$msg))
   }
@@ -181,7 +189,7 @@ tryCatch({
   attr(idfwant,"symName") <- "I"
   attr(idfwant,"domains") <- c("_compressed")
   idf <- rgdx.set(fnIn,'i',te=TRUE,compress=TRUE)
-  chk <- chkRgdxRes (idf, idfwant, reqIdent=reqIdent)
+  chk <- chkRgdxDF (idf, idfwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx.set(i,compressed) failed",chk$msg))
   }
@@ -200,7 +208,7 @@ tryCatch({
   attr(jdfwant,"symName") <- "J"
   attr(jdfwant,"domains") <- c("_compressed")
   jdf <- rgdx.set(fnIn,'j',te=TRUE,compress=TRUE)
-  chk <- chkRgdxRes (jdf, jdfwant, reqIdent=reqIdent)
+  chk <- chkRgdxDF (jdf, jdfwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx.set(j,compressed) failed",chk$msg))
   }
@@ -227,7 +235,7 @@ tryCatch({
   attr(ijdfwant,"symName") <- "IJ"
   attr(ijdfwant,"domains") <- c("_compressed","_compressed")
   ijdf <- rgdx.set(fnIn,'ij',te=TRUE,compress=TRUE)
-  chk <- chkRgdxRes (ijdf, ijdfwant, reqIdent=reqIdent)
+  chk <- chkRgdxDF (ijdf, ijdfwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx.set(ij,compressed) failed",chk$msg))
   }
@@ -252,7 +260,7 @@ tryCatch({
   attr(ijcdfwant,"symName") <- "IJc"
   attr(ijcdfwant,"domains") <- c("_compressed","_compressed","_compressed")
   ijcdf <- rgdx.set(fnIn,'ijc',te=TRUE,compress=TRUE)
-  chk <- chkRgdxRes (ijcdf, ijcdfwant, reqIdent=reqIdent)
+  chk <- chkRgdxDF (ijcdf, ijcdfwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx.set(ijc,compressed) failed",chk$msg))
   }
@@ -588,7 +596,7 @@ tryCatch({
   }
 
 
-  print ("test of rgdx set text handling passed")
+  print (paste0("test of rgdx on ", testName, ": PASSED"))
   invisible(TRUE)   ## all tests passed: return TRUE
 },
 

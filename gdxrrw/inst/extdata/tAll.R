@@ -58,12 +58,13 @@ nRuns <- 0
 nFails  <- 0
 fTests <- list()
 for (ttt in tests) {
+  print ('---------------------------------------------------------------')
   print (paste("Starting test", ttt))
   rc <- source (paste(ttt,".R",sep=""))
   if (rc$value) {
-    print (paste("Test", ttt, "result: PASS"))
+    print (paste("Test", ttt, "result: PASSED"))
   } else {
-    print (paste("Test", ttt, "result: FAIL"))
+    print (paste("Test", ttt, "result: FAILED"))
     nFails  <- nFails + 1
     fTests[[ttt]] <- T
   }

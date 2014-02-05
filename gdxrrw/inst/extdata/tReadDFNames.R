@@ -6,7 +6,7 @@ if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 testName <- 'valid variable names in data frame'
 
 errFunc <- function(ex) {
-  print (paste("test of rgdx on",testName,"failed"))
+  print (paste0("test of rgdx on ",testName,": FAILED"))
   print(ex)
   FALSE
 } # errFunc
@@ -64,8 +64,8 @@ tryCatch({
     stop ("test rgdx.param with check.names=TRUE failed")
   }
 
-  print (paste("test of rgdx on", testName, "passed"))
-  TRUE   ## all tests passed: return TRUE
+  print (paste0("test of rgdx on ", testName, ": PASSED"))
+  invisible(TRUE)   ## all tests passed: return TRUE
 },
 
 error = errFunc

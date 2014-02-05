@@ -8,7 +8,7 @@ if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 testName <- 'wgdx.lst wrapper'
 
 errFunc <- function(ex) {
-  print (paste("test of wgdx on",testName,"failed"))
+  print (paste0("test of rgdx on ",testName,": FAILED"))
   print(ex)
   FALSE
 } # errFunc
@@ -99,8 +99,8 @@ tryCatch({
   }
 
 
-  print (paste("test of wgdx on", testName, "passed"))
-  TRUE   ## all tests passed: return TRUE
+  print (paste0("test of rgdx on ", testName, ": PASSED"))
+  invisible(TRUE)   ## all tests passed: return TRUE
 },
 
 error = errFunc

@@ -3,8 +3,10 @@
 if (! require(gdxrrw))      stop ("gdxrrw package is not available")
 if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
+testName <- 'case-insensitivity in handling of uel input filter'
+
 errFunc <- function(ex) {
-  print ("test of rgdx case-insensitivity in handling of uel input filter failed");
+  print (paste0("test of rgdx on ",testName,": FAILED"))
   print(ex)
   FALSE
 } # errFunc
@@ -45,8 +47,8 @@ tryCatch({
   }
 
 
-  print ("test of rgdx case-insensitivity in handling of uel input filter passed")
-  TRUE   ## all tests passed: return TRUE
+  print (paste0("test of rgdx on ", testName, ": PASSED"))
+  invisible(TRUE)   ## all tests passed: return TRUE
 },
 
 error = errFunc

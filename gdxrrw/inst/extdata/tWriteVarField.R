@@ -3,8 +3,10 @@
 if (! require(gdxrrw))      stop ("gdxrrw package is not available")
 if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
+testname <- "'field' list element for variable writes"
+
 errFunc <- function(ex) {
-  print ("test of wgdx on 'field' list element for variable writes failed");
+  print (paste0("test of wgdx on ",testName,": FAILED"))
   print(ex)
   FALSE
 } # errFunc
@@ -69,8 +71,8 @@ tryCatch({
     }
   } # for loop
 
-  print ("test of wgdx on 'field' list element for variable passed")
-  TRUE   ## all tests passed: return TRUE
+  print (paste0("test of wgdx on ", testName, ": PASSED"))
+  invisible(TRUE)   ## all tests passed: return TRUE
 },
 
 error = errFunc

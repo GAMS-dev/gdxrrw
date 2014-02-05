@@ -5,10 +5,10 @@
 if (! require(gdxrrw))      stop ("gdxrrw package is not available")
 if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
-testName <- 'tWrap - testing GDXRRW wrappers'
+testName <- 'basic wrapper functioning'
 
 errFunc <- function(ex) {
-  print (paste(testName,": FAILED"))
+  print (paste0("test of gdxrrw on ",testName,": FAILED"))
   print(ex)
   FALSE
 } # errFunc
@@ -72,8 +72,8 @@ tryCatch({
     file.remove (fnOut)
   }
 
-  print (paste(testName, ": PASSED"))
-  TRUE   ## all tests passed: return TRUE
+  print (paste0("test of gdxrrw on ",testName,": PASSED"))
+  invisible(TRUE)   ## all tests passed: return TRUE
 },
 
 error = errFunc

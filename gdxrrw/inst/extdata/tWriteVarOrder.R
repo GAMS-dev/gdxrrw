@@ -16,7 +16,7 @@ fCard <- 5
 n <- 10
 
 errFunc <- function(ex) {
-  print (paste("test of wgdx on",testName,"failed"))
+  print (paste0("test of wgdx on ",testName,": FAILED"))
   print(ex)
   FALSE
 } # errFunc
@@ -237,8 +237,8 @@ tryCatch({
     print ("gdxdiff call succeeded")
   }
 
-  print (paste("test of wgdx on", testName, "passed"))
-  TRUE   ## all tests passed: return TRUE
+  print (paste0("test of wgdx on ", testName, ": PASSED"))
+  invisible(TRUE)   ## all tests passed: return TRUE
 },
 
 error = errFunc
