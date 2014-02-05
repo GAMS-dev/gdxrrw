@@ -221,6 +221,16 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(ij,unfiltered,compressed) failed",chk$msg))
   }
+  f1 <- factor(as.integer(ij$val[,1]),labels=i2uels)
+  f2 <- factor(as.integer(ij$val[,2]),labels=jUels)
+  ijdfwant <- data.frame(list("i"=f1,"j"=f2,".te"=ijwant$te),stringsAsFactors=F)
+  attr(ijdfwant,"symName") <- "IJ"
+  attr(ijdfwant,"domains") <- c("_compressed","_compressed")
+  ijdf <- rgdx.set(fnIn,'ij',te=TRUE,compress=TRUE)
+  chk <- chkRgdxRes (ijdf, ijdfwant, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx.set(ij,compressed) failed",chk$msg))
+  }
 
   ijcwant <- list(name="IJc", type="set", dim=3L,
                   val=matrix(c(1,1,1, 1,3,1, 2,2,2, 2,3,2, 3,3,3),
@@ -234,6 +244,17 @@ tryCatch({
   chk <- chkRgdxRes (ijc, ijcwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(ijc,unfiltered,compressed) failed",chk$msg))
+  }
+  f1 <- factor(as.integer(ijcwant$val[,1]),labels=iUels[1:3])
+  f2 <- factor(as.integer(ijcwant$val[,2]),labels=jUels)
+  f3 <- factor(as.integer(ijcwant$val[,3]),labels=cUels)
+  ijcdfwant <- data.frame(list("i"=f1,"j"=f2,"k"=f3,".te"=ijcwant$te),stringsAsFactors=F)
+  attr(ijcdfwant,"symName") <- "IJc"
+  attr(ijcdfwant,"domains") <- c("_compressed","_compressed","_compressed")
+  ijcdf <- rgdx.set(fnIn,'ijc',te=TRUE,compress=TRUE)
+  chk <- chkRgdxRes (ijcdf, ijcdfwant, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx.set(ijc,compressed) failed",chk$msg))
   }
 
   ## ---------- reading form=sparse, filtered, no compress
@@ -568,7 +589,7 @@ tryCatch({
 
 
   print ("test of rgdx set text handling passed")
-  TRUE   ## all tests passed: return TRUE
+  invisible(TRUE)   ## all tests passed: return TRUE
 },
 
 error = function(ex) { print ("test of rgdx set text handling failed"); print(ex) ; FALSE }
