@@ -80,6 +80,75 @@ chkLists <- function(s, f1, f2) {
   return (TRUE)
 } # chkLists
 
+mb <- function (msg) {
+  return (list(same=FALSE,msg=msg))
+} # mb
+
+# compare the data frames f1 and f2, return a checkresult list when done
+## this test is intended to compare the results of rgdx.XXX() calls
+chkRgdxDF <- function(f1, f2, reqIdent=FALSE) {
+  if (identical(f1,f2))     return (list(same=TRUE,msg=''))
+
+  if (! is.data.frame(f1))   return (mb("not data frames"))
+  if (! is.data.frame(f2))   return (mb("not data frames"))
+
+  nc     <- ncol(f1)
+  if (nc != ncol(f2))     return (mb("ncol mismatch"))
+  nr     <- nrow(f1)
+  if (nr != nrow(f2))     return (mb("nrow mismatch"))
+  if (!identical(attr(f1,"symName"), attr(f2,"symName")))  return (mb('symName mismatch'))
+  if (!identical(attr(f1,"domains"), attr(f2,"domains")))  return (mb('domains mismatch'))
+
+  r <- list(same=FALSE,msg="decruft this")
+  cNames1 <- names(f1)
+  cNames2 <- names(f2)
+  for (j in c(1:nc)) {
+    if (cNames1[j] != cNames2[j]) {
+      return (mb(paste("column", j, "names differ")))
+    }
+    fc1 <- f1[[j]]
+    fc2 <- f2[[j]]
+    if (is.factor(fc1)) {
+      if (! is.factor(fc2))   return (mb(paste("column", j,"is.factor mismatch")))
+      if (nlevels(fc1) != nlevels(fc2)) return (mb(paste("column", j,"nlevels mismatch")))
+      lvl1 <- levels(fc1)
+      lvl2 <- levels(fc2)
+      for (k in c(1:nlevels(fc1))) {
+        if (lvl1[[k]] != lvl2[[k]])  return (mb(paste("column", j,"level",k,"mismatch")))
+      }
+      if (length(fc1) != length(fc2))   return (mb(paste("column", j,"length mismatch")))
+      iv1 <- as.integer(fc1)
+      iv2 <- as.integer(fc2)
+      for (k in c(1:length(fc1))) {
+        if (iv1[[k]] != iv2[[k]]) return (mb(paste("column", j,"item",k,"mismatch")))
+      }
+    }
+    else if (is.vector(fc1)) {
+      if (! is.vector(fc2))   return (mb(paste("column", j,"is.vector mismatch")))
+      if (length(fc1) != length(fc2))   return (mb(paste("column", j,"length mismatch")))
+      for (k in c(1:length(fc1))) {
+        if (fc1[[k]] != fc2[[k]]) return (mb(paste("column", j,"val",k,"mismatch")))
+      }
+    }
+    else {
+      return (mb(paste("column", j,"type unrecognized")))
+    }
+  }
+
+  if (nr > 0) {
+    rNames1 <- row.names(f1)
+    rNames2 <- row.names(f2)
+    for (i in c(1:nr)) {
+      if (rNames1[i] != rNames2[i]) {
+        return (mb(paste("row", i, "names differ")))
+      }
+    }
+  }
+
+  ## already checked if identical: they are not!
+  if (reqIdent)     return(list(same=FALSE,msg='not identical'))
+  return(list(same=TRUE,msg=''))
+} # chkRgdxDF
 
 
 # compare the data frames f1 and f2, return TRUE if the same, FALSE o/w
@@ -158,7 +227,7 @@ chkSameVec <- function(s, v1,v2) {
 }  # chkSameVec
 
 
-# compare the lists f1 and f2, return TRUE if the same, FALSE o/w
+# compare the lists f1 and f2, return a checkresult list when done
 ## this test is intended to compare the results of rgdx() calls and
 ## assumes a certain ordering of the list elements
 ## it is not really necessary that they be ordered in this way but it
