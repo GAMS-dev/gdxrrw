@@ -145,6 +145,7 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx.set(ij,uncompressed) failed",chk$msg))
   }
+  ijdfwantXX <- ijdfwant
 
   ijcwant <- list(name="IJc", type="set", dim=3L,
                   val=matrix(c(1,1,1,
@@ -343,6 +344,14 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(i,full,unfiltered,uncompressed) failed",chk$msg))
   }
+  idfwant <- data.frame(list("i"=i_f_u,".te"=iTextNA),stringsAsFactors=F)
+  attr(idfwant,"symName") <- "I"
+  attr(idfwant,"domains") <- c("*")
+  idf <- rgdx.set(fnIn,'i',te=TRUE)
+  chk <- chkRgdxDF (idf, idfwant, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx.set(i,uncompressed) inventSetText=NA failed",chk$msg))
+  }
 
   jblock <- iCard + (1:jCard)
   v <- array(0,c(uCard,1),dimnames=ulst)
@@ -359,6 +368,14 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(j,full,unfiltered,uncompressed) failed",chk$msg))
   }
+  jdfwant <- data.frame(list("i"=j_f_u,".te"=jText),stringsAsFactors=F)
+  attr(jdfwant,"symName") <- "J"
+  attr(jdfwant,"domains") <- c("*")
+  jdf <- rgdx.set(fnIn,'j',te=TRUE)
+  chk <- chkRgdxDF (jdf, jdfwant, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx.set(j,uncompressed) inventSetText=NA failed",chk$msg))
+  }
 
   cblock <- iCard + jCard + (1:cCard)
   v <- array(0,c(uCard,1),dimnames=ulst)
@@ -373,6 +390,14 @@ tryCatch({
   chk <- chkRgdxRes (c, cwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(c,full,unfiltered,uncompressed) failed",chk$msg))
+  }
+  cdfwant <- data.frame(list("i"=c_f_u,".te"=cText),stringsAsFactors=F)
+  attr(cdfwant,"symName") <- "c"
+  attr(cdfwant,"domains") <- c("*")
+  cdf <- rgdx.set(fnIn,'c',te=TRUE)
+  chk <- chkRgdxDF (cdf, cdfwant, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx.set(c,uncompressed) inventSetText=NA failed",chk$msg))
   }
 
   v <- array(0,c(iCard,jCard),dimnames=list('I'=iUels,'J'=jUels))
@@ -397,6 +422,12 @@ tryCatch({
   chk <- chkRgdxRes (ij, ijwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(ij,full,unfiltered,uncompressed) failed",chk$msg))
+  }
+  ijdfwant <- ijdfwantXX
+  ijdf <- rgdx.set(fnIn,'ij',te=TRUE)
+  chk <- chkRgdxDF (ijdf, ijdfwant, reqIdent=reqIdent)
+  if (!chk$same) {
+    stop (paste("test rgdx.set(ij,uncompressed) inventSetText=NA failed",chk$msg))
   }
 
   v <- array(0,c(iCard,jCard,cCard),dimnames=list('I'=iUels,'J'=jUels,'c'=cUels))
