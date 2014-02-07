@@ -338,6 +338,9 @@ SEXP rgdx (SEXP args)
   SEXP fileName, requestList, squeezeExp, udi, followAliasExp, universe;
   SEXP targs;
   Rboolean inventSetText = NA_LOGICAL;
+#if 0
+  Rboolean domainNames = FALSE; /* dataframe names() <--> domain info in GDX */
+#endif
   SEXP outName = R_NilValue,
     outType = R_NilValue,
     outDim = R_NilValue,
@@ -613,6 +616,21 @@ SEXP rgdx (SEXP args)
         inventSetText = FALSE;
     }
   }
+
+#if 0
+  {
+    /* assume domainNames is set to the right default */
+    SEXP o = GetOption1(install("gdx.domainNames"));
+    if (R_NilValue != o) {
+      if (LGLSXP == TYPEOF(o)) {
+        if (NA_LOGICAL != LOGICAL(o)[0])
+          domainNames = LOGICAL(o)[0];
+      }
+      else
+        domainNames = asLogical(o);
+    }
+  }
+#endif
 
   outElements = 6;   /* outList has at least 6 elements, maybe more */
   if (withList) { /* aa */

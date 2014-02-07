@@ -69,18 +69,28 @@ rgdx.param <- function(gdxName, symName, names=NULL, compress=FALSE,
 
   fnames <- list()
   if (is.null(names)) {
-    if (1 == symDim) {
-      fnames <- list("i","value")
-    } else if (2 == symDim) {
-      fnames <- list("i","j","value")
-    } else if (3 == symDim) {
-      fnames <- list("i","j","k","value")
-    } else {
+    ## no names passed via args
+    domainNames <- getOption('gdx.domainNames',default=F)
+    if (domainNames) {
       for (d in c(1:symDim)) {
-        fnames[[d]] <- paste("i",d,sep="")
+        fnames[[d]] <- sym$domains[[d]]
       }
-      fnames[[symDim+1]] <- "value"
-    }
+      fnames[[symDim+1]] <- sym$name
+    } else {
+      ## just make up some names() for the data frame
+      if (1 == symDim) {
+        fnames <- list("i","value")
+      } else if (2 == symDim) {
+        fnames <- list("i","j","value")
+      } else if (3 == symDim) {
+        fnames <- list("i","j","k","value")
+      } else {
+        for (d in c(1:symDim)) {
+          fnames[[d]] <- paste("i",d,sep="")
+        }
+        fnames[[symDim+1]] <- "value"
+      }
+    } # if domainNames .. else ..
   } else {
     # process the user-provided names
     if (is.vector(names)) {
@@ -121,9 +131,9 @@ rgdx.param <- function(gdxName, symName, names=NULL, compress=FALSE,
       }
       fnames[[symDim+1]] <- "value"
     }
-    if (check.names) {
-      fnames <- make.names(fnames,unique=TRUE)
-    }
+  }
+  if (check.names) {
+    fnames <- make.names(fnames,unique=TRUE)
   }
 
   dflist <- list()
@@ -175,17 +185,25 @@ rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE,
 
   fnames <- list()
   if (is.null(names)) {
-    if (1 == symDim) {
-      fnames <- list("i")
-    } else if (2 == symDim) {
-      fnames <- list("i","j")
-    } else if (3 == symDim) {
-      fnames <- list("i","j","k")
-    } else {
+    ## no names passed via args
+    domainNames <- getOption('gdx.domainNames',default=F)
+    if (domainNames) {
       for (d in c(1:symDim)) {
-        fnames[[d]] <- paste("i",d,sep="")
+        fnames[[d]] <- sym$domains[[d]]
       }
-    }
+    } else {
+      if (1 == symDim) {
+        fnames <- list("i")
+      } else if (2 == symDim) {
+        fnames <- list("i","j")
+      } else if (3 == symDim) {
+        fnames <- list("i","j","k")
+      } else {
+        for (d in c(1:symDim)) {
+          fnames[[d]] <- paste("i",d,sep="")
+        }
+      }
+    } # if domainNames .. else ..
   } else {
     # process the user-provided names
     if (is.vector(names)) {
@@ -209,10 +227,10 @@ rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE,
         fnames[[d]] <- paste(as.character(names),d,sep=".")
       }
     }
-    if (check.names) {
-      fnames <- make.names(fnames,unique=TRUE)
-    }
   } # end processing of user-provided names
+  if (check.names) {
+    fnames <- make.names(fnames,unique=TRUE)
+  }
 
   dflist <- list()
   for (d in c(1:symDim)) {

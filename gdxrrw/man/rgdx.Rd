@@ -56,6 +56,7 @@
       unused elements in each index position}
     \item{dim}{expected dimension of symbol to be read}
   }
+
   When reading sets, one can specify that the associated text is
   included in the return value.  The value returned for set elements
   where no associated text exists is controlled via the \code{options()}
@@ -63,6 +64,15 @@
   returns \code{NA}, setting \code{options(gdx.inventSetText=T)} returns
   a string made up from the UEL(s), and setting
   \code{options(gdx.inventSetText=F)} returns an empty string \code{""}.
+
+  When reading GDX data into data frames (e.g. with \code{rgdx.param}),
+  the names() (i.e. the column names) of the output data frame can be
+  passed in via the optional \code{names} argument.  If not, then the names are
+  either created internally or taken from the domain information and
+  name of the symbol in question.  The latter choice is controlled by setting
+  \code{options(gdx.domainNames=TRUE)} to use GDX domain info for data
+  frame names.  A setting of FALSE (the default) causes internally
+  generated names to be used.
 }
 \value{
   By default, the return value is a list with elements describing
