@@ -114,7 +114,7 @@ chkRgdxDF <- function(f1, f2, reqIdent=FALSE) {
       lvl1 <- levels(fc1)
       lvl2 <- levels(fc2)
       for (k in c(1:nlevels(fc1))) {
-        if (lvl1[[k]] != lvl2[[k]])  return (mb(paste("column", j,"level",k,"mismatch")))
+        if (! identical(lvl1[[k]], lvl2[[k]]))  return (mb(paste("column", j,"level",k,"mismatch")))
       }
       if (length(fc1) != length(fc2))   return (mb(paste("column", j,"length mismatch")))
       iv1 <- as.integer(fc1)
@@ -127,7 +127,7 @@ chkRgdxDF <- function(f1, f2, reqIdent=FALSE) {
       if (! is.vector(fc2))   return (mb(paste("column", j,"is.vector mismatch")))
       if (length(fc1) != length(fc2))   return (mb(paste("column", j,"length mismatch")))
       for (k in c(1:length(fc1))) {
-        if (fc1[[k]] != fc2[[k]]) return (mb(paste("column", j,"val",k,"mismatch")))
+        if (! identical(fc1[[k]], fc2[[k]])) return (mb(paste("column", j,"val",k,"mismatch")))
       }
     }
     else {
@@ -177,7 +177,7 @@ chkFrames <- function(s, f1, f2) {
       lvl1 <- levels(fc1)
       lvl2 <- levels(fc2)
       for (k in c(1:nlevels(fc1))) {
-        if (lvl1[[k]] != lvl2[[k]])   return (FALSE)
+        if (! identical(lvl1[[k]], lvl2[[k]]))   return (FALSE)
       }
       if (length(fc1) != length(fc2))   return (FALSE)
       iv1 <- as.integer(fc1)
@@ -190,7 +190,7 @@ chkFrames <- function(s, f1, f2) {
       if (! is.vector(fc2))   return (FALSE)
       if (length(fc1) != length(fc2))   return (FALSE)
       for (k in c(1:length(fc1))) {
-        if (fc1[[k]] != fc2[[k]])   return (FALSE)
+        if (! identical(fc1[[k]], fc2[[k]]))   return (FALSE)
       }
     }
     else {
