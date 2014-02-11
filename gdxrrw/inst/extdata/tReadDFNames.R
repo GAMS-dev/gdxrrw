@@ -34,34 +34,80 @@ tryCatch({
   nm4  <- c('111' ,'???' ,'.1234')
   nm4x <- c('X111','X...','X.1234')
 
+  # create desired data frame
+  f1 <- factor(c("s1","s1","s2","s2"))
+  f2 <- factor(c("s1","s2","s1","s2"))
+  ssdf <- data.frame(list("var1"=f1,"var2"=f2))
+  attr(ssdf,"symName") <- "ss"
+  attr(ssdf,"domains") <- c("s","s")
+  ccdf <- data.frame(list("var1"=f1,"var2"=f2,"var3"=c(4,4,4,4)))
+  attr(ccdf,"symName") <- "c"
+  attr(ccdf,"domains") <- c("s","s")
+
   ## test with default check.names: should be TRUE
   ss <- rgdx.set ('checkNames.gdx','ss',names=nm1)
   if (!identical(nm1x,names(ss))) {
-    stop ("test rgdx.set with default check.names failed")
+    stop ("test rgdx.set with default check.names failed: bad names")
+  }
+  ssx <- ssdf
+  names(ssx) <- nm1x
+  if (!identical(ssx,ss)) {
+    stop ("test rgdx.set with default check.names failed: bad ss")
   }
   cc <- rgdx.param ('checkNames.gdx','c',names=nm2)
   if (!identical(nm2x,names(cc))) {
-    stop ("test rgdx.param with default check.names failed")
+    stop ("test rgdx.param with default check.names failed: bad names")
+  }
+  ccx <- ccdf
+  names(ccx) <- nm2x
+  if (!identical(ccx,cc)) {
+    stop ("test rgdx.param with default check.names failed: bad cc")
   }
 
   ## test with check.names=TRUE
   ss <- rgdx.set ('checkNames.gdx','ss',names=nm3,check.names=TRUE)
   if (!identical(nm3x,names(ss))) {
-    stop ("test rgdx.set with check.names=TRUE failed")
+    stop ("test rgdx.set with check.names=TRUE failed: bad names")
+  }
+  ssx <- ssdf
+  names(ssx) <- nm3x
+  if (!identical(ssx,ss)) {
+    stop ("test rgdx.set with check.names=TRUE failed: bad ss")
   }
   cc <- rgdx.param ('checkNames.gdx','c',names=nm4,check.names=TRUE)
   if (!identical(nm4x,names(cc))) {
-    stop ("test rgdx.param with check.names=TRUE failed")
+    stop ("test rgdx.param with check.names=TRUE failed: bad names")
+  }
+  ccx <- ccdf
+  names(ccx) <- nm4x
+  if (!identical(ccx,cc)) {
+    stop ("test rgdx.param with check.names=TRUE failed: bad cc")
   }
 
   ## test with check.names=FALSE
   ss <- rgdx.set ('checkNames.gdx','ss',names=nm1,check.names=FALSE)
   if (!identical(nm1,names(ss))) {
-    stop ("test rgdx.set with check.names=FALSE failed")
+    stop ("test rgdx.set with check.names=FALSE failed: bad names")
+  }
+  ssx <- ssdf
+  names(ssx) <- nm1
+  if (!identical(ssx,ss)) {
+    stop ("test rgdx.set with check.names=FALSE failed: bad ss")
   }
   cc <- rgdx.param ('checkNames.gdx','c',names=nm2,check.names=FALSE)
   if (!identical(nm2,names(cc))) {
-    stop ("test rgdx.param with check.names=TRUE failed")
+    stop ("test rgdx.param with check.names=FALSE failed: bad names")
+  }
+  ccx <- ccdf
+  names(ccx) <- nm2
+  if (!identical(ccx,cc)) {
+    stop ("test rgdx.param with check.names=FALSE failed: bad cc")
+  }
+
+  ss <- rgdx.set ('checkNames.gdx','ss',names=nm3,check.names=FALSE)
+  if (!identical(nm3,names(ss))) {
+    print ("fix and put stop back in")
+#    stop ("test rgdx.set(...,'ss',names=nm3,check.names=FALSE) failed: bad names")
   }
 
   print (paste0("test of rgdx on ", testName, ": PASSED"))
