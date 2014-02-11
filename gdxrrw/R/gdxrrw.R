@@ -279,13 +279,15 @@ processDF <- function(df, msg)
   }
   nr <- nrow(df)
   nc <- ncol(df)
-  isSet <- TRUE
+  ## first column must be a factor
   if (! is.factor(df[[1]])) {
     stop ("(",msg,")[[1]] must be a factor")
   }
   else if (any(is.na(df[[1]]))) {
     stop ("(",msg,")[[1]] is a factor, but it contains <NA>")
   }
+  isSet <- TRUE
+  haveTe <- FALSE
   for (j in 1 + seq_len(max(0,nc-2))) {
     if (! is.factor(df[[j]])) {
       stop ("(",msg,")[[", j, "]] must be a factor")
@@ -298,11 +300,20 @@ processDF <- function(df, msg)
     symType <- "set"
     symDim <- nc
   }
+  else if (is.character(df[[nc]])) {
+    symType <- "set"
+    symDim <- nc-1
+    haveTe <- TRUE
+  }
   else if (is.numeric(df[[nc]])) {
     symType <- "parameter"
     isSet <- FALSE
     symDim <- nc-1
   }
+  else {
+    stop ("(",msg,")[[", nc, "]] is not recognized")
+  }
+
   o <- list (name=symName, type=symType, dim=symDim, form="sparse")
   symText <- attr(df, "ts", exact=TRUE)
   if (is.character(symText)) {
@@ -312,10 +323,12 @@ processDF <- function(df, msg)
   if (is.character(domains) && is.vector(domains)) {
     o$domains <- domains
   }
-  v <- matrix(0, nrow=nr, ncol=nc)
   uels <- c()
   if (! isSet) {
+    v <- matrix(0, nrow=nr, ncol=symDim+1)
     v[,symDim+1] <- df[,symDim+1]
+  } else {
+    v <- matrix(0, nrow=nr, ncol=symDim)
   }
   for (j in c(1:symDim)) {
     v[,j] <- as.numeric(df[,j])
@@ -323,12 +336,16 @@ processDF <- function(df, msg)
   }
   o$val <- v
   o$uels <- uels
+  if (haveTe) {
+    warning ("(",msg,")[[", symDim+1, "]] is ignored set text")
+    # o$te <- df[,(symDim+1)]
+  }
   o
 } # processDF
 
 # wgdx.lst: write multiple symbols to a GDX file
 # the routines above write only one symbol to GDX, where the symbol info 
-# takea a different form for each function:
+# takes a different form for each function:
 #   wgdx.df    : input is a data frame containing a set or param
 #   wgdx.scalar: input is a scalar
 #   wgdx       : input is one or more lists, each list holds one symbol
