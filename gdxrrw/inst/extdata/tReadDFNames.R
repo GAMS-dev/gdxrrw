@@ -34,6 +34,9 @@ tryCatch({
   nm4  <- c('111' ,'???' ,'.1234')
   nm4x <- c('X111','X...','X.1234')
 
+  # duplicates allowed if check.names=F
+  nm5  <- c('xxx','xxx','xxx')
+
   # create desired data frame
   f1 <- factor(c("s1","s1","s2","s2"))
   f2 <- factor(c("s1","s2","s1","s2"))
@@ -103,11 +106,23 @@ tryCatch({
   if (!identical(ccx,cc)) {
     stop ("test rgdx.param with check.names=FALSE failed: bad cc")
   }
-
   ss <- rgdx.set ('checkNames.gdx','ss',names=nm3,check.names=FALSE)
   if (!identical(nm3,names(ss))) {
-    print ("fix and put stop back in")
-#    stop ("test rgdx.set(...,'ss',names=nm3,check.names=FALSE) failed: bad names")
+    stop ("test rgdx.set(...,'ss',names=nm3,check.names=FALSE) failed: bad names")
+  }
+  ssx <- ssdf
+  names(ssx) <- nm3
+  if (!identical(ssx,ss)) {
+    stop ("test rgdx.set(...,'ss',names=nm3,check.names=FALSE) failed: bad ss")
+  }
+  cc <- rgdx.param ('checkNames.gdx','c',names=nm5,check.names=FALSE)
+  if (!identical(nm5,names(cc))) {
+    stop ("test rgdx.param(...,'c',names=nm5,check.names=FALSE) failed: bad names")
+  }
+  ccx <- ccdf
+  names(ccx) <- nm5
+  if (!identical(ccx,cc)) {
+    stop ("test rgdx.param(...,'c',names=nm5,check.names=FALSE) failed: bad cc")
   }
 
   print (paste0("test of rgdx on ", testName, ": PASSED"))
