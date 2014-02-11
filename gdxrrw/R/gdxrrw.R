@@ -140,9 +140,10 @@ rgdx.param <- function(gdxName, symName, names=NULL, compress=FALSE,
   for (d in c(1:symDim)) {
     nUels <- length(sym$uels[[d]])
     # first arg to factor must be integer, not numeric: different as.character results
-    dflist[[fnames[[d]]]] <- factor(as.integer(sym$val[,d]), seq(to=nUels), labels=sym$uels[[d]])
+    dflist[[d]] <- factor(as.integer(sym$val[,d]), seq(to=nUels), labels=sym$uels[[d]])
   }
-  dflist[[fnames[[symDim+1]]]] <- sym$val[,symDim+1]
+  dflist[[symDim+1]] <- sym$val[,symDim+1]
+  names(dflist) <- fnames
   symDF <- data.frame(dflist, check.names=check.names)
   attr(symDF,"symName") <- sym$name
   attr(symDF,"domains") <- sym$domains
@@ -236,12 +237,13 @@ rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE,
   for (d in c(1:symDim)) {
     nUels <- length(sym$uels[[d]])
     # first arg to factor must be integer, not numeric: different as.character results
-    dflist[[fnames[[d]]]] <- factor(as.integer(sym$val[,d]), seq(to=nUels), labels=sym$uels[[d]])
+    dflist[[d]] <- factor(as.integer(sym$val[,d]), seq(to=nUels), labels=sym$uels[[d]])
   }
   if (te) {
     dflist[[symDim+1]] <- sym$te
-    names(dflist)[[symDim+1]] <- ".te"
+    fnames[[symDim+1]] <- ".te"
   }
+  names(dflist) <- fnames
   symDF <- data.frame(dflist, check.names=check.names, stringsAsFactors=F)
   attr(symDF,"symName") <- sym$name
   attr(symDF,"domains") <- sym$domains
