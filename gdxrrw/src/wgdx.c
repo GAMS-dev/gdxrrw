@@ -29,6 +29,7 @@ static const char *validSymListNames[] = {
   ,"aliasFor"
   ,"dim"
   ,"ts"
+  ,"te"
   ,"domains"
   ,"field"
   ,"varTypeText"
@@ -876,7 +877,7 @@ processWrListList (SEXP a, int argNum, SEXP *symList, int symListSiz, int *symLi
       ++*symListLen;
     }
     else {
-      error ("processWrListList: argument %d element %d is not a valid symbol List: %s", argNum, k+1, msg);
+      error ("processWrListList: argument %d element %d is not a valid symbol list: %s", argNum, k+1, msg);
     }
   }
   return;
@@ -943,7 +944,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
               wSpec_t **wSpecPtr, int *protCount)
 {
   SEXP lstNames, tmpUel;
-  SEXP dimension;
+  SEXP valDim = NULL;
   SEXP nameExp = NULL;
   SEXP typeExp = NULL;
   SEXP valExp = NULL;
@@ -951,6 +952,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
   SEXP formExp = NULL;
   SEXP aliasForExp = NULL;
   SEXP dimExp = NULL;
+  SEXP teExp = NULL;
   SEXP tsExp = NULL;
   SEXP domExp = NULL;
   SEXP fieldExp = NULL;
@@ -1021,6 +1023,9 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
     else if (0 == strcmp("dim", eltName)) {
       dimExp = VECTOR_ELT(lst, i);
     }
+    else if (0 == strcmp("te", eltName)) {
+      teExp = VECTOR_ELT(lst, i);
+    }
     else if (0 == strcmp("ts", eltName)) {
       tsExp = VECTOR_ELT(lst, i);
     }
@@ -1053,15 +1058,6 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
   checkStringLength (tmpName);
   strcpy (wSpec->name, tmpName);
 
-  if (tsExp) {
-    if (STRSXP != TYPEOF(tsExp)) {
-      error ("Input list element 'ts' must be a string - found %s instead.",
-             typeofTxt(tsExp, buf));
-    }
-    checkStringLength (CHAR(STRING_ELT(tsExp, 0)));
-    wSpec->withTs = 1;
-  }
-
   if (formExp) {
     if (STRSXP != TYPEOF(formExp)) {
       error ("Input list element 'form' must be a string - found %s instead.",
@@ -1078,6 +1074,15 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
       error("Input list element 'form' must be either 'full' or 'sparse'.");
     }
   } /* formExp */
+
+  if (tsExp) {
+    if (STRSXP != TYPEOF(tsExp)) {
+      error ("Input list element 'ts' must be a string - found %s instead.",
+             typeofTxt(tsExp, buf));
+    }
+    checkStringLength (CHAR(STRING_ELT(tsExp, 0)));
+    wSpec->withTs = 1;
+  }
 
   if (typeExp) {                /* optional */
     if (STRSXP != TYPEOF(typeExp)) {
@@ -1233,20 +1238,20 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
     }
   }
   else {
-    dimension = getAttrib(valExp, R_DimSymbol);
+    valDim = getAttrib(valExp, R_DimSymbol);
     if (TYPEOF(valExp) == REALSXP || TYPEOF(valExp) == INTSXP ) {
       if (wSpec->dForm == sparse) {
-        if (length(dimension) != 2) {
+        if (length(valDim) != 2) {
           error ("Only 2-dimensional 'val' is allowed as valid input in sparse format: found %d-dim val.",
-                 length(dimension));
+                 length(valDim));
         }
         /* getting data matrix */
-        sz = INTEGER(dimension)[0];
+        sz = INTEGER(valDim)[0];
         if (sz > INT_MAX) {
           error ("Input list element 'val' exceeds row limit of %d",
                  INT_MAX);
         }
-        sz = INTEGER(dimension)[1];
+        sz = INTEGER(valDim)[1];
         if (sz > INT_MAX) {
           error ("Input list element 'val' exceeds column limit of %d",
                  INT_MAX);
@@ -1295,7 +1300,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
       } /* if sparse */
       else {
         /* This is for Full/Dense data */
-        symDimTmp = length(dimension);
+        symDimTmp = length(valDim);
         switch (wSpec->dType) {
         case set:
         case parameter:
@@ -1402,7 +1407,6 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
     } /* symbol type variable or equation */
   }
 
-
   checkSymType5 (wSpec->dType, __LINE__);
   if (variable == wSpec->dType) { /* require a typeCode */
     if (wSpec->typeCode < 0)
@@ -1429,6 +1433,32 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
     ++*protCount;
     createUelOut (valExp, symUels, wSpec->dType, wSpec->dForm);
   }
+
+  /* maybe check if a $te here makes sense */
+
+  if (teExp) {
+    SEXP teDim;
+
+    if (TYPEOF(teExp) != STRSXP) {
+      error ("Input list element 'te' must be of type character - found %s instead.",
+             typeofTxt(teExp, buf));
+    }
+    if (wSpec->dForm == sparse) {
+      /* Rprintf ("DEBUG: set elements = %d\n", INTEGER(valDim)[0]); */
+      if (length(teExp) != INTEGER(valDim)[0]) {
+        error ("Optional input list element 'te' must align with 'val'.");
+      }
+#if 0
+      error ("The list element 'te' is not implemented for form=sparse.");
+#else
+      /* warning ("The list element 'te' is not implemented for form=sparse."); */
+#endif
+    }
+    else {
+      teDim = getAttrib(teExp, R_DimSymbol);
+      error ("The list element 'te' is not implemented for form=full.");
+    }
+  } /* if teExp */
 
   if ((equation == wSpec->dType) && (full == wSpec->dForm))
     error ("form='full' is not implemented for equations.");
@@ -1609,6 +1639,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   SEXP rowPerms;           /* vector of rowPerm's, one per symbol */
   SEXP lstNames, valData;
   SEXP domExp = NULL;
+  SEXP teExp = NULL;
   wSpec_t **wSpecPtr;           /* was data */
   gdxUelIndex_t uelIndices;
   gdxValues_t vals, defVals;
@@ -1729,7 +1760,9 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 
     /* the code below assumes the symbol is not an alias */
     checkSymType4 (wSpecPtr[iSym]->dType, __LINE__);
-    domExp = NULL;
+    domExp = teExp = NULL;
+    /* take apart the input list
+     * assumes already validated & preprocessed in readWgdxList */
     for (k = 0;  k < length(symList[iSym]);  k++) {
       const char *eltName;      /* list element name */
 
@@ -1739,6 +1772,9 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
       }
       else if (strcmp("domains", eltName) == 0) {
         domExp = VECTOR_ELT(symList[iSym], k);
+      }
+      else if (strcmp("te", eltName) == 0) {
+        teExp = VECTOR_ELT(symList[iSym], k);
       }
     }
     iVecVec = VECTOR_ELT(uelIndex, iSym);
@@ -1786,6 +1822,8 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 
       if ((parameter == wSpecPtr[iSym]->dType) ||
           (set == wSpecPtr[iSym]->dType)) {
+        const char *s;
+
         if (parameter == wSpecPtr[iSym]->dType) {
           nColumns--;
           rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[iSym]->name, expText,
@@ -1810,6 +1848,12 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
           pi = INTEGER(valData);
         }
         for (iRow = 0;  iRow < nRows;  iRow++) {
+#if 0
+          if (teExp) {
+            s = CHAR(STRING_ELT(teExp, iRow));
+            Rprintf ("  row %d: atext = %s\n", iRow, s);
+          }
+#endif
           for (k = 0;  k < nColumns;  k++) {
             iVec = VECTOR_ELT(iVecVec, k);
             if (pd) {
@@ -1831,6 +1875,31 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
               vals[0] = sVals[GMS_SVIDX_NA];
             }
           }
+          if (teExp) {          /* implies it is a set */
+            int txtIdx;
+            SEXP sExp;
+            Rboolean inventSetText = NA_LOGICAL;
+
+            sExp = STRING_ELT(teExp, iRow);
+            vals[0] = 0;
+            if (sExp == R_NaString) {
+              /* NA always maps to <no associated text stored> */
+              /* Rprintf ("  found R_NaString: no atext!\n"); */
+            }
+            else {
+              s = CHAR(sExp);
+              if (s) {    /* NULL always maps to <no associated text stored> */
+                if (('\0' != *s) || (FALSE != inventSetText)) {
+                  /* nonempty string is always meaningful */
+                  /* if inventSetText!=F, empty string also significant: not mapped to <no text> */
+                  rc = gdxAddSetText (gdxHandle, s, &txtIdx);
+                  /* Rprintf ("  addSetText rc=%d  txtIdx=%d\n", rc, txtIdx); */
+                  if (rc)
+                    vals[0] = txtIdx;
+                } /* found meaningful associated text in R */
+              }   /* extraction of text worked */
+            } /* if NA .. else .. */
+          } /* if teExp */
           if ((parameter == wSpecPtr[iSym]->dType) &&
               (0 == vals[0]) && ('e' == zeroSqueeze))
             vals[0] = sVals[GMS_SVIDX_EPS];
