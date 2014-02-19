@@ -819,6 +819,19 @@ getNonZeroElements (gdxHandle_t h, int symIdx, dField_t dField)
   return cnt;
 } /* getNonZeroElements */
 
+/* get option gdx.inventSetText */
+Rboolean
+getInventSetText (Rboolean defVal)
+{
+  SEXP o = GetOption1(install("gdx.inventSetText"));
+
+  if (R_NilValue == o)
+    return defVal;
+  if (LGLSXP == TYPEOF(o))
+    return LOGICAL(o)[0];
+  return asLogical(o);
+} /* getInventSetText */
+
 /* interpret an expression (probably an input arg) as a logical/boolean */
 Rboolean
 exp2Boolean (SEXP exp)

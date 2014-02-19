@@ -13,6 +13,7 @@
 # include <sys/wait.h>
 #endif
 
+#define INVENT_SET_TEXT_DEFAULT NA_LOGICAL
 #define LINELEN 1024
 #define MAX_STRING 128
 #if defined(__linux__) && defined(__x86_64)
@@ -164,6 +165,8 @@ getNonDefaultElemCount (gdxHandle_t h, int symIdx,
                         int symType, int symSubType, dField_t dField);
 int
 getNonZeroElements (gdxHandle_t h, int symIdx, dField_t dField);
+Rboolean
+getInventSetText (Rboolean defVal);
 Rboolean
 exp2Boolean (SEXP exp);
 int

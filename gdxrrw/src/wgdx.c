@@ -1814,6 +1814,8 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
     }
 
     if (wSpecPtr[iSym]->dForm == sparse) {
+      Rboolean inventSetText = INVENT_SET_TEXT_DEFAULT;
+
       dimVect = getAttrib(valData, R_DimSymbol);
       nColumns = INTEGER(dimVect)[1];
       nRows = INTEGER(dimVect)[0];
@@ -1833,6 +1835,9 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
           rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[iSym]->name, expText,
                                      nColumns, GMS_DT_SET, 0);
           vals[0] = 0;
+          if (teExp) {
+            inventSetText = getInventSetText (INVENT_SET_TEXT_DEFAULT);
+          }
         }
         if (!rc) {
           error("Error calling gdxDataWriteMapStart for symbol '%s': %s",
@@ -1878,7 +1883,6 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
           if (teExp) {          /* implies it is a set */
             int txtIdx;
             SEXP sExp;
-            Rboolean inventSetText = NA_LOGICAL;
 
             sExp = STRING_ELT(teExp, iRow);
             vals[0] = 0;
