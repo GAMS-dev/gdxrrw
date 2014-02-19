@@ -6,9 +6,12 @@ if (! require(gdxrrw))      stop ("gdxrrw package is not available")
 if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
 testName <- 'writing set text'
+logFile <- 'diffLog.txt'
+redirect <- paste(' >', logFile)
 
 errFunc <- function(ex) {
   print (paste0("test of wgdx on ",testName,": FAILED"))
+  print (paste("Check file", logFile, "for possible gdxdiff output"))
   print(ex)
   FALSE
 } # errFunc
@@ -18,6 +21,7 @@ tryCatch({
   wgdx('?')
   fnOut <- "tmp.gdx"
   fnWant <- "teWriteSetText.gdx"
+  fnWant2 <- "teWriteSetTextAlt.gdx"
   if (! file_test ('-f', fnWant)) {
     stop (paste("FAIL: File-to-duplicate", fnWant, "does not exist"))
   }
@@ -55,7 +59,7 @@ tryCatch({
   teIJ <- matrix(NA_character_,nrow=ijN,ncol=1)
   teIJ[1,1] <- "one.one"
   teIJ[3,1] <- "trailing blank "
-  teIJ[4,1] <- "three.three"
+  teIJ[4,1] <- ""
   teIJ[5,1] <- " "
 
   vI <- list(name='I',type='set',form='sparse',val=valI,uels=uels,
@@ -69,13 +73,13 @@ tryCatch({
   options(gdx.inventSetText=NULL)
   wgdx.lst(fnOut, vI, vJ, vIJ)
   if (file_test ('-f', fnOut) == TRUE) {
-    print (paste("File", fnOut, "was created"))
+    # print (paste("File", fnOut, "was created"))
   } else {
     stop (paste("FAIL: File", fnOut, "is not readable"))
   }
-  rc <- system (paste("gdxdiff", fnWant, fnOut))
+  rc <- system (paste("gdxdiff", fnWant, fnOut, redirect))
   if (0 != rc) {
-    stop(paste("Bad return from gdxdiff: wanted 0, got",rc))
+    stop(paste("With gdx.inventSetText=NULL, bad return from gdxdiff: wanted 0, got",rc))
   } else {
 #    print ("gdxdiff call succeeded")
   }
@@ -84,36 +88,58 @@ tryCatch({
   options(gdx.inventSetText=NA)
   wgdx.lst(fnOut, vI, vJ, vIJ)
   if (file_test ('-f', fnOut) == TRUE) {
-    print (paste("File", fnOut, "was created"))
+    # print (paste("File", fnOut, "was created"))
   } else {
     stop (paste("FAIL: File", fnOut, "is not readable"))
   }
-  rc <- system (paste("gdxdiff", fnWant, fnOut))
+  rc <- system (paste("gdxdiff", fnWant, fnOut, redirect))
   if (0 != rc) {
-    stop(paste("Bad return from gdxdiff: wanted 0, got",rc))
+    stop(paste("With gdx.inventSetText=NA, Bad return from gdxdiff: wanted 0, got",rc))
   } else {
 #    print ("gdxdiff call succeeded")
   }
 
-    ## test with inventSetText=FALSE
+  ## test with inventSetText=FALSE
   options(gdx.inventSetText=F)
   wgdx.lst(fnOut, vI, vJ, vIJ)
   if (file_test ('-f', fnOut) == TRUE) {
-    print (paste("File", fnOut, "was created"))
+    # print (paste("File", fnOut, "was created"))
   } else {
     stop (paste("FAIL: File", fnOut, "is not readable"))
   }
-  rc <- system (paste("gdxdiff", fnWant, fnOut))
+  rc <- system (paste("gdxdiff", fnWant2, fnOut, redirect))
   if (0 != rc) {
-    stop(paste("Bad return from gdxdiff: wanted 0, got",rc))
+    stop(paste("With gdx.inventSetText=F, Bad return from gdxdiff: wanted 0, got",rc))
   } else {
-#    print ("gdxdiff call succeeded")
+    # print ("gdxdiff call succeeded")
   }
+  ## gdxdiff does not differentiate between no set text and
+  ## empty set text, so we test that explicitly here
+  options(gdx.inventSetText=NA)
+  IJ1 <- rgdx(fnOut,   list(name='IJ',form='sparse',te=TRUE))
+  teWant <- c('one.one', NA_character_, 'trailing blank ', NA_character_, ' ')
+  if (! identical(teWant,IJ1$te)) {
+    stop (paste('With gdx.inventSetText=F, inconsistent set text for IJ in file',fnOut))
+  }
+
 
   ## test with inventSetText=TRUE
   options(gdx.inventSetText=T)
+  wgdx.lst(fnOut, vI, vJ, vIJ)
+  if (file_test ('-f', fnOut) == TRUE) {
+    # print (paste("File", fnOut, "was created"))
+  } else {
+    stop (paste("FAIL: File", fnOut, "is not readable"))
+  }
+  rc <- system (paste("gdxdiff", fnWant, fnOut, redirect))
+  if (0 != rc) {
+    stop(paste("With gdx.inventSetText=T, Bad return from gdxdiff: wanted 0, got",rc))
+  } else {
+    # print ("gdxdiff call succeeded")
+  }
 
   print (paste0("test of wgdx on ", testName, ": PASSED"))
+  suppressWarnings(file.remove(logFile))
   invisible(TRUE)   ## all tests passed: return TRUE
 },
 
