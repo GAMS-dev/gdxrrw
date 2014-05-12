@@ -1,6 +1,7 @@
 ## test wgdx on writing set text
 ## gdxdump or gdxdiff do not really do what we want here, so just have
 ## to read from the generated GDX and the target GDX and compare the results
+## for I and IJ
 
 if (! require(gdxrrw))      stop ("gdxrrw package is not available")
 if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
@@ -40,6 +41,7 @@ tryCatch({
   teI[1,1] <- "i1 associated text"
   teI[2,1] <- "i2's text here"
   teI[3,1] <- "  "
+  teI0 <- c("i1 associated text", "i2's text here", "  ", NA_character_)
 
   valJ <- matrix(0,nrow=jN,ncol=1)
   for (k in 1:jN) {
@@ -61,6 +63,7 @@ tryCatch({
   teIJ[3,1] <- "trailing blank "
   teIJ[4,1] <- ""
   teIJ[5,1] <- " "
+  teIJ0 <- c('one.one', NA_character_, 'trailing blank ', '', ' ')
 
   vI <- list(name='I',type='set',form='sparse',val=valI,uels=uels,
              ts='',te=teI)
@@ -83,6 +86,7 @@ tryCatch({
   } else {
 #    print ("gdxdiff call succeeded")
   }
+  ## no need to test via wgdx: will get done below
 
   ## test with inventSetText=NA
   options(gdx.inventSetText=NA)
@@ -97,6 +101,18 @@ tryCatch({
     stop(paste("With gdx.inventSetText=NA, Bad return from gdxdiff: wanted 0, got",rc))
   } else {
 #    print ("gdxdiff call succeeded")
+  }
+  ## gdxdiff does not differentiate between no set text and
+  ## empty set text, so we test that explicitly here
+  I1 <- rgdx(fnOut,   list(name='I',form='sparse',te=TRUE))
+  teI1 <- teI0
+  if (! identical(teI1,I1$te)) {
+    stop (paste('With gdx.inventSetText=NA, inconsistent set text for I in file',fnOut))
+  }
+  IJ1 <- rgdx(fnOut,   list(name='IJ',form='sparse',te=TRUE))
+  teIJ1 <- teIJ0
+  if (! identical(teIJ1,IJ1$te)) {
+    stop (paste('With gdx.inventSetText=NA, inconsistent set text for IJ in file',fnOut))
   }
 
   ## test with inventSetText=FALSE
@@ -116,12 +132,19 @@ tryCatch({
   ## gdxdiff does not differentiate between no set text and
   ## empty set text, so we test that explicitly here
   options(gdx.inventSetText=NA)
-  IJ1 <- rgdx(fnOut,   list(name='IJ',form='sparse',te=TRUE))
-  teWant <- c('one.one', NA_character_, 'trailing blank ', NA_character_, ' ')
-  if (! identical(teWant,IJ1$te)) {
-    stop (paste('With gdx.inventSetText=F, inconsistent set text for IJ in file',fnOut))
+  I1 <- rgdx(fnOut,   list(name='I',form='sparse',te=TRUE))
+  teI1 <- teI0
+  if (! identical(teI1,I1$te)) {
+    stop (paste('With gdx.inventSetText=F, inconsistent set text for I in file',fnOut))
   }
-
+  ## with inventSetText=F, fnOut should store empty text strings like no string
+  ## and this should come back as NA when we read
+  IJ1 <- rgdx(fnOut,   list(name='IJ',form='sparse',te=TRUE))
+  teIJ1 <- teIJ0
+  teIJ1[4] <- NA_character_
+  if (! identical(teIJ1,IJ1$te)) {
+    stop (paste('JJJ With gdx.inventSetText=F, inconsistent set text for IJ in file',fnOut))
+  }
 
   ## test with inventSetText=TRUE
   options(gdx.inventSetText=T)
@@ -136,6 +159,19 @@ tryCatch({
     stop(paste("With gdx.inventSetText=T, Bad return from gdxdiff: wanted 0, got",rc))
   } else {
     # print ("gdxdiff call succeeded")
+  }
+  ## gdxdiff does not differentiate between no set text and
+  ## empty set text, so we test that explicitly here
+  options(gdx.inventSetText=NA)
+  I1 <- rgdx(fnOut,   list(name='I',form='sparse',te=TRUE))
+  teI1 <- teI0
+  if (! identical(teI1,I1$te)) {
+    stop (paste('With gdx.inventSetText=NA, inconsistent set text for I in file',fnOut))
+  }
+  IJ1 <- rgdx(fnOut,   list(name='IJ',form='sparse',te=TRUE))
+  teIJ1 <- teIJ0
+  if (! identical(teIJ1,IJ1$te)) {
+    stop (paste('With gdx.inventSetText=NA, inconsistent set text for IJ in file',fnOut))
   }
 
   print (paste0("test of wgdx on ", testName, ": PASSED"))
