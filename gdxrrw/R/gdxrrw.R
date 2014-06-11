@@ -510,11 +510,11 @@ wgdx.reshape <- function (inDF, symDim, symName=NULL, tName="time",
     else {
       df3 <- melt (df2, id=idCols)
       oo <- vector(mode="integer",length=symDim+1)
-      for (k in 1:timeIdx-1) {
+      for (k in 1:(timeIdx-1)) {
         oo[k] = k
       }
       oo[timeIdx] = symDim
-      for (k in timeIdx+1:symDim) {
+      for (k in (timeIdx+1):symDim) {
         oo[k] = k-1
       }
       oo[symDim+1] = symDim+1
