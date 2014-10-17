@@ -1,0 +1,40 @@
+/*+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+*/
+/** \mainpage GDXRRW: Interfacing GAMS and R
+
+\author Michael C. Ferris [(ferris@cs.wisc.edu)] (mailto:ferris@cs.wisc.edu), 
+Computer Sciences Department, University of Wisconsin - Madison, 1210 West Dayton
+Street, Madison, Wisconsin 53706
+\author Steven Dirkse [(sdirkse@gams.com)](mailto:sdirkse@gams.com)
+GAMS Development Corp., 1217 Potomac Street, NW, Washington, DC 20007
+\date December 4, 2012
+
+GDXRRW is a suite of utilities to import/export data between GAMS and
+R (both of which the user is assumed to have already) and to call GAMS conveniently 
+from R. The software gives R users the ability to use all the optimization
+capabilities of GAMS, and allows visualization and other operations on GAMS
+data directly within R.
+
+The GDXRRW tool is unique among the GDX interface utilities in that it
+is an R extension made available as an R package. As such, it is run as part of
+an R session or script, not as part of a GAMS run, and it follows the usual R
+package conventions.
+
+1. <strong>Installation</strong>: The R software is designed to be easily extended. 
+   Thousands of extension packages are freely and conveniently available online
+   and can be installed easily using a simple, standard procedure. The
+   GDXRRW package is one of these. The latest version is available from
+   the GDXRRW Wiki http://support.gams.com/doku.php?id=gdxrrw:interfacing_gams_and_r 
+   in both source and binary form, along with a FAQ list, some hints and tips on 
+   common problems and solutions, and other helpful content. For convenience, 
+   the source and binary packages are also available in the gdxrrw directory of 
+   the GAMS distribution.
+2. <strong>Documentation</strong>: The GDXRRW documentation is installed as part of
+   the GDXRRW package and is available from within R in the usual way.
+   See the GDXRRW Wiki for details and hints.
+3. <strong>Examples, tests, and data</strong>: Like many R packages, GDXRRW comes
+   with examples and data that help a user get started using the package.
+   The R help system and the GDXRRW Wiki provide pointers to these. The
+   Wiki also provides hints on finding and running the thousands of lines of
+  tests that come with the GDXRRW package.
+
+*/
