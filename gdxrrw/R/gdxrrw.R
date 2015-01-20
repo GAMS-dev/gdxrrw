@@ -337,8 +337,8 @@ processDF <- function(df, msg)
   o$val <- v
   o$uels <- uels
   if (haveTe) {
-    warning ("(",msg,")[[", symDim+1, "]] is ignored set text")
-    # o$te <- df[,(symDim+1)]
+    # warning ("(",msg,")[[", symDim+1, "]] is ignored set text")
+    o$te <- df[,(symDim+1)]
   }
   o
 } # processDF
