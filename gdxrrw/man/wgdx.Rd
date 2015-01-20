@@ -35,7 +35,7 @@
   to be: non-empty text strings are stored in GDX, and NA results in no
   associated text being stored.  How to handle the empty string is less
   clear, so we use the \code{gdx.inventSetText} option introduced for
-  \code{\link{rgdx}} to control \code{rgdx} also.  In case
+  \code{\link{rgdx}} to control \code{wgdx} also.  In case
   \code{options(gdx.inventSetText=F)}, we store an empty string as if no
   text had been provided, otherwise we store the empty string
   explicitly.
