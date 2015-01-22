@@ -90,7 +90,7 @@ tryCatch({
   } else {
     stop (paste("FAIL: File", fnOut, "is not readable"))
   }
-  rc <- system (paste("gdxdiff", fnWant, fnOut, redirect))
+  rc <- system2 ("gdxdiff",args=c(fnWant, fnOut), stdout=logFile)
   if (0 != rc) {
     stop(paste("With gdx.inventSetText=NULL, bad return from gdxdiff: wanted 0, got",rc))
   } else {
@@ -106,7 +106,7 @@ tryCatch({
   } else {
     stop (paste("FAIL: File", fnOut, "is not readable"))
   }
-  rc <- system (paste("gdxdiff", fnWant, fnOut, redirect))
+  rc <- system2 ("gdxdiff",args=c(fnWant, fnOut), stdout=logFile)
   if (0 != rc) {
     stop(paste("With gdx.inventSetText=NA, Bad return from gdxdiff: wanted 0, got",rc))
   } else {
@@ -133,7 +133,7 @@ tryCatch({
   } else {
     stop (paste("FAIL: File", fnOut, "is not readable"))
   }
-  rc <- system (paste("gdxdiff", fnWant2, fnOut, redirect))
+  rc <- system2 ("gdxdiff",args=c(fnWant2, fnOut), stdout=logFile)
   if (0 != rc) {
     stop(paste("With gdx.inventSetText=F, Bad return from gdxdiff: wanted 0, got",rc))
   } else {
@@ -164,7 +164,7 @@ tryCatch({
   } else {
     stop (paste("FAIL: File", fnOut, "is not readable"))
   }
-  rc <- system (paste("gdxdiff", fnWant, fnOut, redirect))
+  rc <- system2 ("gdxdiff",args=c(fnWant, fnOut), stdout=logFile)
   if (0 != rc) {
     stop(paste("With gdx.inventSetText=T, Bad return from gdxdiff: wanted 0, got",rc))
   } else {
