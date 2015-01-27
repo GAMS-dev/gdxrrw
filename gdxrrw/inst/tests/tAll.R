@@ -47,9 +47,9 @@ tests <- c(
     ## "tInfo1", "tInfo2",
     ## "tLS"
 )
-if (0 == quickMode) {
-  tests <- c(tests, "tWriteVar20")
-}
+## if (0 == quickMode) {
+##   tests <- c(tests, "tWriteVar20")
+## }
 f <- find('interact',mode='logical')
 doPrompt <- FALSE
 if (length(f) > 0) {
