@@ -23,7 +23,8 @@ tryCatch({
   if (! file_test ('-f', fnWant)) {
     stop (paste("FAIL: File-to-duplicate", fnWant, "does not exist"))
   }
-  v <- list(name='w',type='parameter',form='full',val=NaN,dim=0,ts='R-NaN sent to GDX')
+  v <- list(name='w',type='parameter',form='full', val=NaN,
+            dim=0,ts='R-NaN sent to GDX')
   wgdx.lst(fnOut, v)
   if (file_test ('-f', fnOut) == TRUE) {
     # print (paste("File", fnOut, "was created"))

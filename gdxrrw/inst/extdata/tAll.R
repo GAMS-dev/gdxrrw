@@ -24,25 +24,7 @@ if (! interactive()) {
 }
 
 # first the majority of tests: these are quicker
-tests <- c("tReadSparse1", "tReadFull1",
-           "tRead.set", "tRead.param",
-           "tReadSV", "tReadText", "tReadCase",
-           "tReadErr",
-           "tReadWithDomainInfo", "tReadPreDomainInfo",
-           "tReadCompressWithoutDomInfo", "tReadCompressWithDomInfo",
-           "tReadVar0", "tReadVar1", "tReadVar3",
-           "tReadEqu",
-           "tReadDFNames",
-           "tWriteSparse1", "tWriteSparse2", "tWriteFull1", "tWriteFull2",
-           "tWriteSetText", "tWriteSetTextDF",
-           "tWriteLst",
-           "tWriteSV",
-           "tWriteEquTypes",
-           "tWriteVarField", "tWriteVarSort", "tWriteVarOrder",
-           "tWriteVarTypesSparse", "tWriteVarFUels",
-           "tWriteVarTypesFull",
-           "tWrap",
-           "tInfo1", "tInfo2",
+tests <- c(
            "tLS")
 if (0 == quickMode) {
   tests <- c(tests, "tWriteVar20")
