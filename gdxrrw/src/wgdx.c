@@ -1437,8 +1437,6 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
   /* maybe check if a $te here makes sense */
 
   if (teExp) {
-    SEXP teDim;
-
     if (TYPEOF(teExp) != STRSXP) {
       error ("Input list element 'te' must be of type character - found %s instead.",
              typeofTxt(teExp, buf));
@@ -1455,7 +1453,6 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
 #endif
     }
     else {
-      teDim = getAttrib(teExp, R_DimSymbol);
       error ("The list element 'te' is not implemented for form=full.");
     }
   } /* if teExp */
@@ -1685,7 +1682,10 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   glbNegInf = negInf = -1 / dt;
   sVals[GMS_SVIDX_PINF] = posInf;
   sVals[GMS_SVIDX_MINF] = negInf;
-  gdxSetSpecialValues (gdxHandle, sVals);
+  rc = gdxSetSpecialValues (gdxHandle, sVals);
+  if (! rc) {
+    error ("failed call to gdxSetSpecialValues");
+  }
 
   rc = gdxUELRegisterStrStart (gdxHandle);
   if (! rc) {
