@@ -262,6 +262,9 @@ static double mapSpecVals (gdxSVals_t sVals, double x)
   if (ISNA(x)) {
     return sVals[GMS_SVIDX_NA];
   }
+  if (ISNAN(x)) {
+    return sVals[GMS_SVIDX_UNDEF];
+  }
   return x;
 } /* mapSpecVals */
 
@@ -1685,8 +1688,14 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
     error("Could not open gdx file with gdxOpenWrite: %s", getGDXErrorMsg());
 
   gdxGetSpecialValues (gdxHandle, sVals);
+#if 0
   d64.u64 = 0x7fffffffffffffff; /* positive QNaN, mantissa all on */
+  d64.u64 = 0xffefffffffffffff; /* largest negative normalized real */
+#endif
+  d64.u64 = 0xffeffffffffffffd; /* two bits smaller than -(MIN_DBL) */
   sVals[GMS_SVIDX_UNDEF] = d64.x;
+  d64.u64 = 0xffeffffffffffffe; /* three bits smaller than -(MIN_DBL) */
+  sVals[GMS_SVIDX_NA] = d64.x;
   dt = 0.0;
   glbPosInf = posInf =  1 / dt;
   glbNegInf = negInf = -1 / dt;
@@ -1696,6 +1705,19 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   if (! rc) {
     error ("failed call to gdxSetSpecialValues");
   }
+
+#if 0
+  d64.x = posInf;
+  Rprintf ("posInf   bits: 0x%0lx\n", d64.u64);
+  d64.u64 -= 2;
+  Rprintf ("posInf-2 bits: 0x%0lx\n", d64.u64);
+  d64.u64 -= 1;
+  Rprintf ("posInf-3 bits: 0x%0lx\n", d64.u64);
+  Rprintf ("posInf-3  dbl: %g\n", d64.x);
+  d64.u64 |= (1UL << 63);
+  Rprintf ("      negated: %g\n", d64.x);
+  Rprintf ("         bits: 0x%0lx\n", d64.u64);
+#endif
 
   rc = gdxUELRegisterStrStart (gdxHandle);
   if (! rc) {
