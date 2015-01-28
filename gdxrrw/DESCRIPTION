@@ -1,7 +1,7 @@
 Package: gdxrrw
 Type: Package
 Title: An interface between GAMS and R
-Version: 0.5.0
+Version: 0.5.1
 Depends: R (>= 2.14)
 Date: 2015-01-21
 Author: Original coding by Rishabh Jain.  Adopted, packaged, and extended by Steve Dirkse.
