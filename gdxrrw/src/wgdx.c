@@ -255,6 +255,16 @@ getDefaultVarRec (int typeCode, gdxValues_t vals)
   return;
 } /* getDefaultVarRec */
 
+/* map values from R special values into values used for GDX special values */
+static double mapSpecVals (gdxSVals_t sVals, double x)
+{
+  /* N.B.  ISNA(x) implies ISNAN(x) */
+  if (ISNA(x)) {
+    return sVals[GMS_SVIDX_NA];
+  }
+  return x;
+} /* mapSpecVals */
+
 static void
 getFieldMapping (SEXP val, SEXP labels, SEXP *fVec, wSpec_t *wSpec, int *protCount)
 {
@@ -1876,9 +1886,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
             else {
               vals[0] = pi[nColumns*nRows + iRow];
             }
-            if (ISNA(vals[0])) {
-              vals[0] = sVals[GMS_SVIDX_NA];
-            }
+            vals[0] = mapSpecVals(sVals, vals[0]);
           }
           if (teExp) {          /* implies it is a set */
             int txtIdx;
@@ -2092,10 +2100,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
           else
             dt = pi[index];
           if (wSpecPtr[iSym]->dType == parameter) {
-            vals[0] = dt;
-            if (ISNA(vals[0])) {
-              vals[0] = sVals[GMS_SVIDX_NA];
-            }
+            vals[0] = mapSpecVals(sVals, dt);
           }
           else if (set == wSpecPtr[iSym]->dType) {
             /* could do the check in checkForValidData but
