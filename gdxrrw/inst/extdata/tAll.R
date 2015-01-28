@@ -12,23 +12,8 @@ Sys.setenv(PATH=paste(gdir,pth,sep=sepChar))
 rc <- source ("tgdxdiff.R")
 if (! rc$value)  stop ("The gdxdiff utility is unavailable or broken: Test run aborted.")
 
-if (! interactive()) {
-  a <- commandArgs(trailingOnly=TRUE)
-  quickMode <- 0
-  if ((length(a) > 0) && ("quick" == a[1]))  quickMode <- 1
-  print(paste("quick set via commandArgs =",quickMode))
-} else {
-  f <- find('quickMode',mode='numeric')
-  if (0 == length(f)) quickMode <- 0
-  print(paste("quick set interactively =",quickMode))
-}
-
-# first the majority of tests: these are quicker
 tests <- c(
            "tLS")
-if (0 == quickMode) {
-  tests <- c(tests, "tWriteVar20")
-}
 f <- find('interact',mode='logical')
 doPrompt <- FALSE
 if (length(f) > 0) {
@@ -58,7 +43,6 @@ for (ttt in tests) {
   }
 }
 Sys.setenv(PATH=pth)
-if (quickMode) print ("N.B.: quickMode is on, some tests were skipped")
 if (nFails) {
   print (paste("Tests complete. ", nRuns,"tests run,",nFails,"tests FAILED"))
   for (nm in names(fTests)) print(paste0('  ',nm))
