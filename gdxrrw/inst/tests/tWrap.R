@@ -6,20 +6,23 @@ if (! require(gdxrrw))      stop ("gdxrrw package is not available")
 if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
 testName <- 'basic wrapper functioning'
+logFile <- 'diffLog.txt'
 
 errFunc <- function(ex) {
   print (paste0("test of gdxrrw on ",testName,": FAILED"))
-  print(ex)
+  print (paste("Check file", logFile, "for possible gdxdiff output"))
+  print (ex)
   FALSE
 } # errFunc
 
 tryCatch({
+  print (paste("testing gdxrrw on", testName))
   fnIn <- "trnsport.gdx"
   fnOut <- "wtransport.gdx"
   if (file_test ('-f', fnOut) == TRUE) {
     file.remove (fnOut)
   }
-  print (paste("starting",testName))
+
   # read all the data, using various combination of options
   idf <- rgdx.set(fnIn,'i',ts=TRUE)
   jdf <- rgdx.set(fnIn,'j',names="J",compress=TRUE)
@@ -35,7 +38,8 @@ tryCatch({
   } else {
     stop (paste("FAIL: File", fnOut, "is not readable"))
   }
-  rc <- system (paste("gdxdiff",fnIn,fnOut,"releps=1e-15 id=i,j,a,b,c,d,f"))
+  rc <- system2 ("gdxdiff",args=c(fnIn, fnOut,
+                               "releps=1e-15", "id=i,j,a,b,c,d,f"), stdout=logFile)
   if (0 != rc) {
     stop(paste("Bad return from gdxdiff: wanted 0, got",rc))
   } else {
@@ -62,7 +66,8 @@ tryCatch({
   } else {
     stop (paste("FAIL: File", fnOut, "is not readable"))
   }
-  rc <- system (paste("gdxdiff",fnIn,fnOut,"releps=1e-15 id=i,j,a,b,c,d,f"))
+  rc <- system2 ("gdxdiff",args=c(fnIn, fnOut,
+                               "releps=1e-15", "id=i,j,a,b,c,d,f"), stdout=logFile)
   if (0 != rc) {
     stop(paste("Bad return from gdxdiff: wanted 0, got",rc))
   } else {
@@ -73,6 +78,7 @@ tryCatch({
   }
 
   print (paste0("test of gdxrrw on ",testName,": PASSED"))
+  suppressWarnings(file.remove(logFile))
   invisible(TRUE)   ## all tests passed: return TRUE
 },
 

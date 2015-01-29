@@ -3,9 +3,18 @@
 if (! require(gdxrrw))      stop ("gdxrrw package is not available")
 if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
-tryCatch({
+testName <- "writing special values with form='sparse' and no filter"
+logFile <- 'diffLog.txt'
 
-  print ("test writing special values with form='sparse' and no filter")
+errFunc <- function(ex) {
+  print (paste0("test of wgdx on ",testName,": FAILED"))
+  print (paste("Check file", logFile, "for possible gdxdiff output"))
+  print (ex)
+  FALSE
+} # errFunc
+
+tryCatch({
+  print (paste("testing wgdx on", testName))
   wgdx ('?')
 
   uels <- list(c('dummy',"R-PInf","R-MInf","R-NaN","R-NA","R-Zero","R-denorm"));
@@ -48,7 +57,7 @@ tryCatch({
   } else {
     stop (paste("FAIL: File", fn1, "is not readable"))
   }
-  rc <- system (paste("gdxdiff",fn1,want1))
+  rc <- system2 ("gdxdiff",args=c(fn1, want1), stdout=logFile)
   if (0 != rc) {
     stop(paste("Bad return from gdxdiff: wanted 0, got",rc))
   } else {
@@ -60,7 +69,7 @@ tryCatch({
   } else {
     stop (paste("FAIL: File", fn2, "is not readable"))
   }
-  rc <- system (paste("gdxdiff",fn2,want2))
+  rc <- system2 ("gdxdiff",args=c(fn2, want2), stdout=logFile)
   if (0 != rc) {
     stop(paste("Bad return from gdxdiff: wanted 0, got",rc))
   } else {
@@ -72,16 +81,17 @@ tryCatch({
   } else {
     stop (paste("FAIL: File", fn3, "is not readable"))
   }
-  rc <- system (paste("gdxdiff",fn3,want3))
+  rc <- system2 ("gdxdiff",args=c(fn3, want3), stdout=logFile)
   if (0 != rc) {
     stop(paste("Bad return from gdxdiff: wanted 0, got",rc))
   } else {
     print (paste("gdxdiff call succeeded, file",fn3,"is OK"))
   }
 
-  print ("all tests for writing special values and zero passed")
-  TRUE
-}
+  print (paste0("test of wgdx on ", testName, ": PASSED"))
+  suppressWarnings(file.remove(logFile))
+  invisible(TRUE)   ## all tests passed: return TRUE
+},
 
-, error = function(ex) { print(ex) ; FALSE }
+error = errFunc
 )

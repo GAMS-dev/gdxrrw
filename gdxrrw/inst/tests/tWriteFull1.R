@@ -66,7 +66,7 @@ tryCatch({
     print ("gdxdiff call succeeded")
   }
 
-  print (paste0("test of wgdx.lst on ", testName, ": PASSED"))
+  print (paste0("test of wgdx on ", testName, ": PASSED"))
   suppressWarnings(file.remove(logFile))
   invisible(TRUE)   ## all tests passed: return TRUE
 },

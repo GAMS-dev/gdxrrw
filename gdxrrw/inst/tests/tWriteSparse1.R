@@ -4,13 +4,20 @@
 if (! require(gdxrrw))      stop ("gdxrrw package is not available")
 if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
+testName <- 'writing trnsport with form="sparse" and full universe'
+logFile <- 'diffLog.txt'
+
+errFunc <- function(ex) {
+  print (paste0("test of wgdx on ",testName,": FAILED"))
+  print (paste("Check file", logFile, "for possible gdxdiff output"))
+  print (ex)
+  FALSE
+} # errFunc
+
 tryCatch({
-
-  fn <- "tws1.gdx"
-
-  print ("Test wgdx with form='sparse' and a full universe,")
-  print ("using the transport data as the output target")
+  print (paste("testing wgdx on", testName))
   wgdx('?')
+  fn <- "tws1.gdx"
 
   # this is the universe for this GDX file
   uu <- list(c("seattle", "san-diego", "new-york", "chicago", "topeka"))
@@ -57,16 +64,18 @@ tryCatch({
   } else {
     stop (paste("FAIL: File", fn, "is not readable"))
   }
-  rc <- system (paste("gdxdiff trnsport.gdx",fn,"releps=1e-15 id=i,j,a,b,c,d,f"))
+  rc <- system2 ("gdxdiff",args=c("trnsport.gdx", fn, "releps=1e-15",
+                               "id=i,j,a,b,c,d,f"), stdout=logFile)
   if (0 != rc) {
     stop(paste("Bad return from gdxdiff: wanted 0, got",rc))
   } else {
     print ("gdxdiff call succeeded")
   }
 
-  print ("tWriteSparse1 successfully completed")
-  TRUE
-}
+  print (paste0("test of wgdx on ", testName, ": PASSED"))
+  suppressWarnings(file.remove(logFile))
+  invisible(TRUE)   ## all tests passed: return TRUE
+},
 
-, error = function(ex) { print(ex) ; FALSE }
+error = errFunc
 )
