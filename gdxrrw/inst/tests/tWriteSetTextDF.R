@@ -8,12 +8,11 @@ if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
 testName <- 'writing set text from a dataframe'
 logFile <- 'diffLog.txt'
-redirect <- paste(' >', logFile)
 
 errFunc <- function(ex) {
   print (paste0("test of wgdx.lst on ",testName,": FAILED"))
   print (paste("Check file", logFile, "for possible gdxdiff output"))
-  print(ex)
+  print (ex)
   FALSE
 } # errFunc
 

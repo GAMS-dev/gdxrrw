@@ -3,11 +3,13 @@
 if (! require(gdxrrw))      stop ("gdxrrw package is not available")
 if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
-testname <- "'field' list element for variable writes"
+testName <- "'field' list element for variable writes"
+logFile <- 'diffLog.txt'
 
 errFunc <- function(ex) {
   print (paste0("test of wgdx on ",testName,": FAILED"))
-  print(ex)
+  print (paste("Check file", logFile, "for possible gdxdiff output"))
+  print (ex)
   FALSE
 } # errFunc
 
@@ -32,7 +34,7 @@ tryCatch({
   } else {
     stop (paste("FAIL: File", fnOut, "is not readable"))
   }
-  rc <- system (paste("gdxdiff", fnIn, fnOut))
+  rc <- system2 ("gdxdiff",args=c(fnIn, fnOut), stdout=logFile)
   if (0 != rc) {
     stop(paste("Bad return from gdxdiff: wanted 0, got",rc))
   } else {
@@ -48,7 +50,7 @@ tryCatch({
   } else {
     stop (paste("FAIL: File", fnOut, "is not readable"))
   }
-  rc <- system (paste("gdxdiff", fnIn, fnOut))
+  rc <- system2 ("gdxdiff",args=c(fnIn, fnOut), stdout=logFile)
   if (0 != rc) {
     stop(paste("Bad return from gdxdiff: wanted 0, got",rc))
   } else {
@@ -72,6 +74,7 @@ tryCatch({
   } # for loop
 
   print (paste0("test of wgdx on ", testName, ": PASSED"))
+  suppressWarnings(file.remove(logFile))
   invisible(TRUE)   ## all tests passed: return TRUE
 },
 
