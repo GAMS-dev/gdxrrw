@@ -332,7 +332,8 @@ mkHPFilter (SEXP uFilter, hpFilter_t *hpf)
  * xpf: high-performance filter for internal use
  */
 void
-mkXPFilter (int symIdx, Rboolean useDomInfo, xpFilter_t filterList[], SEXP outDomains)
+mkXPFilter (int symIdx, Rboolean useDomInfo, xpFilter_t filterList[],
+            SEXP outDomains, int *domInfoCode)
 {
   int rc, iRec, nRecs, changeIdx;
   int kSym, kDim, kType;        /* for loop over index sets */
@@ -352,6 +353,7 @@ mkXPFilter (int symIdx, Rboolean useDomInfo, xpFilter_t filterList[], SEXP outDo
   for (iDim = 0;  iDim < GLOBAL_MAX_INDEX_DIM;  iDim++)
     strcpy (domPtrs[iDim], "*");
 
+  *domInfoCode = 0;             /* NA/unused */
   rc = gdxSymbolInfo (gdxHandle, symIdx, symName, &symDim, &symType);
   if (! rc)
     error ("bad return from gdxSymbolInfo in mkXPFilter");
@@ -362,8 +364,10 @@ mkXPFilter (int symIdx, Rboolean useDomInfo, xpFilter_t filterList[], SEXP outDo
   case GMS_DT_SET:
   case GMS_DT_VAR:
   case GMS_DT_EQU:
-    if (useDomInfo)
+    if (useDomInfo) {
       rc = gdxSymbolGetDomainX (gdxHandle, symIdx, domPtrs);
+      *domInfoCode = rc;
+    }
     else
       rc = 1;                   /* no domain info available */
     switch (rc) {
@@ -712,6 +716,65 @@ xpFilterToUels (int symDim, xpFilter_t filterList[], SEXP uni, SEXP uels)
   } /* loop over indices */
   return;
 } /* xpFilterToUels */
+
+/* getDomainNames: get domain names for symbol symIdx */
+void
+getDomainNames (int symIdx, Rboolean useDomInfo,
+                SEXP outDomains, int *domInfoCode)
+{
+  gdxStrIndex_t domNames;
+  gdxStrIndexPtrs_t domPtrs;
+  shortStringBuf_t symName;
+  int iDim, symDim, symType;
+  int rc;
+
+  GDXSTRINDEXPTRS_INIT (domNames, domPtrs);
+  /* gdxSymbolGetDomainX is/was buggy and might not write the domain names
+   * set to '*' to work around that */
+  for (iDim = 0;  iDim < GLOBAL_MAX_INDEX_DIM;  iDim++)
+    strcpy (domPtrs[iDim], "*");
+  *domInfoCode = 0;             /* NA/unused */
+  
+  rc = gdxSymbolInfo (gdxHandle, symIdx, symName, &symDim, &symType);
+  if (! rc)
+    error ("bad return from gdxSymbolInfo in getDomainNames");
+  if (symDim <= 0)
+    return;                     /* skip scalars */
+
+  switch (symType) {
+  case GMS_DT_PAR:
+  case GMS_DT_SET:
+  case GMS_DT_VAR:
+  case GMS_DT_EQU:
+    if (useDomInfo) {
+      *domInfoCode = rc = gdxSymbolGetDomainX (gdxHandle, symIdx, domPtrs);
+    }
+    else
+      rc = 1;                   /* no domain info available */
+    switch (rc) {
+    case 1:                     /* nothing available */
+      for (iDim = 0;  iDim < symDim;  iDim++) {
+        SET_STRING_ELT(outDomains, iDim, mkChar("*"));
+      }
+      break;
+    case 2:                   /* relaxed domain info */
+    case 3:                   /* full domain info */
+      for (iDim = 0;  iDim < symDim;  iDim++) {
+        SET_STRING_ELT(outDomains, iDim, mkChar(domPtrs[iDim]));
+      } /* end loop over dims */
+      break;
+    case 0:                   /* bad input */
+    default:
+      error ("unexpected return (%d) from gdxSymbolGetDomainX", rc);
+    } /* switch */
+    break;
+  default:
+    error ("mkXPFilter: symbol %s has type %d (%s): unimplemented\n",
+           symName, symType, gmsGdxTypeText[symType]);
+  } /* switch (symType) */
+
+  return;
+} /* getDomainNames */
 
 /* This method will read variable "gamso" from R workspace */
 char *getGlobalString (const char *globName, shortStringBuf_t result)

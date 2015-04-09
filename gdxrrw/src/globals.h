@@ -147,7 +147,8 @@ createElementMatrix (SEXP compVal, SEXP textElement, SEXP compTe,
 void
 mkHPFilter (SEXP uFilter, hpFilter_t *hpf);
 void
-mkXPFilter (int symIdx, Rboolean useDomInfo, xpFilter_t filterList[], SEXP outDomains);
+mkXPFilter (int symIdx, Rboolean useDomInfo, xpFilter_t filterList[],
+            SEXP outDomains, int *domInfoCode);
 void
 prepHPFilter (int symDim, hpFilter_t filterList[]);
 int
@@ -158,6 +159,9 @@ findInXPFilter (int symDim, const int inUels[], xpFilter_t filterList[],
                 int outIdx[]);
 void
 xpFilterToUels (int symDim, xpFilter_t filterList[], SEXP uni, SEXP uels);
+void
+getDomainNames (int symIdx, Rboolean useDomInfo,
+                SEXP outDomains, int *domInfoCode);
 char *
 getGlobalString (const char *globName, shortStringBuf_t result);
 int

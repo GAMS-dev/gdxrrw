@@ -352,7 +352,9 @@ SEXP rgdx (SEXP args)
     outTs = R_NilValue,
     outTeSp = R_NilValue,       /* output .te, sparse form */
     outTeFull = R_NilValue,     /* output .te, full form */
-    outDomains = R_NilValue;    /* output .domains */
+    outDomains = R_NilValue,    /* output $domains */
+    outDomInfo = R_NilValue;    /* output $domInfo */
+  int domInfoCode;
   int reuseFilter = 0;          /* reuse input filter for outUels */
   SEXP outListNames, outList, dimVect, dimNames;
   SEXP tmpExp;
@@ -387,6 +389,7 @@ SEXP rgdx (SEXP args)
   char strippedID[GMS_SSSIZE];
   char symName[GMS_SSSIZE];
   char symText[GMS_SSSIZE], msg[GMS_SSSIZE], stringEle[GMS_SSSIZE];
+  char domInfoSrc[16] = "unknown";
   char *types[] = {"set", "parameter", "variable", "equation"};
   char *forms[] = {"full", "sparse"};
   char *fields[] = {"l", "m", "lo", "up", "s", "all"};
@@ -669,6 +672,9 @@ SEXP rgdx (SEXP args)
     /* we will have domain info returned for all symbols */
     PROTECT(outDomains = allocVector(STRSXP, symDimX));
     rgdxAlloc++;
+    PROTECT(outDomInfo = allocVector(STRSXP, 1));
+    rgdxAlloc++;
+    domInfoCode = 0;
 
     outTeSp = R_NilValue;
     nnz = 0;
@@ -686,10 +692,15 @@ SEXP rgdx (SEXP args)
         nnzMax *=  length(VECTOR_ELT(rSpec->filterUel, iDim));
       }
 
+      (void) strcpy (domInfoSrc, "filtered");
+#if 1
+      getDomainNames (symIdx, useDomInfo, outDomains, &domInfoCode);
+#else
       /* set domain names to "_user": cannot conflict with real set names */
       for (iDim = 0;  iDim < symDim;  iDim++) {
         SET_STRING_ELT(outDomains, iDim, mkChar("_user"));
       }
+#endif
       reuseFilter = 1;
       if (symDimX > symDim) {
         reuseFilter = 0;
@@ -946,7 +957,21 @@ SEXP rgdx (SEXP args)
       rgdxAlloc++;
       p = REAL(outValSp);
 
-      mkXPFilter (symIdx, useDomInfo, xpFilter, outDomains);
+      mkXPFilter (symIdx, useDomInfo, xpFilter, outDomains, &domInfoCode);
+      switch (domInfoCode) {
+      case 0:
+        (void) strcpy (domInfoSrc, "NA");
+        break;
+      case 1:
+        (void) strcpy (domInfoSrc, "none");
+        break;
+      case 2:
+        (void) strcpy (domInfoSrc, "relaxed");
+        break;
+      case 3:
+        (void) strcpy (domInfoSrc, "full");
+        break;
+      }
       if (symDimX > symDim)
         SET_STRING_ELT(outDomains, iDim, mkChar("_field"));
 
@@ -1101,13 +1126,16 @@ SEXP rgdx (SEXP args)
       compressData (symDim, mrows, universe, nUEL, xpFilter,
                     outValSp, outUels);
       /* set domain names to "_compressed": cannot conflict with real set names */
+#if 0
       for (iDim = 0;  iDim < symDim;  iDim++) {
         SET_STRING_ELT(outDomains, iDim, mkChar("_compressed"));
       }
+#endif
       if (symDimX > symDim) {
         SET_VECTOR_ELT(outUels, iDim, fieldUels);
         SET_STRING_ELT(outDomains, iDim, mkChar("_field"));
       }
+      (void) strcpy (domInfoSrc, "compressed");
     }
     else if (! rSpec->withUel) {
       PROTECT(outUels = allocVector(VECSXP, symDimX));
@@ -1381,8 +1409,9 @@ SEXP rgdx (SEXP args)
       SET_STRING_ELT(outForm, 0, mkChar(forms[1]));
     }
 
-
     outElements++;       /* for $domains */
+    outElements++;       /* for $domInfo */
+
     /* Create a string vector for symbol field */
     if (symType == GMS_DT_VAR || symType == GMS_DT_EQU) {
       outElements++;            /* for $field  */
@@ -1452,6 +1481,7 @@ SEXP rgdx (SEXP args)
   SET_STRING_ELT(outListNames, iElement, mkChar("uels"));  iElement++;
   if (withList) {
     SET_STRING_ELT(outListNames, iElement, mkChar("domains"));  iElement++;
+    SET_STRING_ELT(outListNames, iElement, mkChar("domInfo"));  iElement++;
     if (symType == GMS_DT_VAR || symType == GMS_DT_EQU) {
       SET_STRING_ELT(outListNames, iElement, mkChar("field"));  iElement++;
       if (GMS_DT_VAR == symType) {
@@ -1496,6 +1526,8 @@ SEXP rgdx (SEXP args)
       SET_VECTOR_ELT(outList, iElement, outUels);    iElement++;
     }
     SET_VECTOR_ELT(outList, iElement, outDomains);   iElement++;
+    SET_STRING_ELT(outDomInfo, 0, mkChar(domInfoSrc));
+    SET_VECTOR_ELT(outList, iElement, outDomInfo);   iElement++;
 
     if (symType == GMS_DT_VAR || symType == GMS_DT_EQU) {
       SET_VECTOR_ELT(outList, iElement, outField);   iElement++;
