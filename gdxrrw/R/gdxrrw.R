@@ -147,6 +147,10 @@ rgdx.param <- function(gdxName, symName, names=NULL, compress=FALSE,
   symDF <- data.frame(dflist, check.names=check.names)
   attr(symDF,"symName") <- sym$name
   attr(symDF,"domains") <- sym$domains
+  ## for now, make domInfo conditional
+  if (is.character(sym$domInfo)) {
+    attr(symDF,"domInfo") <- sym$domInfo
+  }
   if (ts) {
     attr(symDF,"ts") <- sym$ts
   }
@@ -247,6 +251,9 @@ rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE,
   symDF <- data.frame(dflist, check.names=check.names, stringsAsFactors=F)
   attr(symDF,"symName") <- sym$name
   attr(symDF,"domains") <- sym$domains
+  if (is.character(sym$domInfo)) {
+    attr(symDF,"domInfo") <- sym$domInfo
+  }
   if (ts) {
     attr(symDF,"ts") <- sym$ts
   }
