@@ -85,6 +85,8 @@ gdxInfo (SEXP args)
   int Keys[GMS_MAX_INDEX_DIM];
   char *dn, c;
   char loadPath[GMS_SSSIZE];
+  gdxStrIndex_t domNames;
+  gdxStrIndexPtrs_t domPtrs;
 
 #if 0
   SEXP ap, el;
@@ -116,6 +118,8 @@ gdxInfo (SEXP args)
     }
   }
 #endif
+
+  GDXSTRINDEXPTRS_INIT (domNames, domPtrs);
 
   /* first arg is function name - ignore it */
   arglen = length(args);
@@ -457,22 +461,22 @@ gdxInfo (SEXP args)
   } /* if (returnList) */
   else if (returnDF) {
     SEXP dfClass, asIsClass;
-    SEXP domTmp;
+    SEXP domTmp, domnamesTmp;
 
-    /* columns for sets DF: name, index, dim, card, text, doms */
-    SEXP setName, setIndex, setDim, setCard, setText, setDoms;
+    /* columns for sets DF: name, index, dim, card, text, doms, domnames */
+    SEXP setName, setIndex, setDim, setCard, setText, setDoms, setDomnames;
     SEXP setColNames, setRowNames;
 
-    /* columns for parameters DF: name, index, dim, card, text, doms */
-    SEXP parName, parIndex, parDim, parCard, parText, parDoms;
+    /* columns for parameters DF: name, index, dim, card, text, doms, domnames */
+    SEXP parName, parIndex, parDim, parCard, parText, parDoms, parDomnames;
     SEXP parColNames, parRowNames;
 
-    /* columns for variables DF: name, index, dim, card, doms */
-    SEXP varName, varIndex, varDim, varCard, varDoms;
+    /* columns for variables DF: name, index, dim, card, text, doms, domnames */
+    SEXP varName, varIndex, varDim, varCard, varText, varDoms, varDomnames;
     SEXP varColNames, varRowNames;
 
-    /* columns for equations DF: name, index, dim, card, doms */
-    SEXP equName, equIndex, equDim, equCard, equDoms;
+    /* columns for equations DF: name, index, dim, card, text, doms, domnames */
+    SEXP equName, equIndex, equDim, equCard, equText, equDoms, equDomnames;
     SEXP equColNames, equRowNames;
 
     /* columns for aliases DF: name, index, base */
@@ -499,6 +503,9 @@ gdxInfo (SEXP args)
     PROTECT(setDoms = allocVector(VECSXP, nSets));
     allocCnt++;
     classgets (setDoms, asIsClass);
+    PROTECT(setDomnames = allocVector(VECSXP, nSets));
+    allocCnt++;
+    classgets (setDomnames, asIsClass);
 
     PROTECT(parName = allocVector(STRSXP, nPars));
     allocCnt++;
@@ -513,6 +520,9 @@ gdxInfo (SEXP args)
     PROTECT(parDoms = allocVector(VECSXP, nPars));
     allocCnt++;
     classgets (parDoms, asIsClass);
+    PROTECT(parDomnames = allocVector(VECSXP, nPars));
+    allocCnt++;
+    classgets (parDomnames, asIsClass);
 
     PROTECT(varName = allocVector(STRSXP, nVars));
     allocCnt++;
@@ -522,9 +532,14 @@ gdxInfo (SEXP args)
     allocCnt++;
     PROTECT(varCard = allocVector(INTSXP, nVars));
     allocCnt++;
+    PROTECT(varText = allocVector(STRSXP, nVars));
+    allocCnt++;
     PROTECT(varDoms = allocVector(VECSXP, nVars));
     allocCnt++;
     classgets (varDoms, asIsClass);
+    PROTECT(varDomnames = allocVector(VECSXP, nVars));
+    allocCnt++;
+    classgets (varDomnames, asIsClass);
 
     PROTECT(equName = allocVector(STRSXP, nEqus));
     allocCnt++;
@@ -534,9 +549,14 @@ gdxInfo (SEXP args)
     allocCnt++;
     PROTECT(equCard = allocVector(INTSXP, nEqus));
     allocCnt++;
+    PROTECT(equText = allocVector(STRSXP, nEqus));
+    allocCnt++;
     PROTECT(equDoms = allocVector(VECSXP, nEqus));
     allocCnt++;
     classgets (equDoms, asIsClass);
+    PROTECT(equDomnames = allocVector(VECSXP, nEqus));
+    allocCnt++;
+    classgets (equDomnames, asIsClass);
 
     PROTECT(aliName = allocVector(STRSXP, nAliases));
     allocCnt++;
@@ -564,6 +584,14 @@ gdxInfo (SEXP args)
         }
         SET_VECTOR_ELT(setDoms, iSet, domTmp);
         domTmp = R_NilValue;
+        PROTECT(domnamesTmp = allocVector(STRSXP, symDim));
+        allocCnt++;
+        (void) gdxSymbolGetDomainX (gdxHandle, iSym, domPtrs);
+        for (k = 0;  k < symDim;  k++) {
+          SET_STRING_ELT(domnamesTmp, k, mkChar(domPtrs[k]));
+        }
+        SET_VECTOR_ELT(setDomnames, iSet, domnamesTmp);
+        domnamesTmp = R_NilValue;
         iSet++;
         break;
       case GMS_DT_PAR:
@@ -580,6 +608,14 @@ gdxInfo (SEXP args)
         }
         SET_VECTOR_ELT(parDoms, iPar, domTmp);
         domTmp = R_NilValue;
+        PROTECT(domnamesTmp = allocVector(STRSXP, symDim));
+        allocCnt++;
+        (void) gdxSymbolGetDomainX (gdxHandle, iSym, domPtrs);
+        for (k = 0;  k < symDim;  k++) {
+          SET_STRING_ELT(domnamesTmp, k, mkChar(domPtrs[k]));
+        }
+        SET_VECTOR_ELT(parDomnames, iPar, domnamesTmp);
+        domnamesTmp = R_NilValue;
         iPar++;
         break;
       case GMS_DT_VAR:
@@ -587,6 +623,7 @@ gdxInfo (SEXP args)
         INTEGER(varIndex)[iVar] = iSym;
         INTEGER(varDim)[iVar] = symDim;
         INTEGER(varCard)[iVar] = symCount;
+        SET_STRING_ELT(varText, iVar, mkChar(sText));
         PROTECT(domTmp = allocVector(INTSXP, symDim));
         allocCnt++;
         gdxSymbolGetDomain (gdxHandle, iSym, Keys);
@@ -595,6 +632,14 @@ gdxInfo (SEXP args)
         }
         SET_VECTOR_ELT(varDoms, iVar, domTmp);
         domTmp = R_NilValue;
+        PROTECT(domnamesTmp = allocVector(STRSXP, symDim));
+        allocCnt++;
+        (void) gdxSymbolGetDomainX (gdxHandle, iSym, domPtrs);
+        for (k = 0;  k < symDim;  k++) {
+          SET_STRING_ELT(domnamesTmp, k, mkChar(domPtrs[k]));
+        }
+        SET_VECTOR_ELT(varDomnames, iVar, domnamesTmp);
+        domnamesTmp = R_NilValue;
         iVar++;
         break;
       case GMS_DT_EQU:
@@ -602,6 +647,7 @@ gdxInfo (SEXP args)
         INTEGER(equIndex)[iEqu] = iSym;
         INTEGER(equDim)[iEqu] = symDim;
         INTEGER(equCard)[iEqu] = symCount;
+        SET_STRING_ELT(equText, iEqu, mkChar(sText));
         PROTECT(domTmp = allocVector(INTSXP, symDim));
         allocCnt++;
         gdxSymbolGetDomain (gdxHandle, iSym, Keys);
@@ -610,6 +656,14 @@ gdxInfo (SEXP args)
         }
         SET_VECTOR_ELT(equDoms, iEqu, domTmp);
         domTmp = R_NilValue;
+        PROTECT(domnamesTmp = allocVector(STRSXP, symDim));
+        allocCnt++;
+        (void) gdxSymbolGetDomainX (gdxHandle, iSym, domPtrs);
+        for (k = 0;  k < symDim;  k++) {
+          SET_STRING_ELT(domnamesTmp, k, mkChar(domPtrs[k]));
+        }
+        SET_VECTOR_ELT(equDomnames, iEqu, domnamesTmp);
+        domnamesTmp = R_NilValue;
         iEqu++;
         break;
       case GMS_DT_ALIAS:
@@ -622,7 +676,7 @@ gdxInfo (SEXP args)
     } /* loop over symbols */
 
     /* -------------------------------------------------------------- */
-    PROTECT(elt[GDXSETS] = allocVector(VECSXP, 6));
+    PROTECT(elt[GDXSETS] = allocVector(VECSXP, 7));
     allocCnt++;
 
     SET_VECTOR_ELT(elt[GDXSETS], 0, setName);
@@ -631,16 +685,18 @@ gdxInfo (SEXP args)
     SET_VECTOR_ELT(elt[GDXSETS], 3, setCard);
     SET_VECTOR_ELT(elt[GDXSETS], 4, setText);
     SET_VECTOR_ELT(elt[GDXSETS], 5, setDoms);
+    SET_VECTOR_ELT(elt[GDXSETS], 6, setDomnames);
 
-    PROTECT(setColNames = allocVector(STRSXP, 6));
+    PROTECT(setColNames = allocVector(STRSXP, 7));
     allocCnt++;
-    /* columns for sets DF: name, index, dim, card, text, doms */
+    /* columns for sets DF: name, index, dim, card, text, doms, domnames */
     SET_STRING_ELT(setColNames, 0, mkChar("name"));
     SET_STRING_ELT(setColNames, 1, mkChar("index"));
     SET_STRING_ELT(setColNames, 2, mkChar("dim"));
     SET_STRING_ELT(setColNames, 3, mkChar("card"));
     SET_STRING_ELT(setColNames, 4, mkChar("text"));
     SET_STRING_ELT(setColNames, 5, mkChar("doms"));
+    SET_STRING_ELT(setColNames, 6, mkChar("domnames"));
     PROTECT(setRowNames = allocVector(INTSXP, nSets));
     allocCnt++;
     for (iSet = 0;  iSet < nSets;  iSet++)
@@ -651,7 +707,7 @@ gdxInfo (SEXP args)
     classgets (elt[GDXSETS], dfClass);
 
     /* -------------------------------------------------------------- */
-    PROTECT(elt[GDXPARS] = allocVector(VECSXP, 6));
+    PROTECT(elt[GDXPARS] = allocVector(VECSXP, 7));
     allocCnt++;
 
     SET_VECTOR_ELT(elt[GDXPARS], 0, parName);
@@ -660,16 +716,18 @@ gdxInfo (SEXP args)
     SET_VECTOR_ELT(elt[GDXPARS], 3, parCard);
     SET_VECTOR_ELT(elt[GDXPARS], 4, parText);
     SET_VECTOR_ELT(elt[GDXPARS], 5, parDoms);
+    SET_VECTOR_ELT(elt[GDXPARS], 6, parDomnames);
 
-    PROTECT(parColNames = allocVector(STRSXP, 6));
+    PROTECT(parColNames = allocVector(STRSXP, 7));
     allocCnt++;
-    /* columns for parameters DF: name, index, dim, card, text, doms */
+    /* columns for parameters DF: name, index, dim, card, text, doms, domnames */
     SET_STRING_ELT(parColNames, 0, mkChar("name"));
     SET_STRING_ELT(parColNames, 1, mkChar("index"));
     SET_STRING_ELT(parColNames, 2, mkChar("dim"));
     SET_STRING_ELT(parColNames, 3, mkChar("card"));
     SET_STRING_ELT(parColNames, 4, mkChar("text"));
     SET_STRING_ELT(parColNames, 5, mkChar("doms"));
+    SET_STRING_ELT(parColNames, 6, mkChar("domnames"));
     PROTECT(parRowNames = allocVector(INTSXP, nPars));
     allocCnt++;
     for (iPar = 0;  iPar < nPars;  iPar++)
@@ -680,23 +738,27 @@ gdxInfo (SEXP args)
     classgets (elt[GDXPARS], dfClass);
 
     /* -------------------------------------------------------------- */
-    PROTECT(elt[GDXVARS] = allocVector(VECSXP, 5));
+    PROTECT(elt[GDXVARS] = allocVector(VECSXP, 7));
     allocCnt++;
 
     SET_VECTOR_ELT(elt[GDXVARS], 0, varName);
     SET_VECTOR_ELT(elt[GDXVARS], 1, varIndex);
     SET_VECTOR_ELT(elt[GDXVARS], 2, varDim);
     SET_VECTOR_ELT(elt[GDXVARS], 3, varCard);
-    SET_VECTOR_ELT(elt[GDXVARS], 4, varDoms);
+    SET_VECTOR_ELT(elt[GDXVARS], 4, varText);
+    SET_VECTOR_ELT(elt[GDXVARS], 5, varDoms);
+    SET_VECTOR_ELT(elt[GDXVARS], 6, varDomnames);
 
-    PROTECT(varColNames = allocVector(STRSXP, 5));
+    PROTECT(varColNames = allocVector(STRSXP, 7));
     allocCnt++;
-    /* columns for variables DF: name, index, dim, card, doms */
+    /* columns for variables DF: name, index, dim, card, text, doms, domnames */
     SET_STRING_ELT(varColNames, 0, mkChar("name"));
     SET_STRING_ELT(varColNames, 1, mkChar("index"));
     SET_STRING_ELT(varColNames, 2, mkChar("dim"));
     SET_STRING_ELT(varColNames, 3, mkChar("card"));
-    SET_STRING_ELT(varColNames, 4, mkChar("doms"));
+    SET_STRING_ELT(varColNames, 4, mkChar("text"));
+    SET_STRING_ELT(varColNames, 5, mkChar("doms"));
+    SET_STRING_ELT(varColNames, 6, mkChar("domnames"));
     PROTECT(varRowNames = allocVector(INTSXP, nVars));
     allocCnt++;
     for (iVar = 0;  iVar < nVars;  iVar++)
@@ -707,23 +769,27 @@ gdxInfo (SEXP args)
     classgets (elt[GDXVARS], dfClass);
 
     /* -------------------------------------------------------------- */
-    PROTECT(elt[GDXEQUS] = allocVector(VECSXP, 5));
+    PROTECT(elt[GDXEQUS] = allocVector(VECSXP, 7));
     allocCnt++;
 
     SET_VECTOR_ELT(elt[GDXEQUS], 0, equName);
     SET_VECTOR_ELT(elt[GDXEQUS], 1, equIndex);
     SET_VECTOR_ELT(elt[GDXEQUS], 2, equDim);
     SET_VECTOR_ELT(elt[GDXEQUS], 3, equCard);
-    SET_VECTOR_ELT(elt[GDXEQUS], 4, equDoms);
+    SET_VECTOR_ELT(elt[GDXEQUS], 4, equText);
+    SET_VECTOR_ELT(elt[GDXEQUS], 5, equDoms);
+    SET_VECTOR_ELT(elt[GDXEQUS], 6, equDomnames);
 
-    PROTECT(equColNames = allocVector(STRSXP, 5));
+    PROTECT(equColNames = allocVector(STRSXP, 7));
     allocCnt++;
-    /* columns for equations DF: name, index, dim, card, doms */
+    /* columns for equations DF: name, index, dim, card, text doms, domnames */
     SET_STRING_ELT(equColNames, 0, mkChar("name"));
     SET_STRING_ELT(equColNames, 1, mkChar("index"));
     SET_STRING_ELT(equColNames, 2, mkChar("dim"));
     SET_STRING_ELT(equColNames, 3, mkChar("card"));
-    SET_STRING_ELT(equColNames, 4, mkChar("doms"));
+    SET_STRING_ELT(equColNames, 4, mkChar("text"));
+    SET_STRING_ELT(equColNames, 5, mkChar("doms"));
+    SET_STRING_ELT(equColNames, 6, mkChar("domnames"));
     PROTECT(equRowNames = allocVector(INTSXP, nEqus));
     allocCnt++;
     for (iEqu = 0;  iEqu < nEqus;  iEqu++)
