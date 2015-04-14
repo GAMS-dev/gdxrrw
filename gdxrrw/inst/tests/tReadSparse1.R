@@ -52,7 +52,7 @@ tryCatch({
                 uels=uUels)
   chk <- chkRgdxRes (u, uwant, reqIdent=reqIdent)
   if (!chk$same) {
-    stop (paste("test rgdx('gdxname') to read universe failed",chk$msg))
+    stop (paste("test rgdx('gdxname') to read universe failed:",chk$msg))
   }
   print ("Done reading universe")
 
@@ -61,10 +61,11 @@ tryCatch({
                 val=iVals,
                 form="sparse",
                 uels=list(uUels),
-                domains=c("*"))
+                domains=c("*"),
+                domInfo="none")
   chk <- chkRgdxRes (i, iwant, reqIdent=reqIdent)
   if (!chk$same) {
-    stop (paste("test rgdx(i,form=sparse) failed",chk$msg))
+    stop (paste("test rgdx(i,form=sparse) failed:",chk$msg))
   }
   print ("Done reading set i")
 
@@ -73,10 +74,11 @@ tryCatch({
                 val=jVals,
                 form="sparse",
                 uels=list(uUels),
-                domains=c("*"))
+                domains=c("*"),
+                domInfo="none")
   chk <- chkRgdxRes (j, jwant, reqIdent=reqIdent)
   if (!chk$same) {
-    stop (paste("test rgdx(j,form=sparse) failed",chk$msg))
+    stop (paste("test rgdx(j,form=sparse) failed:",chk$msg))
   }
   print ("Done reading set j")
 
@@ -85,7 +87,8 @@ tryCatch({
                 val=matrix(90,c(1,1)),
                 form="sparse",
                 uels=list(),
-                domains=character(0) )
+                domains=character(0),
+                domInfo="NA")
   chk <- chkRgdxRes (f, fwant, reqIdent=reqIdent)
   if (!chk$same) {
     stop (paste("test rgdx(f,form=sparse) failed",chk$msg))
@@ -97,10 +100,11 @@ tryCatch({
                 val=aVals,
                 form="sparse",
                 uels=list(iUels),
-                domains=c("i") )
+                domains=c("i"),
+                domInfo="full")
   chk <- chkRgdxRes (a, awant, reqIdent=reqIdent)
   if (!chk$same) {
-    stop (paste("test rgdx(a,form='sparse') failed",chk$msg))
+    stop (paste("test rgdx(a,form='sparse') failed:",chk$msg))
   }
   print ("Done reading parameter a")
 
@@ -109,10 +113,11 @@ tryCatch({
                 val=bVals,
                 form="sparse",
                 uels=list(jUels),
-                domains=c('j') )
+                domains=c('j'),
+                domInfo='full')
   chk <- chkRgdxRes (b, bwant, reqIdent=reqIdent)
   if (!chk$same) {
-    stop (paste("test rgdx(b,form='sparse') failed",chk$msg))
+    stop (paste("test rgdx(b,form='sparse') failed:",chk$msg))
   }
   print ("Done reading parameter b")
 
@@ -121,11 +126,12 @@ tryCatch({
                 val=cVals,
                 form="sparse",
                 uels=list(iUels,jUels),
-                domains=c("i","j") )
+                domains=c("i","j"),
+                domInfo="full")
   # cVals is not bitwise correct
   chk <- chkRgdxRes (c, cwant, reqIdent=F)
   if (!chk$same) {
-    stop (paste("test rgdx(c,form='sparse') failed",chk$msg))
+    stop (paste("test rgdx(c,form='sparse') failed:",chk$msg))
   }
   print ("Done reading parameter c")
 
@@ -134,10 +140,11 @@ tryCatch({
                 val=dVals,
                 form="sparse",
                 uels=list(iUels,jUels),
-                domains=c("i","j") )
+                domains=c("i","j"),
+                domInfo="full")
   chk <- chkRgdxRes (d, dwant, reqIdent=reqIdent)
   if (!chk$same) {
-    stop (paste("test rgdx(d,form='sparse') failed",chk$msg))
+    stop (paste("test rgdx(d,form='sparse') failed:",chk$msg))
   }
   print ("Done reading parameter d")
 
@@ -146,12 +153,13 @@ tryCatch({
                 form="sparse",
                 uels=list(iUels,jUels),
                 domains=c("i","j"),
+                domInfo="full",
                 field="l",
                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx('trnsport',list(name='x'))
   chk <- chkRgdxRes (x, xwant, reqIdent=reqIdent)
   if (!chk$same) {
-    stop (paste("test rgdx(x,form='sparse') failed",chk$msg))
+    stop (paste("test rgdx(x,form='sparse') failed:",chk$msg))
   }
   t <- matrix(c( 1, 1, lev,   50
                 ,1, 1, mar,    0
@@ -189,13 +197,14 @@ tryCatch({
                  form="sparse",
                  uels=list(iUels,jUels,fields),
                  domains=c("i","j","_field"),
+                 domInfo="full",
                  field="all",
                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx('trnsport',list(name='x',field='all'))
   # the marginals are not bit-exact, so not identical
   chk <- chkRgdxRes (x, xwantA, reqIdent=F)
   if (!chk$same) {
-    stop (paste("test rgdx(x,'all',form='sparse') failed",chk$msg))
+    stop (paste("test rgdx(x,'all',form='sparse') failed:",chk$msg))
   }
   print ("Done reading variable x")
 
@@ -204,12 +213,13 @@ tryCatch({
                 form="sparse",
                 uels=list(),
                 domains=character(0),
+                domInfo='NA',
                 field="l",
                 varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx('trnsport',list(name='z'))
   chk <- chkRgdxRes (z, zwant, reqIdent=reqIdent)
   if (!chk$same) {
-    stop (paste("test rgdx(z,form='sparse') failed",chk$msg))
+    stop (paste("test rgdx(z,form='sparse') failed:",chk$msg))
   }
   t <- matrix(c( lev,  153.675
                 ,mar,  0
@@ -222,12 +232,13 @@ tryCatch({
                  form="sparse",
                  uels=list(fields),
                  domains=c('_field'),
+                 domInfo="NA",
                  field="all",
                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx('trnsport',list(name='z',field='all'))
   chk <- chkRgdxRes (z, zwantA, reqIdent=reqIdent)
   if (!chk$same) {
-    stop (paste("test rgdx(z,'all',form='sparse') failed",chk$msg))
+    stop (paste("test rgdx(z,'all',form='sparse') failed:",chk$msg))
   }
   print ("Done reading variable z")
 
