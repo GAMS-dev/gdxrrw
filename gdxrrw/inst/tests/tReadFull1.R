@@ -22,7 +22,7 @@ bVals <- matrix(c(325,300,275), nrow=jCard, ncol=1, dimnames=list('j'=jUels,NULL
 
 dVals <- matrix(c(2.5, 1.7, 1.8,
                   2.5, 1.8, 1.4), nrow=iCard, ncol=jCard,
-                dimnames=list(iUels,jUels), byrow=TRUE)
+                dimnames=list('i'=iUels,'j'=jUels), byrow=TRUE)
 cVals <- dVals * 90 / 1000
 
 
@@ -48,10 +48,11 @@ tryCatch({
                 val=iVals,
                 form="full",
                 uels=list('*'=uUels),
-                domains=c("*"))
+                domains=c("*"),
+                domInfo="none")
   chk <- chkRgdxRes (i, iwant, reqIdent=reqIdent)
   if (!chk$same) {
-    stop (paste("test rgdx(i,form=full) failed",chk$msg))
+    stop (paste("test rgdx(i,form=full) failed:",chk$msg))
   }
   print ("Done reading set i")
 
@@ -60,10 +61,11 @@ tryCatch({
                 val=jVals,
                 form="full",
                 uels=list('*'=uUels),
-                domains=c("*"))
+                domains=c("*"),
+                domInfo="none")
   chk <- chkRgdxRes (j, jwant, reqIdent=reqIdent)
   if (!chk$same) {
-    stop (paste("test rgdx(j,form=full) failed",chk$msg))
+    stop (paste("test rgdx(j,form=full) failed:",chk$msg))
   }
   print ("Done reading set j")
 
@@ -72,10 +74,11 @@ tryCatch({
                 val=90,
                 form="full",
                 uels=list(),
-                domains=character(0) )
+                domains=character(0),
+                domInfo="NA")
   chk <- chkRgdxRes (f, fwant, reqIdent=reqIdent)
   if (!chk$same) {
-    stop (paste("test rgdx(f,form=full) failed",chk$msg))
+    stop (paste("test rgdx(f,form=full) failed:",chk$msg))
   }
   print ("Done reading scalar f")
 
@@ -84,10 +87,11 @@ tryCatch({
                 val=aVals,
                 form="full",
                 uels=list('i'=iUels),
-                domains=c("i") )
+                domains=c("i"),
+                domInfo="full")
   chk <- chkRgdxRes (a, awant, reqIdent=reqIdent)
   if (!chk$same) {
-    stop (paste("test rgdx(a,form='full') failed",chk$msg))
+    stop (paste("test rgdx(a,form='full') failed:",chk$msg))
   }
   print ("Done reading parameter a")
 
@@ -96,10 +100,11 @@ tryCatch({
                 val=bVals,
                 form="full",
                 uels=list('j'=jUels),
-                domains=c('j') )
+                domains=c('j'),
+                domInfo="full")
   chk <- chkRgdxRes (b, bwant, reqIdent=reqIdent)
   if (!chk$same) {
-    stop (paste("test rgdx(b,form='full') failed",chk$msg))
+    stop (paste("test rgdx(b,form='full') failed:",chk$msg))
   }
   print ("Done reading parameter b")
 
@@ -107,11 +112,12 @@ tryCatch({
   cwant <- list(name="c", type="parameter", dim=2L,
                 val=cVals,
                 form="full",
-                uels=list(iUels,jUels),
-                domains=c("i","j") )
+                uels=list('i'=iUels,'j'=jUels),
+                domains=c("i","j"),
+                domInfo="full")
   chk <- chkRgdxRes (c, cwant, reqIdent=F)
   if (!chk$same) {
-    stop (paste("test rgdx(c,form='full') failed",chk$msg))
+    stop (paste("test rgdx(c,form='full') failed:",chk$msg))
   }
   print ("Done reading parameter c")
 

@@ -98,7 +98,8 @@ chkRgdxDF <- function(f1, f2, reqIdent=FALSE) {
   if (nr != nrow(f2))     return (mb("nrow mismatch"))
   if (!identical(attr(f1,"symName"), attr(f2,"symName")))  return (mb('symName mismatch'))
   if (!identical(attr(f1,"domains"), attr(f2,"domains")))  return (mb('domains mismatch'))
-
+  if (!identical(attr(f1,"domInfo"), attr(f2,"domInfo")))  return (mb('domInfo mismatch'))
+  
   r <- list(same=FALSE,msg="decruft this")
   cNames1 <- names(f1)
   cNames2 <- names(f2)
@@ -232,7 +233,7 @@ chkSameVec <- function(s, v1,v2) {
 ## assumes a certain ordering of the list elements
 ## it is not really necessary that they be ordered in this way but it
 ## makes the test easier to implement
-chkRgdxRes <- function(f1, f2, checkDimNames=FALSE, reqIdent=FALSE) {
+chkRgdxRes <- function(f1, f2, checkDimNames=TRUE, reqIdent=FALSE) {
   if (identical(f1,f2))     return (list(same=TRUE,msg=''))
 
   isSparse <- TRUE
@@ -318,6 +319,7 @@ chkRgdxRes <- function(f1, f2, checkDimNames=FALSE, reqIdent=FALSE) {
       if (! is.numeric(f2[[k]]))   return (r)
       if ((! isSparse) && (0 == symDim)) {
         ## full form for scalars is slightly different
+        if (! identical(dimnames(f1[[k]],f2[[k]])))
         if (! is.vector(f1[[k]]))   return (r)
         if (! is.vector(f2[[k]]))   return (r)
         if (isVar) {
@@ -359,6 +361,7 @@ chkRgdxRes <- function(f1, f2, checkDimNames=FALSE, reqIdent=FALSE) {
         if (is.null(dn1) && is.null(dn2))   next
         if (is.null(dn1))                   return (r)
         if (is.null(dn2))                   return (r)
+        if (! identical(dn1,dn2))           return (r)
         for (d in 1:nd) {
           if (is.null(dn1[[d]]) && is.null(dn2[[d]]))  next
           if (is.null(dn1[[d]]))                       return (r)
@@ -388,6 +391,7 @@ chkRgdxRes <- function(f1, f2, checkDimNames=FALSE, reqIdent=FALSE) {
       }
       if (! is.list(f1[[k]]))   return (r)
       if (! is.list(f2[[k]]))   return (r)
+      if (! identical(names(f1[[k]]),names(f2[[k]]))) return (r)
       n1 <- length(f1[[k]])
       if (n1 != length(f2[[k]]))  return (r)
       if (0 == n1)                next
@@ -407,6 +411,9 @@ chkRgdxRes <- function(f1, f2, checkDimNames=FALSE, reqIdent=FALSE) {
       else {
         if (! chkSameArray (f1[[k]], f2[[k]])) return (r)
       }
+      dn1 <- dimnames(f1[[k]])
+      dn2 <- dimnames(f2[[k]])
+      if (! identical(dn1,dn2))           return (r)
     }
     else if ("domains" == f2Names[[k]]) {
       if (0 == symDim) {

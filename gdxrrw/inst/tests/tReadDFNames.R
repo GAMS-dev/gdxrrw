@@ -43,10 +43,12 @@ tryCatch({
   ssdf <- data.frame(list("var1"=f1,"var2"=f2))
   attr(ssdf,"symName") <- "ss"
   attr(ssdf,"domains") <- c("s","s")
+  attr(ssdf,"domInfo") <- "full"
   ccdf <- data.frame(list("var1"=f1,"var2"=f2,"var3"=c(4,4,4,4)))
   attr(ccdf,"symName") <- "c"
   attr(ccdf,"domains") <- c("s","s")
-
+  attr(ccdf,"domInfo") <- "full"
+  
   ## test with default check.names: should be TRUE
   ss <- rgdx.set ('checkNames.gdx','ss',names=nm1)
   if (!identical(nm1x,names(ss))) {
