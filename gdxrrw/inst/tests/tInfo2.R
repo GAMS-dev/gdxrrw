@@ -124,9 +124,11 @@ tryCatch({
           dim = c(1, 1),
           card = c(2, 3),
           text = c("canning plants", "markets"),
-          doms = c("0", "0")),
-      .Names = c("name", "index", "dim", "card", "text", "doms"),
-      row.names = 1:2, class = "data.frame")
+          doms = structure(list(0L, 0L), class = "AsIs"),
+          domnames = structure(list("*","*"), class = "AsIs")
+  ),
+  .Names = c("name", "index", "dim", "card", "text", "doms", "domnames"),
+  row.names = 1:2, class = "data.frame")
 
   s_parameters <- structure(list(
     name = c("a", "b", "d", "f", "c"),
@@ -136,8 +138,10 @@ tryCatch({
     text = c("capacity of plant i in cases", "demand at market j in cases", 
       "distance in thousands of miles", "freight in dollars per case per thousand miles", 
       "transport cost in thousands of dollars per case"),
-    doms = structure(list(1L, 2L, 1:2, integer(0), 1:2), class = "AsIs")),
-  .Names = c("name", "index", "dim", "card", "text", "doms"),
+    doms = structure(list(1L, 2L, 1:2, integer(0), 1:2), class = "AsIs"),
+    domnames = structure(list("i","j",c("i","j"),character(0),c("i","j")), class = "AsIs")
+  ),
+  .Names = c("name", "index", "dim", "card", "text", "doms", "domnames"),
   row.names = c(NA, 5L), class = "data.frame")
 
   s_variables <- structure(list(
@@ -145,8 +149,11 @@ tryCatch({
     index = 8:9,
     dim = c(2L, 0L),
     card = c(6L, 1L),
-    doms = structure(list(1:2, integer(0)), class = "AsIs")),
-  .Names = c("name", "index", "dim", "card", "doms"),
+    text = c("shipment quantities in cases", "total transportation costs in thousands of dollars"),
+    doms = structure(list(1:2, integer(0)), class = "AsIs"),
+    domnames = structure(list(c("i","j"),character(0)), class = "AsIs")
+  ),
+  .Names = c("name", "index", "dim", "card", "text", "doms", "domnames"),
   row.names = 1:2, class = "data.frame")
 
   s_equations <- structure(list(
@@ -154,8 +161,11 @@ tryCatch({
     index = 10:12,
     dim = c(0L, 1L, 1L),
     card = 1:3,
-    doms = structure(list(integer(0), 1L, 2L), class = "AsIs")),
-  .Names = c("name", "index", "dim", "card", "doms"),
+    text = c("define objective function", "observe supply limit at plant i", "satisfy demand at market j"),
+    doms = structure(list(integer(0), 1L, 2L), class = "AsIs"),
+    domnames = structure(list(character(0),"i","j"), class = "AsIs")
+  ),
+  .Names = c("name", "index", "dim", "card", "text", "doms", "domnames"),
   row.names = c(NA, 3L), class = "data.frame")
 
   if (! chkFrame("sets", s_sets, s$sets))
