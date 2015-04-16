@@ -6,6 +6,9 @@ if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
 # compare the data frames f1 and f2, return TRUE if the same, FALSE o/w
 chkFrame <- function(s, f1, f2) {
+  if (identical(f1,f2))   return (TRUE)
+  return(FALSE) # for now
+
   if (! is.data.frame(f1))   return (FALSE)
   if (! is.data.frame(f2))   return (FALSE)
   nc     <- ncol(f1)
@@ -57,6 +60,9 @@ chkFrame <- function(s, f1, f2) {
 
 # compare the data frames f1 and f2, return TRUE if the same, FALSE o/w
 chkVarEqu <- function(s, f1, f2) {
+  if (identical(f1,f2))   return (TRUE)
+  return(FALSE)  # for now
+
   if (! is.data.frame(f1))   return (FALSE)
   if (! is.data.frame(f2))   return (FALSE)
   nc     <- ncol(f1)
@@ -120,9 +126,9 @@ tryCatch({
 
   s_sets <- structure(list(
           name = c("i", "j"),
-          index = c(1, 2),
-          dim = c(1, 1),
-          card = c(2, 3),
+          index = c(1L, 2L),
+          dim = c(1L, 1L),
+          card = c(2L, 3L),
           text = c("canning plants", "markets"),
           doms = structure(list(0L, 0L), class = "AsIs"),
           domnames = structure(list("*","*"), class = "AsIs")
@@ -146,7 +152,7 @@ tryCatch({
 
   s_variables <- structure(list(
     name = c("x", "z"),
-    index = 8:9,
+    index = c(8L, 9L),
     dim = c(2L, 0L),
     card = c(6L, 1L),
     text = c("shipment quantities in cases", "total transportation costs in thousands of dollars"),
@@ -158,9 +164,9 @@ tryCatch({
 
   s_equations <- structure(list(
     name = c("cost", "supply", "demand"),
-    index = 10:12,
+    index = c(10L, 11L, 12L),
     dim = c(0L, 1L, 1L),
-    card = 1:3,
+    card = c(1L, 2L, 3L),
     text = c("define objective function", "observe supply limit at plant i", "satisfy demand at market j"),
     doms = structure(list(integer(0), 1L, 2L), class = "AsIs"),
     domnames = structure(list(character(0),"i","j"), class = "AsIs")
