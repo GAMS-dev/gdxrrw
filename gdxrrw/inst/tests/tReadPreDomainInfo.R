@@ -17,6 +17,7 @@ tryCatch({
     stop (paste("FAIL: File", fnIn, "does not exist"))
   }
   useDomInfo <- TRUE
+  noInfo <- "none"   # domInfo="none" means we checked, but none is available
 
   source ("tReadDomInfoBody.R")
 

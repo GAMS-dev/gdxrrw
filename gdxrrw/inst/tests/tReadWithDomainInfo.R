@@ -18,7 +18,8 @@ tryCatch({
     stop (paste("FAIL: File", fnIn, "does not exist"))
   }
   useDomInfo <- FALSE
-
+  noInfo <- "NA"   # domInfo="NA" means you didn't ask or it doesn't make sense to ask
+  
   source ("tReadDomInfoBody.R")
 
 
