@@ -319,7 +319,7 @@ chkRgdxRes <- function(f1, f2, checkDimNames=TRUE, reqIdent=FALSE) {
       if (! is.numeric(f2[[k]]))   return (r)
       if ((! isSparse) && (0 == symDim)) {
         ## full form for scalars is slightly different
-        if (! identical(dimnames(f1[[k]],f2[[k]])))
+        if (! identical(dimnames(f1[[k]]),dimnames(f2[[k]])))
         if (! is.vector(f1[[k]]))   return (r)
         if (! is.vector(f2[[k]]))   return (r)
         if (isVar) {
