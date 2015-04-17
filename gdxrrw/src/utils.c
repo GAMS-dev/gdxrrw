@@ -1483,13 +1483,29 @@ getDefVal (int symType, int subType, dField_t dField)
 /* addDomInfo: add relaxed domain info for a symbol to a GDX file
  */
 void
-addDomInfo (const char *symName, SEXP domExp)
+addDomInfo (const char *symName, SEXP domExp, SEXP domInfoExp)
 {
   int rc, k, nDoms, symDim, symType, symIdx;
   char dummy[GMS_SSSIZE];
   const char *domName;
+  const char *tmpName;
   gdxStrIndex_t domNames;
   gdxStrIndexPtrs_t domPtrs;
+
+  if (domInfoExp) {
+    /* verified it's a string prior to this */
+    tmpName = CHAR(STRING_ELT(domInfoExp, 0));
+    /* if domInfo is specified, it must indicate the domain info is good */
+    if ((0 == strcmp (tmpName, "compressed")) ||
+        (0 == strcmp (tmpName, "filtered")) ||
+        (0 == strcmp (tmpName, "full")) ||
+        (0 == strcmp (tmpName, "relaxed"))
+        )
+      ;                         /* no return */
+    else
+      /* any other value implies domExp is sketchy, don't use it */
+      return;
+  }
 
   if (domExp) {
     // Rprintf ("DEBUG: found domains for symbol %s\n", symName);

@@ -31,6 +31,7 @@ static const char *validSymListNames[] = {
   ,"ts"
   ,"te"
   ,"domains"
+  ,"domInfo"
   ,"field"
   ,"varTypeText"
   ,"typeCode"                   /* should this be subType or subTypeCode instead? */
@@ -968,6 +969,7 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
   SEXP teExp = NULL;
   SEXP tsExp = NULL;
   SEXP domExp = NULL;
+  SEXP domInfoExp = NULL;
   SEXP fieldExp = NULL;
   SEXP typeCodeExp = NULL;
   int i, j;
@@ -1044,6 +1046,9 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
     }
     else if (0 == strcmp("domains", eltName)) {
       domExp = VECTOR_ELT(lst, i);
+    }
+    else if (0 == strcmp("domInfo", eltName)) {
+      domInfoExp = VECTOR_ELT(lst, i);
     }
     else if (0 == strcmp("field", eltName)) {
       fieldExp = VECTOR_ELT(lst, i);
@@ -1364,6 +1369,13 @@ readWgdxList (SEXP lst, int iSym, SEXP uelIndex, SEXP fieldIndex, SEXP rowPerms,
     }
   }
 
+  if (domInfoExp) {
+    if (STRSXP != TYPEOF(domInfoExp)) {
+      error ("Input list element 'domInfo' must be a string - found %s instead.",
+             typeofTxt(domInfoExp, buf));
+    }
+  }
+
   if (fieldExp) {
     if (STRSXP != TYPEOF(fieldExp)) {
       error ("Optional input list element 'field' must be a string vector - found %s instead.",
@@ -1649,6 +1661,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   SEXP rowPerms;           /* vector of rowPerm's, one per symbol */
   SEXP lstNames, valData;
   SEXP domExp = NULL;
+  SEXP domInfoExp = NULL;
   SEXP teExp = NULL;
   wSpec_t **wSpecPtr;           /* was data */
   gdxUelIndex_t uelIndices;
@@ -1792,7 +1805,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
 
     /* the code below assumes the symbol is not an alias */
     checkSymType4 (wSpecPtr[iSym]->dType, __LINE__);
-    domExp = teExp = NULL;
+    domExp = domInfoExp = teExp = NULL;
     /* take apart the input list
      * assumes already validated & preprocessed in readWgdxList */
     for (k = 0;  k < length(symList[iSym]);  k++) {
@@ -1804,6 +1817,9 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
       }
       else if (strcmp("domains", eltName) == 0) {
         domExp = VECTOR_ELT(symList[iSym], k);
+      }
+      else if (0 == strcmp("domInfo", eltName)) {
+        domInfoExp = VECTOR_ELT(symList[iSym], k);
       }
       else if (strcmp("te", eltName) == 0) {
         teExp = VECTOR_ELT(symList[iSym], k);
@@ -1952,7 +1968,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         if (!gdxDataWriteDone(gdxHandle))
           error ("Error calling gdxDataWriteDone for symbol '%s': %s",
                  wSpecPtr[iSym]->name, getGDXErrorMsg());
-        addDomInfo (wSpecPtr[iSym]->name, domExp);
+        addDomInfo (wSpecPtr[iSym]->name, domExp, domInfoExp);
       }    /* if set or parameter */
       else {
         /* variable or equation */
@@ -2069,7 +2085,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         if (!gdxDataWriteDone(gdxHandle))
           error ("Error calling gdxDataWriteDone for symbol '%s': %s",
                  wSpecPtr[iSym]->name, getGDXErrorMsg());
-        addDomInfo (wSpecPtr[iSym]->name, domExp);
+        addDomInfo (wSpecPtr[iSym]->name, domExp, domInfoExp);
       }
     } /* if sparse */
     else {                    /* form = full */
@@ -2148,7 +2164,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         if (!gdxDataWriteDone(gdxHandle))
           error ("Error calling gdxDataWriteDone for symbol '%s': %s",
                  wSpecPtr[iSym]->name, getGDXErrorMsg());
-        addDomInfo (wSpecPtr[iSym]->name, domExp);
+        addDomInfo (wSpecPtr[iSym]->name, domExp, domInfoExp);
       } /* if a set or parameter */
       else {
         int fDim;  /* number of fields labels / extent of field dim */
@@ -2215,7 +2231,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
         if (!gdxDataWriteDone(gdxHandle))
           error ("Error calling gdxDataWriteDone for symbol '%s': %s",
                  wSpecPtr[iSym]->name, getGDXErrorMsg());
-        addDomInfo (wSpecPtr[iSym]->name, domExp);
+        addDomInfo (wSpecPtr[iSym]->name, domExp, domInfoExp);
       }
     } /* end of writing full data */
   } /* for (i) loop over symbols */
