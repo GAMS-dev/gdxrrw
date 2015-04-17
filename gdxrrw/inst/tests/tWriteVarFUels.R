@@ -39,7 +39,8 @@ tryCatch({
   val0[4,3] <- 0                        # binary.up = 0
   val0[5,3] <- 10                       # binary.prior = 10
   valBinary <- val0
-  vBinary <- list(name='v_binary',type='variable',val=valBinary,uels=uels,
+  vBinary <- list(name='v_binary',type='variable',
+                  val=valBinary,uels=uels,domains='i',
                   typeCode=GMS_VARTYPE$BINARY,ts='text for v_binary')
   wgdx (fnOut, vBinary)
   if (file_test ('-f', fnOut) == TRUE) {
@@ -49,8 +50,8 @@ tryCatch({
   }
   vWant <- rgdx(fnWant,list(name='v_binary',form='sparse',field='all',ts=TRUE))
   vWrote <- rgdx(fnOut,list(name='v_binary',form='sparse',field='all',ts=TRUE))
-  if (identical(vWrote$domains[1],"*"))
-    vWrote$domains[1] <- vWant$domains[1]
+  if (identical(vWrote$domInfo,"relaxed"))
+    vWrote$domInfo <- "full"
   if (identical(vWant,vWrote)) {
   }
   else {
@@ -68,8 +69,8 @@ tryCatch({
   }
   vWant <- rgdx(fnWant,list(name='v_binary',form='sparse',field='all',ts=TRUE))
   vWrote <- rgdx(fnOut,list(name='v_binary',form='sparse',field='all',ts=TRUE))
-  if (identical(vWrote$domains[1],"*"))
-    vWrote$domains[1] <- vWant$domains[1]
+  if (identical(vWrote$domInfo,"relaxed"))
+    vWrote$domInfo <- "full"
   if (identical(vWant,vWrote)) {
   }
   else {
