@@ -35,7 +35,7 @@ tryCatch({
   }
   val0[c(1,3,5),3] <- -1
   val0[c(2,4),3] <- 0
-  vE <- list(name='equ_e_0',type='equation',val=val0,uels=uels,
+  vE <- list(name='equ_e_0',type='equation',val=val0,uels=uels,domains='i',
              typeCode=GMS_EQUTYPE$E,ts='=e= equation')
   wgdx (fnOut, vE)
   if (file_test ('-f', fnOut) == TRUE) {
@@ -45,8 +45,9 @@ tryCatch({
   }
   eWant <- rgdx(fnWant,list(name='equ_e_0',form='sparse',field='all',ts=TRUE))
   eWrot <- rgdx(fnOut, list(name='equ_e_0',form='sparse',field='all',ts=TRUE))
-  if (identical(eWrot$domains[1],"*"))
-    eWrot$domains[1] <- eWant$domains[1]
+  ## patch up domInfo
+  if (identical(eWrot$domInfo,"relaxed"))
+    eWrot$domInfo <- "full"
   if (! identical(eWant,eWrot)) {
     print(all.equal(eWant,eWrot))
     stop ("FAIL: for equ_e_0, eWant and eWrot do not agree")
@@ -72,7 +73,7 @@ tryCatch({
   val1[b+2,1] <- 4
   val1[b+(1:2),2] <- 2
   val1[b+(1:2),3] <- 1                  # equ_g.m('i2','i4') = 1
-  vE <- list(name='equ_g_1',type='equation',val=val1,uels=uels,
+  vE <- list(name='equ_g_1',type='equation',val=val1,uels=uels,domains='i',
                    typeCode=GMS_EQUTYPE$G,ts='=g= equation')
   wgdx (fnOut, vE)
   if (file_test ('-f', fnOut) == TRUE) {
@@ -82,8 +83,8 @@ tryCatch({
   }
   eWant <- rgdx(fnWant,list(name='equ_g_1',form='sparse',field='all',ts=TRUE))
   eWrot <- rgdx(fnOut, list(name='equ_g_1',form='sparse',field='all',ts=TRUE))
-  if (identical(eWrot$domains[1],"*"))
-    eWrot$domains[1] <- eWant$domains[1]
+  if (identical(eWrot$domInfo,"relaxed"))
+    eWrot$domInfo <- "full"
   if (! identical(eWant,eWrot)) {
     print(all.equal(eWant,eWrot))
     stop ("FAIL: for equ_g_1, eWant and eWrot do not agree")
@@ -104,7 +105,7 @@ tryCatch({
   val2[b+(1:3),1] <- c(1,3,5)
   val2[b+(1:3),2] <- 2
   val2[b+(1:3),3] <- -1                 # equ_g_1(i1,i3,i5).m = -1
-  vL <- list(name='equ_l_2',type='equation',val=val2,uels=uels,
+  vL <- list(name='equ_l_2',type='equation',val=val2,uels=uels,domains='i',
                     typeCode=GMS_EQUTYPE$L,ts='=l= equation')
   wgdx (fnOut, vL)
   if (file_test ('-f', fnOut) == TRUE) {
@@ -114,8 +115,8 @@ tryCatch({
   }
   eWant <- rgdx(fnWant,list(name='equ_l_2',form='sparse',field='all',ts=TRUE))
   eWrot <- rgdx(fnOut, list(name='equ_l_2',form='sparse',field='all',ts=TRUE))
-  if (identical(eWrot$domains[1],"*"))
-    eWrot$domains[1] <- eWant$domains[1]
+  if (identical(eWrot$domInfo,"relaxed"))
+    eWrot$domInfo <- "full"
   if (! identical(eWant,eWrot)) {
     print(all.equal(eWant,eWrot))
     stop ("FAIL: for equ_l_2, eWant and eWrot do not agree")
@@ -126,7 +127,7 @@ tryCatch({
   val3[(1:5),1] <- (1:5)
   val3[(1:5),2] <- 1
   val3[(1:5),3] <- c(56,2,56,2,56)
-  vN <- list(name='equ_n_3',type='equation',val=val3,uels=uels,
+  vN <- list(name='equ_n_3',type='equation',val=val3,uels=uels,domains='i',
                     typeCode=GMS_EQUTYPE$N,ts='=n= equation')
   wgdx (fnOut, vN)
   if (file_test ('-f', fnOut) == TRUE) {
@@ -136,8 +137,8 @@ tryCatch({
   }
   eWant <- rgdx(fnWant,list(name='equ_n_3',form='sparse',field='all',ts=TRUE))
   eWrot <- rgdx(fnOut, list(name='equ_n_3',form='sparse',field='all',ts=TRUE))
-  if (identical(eWrot$domains[1],"*"))
-    eWrot$domains[1] <- eWant$domains[1]
+  if (identical(eWrot$domInfo,"relaxed"))
+    eWrot$domInfo <- "full"
   if (! identical(eWant,eWrot)) {
     print(all.equal(eWant,eWrot))
     stop ("FAIL: for equ_n_3, eWant and eWrot do not agree")

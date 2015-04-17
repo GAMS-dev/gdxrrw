@@ -42,7 +42,8 @@ tryCatch({
   val0['i4','up'] <- 0
   val0['i5','s'] <- 10
   valBinary <- val0
-  vBinary <- list(name='v_binary',type='variable',form='full',val=valBinary,uels=uels,
+  vBinary <- list(name='v_binary',type='variable',form='full',val=valBinary,
+                  uels=uels,domains='i',
                   typeCode=GMS_VARTYPE$BINARY,ts='text for v_binary')
   wgdx (fnOut, vBinary)
   if (file_test ('-f', fnOut) == TRUE) {
@@ -53,8 +54,8 @@ tryCatch({
 
   vWant <- rgdx(fnWant,list(name='v_binary',form='sparse',field='all',ts=TRUE))
   vWrote <- rgdx(fnOut,list(name='v_binary',form='sparse',field='all',ts=TRUE))
-  if (identical(vWrote$domains[1],"*"))
-    vWrote$domains[1] <- vWant$domains[1]
+  if (identical(vWrote$domInfo,"relaxed"))
+    vWrote$domInfo <- "full"
   if (identical(vWant,vWrote)) {
   }
   else {
@@ -73,7 +74,8 @@ tryCatch({
   val0['i4','up'] <- 16
   val0['i5','s'] <- 1000
   valInteger <- val0
-  vInteger <- list(name='v_integer',type='variable',form='full',val=valInteger,uels=uels,
+  vInteger <- list(name='v_integer',type='variable',form='full',val=valInteger,
+                   uels=uels,domains='i',
                    typeCode=GMS_VARTYPE$INTEGER,ts='CHECK CASING')
   wgdx (fnOut, vInteger)
   if (file_test ('-f', fnOut) == TRUE) {
@@ -84,8 +86,8 @@ tryCatch({
 
   vWant <- rgdx(fnWant,list(name='v_integer',form='sparse',field='all',ts=TRUE))
   vWrote <- rgdx(fnOut,list(name='v_integer',form='sparse',field='all',ts=TRUE))
-  if (identical(vWrote$domains[1],"*"))
-    vWrote$domains[1] <- vWant$domains[1]
+  if (identical(vWrote$domInfo,"relaxed"))
+    vWrote$domInfo <- "full"
   if (identical(vWant,vWrote)) {
   }
   else {
@@ -104,7 +106,8 @@ tryCatch({
   val0['i2','up'] <- 0
   val0['i1','s'] <- 10
   valPositive <- val0
-  vPositive <- list(name='v_positive',type='variable',form='full',val=valPositive,uels=uels,
+  vPositive <- list(name='v_positive',type='variable',form='full',val=valPositive,
+                    uels=uels,domains='i',
                     typeCode=GMS_VARTYPE$POSITIVE,ts='try some special values')
   wgdx (fnOut, vPositive)
   if (file_test ('-f', fnOut) == TRUE) {
@@ -115,8 +118,8 @@ tryCatch({
 
   vWant <- rgdx(fnWant,list(name='v_positive',form='sparse',field='all',ts=TRUE))
   vWrote <- rgdx(fnOut,list(name='v_positive',form='sparse',field='all',ts=TRUE))
-  if (identical(vWrote$domains[1],"*"))
-    vWrote$domains[1] <- vWant$domains[1]
+  if (identical(vWrote$domInfo,"relaxed"))
+    vWrote$domInfo <- "full"
   if (identical(vWant,vWrote)) {
   }
   else {
@@ -135,7 +138,8 @@ tryCatch({
   val0['i2','up'] <- -1
   val0['i1','s'] <- 0.5
   valNegative <- val0
-  vNegative <- list(name='v_negative',type='variable',form='full',val=valNegative,uels=uels,
+  vNegative <- list(name='v_negative',type='variable',form='full',val=valNegative,
+                    uels=uels,domains='i',
                     typeCode=GMS_VARTYPE$NEGATIVE,ts='')
   wgdx (fnOut, vNegative)
   if (file_test ('-f', fnOut) == TRUE) {
@@ -146,8 +150,8 @@ tryCatch({
 
   vWant <- rgdx(fnWant,list(name='v_negative',form='sparse',field='all',ts=TRUE))
   vWrote <- rgdx(fnOut,list(name='v_negative',form='sparse',field='all',ts=TRUE))
-  if (identical(vWrote$domains[1],"*"))
-    vWrote$domains[1] <- vWant$domains[1]
+  if (identical(vWrote$domInfo,"relaxed"))
+    vWrote$domInfo <- "full"
   if (identical(vWant,vWrote)) {
   }
   else {
@@ -167,7 +171,8 @@ tryCatch({
   val0['i4','up'] <- -8
   val0['i5','s'] <- 512
   valFree <- val0
-  vFree <- list(name='v_free',type='variable',form='full',val=valFree,uels=uels,
+  vFree <- list(name='v_free',type='variable',form='full',val=valFree,
+                uels=uels,domains='i',
                 typeCode=GMS_VARTYPE$FREE,
                 ts='WHAT if we use a long text with special chars __ %% -- @@  ?? !! jj')
   wgdx (fnOut, vFree)
@@ -179,8 +184,8 @@ tryCatch({
 
   vWant <- rgdx(fnWant,list(name='v_free',form='sparse',field='all',ts=TRUE))
   vWrote <- rgdx(fnOut,list(name='v_free',form='sparse',field='all',ts=TRUE))
-  if (identical(vWrote$domains[1],"*"))
-    vWrote$domains[1] <- vWant$domains[1]
+  if (identical(vWrote$domInfo,"relaxed"))
+    vWrote$domInfo <- "full"
   if (identical(vWant,vWrote)) {
   }
   else {
@@ -199,7 +204,8 @@ tryCatch({
   val0['i4','up'] <- 10
   val0['i5','s'] <- 100
   valSos1 <- val0
-  vSos1 <- list(name='v_sos1',type='variable',form='full',val=valSos1,uels=uels,
+  vSos1 <- list(name='v_sos1',type='variable',form='full',val=valSos1,
+                uels=uels,domains='i',
                 typeCode=GMS_VARTYPE$SOS1,ts='v_sos1')
   wgdx (fnOut, vSos1)
   if (file_test ('-f', fnOut) == TRUE) {
@@ -210,8 +216,8 @@ tryCatch({
 
   vWant <- rgdx(fnWant,list(name='v_sos1',form='sparse',field='all',ts=TRUE))
   vWrote <- rgdx(fnOut,list(name='v_sos1',form='sparse',field='all',ts=TRUE))
-  if (identical(vWrote$domains[1],"*"))
-    vWrote$domains[1] <- vWant$domains[1]
+  if (identical(vWrote$domInfo,"relaxed"))
+    vWrote$domInfo <- "full"
   if (identical(vWant,vWrote)) {
   }
   else {
@@ -230,7 +236,8 @@ tryCatch({
   val0['i4','up'] <- 10
   val0['i5','s'] <- 100
   valSos2 <- val0
-  vSos2 <- list(name='v_sos2',type='variable',form='full',val=valSos2,uels=uels,
+  vSos2 <- list(name='v_sos2',type='variable',form='full',val=valSos2,
+                uels=uels,domains='i',
                 typeCode=GMS_VARTYPE$SOS2,ts='v_sos2')
   wgdx (fnOut, vSos2)
   if (file_test ('-f', fnOut) == TRUE) {
@@ -241,8 +248,8 @@ tryCatch({
 
   vWant <- rgdx(fnWant,list(name='v_sos2',form='sparse',field='all',ts=TRUE))
   vWrote <- rgdx(fnOut,list(name='v_sos2',form='sparse',field='all',ts=TRUE))
-  if (identical(vWrote$domains[1],"*"))
-    vWrote$domains[1] <- vWant$domains[1]
+  if (identical(vWrote$domInfo,"relaxed"))
+    vWrote$domInfo <- "full"
   if (identical(vWant,vWrote)) {
   }
   else {
@@ -262,7 +269,8 @@ tryCatch({
   val0['i4','up'] <- 1000
   val0['i5','s'] <- 999
   valSemicont <- val0
-  vSemicont <- list(name='v_semicont',type='variable',form='full',val=valSemicont,uels=uels,
+  vSemicont <- list(name='v_semicont',type='variable',form='full',val=valSemicont,
+                    uels=uels,domains='i',
                     typeCode=GMS_VARTYPE$SEMICONT,ts='v_semicont')
   wgdx (fnOut, vSemicont)
   if (file_test ('-f', fnOut) == TRUE) {
@@ -273,8 +281,8 @@ tryCatch({
 
   vWant <- rgdx(fnWant,list(name='v_semicont',form='sparse',field='all',ts=TRUE))
   vWrote <- rgdx(fnOut,list(name='v_semicont',form='sparse',field='all',ts=TRUE))
-  if (identical(vWrote$domains[1],"*"))
-    vWrote$domains[1] <- vWant$domains[1]
+  if (identical(vWrote$domInfo,"relaxed"))
+    vWrote$domInfo <- "full"
   if (identical(vWant,vWrote)) {
   }
   else {
@@ -294,7 +302,8 @@ tryCatch({
   val0['i4','up'] <- 1000
   val0['i5','s'] <- 100000
   valSemiint <- val0
-  vSemiint <- list(name='v_semiint',type='variable',form='full',val=valSemiint,uels=uels,
+  vSemiint <- list(name='v_semiint',type='variable',form='full',val=valSemiint,
+                   uels=uels,domains='i',
                    typeCode=GMS_VARTYPE$SEMIINT,ts='v_semiint text')
   wgdx (fnOut, vSemiint)
   if (file_test ('-f', fnOut) == TRUE) {
@@ -305,8 +314,8 @@ tryCatch({
 
   vWant <- rgdx(fnWant,list(name='v_semiint',form='sparse',field='all',ts=TRUE))
   vWrote <- rgdx(fnOut,list(name='v_semiint',form='sparse',field='all',ts=TRUE))
-  if (identical(vWrote$domains[1],"*"))
-    vWrote$domains[1] <- vWant$domains[1]
+  if (identical(vWrote$domInfo,"relaxed"))
+    vWrote$domInfo <- "full"
   if (identical(vWant,vWrote)) {
   }
   else {
