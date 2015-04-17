@@ -86,7 +86,7 @@ mb <- function (msg) {
 
 # compare the data frames f1 and f2, return a checkresult list when done
 ## this test is intended to compare the results of rgdx.XXX() calls
-chkRgdxDF <- function(f1, f2, reqIdent=FALSE) {
+chkRgdxDF <- function(f1, f2, reqIdent=TRUE) {
   if (identical(f1,f2))     return (list(same=TRUE,msg=''))
 
   if (! is.data.frame(f1))   return (mb("not data frames"))
@@ -233,7 +233,7 @@ chkSameVec <- function(s, v1,v2) {
 ## assumes a certain ordering of the list elements
 ## it is not really necessary that they be ordered in this way but it
 ## makes the test easier to implement
-chkRgdxRes <- function(f1, f2, checkDimNames=TRUE, reqIdent=FALSE) {
+chkRgdxRes <- function(f1, f2, checkDimNames=TRUE, reqIdent=TRUE) {
   if (identical(f1,f2))     return (list(same=TRUE,msg=''))
 
   isSparse <- TRUE

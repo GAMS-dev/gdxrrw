@@ -205,7 +205,7 @@ if (!chk$same) {
 ## ---------- reading form=sparse, filtered, no compress
 
 iwant <- list(name="I", type="set", dim=1L,
-              val=matrix(c(1:3), nrow=3, ncol=1),
+              val=matrix(c(1,2,3), nrow=3, ncol=1),
               form="sparse",
               uels=list(ifUels), domains=udom1, domInfo="filtered", te=ifText)
 i <- rgdx(fnIn,list(name='i',form='sparse',uels=list(ifUels),te=TRUE),useDomInfo=useDomInfo)
