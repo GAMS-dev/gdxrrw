@@ -139,7 +139,7 @@ tryCatch({
   }
   f1 <- factor(as.integer(ij$val[,1]),seq(to=length(iUels)),labels=iUels)
   f2 <- factor(as.integer(ij$val[,2]),seq(to=length(jUels)),labels=jUels)
-  ijdfwant <- data.frame(list("i"=f1,"j"=f2,".te"=ijwant$te),stringsAsFactors=F)
+  ijdfwant <- data.frame(list("I"=f1,"J"=f2,".te"=ijwant$te),stringsAsFactors=F)
   attr(ijdfwant,"symName") <- "IJ"
   attr(ijdfwant,"domains") <- c("I","J")
   attr(ijdfwant,"domInfo") <- "full"
@@ -169,7 +169,7 @@ tryCatch({
   f1 <- factor(as.integer(ijc$val[,1]),seq(to=length(iUels)),labels=iUels)
   f2 <- factor(as.integer(ijc$val[,2]),seq(to=length(jUels)),labels=jUels)
   f3 <- factor(as.integer(ijc$val[,3]),seq(to=length(cUels)),labels=cUels)
-  ijcdfwant <- data.frame(list("i"=f1,"j"=f2,"k"=f3,".te"=ijcwant$te),stringsAsFactors=F)
+  ijcdfwant <- data.frame(list("I"=f1,"J"=f2,"c"=f3,".te"=ijcwant$te),stringsAsFactors=F)
   attr(ijcdfwant,"symName") <- "IJc"
   attr(ijcdfwant,"domains") <- c("I","J","c")
   attr(ijcdfwant,"domInfo") <- "full"
@@ -239,7 +239,7 @@ tryCatch({
   }
   f1 <- factor(as.integer(ij$val[,1]),labels=i2uels)
   f2 <- factor(as.integer(ij$val[,2]),labels=jUels)
-  ijdfwant <- data.frame(list("i"=f1,"j"=f2,".te"=ijwant$te),stringsAsFactors=F)
+  ijdfwant <- data.frame(list("I"=f1,"J"=f2,".te"=ijwant$te),stringsAsFactors=F)
   attr(ijdfwant,"symName") <- "IJ"
   attr(ijdfwant,"domains") <- c("I","J")
   attr(ijdfwant,"domInfo") <- "compressed"
@@ -265,7 +265,7 @@ tryCatch({
   f1 <- factor(as.integer(ijcwant$val[,1]),labels=iUels[1:3])
   f2 <- factor(as.integer(ijcwant$val[,2]),labels=jUels)
   f3 <- factor(as.integer(ijcwant$val[,3]),labels=cUels)
-  ijcdfwant <- data.frame(list("i"=f1,"j"=f2,"k"=f3,".te"=ijcwant$te),stringsAsFactors=F)
+  ijcdfwant <- data.frame(list("I"=f1,"J"=f2,"c"=f3,".te"=ijcwant$te),stringsAsFactors=F)
   attr(ijcdfwant,"symName") <- "IJc"
   attr(ijcdfwant,"domains") <- c("I","J","c")
   attr(ijcdfwant,"domInfo") <- "compressed"

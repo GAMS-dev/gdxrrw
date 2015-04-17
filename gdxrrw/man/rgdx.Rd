@@ -70,9 +70,10 @@
   passed in via the optional \code{names} argument.  If not, then the names are
   either created internally or taken from the domain information and
   name of the symbol in question.  The latter choice is controlled by setting
-  \code{options(gdx.domainNames=TRUE)} to use GDX domain info for data
-  frame names.  A setting of FALSE (the default) causes internally
-  generated names to be used.
+  \code{options(gdx.domainNames=FALSE)} to use internally generated
+  names for the data frame columns (e.g. \code{"i","j"} or
+  \code{"i1","i2","i3","i4"}).  A setting of TRUE (the default) means
+  use the domain names from the GDX file for the column names.
 }
 \value{
   By default, the return value is a list with elements describing

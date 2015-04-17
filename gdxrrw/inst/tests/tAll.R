@@ -42,7 +42,7 @@ tests <- c(
     "tWriteVarField", "tWriteVarSort", "tWriteVarOrder",
     "tWriteVarTypesSparse", "tWriteVarFUels",
     "tWriteVarTypesFull",
-    "tWrap",
+    "tDomainNames", "tWrap",
     "tInfo1", "tInfo2",
     ## "tLS"
     "tWriteNan"
