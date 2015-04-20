@@ -1,0 +1,39 @@
+The update from version 0.4 to 1.0 contains the usual fixes,
+improvements, and minor additions, but more importantly, there is a
+change in some existing behavior that goes well with a move to 1.0.
+The new behavior has to do with how domain information is passed
+back.  With version 0.4 and previous, it was not always possible to
+get all the domain information available, and it wasn't clear how
+reliable that domain information was.  Version 1.0 addresses this
+situation via updates to the rdx(), rgdx.param(), rgdx.set() and
+gdxInfo() functions/wrappers.
+
+For example, with returnDF=T the older gdxInfo() only returned symbol
+indices.  This was fine when full domain info was available but when
+the domain info is relaxed, no symbol indices are available: they
+might not be stored in the GDX.  The new gdxInfo() adds a domnames
+column to the information returned so that relaxed domain info is
+available to the user.
+
+The older versions of rgdx() returned the domain names in the domains
+list element, but it wasn't possible to know if these names were full
+or relaxed.  This implies that it was not certain that the elements in
+the uels list element were really sets stored in GDX or just elements
+taken from the data.  Finally, if compression or filtering was used,
+the domain names were replaced with '_compressed' or '_user'.  The new
+rgdx() adds a domInfo element to the return list which indicates
+definitively how the uels returned were obtained: from full or relaxed
+domain info, or as the result of compression or filtering.  With this
+addition, we are free to return domain names in the domains list
+element for all cases in which they are available.
+
+The data frames returned by the rgdx.param and rgdx.set wrappers
+are updated to include a domInfo attribute which reflects the rgdx()
+domInfo return.  The existing domains attribute changes as the domains
+return of rgdx() changes.  Perhaps most importantly, the value of the
+global option gdx.domainNames changes from FALSE to TRUE, so that
+whenever domain names are available, they are used as the column names
+for the index columns of the data frames returned by rgdx.param() and
+rgdx.set().  The old behavior for column names can be preserved by
+setting options(gdx.domainNames=F).
+
