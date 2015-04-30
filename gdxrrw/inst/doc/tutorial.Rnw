@@ -47,7 +47,7 @@ Before you can use any R package, you must load
 it.  The \rrw{} package also depends on the GDX shared libraries found
 in the GAMS system directory.  The \texttt{igdx} command is useful for
 controlling this linkage:
-<<>>=
+<<loadPackage>>=
 library(gdxrrw)
 # igdx('/path/to/GAMS/sysdir') if not taken from environment
 igdx()
@@ -56,14 +56,14 @@ igdx()
 Our starting point is a modified version of the transport model from
 the GAMS model library where all of the data inputs and outputs are
 done via GDX.  Running this model is easy:
-<<>>=
+<<genData>>=
 gams('transport')
 @
 
 The model \texttt{transport} dumps all of its data (including its
 inputs) to GDX before it quits.  There are 5 inputs: 2 sets and 3
 parameters.
-<<>>=
+<<origData>>=
 I <- rgdx.set('outputs.gdx','I')
 J <- rgdx.set('outputs.gdx','J')
 a <- rgdx.param('outputs.gdx','a')
@@ -73,9 +73,9 @@ c <- rgdx.param('outputs.gdx','c')
 
 As an exercise, we first generate a GDX file whose data is identical
 to the original inputs, and verify that the solution with this data is unchanged:
-<<>>=
+<<identData>>=
 wgdx.lst('intest',list(I,J,a,b,c))
-rc <- system('gdxdiff intest inputs')
+rc <- system2('gdxdiff', 'intest inputs', stdout=F)
 if (0 == rc) print ("identical inputs") else print ("different inputs")
 gams('transport.gms --INPUT intest.gdx --OUTPUT outtest.gdx')
 zlst <- rgdx('outputs.gdx',list(name='z'))
@@ -85,9 +85,9 @@ if (zlst$val == z) print ("identical objective") else print ("different objectiv
 @
 
 If we double all transportation costs, we can expect to double the objective.
-<<>>=
+<<doubleData>>=
 c2 <- c
-c2[,'value'] <- c[,'value'] * 2
+c2[[3]] <- c[[3]] * 2
 wgdx.lst('in2',list(I,J,a,b,c2))
 gams('transport.gms --INPUT in2.gdx --OUTPUT out2.gdx')
 zlst <- rgdx('out2.gdx',list(name='z'))
@@ -102,7 +102,7 @@ For example, we can use the state data in R to create a set of source
 and destination nodes.  The state data includes populations that we
 can use to scale demands, and we can base transportation costs on the
 lat/long data for the state centers.
-<<>>=
+<<statesData>>=
 data(state)
 src <- c('California','Washington','New York','Maryland')
 dst <- setdiff(state.name,src)
@@ -130,7 +130,7 @@ Now that we've created the raw data for our transportation problem, we
 need to put it in proper form for writing out the GDX.  In this example,
 we use a list for each symbol to write, although we could use data
 frames too.
-<<>>=
+<<statesGDX>>=
 ilst <- list(name='I',uels=list(src),ts='supply states')
 jlst <- list(name='J',uels=list(dst),ts='demand states')
 suplst <- list(name='a',val=as.array(sup),uels=list(src),
@@ -145,7 +145,7 @@ wgdx.lst('inStates',list(ilst,jlst,suplst,demlst,clst))
 
 Once the data is written to GDX we can call gams, as before.  A model
 status of 1 (Optimal) indicates an optimal solution was found.
-<<>>=
+<<statesSolve>>=
 gams('transport.gms --INPUT inStates.gdx --OUTPUT outStates.gdx')
 ms <- rgdx.scalar('outStates.gdx','modelStat')
 print(paste('Model status:',ms))
@@ -156,7 +156,7 @@ print(paste('Model status:',ms))
 Things often fail to go as planned.  A GAMS run indicates this with a
 nonzero return code.  For example, we could point to a non-existent
 GDX input:
-<<>>=
+<<missingGDX>>=
 rc <- gams('transport --INPUT notHere')
 if (0 == rc) print ("normal gams return") else print ("abnormal gams return")
 @
@@ -166,9 +166,10 @@ error: infeasible models are sometimes expected.  The model status
 (one of many values available after a solve) can indicate an infeasible
 model, among other things.  If we reduce the supply available from
 Seattle, we make the model infeasible.
-<<>>=
+<<infeas>>=
 a2 <- a
-a2[a2$i == 'seattle','value'] <- a2[a2$i == 'seattle','value'] - 100
+rows <- a2$i == 'seattle'
+a2[rows,2] <- a2[rows,2] - 100
 wgdx.lst('inInf',list(I,J,a2,b,c))
 gams('transport.gms --INPUT inInf.gdx --OUTPUT outInf.gdx')
 ms <- rgdx.scalar('outInf.gdx','modelStat')

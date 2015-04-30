@@ -11,7 +11,8 @@
 }
 \usage{
   # generic form - return a symbol as a list
-  rgdx(gdxName, requestList = NULL, squeeze = TRUE, useDomInfo = TRUE)
+  rgdx(gdxName, requestList = NULL, squeeze = TRUE, useDomInfo = TRUE,
+       followAlias = TRUE)
 
   # return a set or parameter in a data frame
   rgdx.set(gdxName, symName, names=NULL, compress=FALSE, ts=FALSE,
@@ -32,11 +33,14 @@
   \item{useDomInfo}{if TRUE, the default filter will be the domain info
   in the GDX.  If no domain info is available, or if
   \code{useDomInfo=FALSE}, the default filter will be the GDX universe}
+  \item{followAlias}{if TRUE and the symbol queried is an alias,
+  return information for the real set rather than the alias}
   \item{check.names}{If TRUE then the names of the variables in the data frame are checked to ensure that they are syntactically valid variable names and are not duplicated.  If necessary they are adjusted (by \code{make.names} so that they are}
   \item{symName}{the name of the GDX symbol to read}
   \item{names}{the column names to use in the data frame returned}
   \item{compress}{if TRUE, compress the factors in the data frame so they only include required levels.  For the default compress=FALSE, each factor includes levels for the entire universe of UELs in the GDX file}
   \item{ts}{if TRUE, include the \code{.ts} field (i.e. the explanatory text) for the symbol in the return}
+  \item{te}{if TRUE, include the associated text (i.e. the \code{.te} field) for each set element in the return}
 }
 \details{
   The \code{requestList} argument to \code{rgdx} is essentially a list

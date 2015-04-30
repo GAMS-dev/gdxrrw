@@ -412,11 +412,11 @@ SEXP rgdx (SEXP args)
   /* ----------------- Check proper number of inputs and outputs ------------
    * Function should follow specification of
    * rgdx ('gdxFileName', requestList = NULL, squeeze = TRUE, useDomInfo=TRUE,
-   *       followAlias=FALSE)
+   *       followAlias=TRUE)
    * ------------------------------------------------------------------------ */
   if (6 != arglen) {
     error ("usage: %s(gdxName, requestList = NULL, squeeze = TRUE,"
-           " useDomInfo = TRUE, followAlias = FALSE) - incorrect arg count",
+           " useDomInfo = TRUE, followAlias = TRUE) - incorrect arg count",
            funcName);
   }
   targs = CDR(args);
@@ -459,7 +459,7 @@ SEXP rgdx (SEXP args)
   }
   followAlias = exp2Boolean (followAliasExp);
   if (NA_LOGICAL == followAlias) {
-    error ("usage: %s(gdxName, requestList, squeeze = TRUE, useDomInfo = TRUE, followAlias = FALSE)\n    followAlias argument could not be interpreted as logical", funcName);
+    error ("usage: %s(gdxName, requestList, squeeze = TRUE, useDomInfo = TRUE, followAlias = TRUE)\n    followAlias argument could not be interpreted as logical", funcName);
   }
 
   /* ------------------- check if the GDX file exists --------------- */

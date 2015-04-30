@@ -191,7 +191,7 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(i,unfiltered,compressed) failed:",chk$msg))
   }
-  idfwant <- data.frame(list("i"=factor(iUels),".te"=iTextNA),stringsAsFactors=F)
+  idfwant <- data.frame(list(".i"=factor(iUels),".te"=iTextNA),stringsAsFactors=F)
   attr(idfwant,"symName") <- "I"
   attr(idfwant,"domains") <- c("*")
   attr(idfwant,"domInfo") <- "compressed"
@@ -211,7 +211,7 @@ tryCatch({
   if (!chk$same) {
     stop (paste("test rgdx(j,unfiltered,compressed) failed:",chk$msg))
   }
-  jdfwant <- data.frame(list("i"=factor(jUels),".te"=jText),stringsAsFactors=F)
+  jdfwant <- data.frame(list(".i"=factor(jUels),".te"=jText),stringsAsFactors=F)
   attr(jdfwant,"symName") <- "J"
   attr(jdfwant,"domains") <- c("*")
   attr(jdfwant,"domInfo") <- "compressed"

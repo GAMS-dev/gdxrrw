@@ -120,6 +120,7 @@ tryCatch({
   if (!chk$same) {
     stop (paste("gdx.domainNames=T test rgdx.set(s,ts=TRUE) failed:",chk$msg))
   }
+  names(tdfwant) <- ".i"
   tdf <- rgdx.set(fnIn,'t',compress=TRUE)
   chk <- chkRgdxDF (tdf, tdfwant, reqIdent=reqIdent)
   if (!chk$same) {

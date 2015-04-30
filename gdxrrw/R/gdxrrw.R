@@ -76,27 +76,16 @@ rgdx.param <- function(gdxName, symName, names=NULL, compress=FALSE,
                          ("none"==sym$domInfo) ||
                          ("unknown"==sym$domInfo) )
     }
-    ## fill in the default names
-    if (1 == symDim) {
-      fnames <- list("i","value")
-    } else if (2 == symDim) {
-      fnames <- list("i","j","value")
-    } else if (3 == symDim) {
-      fnames <- list("i","j","k","value")
-    } else {
-      for (d in c(1:symDim)) {
-        fnames[[d]] <- paste("i",d,sep="")
-      }
-      fnames[[symDim+1]] <- "value"
-    }
     if (domainNames) {
-      for (d in c(1:symDim)) {
-        if ("*" != sym$domains[[d]]) {
-          fnames[[d]] <- sym$domains[[d]]
-        }
+      fnames <- sym$domains
+      if (check.names) {
+        fnames <- patchNames(fnames,symDim)
       }
       fnames[[symDim+1]] <- sym$name
-    } # if domainNames
+    }
+    else {
+      fnames <- defNames(symDim,T)
+    }
   } else {
     # process the user-provided names
     if (is.vector(names)) {
@@ -185,6 +174,57 @@ rgdx.scalar <- function(gdxName, symName, ts=FALSE)
   return(c)
 } # rgdx.scalar
 
+# replace * in domain names with .i, .i4, etc.
+# good to use before make.names gets the *'s
+patchNames <- function(dNames,n)
+{
+  if (n > 3) {
+    for (d in c(1:n)) {
+      if ("*" == dNames[[d]]) {
+        dNames[[d]] <- paste0(".i",d)
+      }
+    }
+    return(dNames)
+  }
+
+  if ("*" == dNames[[1]]) {
+    dNames[[1]] <- paste0(".i")
+  }
+  if (1 == n) {
+    return(dNames)
+  }
+  if ("*" == dNames[[2]]) {
+    dNames[[2]] <- paste0(".j")
+  }
+  if (2 == n) {
+    return(dNames)
+  }
+  if ("*" == dNames[[3]]) {
+    dNames[[3]] <- paste0(".k")
+  }
+  return(dNames)
+} # patchNames
+
+defNames <- function(n,isPar)
+{
+  if (1 == n) {
+    dnames <- list("i")
+  } else if (2 == n) {
+    dnames <- list("i","j")
+  } else if (3 == n) {
+    dnames <- list("i","j","k")
+  } else {
+    dnames <- list()
+    for (d in c(1:n)) {
+      dnames[[d]] <- paste0("i",d)
+    }
+  }
+  if (isPar) {
+    dnames[[n+1]] <- "value"
+  }
+  return(dnames)
+} # defNames
+
 rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE,
                      ts=FALSE, useDomInfo=TRUE, check.names=TRUE, te=FALSE)
 {
@@ -203,25 +243,15 @@ rgdx.set <- function(gdxName, symName, names=NULL, compress=FALSE,
                          ("none"==sym$domInfo) ||
                          ("unknown"==sym$domInfo) )
     }
-    ## fill in the default names
-    if (1 == symDim) {
-      fnames <- list("i")
-    } else if (2 == symDim) {
-      fnames <- list("i","j")
-    } else if (3 == symDim) {
-      fnames <- list("i","j","k")
-    } else {
-      for (d in c(1:symDim)) {
-        fnames[[d]] <- paste("i",d,sep="")
+    if (domainNames) {
+      fnames <- sym$domains
+      if (check.names) {
+        fnames <- patchNames(fnames,symDim)
       }
     }
-    if (domainNames) {
-      for (d in c(1:symDim)) {
-        if ("*" != sym$domains[[d]]) {
-          fnames[[d]] <- sym$domains[[d]]
-        }
-      }
-    } # if domainNames
+    else {
+      fnames <- defNames(symDim,F)
+    }
   } else {
     # process the user-provided names
     if (is.vector(names)) {
