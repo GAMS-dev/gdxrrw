@@ -16,7 +16,7 @@
 #define GMS_MAX_SOLVERS            150 /* maximum number of solver that can be stored */
 
 #define GMS_MAX_INDEX_DIM      GLOBAL_MAX_INDEX_DIM
-#define GMS_UEL_IDENT_SIZE     GLOBAL_UEL_IDENT_SIZE  /* implies len of 31 */
+#define GMS_UEL_IDENT_SIZE     GLOBAL_UEL_IDENT_SIZE  /* implies len of 63 */
 
 #define GMS_SSSIZE            256 /* short string size */
 
