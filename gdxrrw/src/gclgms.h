@@ -101,7 +101,7 @@ typedef double gdxValues_t[GMS_VAL_MAX];
 typedef char gdxStrIndex_t[GMS_MAX_INDEX_DIM][GMS_SSSIZE];
 typedef char *gdxStrIndexPtrs_t[GMS_MAX_INDEX_DIM];
 typedef int gdxUelIndex_t[GMS_MAX_INDEX_DIM];
-#define GDXSTRINDEXPTRS_INIT(idx,idxPtrs) do {int i; for (i=0; i < GMS_MAX_INDEX_DIM;  i++) idxPtrs[i] = idx[i];} while (0)
+#define GDXSTRINDEXPTRS_INIT(idx,idxPtrs) do {int GDXSTRINDEXPTRS_i; for (GDXSTRINDEXPTRS_i=0; GDXSTRINDEXPTRS_i < GMS_MAX_INDEX_DIM;  GDXSTRINDEXPTRS_i++) (idxPtrs)[GDXSTRINDEXPTRS_i] = (idx)[GDXSTRINDEXPTRS_i];} while (0)
 
 extern const char *gmsGdxTypeText[GMS_DT_MAX];
 extern const char *gmsVarTypeText[GMS_VARTYPE_MAX];
