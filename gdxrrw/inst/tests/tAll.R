@@ -86,3 +86,4 @@ if (nFails) {
 } else {
   print (paste("Testing complete.  All", nRuns,"tests PASSED"))
 }
+invisible(nFails)
