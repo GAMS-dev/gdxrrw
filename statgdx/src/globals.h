@@ -1,5 +1,5 @@
 /* globals.h
- * Global #defines, typedefs, and (gasp!) data for gdxrrw
+ * Global #defines, typedefs, and (gasp!) data for statgdx
  * $Id$
  */
 
@@ -27,7 +27,6 @@
 
 typedef int valIndex_t[GMS_MAX_INDEX_DIM]; /* data indices from sparse 'val' */
 typedef char shortStringBuf_t[GMS_SSSIZE];
-typedef void (GDX_CALLCONV *gdxGetLoadPath_t) (char *s);
 typedef enum dType {
   set = GMS_DT_SET,
   parameter = GMS_DT_PAR,
@@ -104,15 +103,13 @@ typedef struct xpFilter {       /* xtreme-performance filter */
   domainType_t domType;         /* what type of domain info was the source? */
 } xpFilter_t;
 
-GDX_FUNCPTR(gdxGetLoadPath);
 
-
-/* ********** functions in gdxrrw.c **************** */
+/* ********** functions in gdxInfo.c **************** */
 SEXP
 gdxInfo (SEXP args);
 
 
-/* ********** functions in gdxrrw.c **************** */
+/* ********** functions in statgdx.c **************** */
 SEXP
 igdx (SEXP args);
 
@@ -124,37 +121,6 @@ void
 checkFileExtension (shortStringBuf_t fileName);
 void
 checkStringLength (const char *str);
-void
-compressData (int symDim, int mRows, SEXP uni, int nUni, xpFilter_t filterList[],
-              SEXP spVals, SEXP uels);
-void
-createElementMatrix (SEXP compVal, SEXP textElement, SEXP compTe,
-                     SEXP compUels, int symDim, int nRec);
-void
-mkHPFilter (SEXP uFilter, hpFilter_t *hpf);
-void
-mkXPFilter (int symIdx, Rboolean useDomInfo, xpFilter_t filterList[],
-            SEXP outDomains, int *domInfoCode);
-void
-prepHPFilter (int symDim, hpFilter_t filterList[]);
-int
-findInHPFilter (int symDim, const int inUels[], hpFilter_t filterList[],
-                int outIdx[]);
-int
-findInXPFilter (int symDim, const int inUels[], xpFilter_t filterList[],
-                int outIdx[]);
-void
-xpFilterToUels (int symDim, xpFilter_t filterList[], SEXP uni, SEXP uels);
-void
-getDomainNames (int symIdx, Rboolean useDomInfo,
-                SEXP outDomains, int *domInfoCode);
-char *
-getGlobalString (const char *globName, shortStringBuf_t result);
-int
-getNonDefaultElemCount (gdxHandle_t h, int symIdx,
-                        int symType, int symSubType, dField_t dField);
-int
-getNonZeroElements (gdxHandle_t h, int symIdx, dField_t dField);
 Rboolean
 getInventSetText (Rboolean defVal);
 Rboolean
@@ -163,8 +129,6 @@ int
 isCompress (void);
 void
 loadGDX (void);
-void
-makeStrVec (SEXP outExp, SEXP inExp);
 void
 sparseToFull (SEXP spVal, SEXP fullVal, SEXP uelLists,
               int symType, int symSubType, dField_t dField, int nRec, int symDimX);
@@ -178,8 +142,6 @@ double
 getDefValVar (int subType, dField_t dField);
 double
 getDefVal (int symType, int subType, dField_t dField);
-void
-addDomInfo (const char *symName, SEXP domExp, SEXP domInfoExp);
 
 
 /* ****** global variables ****** */
