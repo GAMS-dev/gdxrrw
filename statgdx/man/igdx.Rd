@@ -19,18 +19,8 @@
     otherwise.}
 }
 \author{Steve Dirkse.  Maintainer: \email{R@gams.com}}
-\note{
-  The directory containing the external GDX libraries is also where we
-  look for the gams executable, so calling \code{igdx} prior to
-  calling \code{\link{gams}} ensures that the gams executable can be
-  located.  Consider saving a .First function like the following to your
-  R workspace:
-   \code{.First <- function() { library(gdxrrw) ; igdx("/your/GAMS/sysdir")}}
-}
-
 \seealso{
-  \code{\link{rgdx}}, \code{\link{wgdx}}, \code{\link{gams}},
-  \code{\link{gdxInfo}} 
+  \code{\link{gdxInfo}}
 }
 \examples{
   \dontrun{

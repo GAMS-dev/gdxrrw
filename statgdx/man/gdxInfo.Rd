@@ -29,7 +29,7 @@ Steve Dirkse.  Maintainer: \email{R@gams.com}}
 }
 
 \seealso{
- \code{\link{igdx}}, \code{\link{rgdx}}, \code{\link{wgdx}}
+ \code{\link{igdx}}
 }
 \examples{
   gdxInfo();

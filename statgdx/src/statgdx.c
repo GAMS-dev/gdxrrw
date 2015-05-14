@@ -1,9 +1,6 @@
 /* This gdxrrw.c file contains methods to import and export data
    between GAMS and R via GDX file. Methods that are exposed for
    the users of R are:
-   1. x <- rgdx("gdxFileName", lst)
-   2. wgdx("gdxFileName", lst1, lst2, ...)
-   3. x <- gams("modelName", l1, l2,..., s1, s2, ...)
    4. gdxInfo("gdxFileName")
    All these methods are declared as External methods in R.
    They are defined in gdxrrw.R file that can be loaded into R env

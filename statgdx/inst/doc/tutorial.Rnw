@@ -1,13 +1,7 @@
-% \VignetteIndexEntry{gdxrrw Tutorial}
-% \VignetteDepends{gdxrrw}
-% \VignettePackage{gdxrrw}
 \documentclass[11pt]{article}
 \usepackage{amsmath}
 \usepackage[pdftex]{graphicx}
 \usepackage{color}
-% \usepackage{xspace}
-% \usepackage{fancyvrb}
-% \usepackage{fancyhdr}
 \usepackage[colorlinks=true,
             linkcolor=blue,
             citecolor=blue,
@@ -48,7 +42,7 @@ it.  The \rrw{} package also depends on the GDX shared libraries found
 in the GAMS system directory.  The \texttt{igdx} command is useful for
 controlling this linkage:
 <<loadPackage>>=
-library(gdxrrw)
+library(statgdx)
 # igdx('/path/to/GAMS/sysdir') if not taken from environment
 igdx()
 @

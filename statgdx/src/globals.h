@@ -49,7 +49,7 @@ typedef enum dField {
   all = GMS_VAL_MAX,
   max = GMS_VAL_MAX + 1
 } dField_t;
-typedef struct rSpec {          /* rgdx read specifier */
+typedef struct rSpec {
   char name[1024];
   dForm_t dForm;
   dField_t dField;
@@ -114,21 +114,7 @@ gdxInfo (SEXP args);
 
 /* ********** functions in gdxrrw.c **************** */
 SEXP
-wgdx (SEXP args);
-SEXP
 igdx (SEXP args);
-SEXP
-gams (SEXP args);
-
-
-/* ********** functions in rgdx.c *********************** */
-SEXP
-rgdx (SEXP args);
-
-
-/* ********** functions in wgdx.c *********************** */
-SEXP
-wgdx (SEXP args);
 
 
 /* ********** functions in utils.c ********************** */
