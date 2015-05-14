@@ -20,6 +20,21 @@ typedef int (*compareFunc_t) (const void *, const void *);
 
 /* ------------------ start of globally available functions --------------- */
 
+SEXP
+gdxLoad (SEXP args)
+{
+  Rprintf ("*** gdxLoad called ***\n");
+  return R_NilValue;
+}
+
+SEXP
+gdxUnLoad (SEXP args)
+{
+  Rprintf ("*** gdxUnLoad called ***\n");
+  return R_NilValue;
+}
+
+
 /* CHAR2ShortStr
  * copy the input C-style string to a shortString buffer
  * return the output buffer, nor NULL if there is no input

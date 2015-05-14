@@ -115,6 +115,10 @@ igdx (SEXP args);
 
 
 /* ********** functions in utils.c ********************** */
+SEXP
+gdxLoad (SEXP args);
+SEXP
+gdxUnLoad (SEXP args);
 char *
 CHAR2ShortStr (const char *from, shortStringBuf_t to);
 void

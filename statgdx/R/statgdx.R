@@ -1,4 +1,29 @@
 
+.onLoad <- function(libname, pkgname)
+{
+  invisible(.External(gdxLoadExt))
+
+  ## fp <- file("/home/sdirkse/onLoad.txt",open="w")
+  ## cat(".onLoad called",
+  ##     paste("libname = ",libname),
+  ##     paste("pkgname =",pkgname),
+  ##     date(),
+  ##     file=fp, sep="\n")
+  ## close(fp)
+} # .onLoad
+
+.onUnload <- function(libpath)
+{
+  invisible(.External(gdxUnLoadExt))
+
+  ## fp <- file("/home/sdirkse/onUnload.txt",open="w")
+  ## cat(".onUnload called",
+  ##     paste("libpath = ",libpath),
+  ##     date(),
+  ##     file=fp, sep="\n")
+  ## close(fp)
+} #.onUnload
+
 gdxInfo <- function(gdxName = NULL, dump=TRUE, returnList=FALSE, returnDF=FALSE)
 {
   d <- as.logical(dump)

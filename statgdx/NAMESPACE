@@ -1,6 +1,7 @@
-useDynLib(statgdx, gdxInfoExt=gdxInfo, igdxExt=igdx)
+useDynLib(statgdx, gdxInfoExt=gdxInfo, igdxExt=igdx,
+          gdxLoadExt=gdxLoad, gdxUnLoadExt=gdxUnLoad)
 
-# export the functions
+# export the functions: the ones in statgdx.R, not the externals above!!
 export (gdxInfo, igdx)
 
 # export the constants used in the interface
