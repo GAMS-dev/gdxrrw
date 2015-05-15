@@ -11,7 +11,7 @@
 #include <math.h>
 #include <assert.h>
 
-#include "gdxcc.h"
+#include "gdxold.h"
 #include "gclgms.h"
 #include "globals.h"
 
@@ -140,7 +140,7 @@ gdxInfo (SEXP args)
     rc = gdxCreate (&gdxHandle, msg, sizeof(msg));
     if (0 == rc)
       error ("Error creating GDX object: %s", msg);
-    gdxGetLoadPath (loadPath);
+    strcpy (loadPath,"static link");
     Rprintf ("* Library location: %s\n", *loadPath ? loadPath : "unknown");
     gdxGetDLLVersion (gdxHandle, msg);
     Rprintf ("*  Library version: %s\n", msg);

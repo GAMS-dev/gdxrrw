@@ -33,7 +33,7 @@
 #include <math.h>
 #include <assert.h>
 
-#include "gdxcc.h"
+#include "gdxold.h"
 #include "gclgms.h"
 #define _GDXRRW_MAIN_
 #include "globals.h"

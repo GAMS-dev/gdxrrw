@@ -8,7 +8,7 @@
 #include <errno.h>
 
 #define GDX_MAIN
-#include "gdxcc.h"
+#include "gdxold.h"
 
 #if ! defined(_GCL_RHACK_)
 # error "this header modified to work with R extensions.  Do not use outside of R"
@@ -83,8 +83,6 @@ static GDX_FUNCPTR(XCheck);
 
 typedef void (GDX_CALLCONV *gdxSetLoadPath_t) (const char *s);
 GDX_FUNCPTR(gdxSetLoadPath);
-typedef void (GDX_CALLCONV *gdxGetLoadPath_t) (char *s);
-GDX_FUNCPTR(gdxGetLoadPath);
 
 #define printNoReturn(f,nargs) {}
 #define printAndReturn(f,nargs,rtype) { return (rtype) d_s[0]; }
@@ -603,7 +601,6 @@ XLibraryLoad (const char *dllName, char *errBuf, int errBufSize)
 
 
   LOADIT_ERR_OK(gdxSetLoadPath, "CgdxSetLoadPath");
-  LOADIT_ERR_OK(gdxGetLoadPath, "CgdxGetLoadPath");
 #define CheckAndLoad(f,nargs,prefix) \
   if (!XCheck(#f,nargs,s,errBuf)) \
     {f = &d_##f; goto symMissing;} \
