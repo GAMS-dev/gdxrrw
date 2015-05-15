@@ -80,11 +80,7 @@ SEXP igdx (SEXP args)
   if (NA_LOGICAL == isReturnStr) {
     isReturnStr = FALSE;
   }
-#if defined(DYNLOAD_GDX)
-  gdxLoaded = gdxLibraryLoaded();
-#else
   gdxLoaded = 1;
-#endif
 
   if (TYPEOF(sysDirExp) != NILSXP) { /* we should have gamsSysDir */
     if (TYPEOF(sysDirExp) != STRSXP) {
@@ -94,42 +90,14 @@ SEXP igdx (SEXP args)
     sd2 = R_ExpandFileName(sd1); /* interpret ~ as home directory */
     (void) CHAR2ShortStr (sd2, sysDir);
 
-#if defined(DYNLOAD_GDX)
-    /* ---- load the GDX API ---- */
-    if (gdxLoaded) {
-      (void) gdxLibraryUnload ();
-    }
-    rc = gdxGetReadyD (sysDir, msgBuf, sizeof(msgBuf));
-    if ((0 == rc) && ! isSilent) {
-      Rprintf ("Error loading the GDX API from directory %s\n", sysDir);
-      Rprintf ("%s\n", msgBuf);
-    }
-#else
     if (! isSilent) {
       Rprintf ("STATIC LOADING: skip loading the GDX API from directory %s\n", sysDir);
     }
-#endif
   }
 
   loadPath[0] = '\0';
   strcpy(loadPath, "Static loading no load path");
-#if defined(DYNLOAD_GDX)
-  gdxLoaded = gdxLibraryLoaded();
-  if (gdxLoaded) {
-    if (! isSilent)
-      Rprintf ("The GDX library has been loaded\n");
-    gdxGetLoadPath (loadPath);
-    if (! isSilent)
-      Rprintf ("GDX library load path: %s\n",
-               loadPath[0] ? loadPath : "unknown");
-  }
-  else {
-    if (! isSilent)
-      Rprintf ("The GDX library has not been loaded\n");
-  }
-#else
   gdxLoaded = 1;
-#endif
 
   if (isReturnStr) {
     PROTECT(result = allocVector(STRSXP, 1));

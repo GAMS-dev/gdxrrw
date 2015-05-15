@@ -12,7 +12,6 @@
 
 #define GDXAPIVERSION 7
 
-
 #include "gclgms.h"
 
 #if defined(_WIN32)
@@ -36,34 +35,15 @@ extern "C" {
 struct gdxRec;
 typedef struct gdxRec *gdxHandle_t;
 
-typedef int (*gdxErrorCallback_t) (int ErrCount, const char *msg);
-
 /* headers for "wrapper" routines implemented in C */
 int gdxGetReady  (char *msgBuf, int msgBufLen);
-int gdxGetReadyD (const char *dirName, char *msgBuf, int msgBufLen);
-int gdxGetReadyL (const char *libName, char *msgBuf, int msgBufLen);
 int gdxCreate    (gdxHandle_t *pgdx, char *msgBuf, int msgBufLen);
-int gdxCreateD   (gdxHandle_t *pgdx, const char *dirName, char *msgBuf, int msgBufLen);
-int gdxCreateL   (gdxHandle_t *pgdx, const char *libName, char *msgBuf, int msgBufLen);
 int gdxFree      (gdxHandle_t *pgdx);
 
 int gdxLibraryLoaded(void);
 int gdxLibraryUnload(void);
 
-int  gdxGetScreenIndicator   (void);
-void gdxSetScreenIndicator   (int scrind);
-int  gdxGetExceptionIndicator(void);
-void gdxSetExceptionIndicator(int excind);
-int  gdxGetExitIndicator     (void);
-void gdxSetExitIndicator     (int extind);
-gdxErrorCallback_t gdxGetErrorCallback(void);
-void gdxSetErrorCallback(gdxErrorCallback_t func);
-int  gdxGetAPIErrorCount     (void);
-void gdxSetAPIErrorCount     (int ecnt);
-
 void gdxErrorHandling(const char *msg);
-void gdxInitMutexes(void);
-void gdxFiniMutexes(void);
 
 
 #if defined(GDX_MAIN)    /* we must define some things only once */

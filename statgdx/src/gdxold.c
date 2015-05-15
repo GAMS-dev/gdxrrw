@@ -28,48 +28,6 @@
 static soHandle_t h;
 static int isLoaded = 0;
 static int objectCount = 0;
-static int ScreenIndicator = 1;
-static int ExceptionIndicator = 0;
-static int ExitIndicator = 1;
-static gdxErrorCallback_t ErrorCallBack = NULL;
-static int APIErrorCount = 0;
-
-#if defined(HAVE_MUTEX)
-#include "gcmt.h"
-static GC_mutex_t libMutex;
-static GC_mutex_t objMutex;
-static GC_mutex_t exceptMutex;
-
-static int MutexIsInitialized = 0;
-
-void gdxInitMutexes(void)
-{
-  int rc;
-  if (0==MutexIsInitialized) {
-    rc = GC_mutex_init (&libMutex);     assert(0==rc);
-    rc = GC_mutex_init (&objMutex);     assert(0==rc);
-    rc = GC_mutex_init (&exceptMutex);  assert(0==rc);
-    MutexIsInitialized = 1;
-  }
-}
-
-void gdxFiniMutexes(void)
-{
-  if (1==MutexIsInitialized) {
-    GC_mutex_delete (&libMutex);
-    GC_mutex_delete (&objMutex);
-    GC_mutex_delete (&exceptMutex);
-    MutexIsInitialized = 0;
-  }
-}
-#  define lock(MUTEX)   if(MutexIsInitialized) GC_mutex_lock (&MUTEX);
-#  define unlock(MUTEX) if(MutexIsInitialized) GC_mutex_unlock (&MUTEX);
-#else
-#  define lock(MUTEX)   ;
-#  define unlock(MUTEX) ;
-void gdxInitMutexes(void) {}
-void gdxFiniMutexes(void) {}
-#endif
 
 typedef void (GDX_CALLCONV *XCreate_t) (gdxHandle_t *pgdx);
 static GDX_FUNCPTR(XCreate);
@@ -809,33 +767,9 @@ libloader(const char *dllPath, const char *dllName, char *msgBuf, int msgBufSize
 int gdxGetReady (char *msgBuf, int msgBufSize)
 {
   int rc;
-  lock(libMutex);
   rc = libloader(NULL, NULL, msgBuf, msgBufSize);
-  unlock(libMutex);
   return rc;
 } /* gdxGetReady */
-
-/* gdxGetReadyD: return false on failure to load library, true on success */
-int gdxGetReadyD (const char *dirName, char *msgBuf, int msgBufSize)
-{
-  int rc;
-  lock(libMutex);
-  rc = libloader(dirName, NULL, msgBuf, msgBufSize);
-  unlock(libMutex);
-  return rc;
-} /* gdxGetReadyD */
-
-/* gdxGetReadyL: return false on failure to load library, true on success */
-int gdxGetReadyL (const char *libName, char *msgBuf, int msgBufSize)
-{
-  char dirName[1024],fName[1024];
-  int rc;
-  extractFileDirFileName (libName, dirName, fName);
-  lock(libMutex);
-  rc = libloader(dirName, fName, msgBuf, msgBufSize);
-  unlock(libMutex);
-  return rc;
-} /* gdxGetReadyL */
 
 /* gdxCreate: return false on failure to load library, true on success */
 int gdxCreate (gdxHandle_t *pgdx, char *msgBuf, int msgBufSize)
@@ -850,149 +784,33 @@ int gdxCreate (gdxHandle_t *pgdx, char *msgBuf, int msgBufSize)
   XCreate(pgdx);
   if(pgdx == NULL)
   { strcpy(msgBuf,"Error while creating object"); return 0; }
-  lock(objMutex);
   objectCount++;
-  unlock(objMutex);
   return 1;                     /* return true on successful library load */
 } /* gdxCreate */
-
-/* gdxCreateD: return false on failure to load library, true on success */
-int gdxCreateD (gdxHandle_t *pgdx, const char *dirName,
-                char *msgBuf, int msgBufSize)
-{
-  int gdxIsReady;
-
-  gdxIsReady = gdxGetReadyD (dirName, msgBuf, msgBufSize);
-  if (! gdxIsReady) {
-    return 0;
-  }
-  assert(XCreate);
-  XCreate(pgdx);
-  if(pgdx == NULL)
-  { strcpy(msgBuf,"Error while creating object"); return 0; }
-  lock(objMutex);
-  objectCount++;
-  unlock(objMutex);
-  return 1;                     /* return true on successful library load */
-} /* gdxCreateD */
-
-/* gdxCreateL: return false on failure to load library, true on success */
-int gdxCreateL (gdxHandle_t *pgdx, const char *libName,
-                char *msgBuf, int msgBufSize)
-{
-  int gdxIsReady;
-
-  gdxIsReady = gdxGetReadyL (libName, msgBuf, msgBufSize);
-  if (! gdxIsReady) {
-    return 0;
-  }
-  assert(XCreate);
-  XCreate(pgdx);
-  if(pgdx == NULL)
-  { strcpy(msgBuf,"Error while creating object"); return 0; }
-  lock(objMutex);
-  objectCount++;
-  unlock(objMutex);
-  return 1;                     /* return true on successful library load */
-} /* gdxCreateL */
 
 int gdxFree   (gdxHandle_t *pgdx)
 {
   assert(XFree);
   XFree(pgdx); pgdx = NULL;
-  lock(objMutex);
   objectCount--;
-  unlock(objMutex);
   return 1;
 } /* gdxFree */
 
 int gdxLibraryLoaded(void)
 {
   int rc;
-  lock(libMutex);
   rc = isLoaded;
-  unlock(libMutex);
   return rc;
 } /* gdxLibraryLoaded */
 
 int gdxLibraryUnload(void)
 {
-  lock(objMutex);
   if (objectCount > 0)
   {
-    unlock(objMutex);
     return 0;
   }
-  unlock(objMutex);
-  lock(libMutex);
   isLoaded = 0;
   (void) unLoadLib(h);
-  unlock(libMutex);
   return 1;
 } /* gdxLibraryUnload */
 
-int gdxGetScreenIndicator(void)
-{
-  return ScreenIndicator;
-}
-
-void gdxSetScreenIndicator(int scrind)
-{
-  ScreenIndicator = scrind ? 1 : 0;
-}
-
-int gdxGetExceptionIndicator(void)
-{
-   return ExceptionIndicator;
-}
-
-void gdxSetExceptionIndicator(int excind)
-{
-  ExceptionIndicator = excind ? 1 : 0;
-}
-
-int gdxGetExitIndicator(void)
-{
-  return ExitIndicator;
-}
-
-void gdxSetExitIndicator(int extind)
-{
-  ExitIndicator = extind ? 1 : 0;
-}
-
-gdxErrorCallback_t gdxGetErrorCallback(void)
-{
-  return ErrorCallBack;
-}
-
-void gdxSetErrorCallback(gdxErrorCallback_t func)
-{
-  lock(exceptMutex);
-  ErrorCallBack = func;
-  unlock(exceptMutex);
-}
-
-int gdxGetAPIErrorCount(void)
-{
-  return APIErrorCount;
-}
-
-void gdxSetAPIErrorCount(int ecnt)
-{
-  APIErrorCount = ecnt;
-}
-
-#if 0
-void gdxErrorHandling(const char *msg)
-{
-  APIErrorCount++;
-  if (ScreenIndicator) { printf("%s\n", msg); fflush(stdout); }
-  lock(exceptMutex);
-  if (ErrorCallBack)
-    if (ErrorCallBack(APIErrorCount, msg)) { unlock(exceptMutex); exit(123); }
-  unlock(exceptMutex);
-  assert(!ExceptionIndicator);
-  if (ExitIndicator) exit(123);
-}
-#endif
