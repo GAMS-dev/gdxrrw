@@ -251,29 +251,7 @@ int isCompress (void)
 void
 loadGDX (void)
 {
-  shortStringBuf_t msg;
-  int rc;
-
-  if (gdxLibraryLoaded())
-    return;                     /* all done already */
-  rc = gdxGetReady (msg, sizeof(msg));
-  if (0 == rc) {
-    Rprintf ("Error loading the GDX API\n");
-    Rprintf ("%s\n", msg);
-    Rprintf ("Hint: try calling igdx() with the name of the GAMS system directory\n");
-    Rprintf ("      before calling this routine.\n");
-#if defined(_WIN32)
-    Rprintf ("      You can also add the GAMS system directory to the PATH.\n");
-#elif defined(__APPLE__)
-    Rprintf ("      You can also add the GAMS system directory to the PATH\n");
-    Rprintf ("      and to DYLD_LIBRARY_PATH.\n");
-#else
-    Rprintf ("      You can also add the GAMS system directory to the PATH\n");
-    Rprintf ("      and to LD_LIBRARY_PATH.\n");
-#endif
-    error ("Error loading the GDX API: %s", msg);
-  }
-  return;
+  return;                       /* all done already */
 } /* loadGDX */
 
 /* sparseToFull: from input data in sparse form, create output data in full form
