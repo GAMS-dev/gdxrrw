@@ -7,28 +7,28 @@ struct gdxRec;
 typedef struct gdxRec *gdxHandle_t;
 
 #define gdxAcronymCount gdxacronymcount
-#define gdxAcronymGetInfo gdxacronymgetinfo
-#define gdxAcronymName gdxacronymname
+#define gdxAcronymGetInfo cgdxacronymgetinfo
+#define gdxAcronymName cgdxacronymname
 #define gdxClose gdxclose
 #define gdxDataReadRaw gdxdatareadraw
 #define gdxDataReadRawStart gdxdatareadrawstart
-#define gdxGetDLLVersion gdxgetdllversion
-#define gdxErrorStr gdxerrorstr
-#define gdxFileVersion gdxfileversion
-#define gdxGetElemText gdxgetelemtext
+#define gdxGetDLLVersion cgdxgetdllversion
+#define gdxErrorStr cgdxerrorstr
+#define gdxFileVersion cgdxfileversion
+#define gdxGetElemText cgdxgetelemtext
 #define gdxGetLastError gdxgetlasterror
 #define gdxMapValue gdxmapvalue
-#define gdxOpenRead gdxopenread
+#define gdxOpenRead cgdxopenread
 #define gdxSymbIndxMaxLength gdxsymbindxmaxlength
 #define gdxSymbMaxLength gdxsymbmaxlength
-#define gdxSymbolGetComment gdxsymbolgetcomment
+#define gdxSymbolGetComment cgdxsymbolgetcomment
 #define gdxSymbolGetDomain gdxsymbolgetdomain
-#define gdxSymbolGetDomainX gdxsymbolgetdomainx
+#define gdxSymbolGetDomainX cgdxsymbolgetdomainx
 #define gdxSymbolDim gdxsymboldim
-#define gdxSymbolInfo gdxsymbolinfo
-#define gdxSymbolInfoX gdxsymbolinfox
+#define gdxSymbolInfo cgdxsymbolinfo
+#define gdxSymbolInfoX cgdxsymbolinfox
 #define gdxSystemInfo gdxsysteminfo
-#define gdxUMUelGet gdxumuelget
+#define gdxUMUelGet cgdxumuelget
 
 #if defined(__cplusplus)
 extern "C" {
