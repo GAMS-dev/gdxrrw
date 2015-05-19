@@ -11,7 +11,7 @@
 #include <math.h>
 #include <assert.h>
 
-#include "gdxold.h"
+#include "gdxstatic.h"
 #include "gclgms.h"
 #include "globals.h"
 
