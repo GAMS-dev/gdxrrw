@@ -18,6 +18,9 @@
 /* just to shut up some warnings on Linux */
 typedef int (*compareFunc_t) (const void *, const void *);
 
+int _P3_DllInit (void);
+void _P3_DllFini (void);
+
 /* ------------------ start of globally available functions --------------- */
 
 /* gdxLoad will be called once, when the package is loaded
