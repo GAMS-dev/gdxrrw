@@ -35,7 +35,6 @@ extern "C" {
 #endif
 
 /* headers for "wrapper" routines implemented in C */
-int gdxGetReady  (char *msgBuf, int msgBufLen);
 int gdxCreate    (gdxHandle_t *pgdx, char *msgBuf, int msgBufLen);
 int gdxFree      (gdxHandle_t *pgdx);
 
