@@ -80,21 +80,21 @@ Extern_C _P3_DllExport Procedure  STDCALL gdxxcreate(
     xcreate(pgdx);
 }  /* gdxxcreate */
 
-Extern_C _P3_DllExport Procedure  STDCALL xfree(
+Extern_C _P3_DllExport Procedure  STDCALL x2free(
     SYSTEM_pointer *pgdx)
 {
     if (*pgdx != NULL) {
       SYSTEM_tobject_DOT_free(ValueCast(SYSTEM_tobject,*pgdx));
       *pgdx = NULL;
     } 
-}  /* xfree */
+}  /* x2free */
 
 Extern_C _P3_DllExport Function(SYSTEM_integer )  STDCALL gdxfree(
     SYSTEM_pointer *pgdx)
 {
     SYSTEM_integer result;
 
-    xfree(pgdx);
+    x2free(pgdx);
     if (NULL == *pgdx) { 
       result = 1;
     } else 
@@ -105,7 +105,7 @@ Extern_C _P3_DllExport Function(SYSTEM_integer )  STDCALL gdxfree(
 Extern_C _P3_DllExport Procedure  STDCALL gdxxfree(
     SYSTEM_pointer *pgdx)
 {
-    xfree(pgdx);
+    x2free(pgdx);
 }  /* gdxxfree */
 
 Extern_C _P3_DllExport Function(SYSTEM_integer )  STDCALL xapiversion(

@@ -11,7 +11,7 @@
 static int objectCount = 0;
 
 #define XCreate xcreate
-#define XFree   xfree
+#define XFree   x2free
 
 #if defined(__cplusplus)
 extern "C" {

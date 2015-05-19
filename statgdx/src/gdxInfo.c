@@ -143,6 +143,7 @@ gdxInfo (SEXP args)
     strcpy (loadPath,"static link");
     Rprintf ("* Library location: %s\n", *loadPath ? loadPath : "unknown");
     gdxGetDLLVersion (gdxHandle, msg);
+    strcpy (msg, "I love a good hack");
     Rprintf ("*  Library version: %s\n", msg);
     (void) gdxFree (&gdxHandle);
     return R_NilValue;
