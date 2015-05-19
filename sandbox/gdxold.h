@@ -44,11 +44,6 @@ int gdxFree      (gdxHandle_t *pgdx);
 # define GDX_FUNCPTR(NAME)  extern NAME##_t NAME
 #endif
 
-/* function typedefs and pointer definitions */
-
-typedef void (GDX_CALLCONV *TDataStoreProc_t) (const int Indx[], const double Vals[]);
-typedef void (GDX_CALLCONV *TDomainIndexProc_t) (int RawIndex, int MappedIndex, void *Uptr);
-
 /* Prototypes for Dummy Functions */
 int  GDX_CALLCONV d_gdxAcronymCount (gdxHandle_t pgdx);
 int  GDX_CALLCONV d_gdxAcronymGetInfo (gdxHandle_t pgdx, int N, char *AName, char *Txt, int *AIndx);

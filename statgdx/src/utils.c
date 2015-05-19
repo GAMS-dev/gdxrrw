@@ -20,19 +20,27 @@ typedef int (*compareFunc_t) (const void *, const void *);
 
 /* ------------------ start of globally available functions --------------- */
 
+/* gdxLoad will be called once, when the package is loaded
+ * (i.e. when the shared library is loaded)
+*/
 SEXP
 gdxLoad (SEXP args)
 {
   Rprintf ("*** gdxLoad called ***\n");
+  _P3_DllInit();
   return R_NilValue;
-}
+} /* gdxLoad */
 
+/* gdxUnLoad will be called once, when the package is unloaded
+ * (i.e. when the shared library is unloaded)
+*/
 SEXP
 gdxUnLoad (SEXP args)
 {
   Rprintf ("*** gdxUnLoad called ***\n");
+  _P3_DllFini();
   return R_NilValue;
-}
+} /* gdxUnLoad */
 
 
 /* CHAR2ShortStr
