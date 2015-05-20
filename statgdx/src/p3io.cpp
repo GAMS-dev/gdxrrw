@@ -264,82 +264,6 @@ void _P3_Std_Exception_Handler (SYSTEM_tobject exception)
 #endif  /* if _P3_EXC_MODEL_ == 1 */
 
 
-#if _P3_EXC_MODEL_ == 0
-
-/* The global ExceptObject - for now there's only one raised exception
- * at any one time, stored in this variable:
- */
-SYSTEM_tobject _P3_ExceptObject = NULL;
-
-jmp_buf *_P3_global_jmp_lnk = NULL;  /* Head of jump buffer linked list */
-
-/* Free the global exception, _P3_ExceptObject. */
-void _P3_Free_Exception()
-{
-  /* want to test: _P3_is(_P3_ExceptObject, &SYSTEM_exception_CD));  ? */
-  SYSTEM_tobject_DOT_free(_P3_ExceptObject);
-  _P3_ExceptObject = NULL;
-} /* _P3_Free_Exception */
-
-/* Call with a C string, sets _P3_ExceptObject to a new exception */
-void _P3_Create_Exception(EXCEPTIONS_texceptions code, char* CMsg)
-{
-  SYSTEM_char buf[257];  /* to store Pascal string */
-  int len = (int) strlen(CMsg);
-
-  EXCTST( printf("P3IO.C: Creating Exception Object, Code %d, Message (%d) '%s'\n",
-           (int)code, len, CMsg);)
-
-  memmove(buf+1, CMsg, *buf = len); /* One-liner to create Pascal string */
-
-  _P3_Free_Exception();   /* Remove any old exception object first. */
-
-  _P3_ExceptObject = EXCEPTIONS_create_exception_by_code(code, buf);
-} /* _P3_Create_Exception */
-
-/* _P3_Std_Exception_Handler: when using setjmp/longjmp, this must be called
- * to both raise and handle exceptions.  If no setjmp is pending, we cannot call
- * longjmp but just handle the exception immediately
- */
-void _P3_Std_Exception_Handler(SYSTEM_tobject Exception)
-{
-  EXCTST(printf("ENTERING _P3_Std_Exception_Handler...Exception = %d\n",
-                (SYSTEM_nativeuint)Exception););
-
-  if (NULL == Exception) {
-    /* e.g. when called from _P3_Exception or a re-raise.  Use existing one */
-    Exception = _P3_ExceptObject;
-  }
-  else {
-    /* use this one, after getting rid of any pending exception */
-    _P3_Free_Exception();
-    _P3_ExceptObject = Exception;
-  }
-
-  if (_P3_global_jmp_lnk) {
-    /* This is where we take off, unwinding the stack hunting for an except block: */
-    EXCTST( printf("Doing a longjmp on %d, %d\n", (int)_P3_global_jmp_lnk,
-            (int)(*_P3_global_jmp_lnk));  );
-    longjmp( *_P3_global_jmp_lnk, 1 );
-  }
-
-  /* Final error handling (in case Exception Handling not enabled,
-     or not in a try-except block) */
-
-  /* If it's an Exception object but not an EAbort then print its message: */
-  if ( _P3_is(Exception, &SYSTEM_exception_CD) &&
-      !_P3_is(Exception, &EXCEPTIONS_eabort_CD)) {
-    /* Print the exception's built-in message: */
-    printf("P3 Standard Exception Handler: ");
-    _P3_write_s0(((SYSTEM_exception)Exception)->SYSTEM_exception_DOT_message);
-    printf("\n");
-    fflush(stdout);
-  }
-  _P3_ABORT();
-} /* _P3_Std_Exception_Handler */
-
-#endif  /* if _P3_EXC_MODEL_ == 0 */
-
 /* assume input s is long enough */
 static char *
 getNoun (int v, char *s)
@@ -536,15 +460,6 @@ void _P3_Exception (int eCode, const char *s)
 
   /* We are ready to create and raise an exception now.
    * How we do that depends on the exception model */
-
-#if _P3_EXC_MODEL_ == 0
-  /* Create new exception object with a nice message, put it in
-    _P3_ExceptObject and then handle it: */
-
-  _P3_Create_Exception(ExcCode, mess);
-  _P3_Std_Exception_Handler(NULL); /* NULL means Reraise the present one */
-
-#endif  /* if _P3_EXC_MODEL_ == 0 */
 
 #if _P3_EXC_MODEL_ == 1
   _P3_RAISE(_P3_Create_Exception2(ExcCode, mess));

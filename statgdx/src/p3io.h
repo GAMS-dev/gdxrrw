@@ -135,9 +135,8 @@ SSN 09/09/97. Major rewrite to new file representation
 # include <cstddef>
 # include <exception>
 #else
-/* if no C++, no _P3_EXC_MODEL_=1 */
-# undef  _P3_EXC_MODEL_
-# define _P3_EXC_MODEL_  0
+/* if no C++, EXC_MODEL=1 is broken.  But zero is always broken! */
+# error "NO valid EXC_MODEL without C++"
 #endif
 
 #undef P3OSDEFINED
@@ -1373,57 +1372,6 @@ class exFinal: public std::exception
 #define _P3_DLL_OUTER_CATCH  _P3_DLL_OUTER_CATCH  is_not_yet_implemented
 
 #endif  /* if _P3_EXC_MODEL_ == 1 */
-
-#if _P3_EXC_MODEL_ == 0
-/* setjmp/longjmp */
-# include <setjmp.h>
-
-/* We need the ExceptObject function to get access to the raised exception */
-extern SYSTEM_tobject _P3_ExceptObject;
-
-extern jmp_buf *_P3_global_jmp_lnk;  /* Head of jump buffer linked list */
-
-/* Define suitable macros for _P3_TRY, _P3_EXCEPT etc, emitted in c code */
-#define _P3_TRY           { jmp_buf _P3_buf; jmp_buf* _P3_jmp_lnk; \
-                            EXCTST(printf("In _P3_TRY\n");)  \
-                            _P3_jmp_lnk = _P3_global_jmp_lnk;      \
-                            _P3_global_jmp_lnk = &_P3_buf;         \
-                            if (!setjmp(_P3_buf)) {
-
-#define _P3_RERAISE()  _P3_Std_Exception_Handler(NULL); /* NULL means Reraise */
-#define _P3_RAISE(obj) _P3_Std_Exception_Handler((SYSTEM_tobject)obj);
-
-#define _P3_EXCEPT             EXCTST(printf("Unwind(1)\n"));      \
-                              _P3_global_jmp_lnk = _P3_jmp_lnk;    \
-                            } else {                               \
-                              EXCTST(printf("Unwind(2)\n"));       \
-                              _P3_global_jmp_lnk = _P3_jmp_lnk;
-
-#define _P3_END_TRY_EXCEPT   _P3_Free_Exception(); }}
-
-#define _P3_ON_CLAUSE(class_CD)  if (_P3_is(_P3_exceptobject, class_CD))
-#define _P3_END_ON_CLAUSE        else
-#define _P3_ON_ELSE
-#define _P3_END_ON_ELSE
-#define _P3_EMPTY_ELSE_CLAUSE   _P3_RERAISE()
-
-#define _P3_FINALLY(LAB)      EXCTST(printf("Unwind(2)\n"));       \
-                              _P3_Free_Exception();                \
-                              goto LAB;                            \
-                            } else {                               \
-                              LAB: /* jeez */                      \
-                              EXCTST(printf("Unwind(3)\n"));       \
-                              _P3_global_jmp_lnk = _P3_jmp_lnk;
-
-#define _P3_END_TRY_FINALLY  _P3_END_TRY_EXCEPT
-
-/* no outer try/catch used in setjmp/longjmp model */
-#define _P3_PGM_OUTER_TRY
-#define _P3_PGM_OUTER_CATCH
-#define _P3_DLL_OUTER_TRY
-#define _P3_DLL_OUTER_CATCH
-
-#endif  /* if _P3_EXC_MODEL_ == 0 */
 
 /*************** END NEW EXCEPTIONS      ************************************/
 
