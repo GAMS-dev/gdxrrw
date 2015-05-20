@@ -145,6 +145,8 @@
 #include "p3io.h"
 #include "exceptions_c.h"
 
+#include "globals2.h"
+
 #include <limits.h>
 #include <sys/stat.h>
 
@@ -230,6 +232,7 @@ void _P3_Std_Exception_Handler (SYSTEM_tobject exception)
   if (NULL == exception)
     return;
 
+# if 0
   /* If it's an Exception object but not an EAbort then print its message: */
   if ( _P3_is(exception, &SYSTEM_exception_CD) &&
       !_P3_is(exception, &EXCEPTIONS_eabort_CD)) {
@@ -240,7 +243,23 @@ void _P3_Std_Exception_Handler (SYSTEM_tobject exception)
     fflush(stdout);
   }
   _P3_ABORT();
+# else
+  {
+    char tbuf[300], *p;
+    const unsigned char *m;
+
+    strcpy (tbuf, "P3 Standard Exception Handler: ");
+    for (p = tbuf;  *p;  p++)
+      ;
+    m = ((SYSTEM_exception)exception)->SYSTEM_exception_DOT_message;
+    memcpy(p, m+1, *m);
+    p[*m] = '\0';
+    exit2R(tbuf);
+  }
+# endif
+
 } /* _P3_Std_Exception_Handler */
+
 
 #endif  /* if _P3_EXC_MODEL_ == 1 */
 
@@ -556,7 +575,15 @@ void _P3_halt(int rc)
     *  exit(rc):  Terminate "normally", but any other modules' finalization
     *             parts are skipped */
 
+#if 0
     exit(rc);
+#else
+    {
+      char tbuf[256];
+      sprintf (tbuf, "_P3_halt(%d) called", rc);
+      exit2R(tbuf);
+    }
+#endif
 
     /* or: _P3_ABORT(); */
     /* or: _P3_Exception("Halt called from finalization part - rc = ", 3, rc); */
@@ -569,7 +596,15 @@ void _P3_halt(int rc)
      *  as the last entry. That one calls finalization routines in modules */
     _P3_DLL_UNWIND();
 
+#if 0
     exit(rc);
+#else
+    {
+      char tbuf[256];
+      sprintf (tbuf, "_P3_halt(%d) called", rc);
+      exit2R(tbuf);
+    }
+#endif
   }
 }
 
@@ -2866,9 +2901,15 @@ void P3_PGM_init(char **_Argv, int _Argc, _P3void_procT PGM_Final)
   SYSTEM_filemode = 2;
 
   /* Init std io - gcc doesn't like it in initializer above */
+#if 0
   SYSTEM_input.f = stdin;
   SYSTEM_output.f = stdout;
   SYSTEM_erroutput.f = stderr;
+#else
+  SYSTEM_input.f = NULL;
+  SYSTEM_output.f = NULL;
+  SYSTEM_erroutput.f = NULL;
+#endif
 
   _P3islibrary = 0; /* Note: Different in DLLs and application */
 
@@ -2894,9 +2935,15 @@ void P3_DLL_init(void)
   SYSTEM_filemode = 2;
 
   /* Init std io - gcc doesn't like it in initializer above */
+#if 0
   SYSTEM_input.f = stdin;
   SYSTEM_output.f = stdout;
   SYSTEM_erroutput.f = stderr;
+#else
+  SYSTEM_input.f = NULL;
+  SYSTEM_output.f = NULL;
+  SYSTEM_erroutput.f = NULL;
+#endif
 
   _P3islibrary = 1; /* Note: Different in DLLs and application */
 
