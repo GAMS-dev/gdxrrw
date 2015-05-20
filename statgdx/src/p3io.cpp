@@ -821,6 +821,7 @@ void _P3_writefn (SYSTEM_text *fil)
 
 void _P3_write_s0(const SYSTEM_byte *s)
 {
+#if 0
   int i, nChars;
 
   nChars = printf ("%.*s", (int)s[0], s+1);
@@ -830,6 +831,12 @@ void _P3_write_s0(const SYSTEM_byte *s)
   if (ferror(stdout)) {
     _P3_IO_ERR(_P3_err, errno, &SYSTEM_output, _P3_ERR_VERB_WRITE);
   }
+#else
+  char tbuf[256];
+  memcpy(tbuf,s+1,*s);
+  tbuf[*s] = '\0';
+  msg2R (tbuf);
+#endif
 } /* _P3_write_s0 */
 
 void _P3_writefs0 (SYSTEM_text *fil, const SYSTEM_byte *s)
@@ -843,14 +850,7 @@ void _P3_writefs0 (SYSTEM_text *fil, const SYSTEM_byte *s)
   }
   f = fil->f;
 
-  if (stdout == f) {
-    /* print it with fprintf: this works faster on VIS for stdout */
-    nChars = fprintf (f, "%.*s", (int)s[0], s+1);
-  }
-  else {
-    /* skip fprintf, do it all with putc: faster for files? */
-    nChars = 0;
-  }
+  nChars = 0;
   /* now handle special case where null byte stops fprintf early,
    * or case where we don't use fprintf at all
    */
@@ -859,16 +859,6 @@ void _P3_writefs0 (SYSTEM_text *fil, const SYSTEM_byte *s)
   if (ferror(f)) {
     _P3_IO_ERR(_P3_err, errno, fil, _P3_ERR_VERB_WRITE);
   }
-
-  /*************
-  ... this is slower on Alpha, and doesn't work at all on Linux...?
-  int num_transferred;
-
-  if (*s) {
-      num_transferred = fwrite(s+1, *s, 1, fil->f);
-      if ((num_transferred != *s) || ferror(fil->f)) _P3_err.n = errno;
-  }
-  **************/
 } /* _P3_writefs0 */
 
 
@@ -965,10 +955,6 @@ void _P3_Seek (_P3file *fil, SYSTEM_longint offset, SYSTEM_longint origin)
   if (_P3_ISOPEN(fil)) {        /* open file */
     rc = fseek(fil->f, offset * fil->block_size, code);
 
-  /* printf("Seek(3) ... rc %d, errno %d\n", rc, errno); fflush(stdout);
-     if (errno) {
-     perror("Seek");
-     } */
     if (rc == -1) {
       _P3_IO_ERR(_P3_err, errno, fil, _P3_ERR_VERB_SEEK);
     }
@@ -1330,29 +1316,7 @@ void _P3fileopn(_P3file *fil, SYSTEM_longint s, SYSTEM_longint t,
 
   }
   else { /* Empty file name. Assign to stdin/stdout, even if non-text file */
-
-    /* Note: Actually doesn't matter whether a text file, hence "1 ||" below */
-    if (1 || t == 0) {   /* Text file without a name: stdin or stdout   */
-      if (s == _P3RESET) {  /* If call was Reset (NOT action!) -> stdin */
-        if (DUMP_STUFF)
-          printf("ASSIGNING TO STDIN\n");
-        fil->f = stdin;
-      }
-      else {  /* use standard output */
-        if (DUMP_STUFF)
-          printf("ASSIGNING TO STDOUT\n");
-        fil->f = stdout;
-      }
-      _P3_SETMODE(fil,s);
-    }
-    else {
-      /* Here: Assigned empty name to non-text file (or forgot to
-       *       assign name to it), now trying to open it...         */
-      if (DUMP_STUFF)
-        printf("ERROR: Trying to open non-text file to input/output\n");
-      _P3_IO_ERR(_P3_err, EINVAL, fil, verb);
-      fil->status = _P3CLOSED;     /* still closed  */
-    }
+    exit2R("Assign to empty file name not allowed: should be silent instead");
   }
 } /* _P3fileopn */
 
@@ -1364,7 +1328,7 @@ void _P3_Close(_P3file *fil)
     return;
   }
   errno = 0;
-  if (fil->f && fil->f != stdin && fil->f != stdout) {
+  if (fil->f) {
     if (fclose(fil->f)) {
       _P3_IO_ERR(_P3_err, errno, fil, _P3_ERR_VERB_CLOSE);
     }
