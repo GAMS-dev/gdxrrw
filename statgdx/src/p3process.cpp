@@ -6,6 +6,7 @@
 #include "sysutils_p3.h"
 #include "p3process.h"
 
+#include "globals2.h"
 
 void * const P3PROCESS_texecarglist_VT[] = {(void*)&
   P3PROCESS_texecarglist_DOT_destroy};
@@ -447,7 +448,8 @@ LibcForkExec(int argc, char *const argv[], int *exeRC)
     exit (255);                 /* -1 tells parent we could not exec */
 #else
     /* _exit() is a more immediate termination, less likely to flush stdio */
-    _exit (255);                /* -1 tells parent we could not exec */
+    /* _exit (255); */                /* -1 tells parent we could not exec */
+    exit2R("Failed exec after fork");
 #endif
   }
   else {                        /* I am the parent */
@@ -511,7 +513,8 @@ libcASyncForkExec (int argc, char *const argv[], SYSTEM_cardinal *pid)
 
     /* if we are here, it is trouble */
     execl("/bin/sh", "/bin/sh", "-c", "exit 127", NULL);
-    _exit (127);                /* consistent with & usage in bash */
+    exit2R("Failed exec after fork");
+    /* _exit (127); */                /* consistent with & usage in bash */
   }
   else {                        /* I am the parent */
     (void) setpgid (lPid,0);     /* make the child its own, new process group */

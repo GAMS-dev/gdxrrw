@@ -29,7 +29,7 @@ void _P3_DllFini (void);
 SEXP
 gdxLoad (SEXP args)
 {
-  Rprintf ("*** gdxLoad called ***\n");
+  // Rprintf ("*** gdxLoad called ***\n");
   _P3_DllInit();
   return R_NilValue;
 } /* gdxLoad */
@@ -40,7 +40,7 @@ gdxLoad (SEXP args)
 SEXP
 gdxUnLoad (SEXP args)
 {
-  Rprintf ("*** gdxUnLoad called ***\n");
+  // Rprintf ("*** gdxUnLoad called ***\n");
   _P3_DllFini();
   return R_NilValue;
 } /* gdxUnLoad */
