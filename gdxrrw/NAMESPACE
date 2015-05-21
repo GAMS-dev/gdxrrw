@@ -8,3 +8,5 @@ export (wgdx.lst, wgdx.reshape)
 
 # export the constants used in the interface
 export (GMS_VARTYPE, GMS_EQUTYPE)
+
+importFrom (reshape2, melt)

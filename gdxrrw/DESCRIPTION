@@ -10,5 +10,5 @@ Description: An interface between GAMS and R.  It includes functions
   to transfer data between GDX and R and a function to
   call gams from within R.
 License: EPL
-Depends: reshape2
+Imports: reshape2
 LazyData: no
