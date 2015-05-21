@@ -492,7 +492,7 @@ Procedure P3UTILS_p3setconsoletitle(
   SYSTEM_P3_pansichar nameptr;
 
   nameptr = P3PRIVATE_strtostrbuf(s,namebuf);
-  /**** C code included from p3utils.pas(852:1): 5 lines ****/
+  /**** C code included from p3utils.pas(849:1): 5 lines ****/
 #if defined(_WIN32)
   SetConsoleTitle((char *)nameptr);
 #else
@@ -502,14 +502,14 @@ Procedure P3UTILS_p3setconsoletitle(
 
 Procedure P3UTILS_p3nopopups(void)
 {
-  /**** C code included from p3utils.pas(872:1): 5 lines ****/
+  /**** C code included from p3utils.pas(869:1): 5 lines ****/
 #if defined(_WIN32)
   SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX);
 #else
   /* do nothing */
 #endif /* if defined(_WIN32) .. else .. */
 }  /* p3nopopups */
-/**** C code included from p3utils.pas(883:1): 62 lines ****/
+/**** C code included from p3utils.pas(880:1): 62 lines ****/
 #if defined(_WIN32)
 /* map the Windows codes returned by GetLastError to libc codes
  * use when making Windows API calls with P3, since P3 ioresult-ish codes
@@ -578,7 +578,7 @@ static Function(SYSTEM_boolean ) P3UTILS_isvalidhandle(
 {
   SYSTEM_boolean result;
 
-  /**** C code included from p3utils.pas(958:1): 5 lines ****/
+  /**** C code included from p3utils.pas(955:1): 5 lines ****/
 #if defined(_WIN32)
   result = h && (INVALID_HANDLE_VALUE != (HANDLE) h);
 #else
@@ -597,7 +597,7 @@ Function(SYSTEM_integer ) P3UTILS_p3fileopen(
   SYSTEM_P3_pansichar nameptr;
 
   nameptr = P3PRIVATE_strtostrbuf(fname,namebuf);
-  /**** C code included from p3utils.pas(1075:1): 81 lines ****/
+  /**** C code included from p3utils.pas(1072:1): 81 lines ****/
 #if defined(_WIN32)
 {
   DWORD lowMode;
@@ -676,7 +676,7 @@ Function(SYSTEM_integer ) P3UTILS_p3fileopen(
     return result;
   }
 
-  *h = (P3UTILS_tp3filehandle) fd;
+  *h = (P3UTILS_tp3filehandle) (SYSTEM_nativeuint) fd;
 }
 #endif /* if defined(_WIN32) .. else .. */
   return result;
@@ -687,7 +687,7 @@ Function(SYSTEM_integer ) P3UTILS_p3fileclose(
 {
   SYSTEM_integer result;
 
-  /**** C code included from p3utils.pas(1189:1): 28 lines ****/
+  /**** C code included from p3utils.pas(1186:1): 28 lines ****/
 if ( ! P3UTILS_isvalidhandle (h)) {
   return EBADF;
 }
@@ -727,7 +727,7 @@ Function(SYSTEM_integer ) P3UTILS_p3fileread(
 {
   SYSTEM_integer result;
 
-  /**** C code included from p3utils.pas(1249:1): 31 lines ****/
+  /**** C code included from p3utils.pas(1246:1): 31 lines ****/
 #if defined(_WIN32)
 {
   if (ReadFile((HANDLE)h, buffer, buflen, (LPDWORD)numread, NULL)) {
@@ -770,7 +770,7 @@ Function(SYSTEM_integer ) P3UTILS_p3filewrite(
 {
   SYSTEM_integer result;
 
-  /**** C code included from p3utils.pas(1312:1): 31 lines ****/
+  /**** C code included from p3utils.pas(1309:1): 31 lines ****/
 #if defined(_WIN32)
 {
   if (WriteFile((HANDLE)h, buffer, buflen, (LPDWORD)numwritten, NULL)) {
@@ -812,7 +812,7 @@ Function(SYSTEM_integer ) P3UTILS_p3filegetsize(
   SYSTEM_integer result;
 
   *filesize =  -1;
-  /**** C code included from p3utils.pas(1389:1): 49 lines ****/
+  /**** C code included from p3utils.pas(1386:1): 49 lines ****/
 if ( ! P3UTILS_isvalidhandle (h)) {
   return EBADF;
 }
@@ -873,7 +873,7 @@ Function(SYSTEM_integer ) P3UTILS_p3filesetpointer(
 {
   SYSTEM_integer result;
 
-  /**** C code included from p3utils.pas(1494:1): 75 lines ****/
+  /**** C code included from p3utils.pas(1491:1): 75 lines ****/
 if ( ! P3UTILS_isvalidhandle (h)) {
   return EBADF;
 }
@@ -958,7 +958,7 @@ Function(SYSTEM_integer ) P3UTILS_p3filegetpointer(
 {
   SYSTEM_integer result;
 
-  /**** C code included from p3utils.pas(1606:1): 56 lines ****/
+  /**** C code included from p3utils.pas(1603:1): 56 lines ****/
 if ( ! P3UTILS_isvalidhandle (h)) {
   return EBADF;
 }
@@ -1022,7 +1022,7 @@ Function(SYSTEM_int64 ) P3UTILS_p3allocmemsize64(void)
 {
   SYSTEM_int64 result;
 
-  /**** C code included from p3utils.pas(1677:1): 1 lines ****/
+  /**** C code included from p3utils.pas(1674:1): 1 lines ****/
   result = SYSTEM_allocmemsize64;
   return result;
 }  /* p3allocmemsize64 */
@@ -1035,7 +1035,7 @@ Function(SYSTEM_pointer ) P3UTILS_p3allocmem64(
   result = NULL;
   if (size <= 0) 
     return result;
-  /**** C code included from p3utils.pas(1698:1): 13 lines ****/
+  /**** C code included from p3utils.pas(1695:1): 13 lines ****/
   if (8 == sizeof(result)) {
     _P3_new64 (&result, size);
     (void) memset(result, 0, (size_t) size);
@@ -1057,7 +1057,7 @@ Procedure P3UTILS_p3fillchar64(
   SYSTEM_int64 size,
   SYSTEM_byte fillvalue)
 {
-  /**** C code included from p3utils.pas(1743:1): 11 lines ****/
+  /**** C code included from p3utils.pas(1740:1): 11 lines ****/
   if (size <= 0)
     return;
   if (8 == sizeof(p)) {
@@ -1065,7 +1065,7 @@ Procedure P3UTILS_p3fillchar64(
   }
   else {
     size_t sz = (size_t) size;
-    if (sz != size)
+    if ((SYSTEM_int64)sz != size)
       _EINVALIDCAST_RAISE_E(_P3str1("\034p3FillChar64: size too large"));
     (void) memset(p, (int) fillvalue, sz);
   }
@@ -1075,7 +1075,7 @@ Procedure P3UTILS_p3freemem64(
   SYSTEM_pointer *p,
   SYSTEM_int64 size)
 {
-  /**** C code included from p3utils.pas(1774:1): 11 lines ****/
+  /**** C code included from p3utils.pas(1771:1): 11 lines ****/
   if (8 == sizeof(p)) {
     _P3_free64 (*p, size);
   }
@@ -1097,7 +1097,7 @@ Procedure P3UTILS_p3getmem64(
     *p = NULL;
     return;
   } 
-  /**** C code included from p3utils.pas(1806:1): 11 lines ****/
+  /**** C code included from p3utils.pas(1803:1): 11 lines ****/
   if (8 == sizeof( *p )) {
     _P3_new64 (p, size);
   }
@@ -1116,7 +1116,7 @@ Procedure P3UTILS_p3move64(
   SYSTEM_untyped *dest,
   SYSTEM_int64 sz)
 {
-  /**** C code included from p3utils.pas(1836:1): 9 lines ****/
+  /**** C code included from p3utils.pas(1833:1): 9 lines ****/
   if (8 == sizeof( source )) {
     (void) memmove (dest, source, (size_t) sz);
   }
@@ -1139,7 +1139,7 @@ Procedure P3UTILS_p3reallocmem64(
       _P3freemem0(*p);
       *p = NULL;
     } 
-  /**** C code included from p3utils.pas(1872:1): 11 lines ****/
+  /**** C code included from p3utils.pas(1869:1): 11 lines ****/
   if (8 == sizeof(p)) {
     SYSTEM_reallocmem64 (p, size);
   }
@@ -1166,11 +1166,10 @@ Procedure P3UTILS_p3getfromurl(
   typedef SYSTEM_ansichar _arr_0P3GETFROMURL[4096];
   _arr_0P3GETFROMURL buffer;
   SYSTEM_integer len;
-  SYSTEM_integer rc;
 
   _P3strclr(msg);
   _P3strcpy(msg,255,_P3str1("\041Not implemented for this platform"));
-  /**** C code included from p3utils.pas(1991:1): 114 lines ****/
+  /**** C code included from p3utils.pas(1988:1): 114 lines ****/
 #if defined(_WIN32)
 #define WSACLEANUP   WSACancelBlockingCall(); WSACleanup(); return
 {
@@ -1321,7 +1320,7 @@ Function(SYSTEM_ansichar *) P3UTILS_p3getcomputername(
   SYSTEM_uint8 _len_ret)
 {
   _P3strcpy(result,_len_ret,_P3str1("\007unknown"));
-  /**** C code included from p3utils.pas(2161:1): 27 lines ****/
+  /**** C code included from p3utils.pas(2158:1): 27 lines ****/
 #if defined(_WIN32)
    {
      char compName[256];
@@ -1357,7 +1356,7 @@ Function(SYSTEM_ansichar *) P3UTILS_p3getusername(
   SYSTEM_uint8 _len_ret)
 {
   _P3strcpy(result,_len_ret,_P3str1("\007unknown"));
-  /**** C code included from p3utils.pas(2211:1): 44 lines ****/
+  /**** C code included from p3utils.pas(2208:1): 44 lines ****/
 #if defined(_WIN32)
    {
      char userName[256];
@@ -1417,7 +1416,7 @@ Function(SYSTEM_boolean ) P3UTILS_p3senddatamessage(
   _P3strcpy(wintitle,255,_ftmp1);
   _P3strcpy(data,255,_ftmp2);
   result = SYSTEM_false;
-  /**** C code included from p3utils.pas(2297:1): 38 lines ****/
+  /**** C code included from p3utils.pas(2294:1): 38 lines ****/
 #if defined(_WIN32)
 {
    HWND receiver;
@@ -1464,7 +1463,7 @@ Function(SYSTEM_ansichar *) P3UTILS_p3pushdeflocale(
   SYSTEM_uint8 _len_ret)
 {
   _P3strcpy(result,_len_ret,_P3str1("\001C"));
-  /**** C code included from p3utils.pas(2344:1): 10 lines ****/
+  /**** C code included from p3utils.pas(2341:1): 10 lines ****/
 {
   char *s;
   s = setlocale(LC_NUMERIC, NULL);
@@ -1483,7 +1482,7 @@ Procedure P3UTILS_p3popdeflocale(
 {
   if (_P3char('\001') == s[0] && _P3char('C') == s[1]) 
     return;
-  /**** C code included from p3utils.pas(2367:1): 10 lines ****/
+  /**** C code included from p3utils.pas(2364:1): 10 lines ****/
 {
   char buf[32];
   int n = sizeof(buf)-1;
@@ -1495,7 +1494,7 @@ Procedure P3UTILS_p3popdeflocale(
   (void) setlocale(LC_NUMERIC, buf);
 }
 }  /* p3popdeflocale */
-/**** C code included from p3utils.pas(2385:1): 1 lines ****/
+/**** C code included from p3utils.pas(2382:1): 1 lines ****/
 #include "p3Custom2.h"
 
 Function(SYSTEM_integer ) P3UTILS_p3getexecname(
@@ -1507,7 +1506,7 @@ Function(SYSTEM_integer ) P3UTILS_p3getexecname(
   result = 9;
   _P3strclr(execname);
   _P3strcpy(msg,255,_P3str1("\027P3: not yet implemented"));
-  /**** C code included from p3utils.pas(2397:1): 1 lines ****/
+  /**** C code included from p3utils.pas(2394:1): 1 lines ****/
   result = xGetExecName (execname, msg);
   return result;
 }  /* p3getexecname */
@@ -1527,7 +1526,7 @@ Function(SYSTEM_integer ) P3UTILS_p3getlibname(
   result = 9;
   _P3strclr(libname);
   _P3strcpy(msg,255,_P3str1("\027P3: not yet implemented"));
-  /**** C code included from p3utils.pas(2439:1): 1 lines ****/
+  /**** C code included from p3utils.pas(2436:1): 1 lines ****/
   result = xGetLibName (libname, msg);
   return result;
 }  /* p3getlibname */
@@ -1536,7 +1535,7 @@ Function(SYSTEM_integer ) P3UTILS_p3someioresult(void)
 {
   SYSTEM_integer result;
 
-  /**** C code included from p3utils.pas(2476:1): 1 lines ****/
+  /**** C code included from p3utils.pas(2473:1): 1 lines ****/
 result = EIO;
   return result;
 }  /* p3someioresult */
