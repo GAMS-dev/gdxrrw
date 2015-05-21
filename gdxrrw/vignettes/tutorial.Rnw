@@ -57,18 +57,22 @@ Our starting point is a modified version of the transport model from
 the GAMS model library where all of the data inputs and outputs are
 done via GDX.  Running this model is easy:
 <<genData>>=
-gams('transport')
+gms <- system.file('doc','transport.gms',package='gdxrrw', mustWork=T)
+gdx <- system.file('doc','inputs.gdx',package='gdxrrw', mustWork=T)
+rc <- gams(paste0(gms, " --INPUT=", gdx))
 @
 
 The model \texttt{transport} dumps all of its data (including its
 inputs) to GDX before it quits.  There are 5 inputs: 2 sets and 3
 parameters.
 <<origData>>=
-I <- rgdx.set('outputs.gdx','I')
-J <- rgdx.set('outputs.gdx','J')
-a <- rgdx.param('outputs.gdx','a')
-b <- rgdx.param('outputs.gdx','b')
-c <- rgdx.param('outputs.gdx','c')
+outGDX <- system.file('doc','outputs.gdx',package='gdxrrw', mustWork=T)
+outGDX <- 'outputs.gdx'
+I <- rgdx.set(outGDX,'I')
+J <- rgdx.set(outGDX,'J')
+a <- rgdx.param(outGDX,'a')
+b <- rgdx.param(outGDX,'b')
+c <- rgdx.param(outGDX,'c')
 @
 
 As an exercise, we first generate a GDX file whose data is identical
@@ -77,7 +81,8 @@ to the original inputs, and verify that the solution with this data is unchanged
 wgdx.lst('intest',list(I,J,a,b,c))
 rc <- system2('gdxdiff', 'intest inputs', stdout=F)
 if (0 == rc) print ("identical inputs") else print ("different inputs")
-gams('transport.gms --INPUT intest.gdx --OUTPUT outtest.gdx')
+gams(paste(gms, '--INPUT intest.gdx --OUTPUT outtest.gdx'))
+# system2('gams', 'transport.gms --INPUT intest.gdx --OUTPUT outtest.gdx')
 zlst <- rgdx('outputs.gdx',list(name='z'))
 z <- zlst$val
 zlst <- rgdx('outtest.gdx',list(name='z'))
@@ -89,7 +94,7 @@ If we double all transportation costs, we can expect to double the objective.
 c2 <- c
 c2[[3]] <- c[[3]] * 2
 wgdx.lst('in2',list(I,J,a,b,c2))
-gams('transport.gms --INPUT in2.gdx --OUTPUT out2.gdx')
+gams(paste(gms,'--INPUT in2.gdx --OUTPUT out2.gdx'))
 zlst <- rgdx('out2.gdx',list(name='z'))
 z2 <- zlst$val
 print(paste('original=', z,'  double=',z2))
@@ -146,7 +151,7 @@ wgdx.lst('inStates',list(ilst,jlst,suplst,demlst,clst))
 Once the data is written to GDX we can call gams, as before.  A model
 status of 1 (Optimal) indicates an optimal solution was found.
 <<statesSolve>>=
-gams('transport.gms --INPUT inStates.gdx --OUTPUT outStates.gdx')
+gams(paste(gms,'--INPUT inStates.gdx --OUTPUT outStates.gdx'))
 ms <- rgdx.scalar('outStates.gdx','modelStat')
 print(paste('Model status:',ms))
 @
@@ -171,7 +176,7 @@ a2 <- a
 rows <- a2$i == 'seattle'
 a2[rows,2] <- a2[rows,2] - 100
 wgdx.lst('inInf',list(I,J,a2,b,c))
-gams('transport.gms --INPUT inInf.gdx --OUTPUT outInf.gdx')
+gams(paste(gms,'--INPUT inInf.gdx --OUTPUT outInf.gdx'))
 ms <- rgdx.scalar('outInf.gdx','modelStat')
 if (4 == ms) print ("The model is infeasible")
 @
