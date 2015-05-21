@@ -756,6 +756,7 @@ Function(SYSTEM_integer ) P3PROCESS_p3execl(
 
   inheritedhandles = progparams->
     P3PROCESS_texecarglist_DOT_finheritedhandles;
+  argc = 0;
   switch (P3PLATFORM_osfiletype()) {
     case P3PLATFORM_osfilewin: 
       cmdlen = ValueCast(SYSTEM_int32,SYSTEM_length(progname)) + 3;
@@ -821,7 +822,7 @@ Function(SYSTEM_integer ) P3PROCESS_p3execl(
     default:
       SYSTEM_assert(SYSTEM_false,_P3str1("\044unimplemented P3Execl for OSFileType"));
   }
-  /**** C code included from p3process.pas(1250:1): 5 lines ****/
+  /**** C code included from p3process.pas(1251:1): 5 lines ****/
 #if defined(_WIN32)
   result = Win32CreateProc(NULL, (char *)cmdptr, inheritedhandles, progrc);
 #else
@@ -864,7 +865,7 @@ Function(SYSTEM_integer ) P3PROCESS_p3asyncexecp(
   _P3strclr(msg);
   switch (P3PLATFORM_osfiletype()) {
     case P3PLATFORM_osfilewin: 
-      /**** C code included from p3process.pas(1304:1): 1 lines ****/
+      /**** C code included from p3process.pas(1305:1): 1 lines ****/
    result = win32ASyncCreateProc (NULL, (char *) cmdptr, newconsole, 1, procinfo);
       break;
     case P3PLATFORM_osfileunix: 
@@ -890,7 +891,7 @@ Function(SYSTEM_integer ) P3PROCESS_p3asyncexecp(
       P3PROCESS_getparamshortstr(s,param);
       SYSTEM_assert(_P3strcmpE(param,_P3str1("\000")),_P3str1("\036cmd string should be exhausted"));
       (*pargv)[argc] = NULL;
-      /**** C code included from p3process.pas(1332:1): 1 lines ****/
+      /**** C code included from p3process.pas(1333:1): 1 lines ****/
    result = libcASyncForkExec (argc, (char *const * )( *pargv), &pid);
       procinfo->pid = pid;
       { register SYSTEM_int32 _stop = argc - 1;
@@ -945,7 +946,7 @@ Function(SYSTEM_integer ) P3PROCESS_p3asyncstatus(
     _P3strcpy(msg,255,_P3str1("\013Invalid PID"));
     return result;
   } 
-  /**** C code included from p3process.pas(1400:1): 101 lines ****/
+  /**** C code included from p3process.pas(1402:1): 101 lines ****/
 {
 #if defined(_WIN32)
   HANDLE h;
@@ -1054,7 +1055,7 @@ Function(SYSTEM_cardinal ) P3PROCESS_p3getpid(void)
 {
   SYSTEM_cardinal result;
 
-  /**** C code included from p3process.pas(1576:1): 5 lines ****/
+  /**** C code included from p3process.pas(1578:1): 5 lines ****/
 #if defined(_WIN32)
   result = (SYSTEM_cardinal) GetCurrentProcessId();
 #else
@@ -1069,7 +1070,7 @@ Function(SYSTEM_boolean ) P3PROCESS_p3ispidvalid(
   SYSTEM_boolean result;
 
   result = SYSTEM_false;
-  /**** C code included from p3process.pas(1598:1): 18 lines ****/
+  /**** C code included from p3process.pas(1600:1): 18 lines ****/
 {
 #if defined(_WIN32)
   HANDLE hProcess;
@@ -1097,7 +1098,7 @@ Function(SYSTEM_boolean ) P3PROCESS_p3ispidrunning(
   SYSTEM_boolean result;
 
   result = SYSTEM_false;
-  /**** C code included from p3process.pas(1647:1): 21 lines ****/
+  /**** C code included from p3process.pas(1649:1): 21 lines ****/
 {
 #if defined(_WIN32)
   HANDLE hProcess;
@@ -1129,7 +1130,7 @@ Function(SYSTEM_boolean ) P3PROCESS_p3killprocess(
   SYSTEM_boolean result;
 
   result = SYSTEM_false;
-  /**** C code included from p3process.pas(1699:1): 52 lines ****/
+  /**** C code included from p3process.pas(1701:1): 52 lines ****/
 {
 #if defined(_WIN32)
   HANDLE hProcess;
@@ -1184,7 +1185,7 @@ Function(SYSTEM_boolean ) P3PROCESS_p3killprocess(
 }
   return result;
 }  /* p3killprocess */
-/**** C code included from p3process.pas(1788:1): 93 lines ****/
+/**** C code included from p3process.pas(1790:1): 93 lines ****/
 #if defined(_WIN32)
 BOOL killProcessTree (DWORD myprocID)
 {
@@ -1286,7 +1287,7 @@ Function(SYSTEM_boolean ) P3PROCESS_p3killprocgrouptp(
   SYSTEM_boolean result;
 
   result = SYSTEM_false;
-  /**** C code included from p3process.pas(1951:1): 18 lines ****/
+  /**** C code included from p3process.pas(1953:1): 18 lines ****/
 {
 #if defined(_WIN32)
   char cmdBuf[128];
@@ -1315,7 +1316,7 @@ Function(SYSTEM_boolean ) P3PROCESS_p3killprocgrouptk(
   SYSTEM_boolean result;
 
   result = SYSTEM_false;
-  /**** C code included from p3process.pas(1987:1): 35 lines ****/
+  /**** C code included from p3process.pas(1989:1): 35 lines ****/
 {
 #if defined(_WIN32)
   HANDLE hProcess;
@@ -1385,7 +1386,7 @@ static Function(SYSTEM_integer ) asyncsystem4unix(
     (*pargv)[2] = cmdptr;
   } 
   (*pargv)[argc] = NULL;
-  /**** C code included from p3process.pas(2097:1): 1 lines ****/
+  /**** C code included from p3process.pas(2099:1): 1 lines ****/
   result = libcASyncForkExec (argc, (char *const * )( *pargv), &pid);
   procinfo->pid = pid;
   _P3freemem((*pargv)[0]);
@@ -1403,7 +1404,7 @@ static Function(SYSTEM_integer ) P3PROCESS_system4unix(
   SYSTEM_integer rcode;
   SYSTEM_P3_pansichar newptr;
 
-  /**** C code included from p3process.pas(2161:1): 31 lines ****/
+  /**** C code included from p3process.pas(2163:1): 31 lines ****/
 #if defined(_WIN32)
   result = 127; /* should never happen */
 #else
@@ -1480,7 +1481,7 @@ static Function(SYSTEM_integer ) asyncsystem4win(
     P3PRIVATE_pcharconcatstr(argptr,&arglen,_P3str1("\004 /C "));
     P3PRIVATE_pcharconcatpchar(argptr,&arglen,cmdptr);
   } 
-  /**** C code included from p3process.pas(2247:1): 5 lines ****/
+  /**** C code included from p3process.pas(2249:1): 5 lines ****/
 #if 0
   printf ("debug asyncSystem4Win: calling win32CreateProc (%s, %s, ...)\n",
           (char *) csptr, (char *) argptr);
@@ -1531,7 +1532,7 @@ static Function(SYSTEM_integer ) P3PROCESS_system4win(
     P3PRIVATE_pcharconcatstr(argptr,&arglen,_P3str1("\004 /C "));
     P3PRIVATE_pcharconcatpchar(argptr,&arglen,cmdptr);
   } 
-  /**** C code included from p3process.pas(2312:1): 1 lines ****/
+  /**** C code included from p3process.pas(2314:1): 1 lines ****/
   result = Win32CreateProc ((char *) csptr, (char *) argptr, inheritedhandles, progrc);
   if (result != 0) 
     result = 2;
@@ -1549,6 +1550,7 @@ Function(SYSTEM_integer ) P3PROCESS_p3system(
   P3PRIVATE_shortstrbuf cmdbuf;
 
   cmdptr = P3PRIVATE_strtostrbuf(cmd,cmdbuf);
+  result = 0;
   switch (P3PLATFORM_osfiletype()) {
     case P3PLATFORM_osfilewin: 
       result = P3PROCESS_system4win(cmdptr,SYSTEM_true,progrc);
@@ -1568,6 +1570,7 @@ Function(SYSTEM_integer ) P3PROCESS_p3systemp(
 {
   SYSTEM_integer result;
 
+  result = 0;
   switch (P3PLATFORM_osfiletype()) {
     case P3PLATFORM_osfilewin: 
       result = P3PROCESS_system4win(cmdptr,SYSTEM_true,progrc);
@@ -1599,6 +1602,7 @@ Function(SYSTEM_integer ) P3PROCESS_p3system2(
   P3PRIVATE_pcharconcatstr(cmdptr,&k,_P3str1("\001 "));
   P3PRIVATE_pcharconcatstr(cmdptr,&k,progparams);
   SYSTEM_assert(k == cmdlen,_P3str1("\040Strange result of PCharConcatStr"));
+  result = 0;
   switch (P3PLATFORM_osfiletype()) {
     case P3PLATFORM_osfilewin: 
       result = P3PROCESS_system4win(cmdptr,SYSTEM_true,progrc);
@@ -1665,6 +1669,7 @@ Function(SYSTEM_integer ) P3PROCESS_p3systeml(
     } while (i++ !=  _stop);
 
   }
+  result = 0;
   switch (P3PLATFORM_osfiletype()) {
     case P3PLATFORM_osfilewin: 
       result = P3PROCESS_system4win(cmdptr,inheritedhandles,progrc);

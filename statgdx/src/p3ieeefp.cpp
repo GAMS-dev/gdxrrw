@@ -14,9 +14,9 @@ SYSTEM_double P3IEEEFP_infnegative;
 # include <float.h>
 # include <fpxcp.h>
 # include <fptrap.h>
-#elif defined(DEG) || defined(DEI) || defined(DIG) || defined(DII)
+#elif defined(__APPLE__)
 # include <fenv.h>
-#elif defined(BGP) || defined(LNX) || defined(LEG) || defined(LEI)
+#elif defined(BGP) || defined(__linux__)
 # include <fpu_control.h>
 # include <fenv.h>
 #elif defined(SOL)
@@ -166,7 +166,7 @@ Function(_P3set_elem *) P3IEEEFP_getexceptionflags(
   if (traps & FP_UNDERFLOW  ) ADD2MASK(EX_UNDERFLOW );
   if (traps & FP_INEXACT    ) ADD2MASK(EX_PRECISION );
 }
-#elif defined(DEG) || defined(DEI) || defined(DIG) || defined(DII)
+#elif defined(__APPLE__)
 {
   int flags;
 
@@ -177,7 +177,7 @@ Function(_P3set_elem *) P3IEEEFP_getexceptionflags(
   if (flags & FE_UNDERFLOW) ADD2MASK(EX_UNDERFLOW );
   if (flags & FE_INEXACT  ) ADD2MASK(EX_PRECISION );
 }
-#elif defined(BGP) || defined(LNX) || defined(LEG) || defined(LEI) || defined(SIG)
+#elif defined(BGP) || defined(__linux__) || defined(SIG)
 {
   *result = (_P3set_elem) fetestexcept(FE_ALL_EXCEPT);
 }
@@ -218,7 +218,7 @@ Procedure P3IEEEFP_clearexceptionflags(
   if (ISINFLAGS(MATH_P3_exprecision )) flgs |= FP_INEXACT    ;
   fp_clr_flag(flgs);
 }
-#elif defined(BGP) || defined(DEG) || defined(DEI) || defined(DIG) || defined(DII) || defined(LNX) || defined(LEG) || defined(LEI) || defined(SIG)
+#elif defined(BGP) || defined(__APPLE__) || defined(__linux__) || defined(SIG)
 {
   int t;
 

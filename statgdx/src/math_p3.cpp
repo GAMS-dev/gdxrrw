@@ -29,21 +29,20 @@ static Procedure MATH_P3_double2i64(
   i64rec._u._c1.x = x;
   *i = i64rec._u._c2.i64;
 }  /* double2i64 */
-/**** C code included from math_p3.pas(93:1): 37 lines ****/
+/**** C code included from math_p3.pas(93:1): 36 lines ****/
 #if   defined(AIX)
 # include <float.h>
 # include <fpxcp.h>
 # include <fptrap.h>
 
-#elif defined(DEG) || defined(DEI) || defined(DIG) || defined(DII)
-/* doing this for DII is a hack!! */
+#elif defined(__APPLE__)
 # include <fenv.h>
 /* SPD, Oct 2007: N.B.: to get more exceptions raised, set more bits in the input
  * to get fewer exceptions and more non-stop arithmetic, set fewer bits
  * or maybe it is the other way around on DII, still testing
  */
 
-#elif defined(BGP) || defined(LNX) || defined(LEG) || defined(LEI)
+#elif defined(BGP) || defined(__linux__)
 # include <fpu_control.h>
 # include <fenv.h>
 #elif defined(SOL)
@@ -52,7 +51,7 @@ static Procedure MATH_P3_double2i64(
 # include <ieeefp.h>
 # include <fenv.h>
 #endif
-#if defined(LEG) || defined(LNX) /* GNU compilers */
+#if defined(__linux__) && defined(__GNUC__) /* Linux GCC compilers */
 # if ! defined(FE_DENORMAL)
 #  define FE_DENORMAL __FE_DENORM
 # endif
@@ -73,7 +72,7 @@ Function(SYSTEM_double ) MATH_P3_arccos(
 {
   SYSTEM_double result;
 
-  /**** C code included from math_p3.pas(139:1): 1 lines ****/
+  /**** C code included from math_p3.pas(138:1): 1 lines ****/
   result = acos(x);
   return result;
 }  /* arccos */
@@ -83,7 +82,7 @@ Function(SYSTEM_double ) MATH_P3_arcsin(
 {
   SYSTEM_double result;
 
-  /**** C code included from math_p3.pas(150:1): 1 lines ****/
+  /**** C code included from math_p3.pas(149:1): 1 lines ****/
   result = asin(x);
   return result;
 }  /* arcsin */
@@ -94,7 +93,7 @@ Function(SYSTEM_double ) MATH_P3_arctan2(
 {
   SYSTEM_double result;
 
-  /**** C code included from math_p3.pas(165:1): 1 lines ****/
+  /**** C code included from math_p3.pas(164:1): 1 lines ****/
   result = atan2(y,x);
   return result;
 }  /* arctan2 */
@@ -104,7 +103,7 @@ Function(SYSTEM_double ) MATH_P3_tan(
 {
   SYSTEM_double result;
 
-  /**** C code included from math_p3.pas(181:1): 1 lines ****/
+  /**** C code included from math_p3.pas(180:1): 1 lines ****/
   result = tan(x);
   return result;
 }  /* tan */
@@ -220,7 +219,7 @@ Function(_P3set_elem *) MATH_P3_getexceptionmask(
   SYSTEM_uint8 _len_ret)
 {
   _P3SET_copy(result,_len_ret,_P3empty_set);
-  /**** C code included from math_p3.pas(284:1): 89 lines ****/
+  /**** C code included from math_p3.pas(283:1): 89 lines ****/
 #if defined(_WIN32)
 {
   unsigned int cw;
@@ -252,7 +251,7 @@ Function(_P3set_elem *) MATH_P3_getexceptionmask(
   if (!(cw & _FPU_MASK_UM)) ADD2MASK(EX_UNDERFLOW );
   if (!(cw & _FPU_MASK_XM)) ADD2MASK(EX_PRECISION );
 }
-#elif defined(DEG) || defined(DIG)
+#elif defined(__APPLE__) && defined(__GNUC__) /* Mac, GCC compilers */
 {
   fenv_t fenv;
   unsigned int ex;
@@ -266,7 +265,7 @@ Function(_P3set_elem *) MATH_P3_getexceptionmask(
   if (ex & FE_UNDERFLOW ) ADD2MASK(EX_UNDERFLOW );
   if (ex & FE_INEXACT   ) ADD2MASK(EX_PRECISION );
 }
-#elif defined(DEI) || defined(DII)
+#elif defined(__APPLE__) /* Mac, presumably Intel compilers */
 {
   fenv_t fenv;
   unsigned short cw;
@@ -280,7 +279,7 @@ Function(_P3set_elem *) MATH_P3_getexceptionmask(
   if (cw & FE_UNDERFLOW ) ADD2MASK(EX_UNDERFLOW );
   if (cw & FE_INEXACT   ) ADD2MASK(EX_PRECISION );
 }
-#elif defined(LNX) || defined(LEG) || defined(LEI)
+#elif defined(__linux__)
 {
   fpu_control_t cw;
 
@@ -319,7 +318,7 @@ Function(_P3set_elem *) MATH_P3_setexceptionmask(
   const _P3set_elem *mask)
 {
   _P3SET_copy(result,_len_ret,_P3empty_set);
-  /**** C code included from math_p3.pas(391:1): 175 lines ****/
+  /**** C code included from math_p3.pas(390:1): 175 lines ****/
 
 #if defined(_WIN32)
 {
@@ -386,7 +385,7 @@ Function(_P3set_elem *) MATH_P3_setexceptionmask(
   else                                 cw &= ~_FPU_MASK_XM;
   _FPU_SETCW(cw);
 }
-#elif defined(DEG) || defined(DIG)
+#elif defined(__APPLE__) && defined(__GNUC__) /* Mac, GCC compilers */
 /* try something different for GNU compilers */
 {
   fenv_t fenv;
@@ -415,7 +414,7 @@ Function(_P3set_elem *) MATH_P3_setexceptionmask(
 # endif
   (void) fesetenv (&fenv);
 } /* DEG,DIG */
-#elif defined(DEI) || defined(DII)
+#elif defined(__APPLE__) /* Mac, presumably Intel compilers */
 {
   fenv_t fenv;
   unsigned short cw;
@@ -437,7 +436,7 @@ Function(_P3set_elem *) MATH_P3_setexceptionmask(
   fenv.__control = cw;
   (void) fesetenv (&fenv);
 } /* DEI,DII */
-#elif defined(LNX) || defined(LEG) || defined(LEI)
+#elif defined(__linux__)
 {
 #if 1
   fenv_t fenv;
@@ -504,17 +503,17 @@ Procedure MATH_P3_setexceptionmask2p3(void)
 
 Procedure MATH_P3_clearexceptions(void)
 {
-  /**** C code included from math_p3.pas(592:1): 16 lines ****/
+  /**** C code included from math_p3.pas(591:1): 16 lines ****/
 #if defined(_WIN32)
   (void) _clearfp();
 #elif defined(AIX)
   fp_clr_flag (FP_INVALID | FP_OVERFLOW | FP_UNDERFLOW |
                FP_DIV_BY_ZERO | FP_INEXACT);
-#elif defined(DEG) || defined(DEI) || defined(DIG) || defined(DII)
+#elif defined(__APPLE__)
 {
 assert(0);
 }
-#elif defined(BGP) || defined(LNX) || defined(LEG) || defined(LEI)
+#elif defined(BGP) || defined(__linux__)
   (void) feclearexcept (FE_ALL_EXCEPT);
 #elif defined(SOL) || defined(SIG)
   (void) fpsetsticky(0);

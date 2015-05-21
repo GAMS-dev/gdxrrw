@@ -305,17 +305,14 @@ Function(SYSTEM_boolean ) P3UTILS_prefixpath(
   SYSTEM_boolean result;
   static _P3STR_7 cpath = {5,'P','A','T','H','\000'};
   SYSTEM_integer slen, plen;
-  SYSTEM_P3_pansichar pptr;
-  SYSTEM_integer tlen;
   SYSTEM_P3_pansichar tptr;
 
   slen = SYSTEM_length(s);
   if (slen == 0) { 
     result = SYSTEM_true;
   } else {
-    tlen = 0;
     tptr = NULL;
-    /**** C code included from p3utils.pas(619:1): 41 lines ****/
+    /**** C code included from p3utils.pas(618:1): 42 lines ****/
 {
     char *p;
 
@@ -327,6 +324,7 @@ Function(SYSTEM_boolean ) P3UTILS_prefixpath(
     }
     memcpy(p, (char *)s+1, slen);
     if (plen > 0) {
+      int tlen;
       p[slen] = SYSUTILS_P3_pathsep;
       tlen = GetEnvironmentVariable((char *)cpath+1,p+slen+1,plen);
       assert(tlen == plen -1);
@@ -366,7 +364,6 @@ Function(SYSTEM_boolean ) P3UTILS_prefixloadpath(
 {
   SYSTEM_boolean result;
   SYSTEM_integer slen, plen;
-  SYSTEM_P3_pansichar pptr;
   SYSTEM_P3_pansichar tptr;
   SYSTEM_shortstring s;
   SYSTEM_shortstring ldpath;
