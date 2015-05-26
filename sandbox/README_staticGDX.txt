@@ -12,6 +12,14 @@ perhaps a few other things need to be removed.  There are not many
 such references.  This can be done by hand or by triggering a #define
 if we edit the sources like p3io.[ch], etc.
 
+1a. [ONGOING] Wrapped P3 objects have C++ src with symbols like
+xcreate and xfree.  xfree is use by R already, so we have to rename
+this to something else like x2free.
+
+1b. [ONGOING] We don't use p3threads at all, so I gutted the
+pthreads.[hc] files in the R src.  Can we selectively take it out of
+p3compat.pas?
+
 2. [ONGOING??] I hand-edited gdxcc.[ch] to get something that fits
 with using P3-generated C++ source.  This could be another output from
 apiwrap, or we can just live with hand-editing.  Each has pros and
