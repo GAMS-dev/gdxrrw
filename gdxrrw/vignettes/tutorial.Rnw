@@ -88,14 +88,15 @@ As an exercise, we first generate a GDX file whose data is identical
 to the original inputs, and verify that the solution with this data is unchanged:
 <<identData>>=
 wgdx.lst('intest',list(I,J,a,b,c))
-rc <- system2('gdxdiff', 'intest inputs', stdout=F)
-if (0 == rc) print ("identical inputs") else print ("different inputs")
+rc <- system2('gdxdiff', paste('intest.gdx', ingdx), stdout=F)
+if (0 != rc) stop ('gdxdiff says intest.gdx and inputs.gdx differ: rc = ',rc)
 gams(paste(gms, '--INPUT intest.gdx --OUTPUT outtest.gdx'))
 # system2('gams', 'transport.gms --INPUT intest.gdx --OUTPUT outtest.gdx')
 zlst <- rgdx('outputs.gdx',list(name='z'))
 z <- zlst$val
-zlst <- rgdx('outtest.gdx',list(name='z'))
-if (zlst$val == z) print ("identical objective") else print ("different objective")
+# we don't need to use the intermediate zlst variable to get the val
+zz <- rgdx('outtest.gdx',list(name='z'))$val
+if (0.0 != round(z-zz,6)) stop (paste("different objectives!! ", z, zz))
 @
 
 If we double all transportation costs, we can expect to double the objective.
@@ -104,8 +105,7 @@ c2 <- c
 c2[[3]] <- c[[3]] * 2
 wgdx.lst('in2',list(I,J,a,b,c2))
 gams(paste(gms,'--INPUT in2.gdx --OUTPUT out2.gdx'))
-zlst <- rgdx('out2.gdx',list(name='z'))
-z2 <- zlst$val
+z2 <- rgdx('out2.gdx',list(name='z'))$val
 print(paste('original=', z,'  double=',z2))
 @
 
