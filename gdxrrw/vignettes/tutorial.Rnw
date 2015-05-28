@@ -58,21 +58,30 @@ the GAMS model library where all of the data inputs and outputs are
 done via GDX.  Running this model is easy:
 <<genData>>=
 gms <- system.file('doc','transport.gms',package='gdxrrw', mustWork=T)
-gdx <- system.file('doc','inputs.gdx',package='gdxrrw', mustWork=T)
-rc <- gams(paste0(gms, " --INPUT=", gdx))
+ingdx <- system.file('doc','inputs.gdx',package='gdxrrw', mustWork=T)
+rc <- gams(paste0(gms, " --INPUT=", ingdx))
+@
+
+For reference, we have included the GDX file \texttt{outputs.gdx}
+produced by the run above in the doc directory.
+<<inCase>>=
+if (! file.exists('outputs.gdx')) {
+  ogdx <- system.file('doc','outputs.gdx',package='gdxrrw', mustWork=T)
+  file.copy(ogdx,'outputs.gdx')
+}
 @
 
 The model \texttt{transport} dumps all of its data (including its
 inputs) to GDX before it quits.  There are 5 inputs: 2 sets and 3
 parameters.
 <<origData>>=
-outGDX <- system.file('doc','outputs.gdx',package='gdxrrw', mustWork=T)
-outGDX <- 'outputs.gdx'
-I <- rgdx.set(outGDX,'I')
-J <- rgdx.set(outGDX,'J')
-a <- rgdx.param(outGDX,'a')
-b <- rgdx.param(outGDX,'b')
-c <- rgdx.param(outGDX,'c')
+outgdx <- 'outputs.gdx'
+if (! file.exists(outgdx)) stop (paste('File not found:',outgdx))
+I <- rgdx.set(outgdx,'I')
+J <- rgdx.set(outgdx,'J')
+a <- rgdx.param(outgdx,'a')
+b <- rgdx.param(outgdx,'b')
+c <- rgdx.param(outgdx,'c')
 @
 
 As an exercise, we first generate a GDX file whose data is identical
