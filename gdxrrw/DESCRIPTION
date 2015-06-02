@@ -1,16 +1,20 @@
 Package: gdxrrw
-Title: An interface between GAMS and R
+Title: An Interface Between 'GAMS' and R
 Version: 1.0.0
 Depends: R (>= 2.14)
-Date: 2015-05-28
-SystemRequirements: GAMS (>= 24.1.1)
+Date: 2015-06-02
+SystemRequirements: GAMS (>= 24.2.1)
 Authors@R: c(person("Steve","Dirkse", role=c("aut","cre"),
 	             email="R@gams.com"),
              person("Michael","Ferris", role=c("aut")),
 	     person("Rishabh","Jain", role=c("aut")) )
-Description: A data interface between GAMS and R.  It includes functions
-  to transfer data between GDX and R and a function to
-  call gams from within R.
+Description: A data interface between 'GAMS' and R.  The 'GAMS'
+  (General Algebraic Modeling System) software includes a data
+  specification called 'GDX' that is the preferred way to store and
+  exchange 'GAMS' data.  This package includes several functions to
+  transfer data between 'GDX' and R, and some related utility
+  functions.
+URL: http://www.gams.com
 License: EPL
 Imports: reshape2
 LazyData: no
