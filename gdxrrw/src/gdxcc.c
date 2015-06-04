@@ -718,6 +718,8 @@ XLibraryLoad (const char *dllName, char *errBuf, int errBufSize)
 
 } /* XLibraryLoad */
 
+#include "loadpathutil.h"
+
 static int
 libloader(const char *dllPath, const char *dllName, char *msgBuf, int msgBufSize)
 {
@@ -793,12 +795,21 @@ libloader(const char *dllPath, const char *dllName, char *msgBuf, int msgBufSize
     }
     isLoaded = ! XLibraryLoad (dllNameBuf, msgBuf, msgBufSize);
     if (isLoaded) {
-       if (NULL != gdxSetLoadPath && NULL != dllPath && '\0' != *dllPath) {
-         gdxSetLoadPath(dllPath);
-       }
-       else {                            /* no setLoadPath call found */
-         myrc |= 2;
-       }
+      if (NULL != gdxSetLoadPath) {
+        if (NULL != dllPath && '\0' != *dllPath) {
+          gdxSetLoadPath(dllPath);
+        }
+        else {
+          char myLoadPath[256];
+          strcpy (myLoadPath, "/home/sdirkse/hacked");
+          loadPathHack (myLoadPath, gdxClose);
+          if (strlen(myLoadPath) > 0)
+            gdxSetLoadPath (myLoadPath);
+        }
+      }
+      else {                            /* no setLoadPath call found */
+        myrc |= 2;
+      }
     }
     else {                              /* library load failed */
       myrc |= 1;

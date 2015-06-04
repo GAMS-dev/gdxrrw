@@ -411,7 +411,7 @@ SEXP igdx (SEXP args)
 
   if (TYPEOF(sysDirExp) != NILSXP) { /* we should have gamsSysDir */
     if (TYPEOF(sysDirExp) != STRSXP) {
-      error ("usage: %s(gamsSysDir) - gamsSysDir must be a string", funcName);
+      error ("usage: %s(gamsSysDir, ...) - gamsSysDir must be a string", funcName);
     }
     sd1 = CHAR(STRING_ELT(sysDirExp, 0));
     sd2 = R_ExpandFileName(sd1); /* interpret ~ as home directory */
@@ -422,9 +422,39 @@ SEXP igdx (SEXP args)
       (void) gdxLibraryUnload ();
     }
     rc = gdxGetReadyD (sysDir, msgBuf, sizeof(msgBuf));
-    if ((0 == rc) && ! isSilent) {
-      Rprintf ("Error loading the GDX API from directory %s\n", sysDir);
-      Rprintf ("%s\n", msgBuf);
+    if (! isSilent) {
+      if (0 == rc) {
+        Rprintf ("Error loading the GDX API from gamsSysDir=%s\n", sd1);
+        Rprintf ("%s\n", msgBuf);
+      }
+      else
+        Rprintf ("GDX API loaded from gamsSysDir=%s\n", sd1);
+    }
+  }
+
+  gdxLoaded = gdxLibraryLoaded();
+  if (! gdxLoaded) {
+    Rprintf ("DEBUG 100: GDX not loaded: try checking R_GAMS_SYSDIR environment var next\n");
+  }
+
+  gdxLoaded = gdxLibraryLoaded();
+  if (! gdxLoaded) {
+    Rprintf ("DEBUG 200: GDX not loaded: try loading with OS-specific search next\n");
+    rc = gdxGetReady (msgBuf, sizeof(msgBuf));
+    if (! isSilent) {
+      if (0 == rc) {
+        Rprintf ("Error loading the GDX API via the default shared library search mechanism\n");
+        Rprintf ("%s\n", msgBuf);
+#if defined(_WIN32)
+        Rprintf ("PATH=<get_the_PATH>\n");
+#elif defined(__APPLE__)
+        Rprintf ("DYLD_LIBRARY_PATH=<get_the_DYLD_LIBRARY_PATH>\n");
+#else
+        Rprintf ("LD_LIBRARY_PATH=<get_the_LD_LIBRARY_PATH>\n");
+#endif
+      }
+      else
+        Rprintf ("GDX API loaded via the default shared library search mechanism\n");
     }
   }
 
