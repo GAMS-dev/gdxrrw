@@ -194,7 +194,8 @@ double
 getDefVal (int symType, int subType, dField_t dField);
 void
 addDomInfo (const char *symName, SEXP domExp, SEXP domInfoExp);
-
+void
+showLibSearchPath (void);
 
 /* ****** global variables ****** */
 #if defined(_GDXRRW_MAIN_)

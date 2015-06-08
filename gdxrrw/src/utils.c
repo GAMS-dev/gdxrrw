@@ -1538,3 +1538,26 @@ addDomInfo (const char *symName, SEXP domExp, SEXP domInfoExp)
   rc = gdxSymbolSetDomainX (gdxHandle, symIdx, (const char **) domPtrs);
   return;
 } /* addDomInfo */
+
+/* show the platform-dependent shared library search path */
+void
+showLibSearchPath (void)
+{
+#if defined(_WIN32)
+  Rprintf ("PATH=<get_the_PATH>\n");
+
+#else
+# if defined(__APPLE__)
+  const char evName[] = "DYLD_LIBRARY_PATH";
+# else
+  const char evName[] = "LD_LIBRARY_PATH";
+# endif
+  char *s;
+
+  s = getenv (evName);
+  if (NULL == s)
+    Rprintf ("%s is not set!\n", evName);
+  else
+    Rprintf ("%s = %s\n", evName, s);
+#endif
+} /* showLibSearchPath */

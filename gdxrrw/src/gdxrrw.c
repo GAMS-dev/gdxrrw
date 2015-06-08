@@ -445,13 +445,7 @@ SEXP igdx (SEXP args)
       if (0 == rc) {
         Rprintf ("Error loading the GDX API via the default shared library search mechanism\n");
         Rprintf ("%s\n", msgBuf);
-#if defined(_WIN32)
-        Rprintf ("PATH=<get_the_PATH>\n");
-#elif defined(__APPLE__)
-        Rprintf ("DYLD_LIBRARY_PATH=<get_the_DYLD_LIBRARY_PATH>\n");
-#else
-        Rprintf ("LD_LIBRARY_PATH=<get_the_LD_LIBRARY_PATH>\n");
-#endif
+        showLibSearchPath ();
       }
       else
         Rprintf ("GDX API loaded via the default shared library search mechanism\n");
