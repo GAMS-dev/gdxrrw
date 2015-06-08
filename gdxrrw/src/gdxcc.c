@@ -17,6 +17,7 @@
 #if defined(_WIN32)
 # include <windows.h>
   static char winErr[] = "Windows error";
+  static char winErrBuf[4096];
   typedef HINSTANCE soHandle_t;
 #else
 # include <unistd.h>
@@ -394,6 +395,31 @@ extractFileDirFileName (const char *fileName, char *dirName, char *fName)
   return dirName;
 } /* extractFileDirFileName */
 
+#if defined(_WIN32)
+static char *
+winLastErr2Buf (int errNum, char *buf, int bufSiz)
+{
+  DWORD rc;
+
+  rc = FormatMessage(
+                FORMAT_MESSAGE_FROM_SYSTEM |
+                FORMAT_MESSAGE_IGNORE_INSERTS,
+                NULL,
+                errNum,
+                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                buf,
+                bufSiz,
+                NULL
+                );
+  if (0 == rc)                  /* error */
+    return (NULL);
+  buf[rc] = '\0';
+  if (('\r' == buf[rc-2]) && ('\n' == buf[rc-1]))
+    buf[rc-2] = '\0';
+  return buf;
+} /* winLastErr2Buf */
+#endif
+
 static soHandle_t
 loadLib (const char *libName, char **errMsg)
 {
@@ -402,7 +428,9 @@ loadLib (const char *libName, char **errMsg)
 #if defined(_WIN32)
   h = LoadLibrary (libName);
   if (NULL == h) {
-    *errMsg = winErr;
+    *errMsg = winLastErr2Buf (GetLastError(), winErrBuf, sizeof(winErrBuf));
+    if (NULL == *errMsg)
+      *errMsg = winErr;
   }
   else {
     *errMsg = NULL;
