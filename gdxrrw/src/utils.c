@@ -1544,7 +1544,23 @@ void
 showLibSearchPath (void)
 {
 #if defined(_WIN32)
-  Rprintf ("PATH=<get_the_PATH>\n");
+  const char evName[] = "PATH";
+  char *s;
+  size_t len;
+
+  len = GetEnvironmentVariable (evName, NULL, 0);
+  if (0 == len)
+    Rprintf ("%s is not set!\n", evName);
+  else {
+    s = (char *) malloc(len);
+    if (NULL == s)
+      Rprintf ("%s could not be read: malloc failure!\n", evName);
+    else {
+      (void) GetEnvironmentVariable (evName, s, len);
+      Rprintf ("%s = %s\n", evName, s);
+      free(s);
+    }
+  }
 
 #else
 # if defined(__APPLE__)
