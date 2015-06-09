@@ -1577,3 +1577,42 @@ showLibSearchPath (void)
     Rprintf ("%s = %s\n", evName, s);
 #endif
 } /* showLibSearchPath */
+
+/* get value of environment variable evName
+ * return 0 if evName was set, ~0 otherwise
+ */
+int
+getEnvVar (const char *evName, shortStringBuf_t evVal)
+{
+#if defined(_WIN32)
+  const char evName[] = "PATH";
+  char *s;
+  size_t len;
+
+  evVal[0] = '\0';
+  len = GetEnvironmentVariable (evName, NULL, 0);
+  if (0 == len)
+    Rprintf ("%s is not set!\n", evName);
+  else {
+    s = (char *) malloc(len);
+    if (NULL == s)
+      Rprintf ("%s could not be read: malloc failure!\n", evName);
+    else {
+      (void) GetEnvironmentVariable (evName, s, len);
+      Rprintf ("%s = %s\n", evName, s);
+      free(s);
+    }
+  }
+
+#else
+  char *s;
+
+  evVal[0] = '\0';
+  s = getenv (evName);
+  if (NULL == s)
+    return 1;                   /* not set */
+  else
+    (void) CHAR2ShortStr (s, evVal);
+  return 0;
+#endif
+} /* getEnvVar */

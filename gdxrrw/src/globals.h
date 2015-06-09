@@ -196,6 +196,8 @@ void
 addDomInfo (const char *symName, SEXP domExp, SEXP domInfoExp);
 void
 showLibSearchPath (void);
+int
+getEnvVar (const char *evName, shortStringBuf_t evVal);
 
 /* ****** global variables ****** */
 #if defined(_GDXRRW_MAIN_)

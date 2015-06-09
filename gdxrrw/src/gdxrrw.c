@@ -417,40 +417,71 @@ SEXP igdx (SEXP args)
     sd2 = R_ExpandFileName(sd1); /* interpret ~ as home directory */
     (void) CHAR2ShortStr (sd2, sysDir);
 
-    /* ---- load the GDX API ---- */
     if (gdxLoaded) {
       (void) gdxLibraryUnload ();
+      if (! isSilent)
+        Rprintf ("Reloading GDX API\n");
     }
-    rc = gdxGetReadyD (sysDir, msgBuf, sizeof(msgBuf));
-    if (! isSilent) {
-      if (0 == rc) {
-        Rprintf ("Error loading the GDX API from gamsSysDir=%s\n", sd1);
-        Rprintf ("%s\n", msgBuf);
-      }
-      else
-        Rprintf ("GDX API loaded from gamsSysDir=%s\n", sd1);
-    }
-  }
 
-  gdxLoaded = gdxLibraryLoaded();
-  if (! gdxLoaded) {
-    Rprintf ("DEBUG 100: GDX not loaded: try checking R_GAMS_SYSDIR environment var next\n");
-  }
-
-  gdxLoaded = gdxLibraryLoaded();
-  if (! gdxLoaded) {
-    Rprintf ("DEBUG 200: GDX not loaded: try loading with OS-specific search next\n");
-    rc = gdxGetReady (msgBuf, sizeof(msgBuf));
-    if (! isSilent) {
-      if (0 == rc) {
-        Rprintf ("Error loading the GDX API via the default shared library search mechanism\n");
-        Rprintf ("%s\n", msgBuf);
-        showLibSearchPath ();
+    if (strlen(sysDir) > 0) {
+      rc = gdxGetReadyD (sysDir, msgBuf, sizeof(msgBuf));
+      if (! isSilent) {
+        if (0 == rc) {
+          Rprintf ("Error loading the GDX API from gamsSysDir=%s\n", sysDir);
+          Rprintf ("%s\n", msgBuf);
+        }
+        else
+          Rprintf ("GDX API loaded from gamsSysDir=%s\n", sysDir);
       }
-      else
-        Rprintf ("GDX API loaded via the default shared library search mechanism\n");
     }
-  }
+    else {
+      if (! isSilent) {
+        Rprintf ("gamsSysDir arg is empty: no GDX API there\n");
+      }
+    }
+
+    gdxLoaded = gdxLibraryLoaded();
+    if (! gdxLoaded) {
+      rc = getEnvVar ("R_GAMS_SYSDIR", sysDir);
+      if (rc) {
+        if (! isSilent)
+          Rprintf ("Environment variable R_GAMS_SYSDIR not set:"
+                   " no GDX API there\n");
+      }
+      else if (0 == strlen(sysDir)) {
+        if (! isSilent) {
+          Rprintf ("Environment variable R_GAMS_SYSDIR is empty:"
+                   " no GDX API there\n");
+        }
+      }
+      else {
+        rc = gdxGetReadyD (sysDir, msgBuf, sizeof(msgBuf));
+        if (! isSilent) {
+          if (0 == rc) {
+            Rprintf ("Error loading the GDX API from R_GAMS_SYSDIR=%s\n", sysDir);
+            Rprintf ("%s\n", msgBuf);
+          }
+          else
+            Rprintf ("GDX API loaded from R_GAMS_SYSDIR=%s\n", sysDir);
+        }
+      }
+    } /* try R_GAMS_SYSDIR */
+
+    gdxLoaded = gdxLibraryLoaded();
+    if (! gdxLoaded) {
+      rc = gdxGetReady (msgBuf, sizeof(msgBuf));
+      if (! isSilent) {
+        if (0 == rc) {
+          Rprintf ("Error loading the GDX API via the default shared library search mechanism\n");
+          Rprintf ("%s\n", msgBuf);
+          showLibSearchPath ();
+        }
+        else
+          Rprintf ("GDX API loaded via the default shared library search mechanism\n");
+      }
+    }
+
+  } /* gamsSysDir <> NULL */
 
   loadPath[0] = '\0';
   gdxLoaded = gdxLibraryLoaded();
