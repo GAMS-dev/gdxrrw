@@ -12,9 +12,43 @@
 # include <dlfcn.h>
 #endif
 
+#if defined(_WIN32)
+# define WIN32_LEAN_AND_MEAN   /* google it */
+# include <windows.h>
+# define snprintf _snprintf
+#endif
+
 #include "loadpathutil.h"
 
-#if defined(__linux__) || defined(__sparc) || defined(__sun) || defined(__sun__) || defined(__APPLE__)
+#if defined (_WIN32)
+void loadPathHack (char buf[256], void *addr)
+{
+  HMODULE h;
+  size_t sz;
+  DWORD k;
+  BOOL brc;
+  char libBuf[1024];
+
+  buf[0] = '\0';
+  brc = GetModuleHandleEx (GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+                           GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                           (LPCTSTR)addr, &h);
+  if (brc) {  /* OK: got a handle */
+    k = GetModuleFileName (h, libBuf, sizeof(libBuf));
+    if (k > 0) {                /* success */
+      /* do some trimming later */
+      sz = strlen(libBuf);
+      if (sz <= 255) {
+        memcpy (buf, libBuf, sz);
+        buf[sz] = '\0';
+      }
+    }
+  }
+
+  return;
+} /* loadPathHack */
+
+#elif defined(__linux__) || defined(__sparc) || defined(__sun) || defined(__sun__) || defined(__APPLE__)
 void loadPathHack (char buf[256], void *addr)
 {
   const char *p;

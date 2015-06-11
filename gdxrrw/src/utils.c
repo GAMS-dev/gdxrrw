@@ -1031,27 +1031,26 @@ int isCompress (void)
 void
 loadGDX (void)
 {
-  shortStringBuf_t msg;
+  shortStringBuf_t sysDir, msg;
   int rc;
 
   if (gdxLibraryLoaded())
-    return;                     /* all done already */
+    return;                     /* already loaded */
+
+  /* try R_GAMS_SYSDIR */
+  rc = getEnvVar ("R_GAMS_SYSDIR", sysDir);
+  if ((0 == rc) && (strlen(sysDir) > 0)) {
+    rc = gdxGetReadyD (sysDir, msg, sizeof(msg));
+  }
+  else
+    sysDir[0] = '\0';
+  if (gdxLibraryLoaded())
+    return;                     /* nailed it */
+
   rc = gdxGetReady (msg, sizeof(msg));
   if (0 == rc) {
-    Rprintf ("Error loading the GDX API\n");
-    Rprintf ("%s\n", msg);
-    Rprintf ("Hint: try calling igdx() with the name of the GAMS system directory\n");
-    Rprintf ("      before calling this routine.\n");
-#if defined(_WIN32)
-    Rprintf ("      You can also add the GAMS system directory to the PATH.\n");
-#elif defined(__APPLE__)
-    Rprintf ("      You can also add the GAMS system directory to the PATH\n");
-    Rprintf ("      and to DYLD_LIBRARY_PATH.\n");
-#else
-    Rprintf ("      You can also add the GAMS system directory to the PATH\n");
-    Rprintf ("      and to LD_LIBRARY_PATH.\n");
-#endif
-    error ("Error loading the GDX API: %s", msg);
+    error ("Error loading the GDX API:"
+             " use igdx() to diagnose and solve the problem\n");
   }
   return;
 } /* loadGDX */

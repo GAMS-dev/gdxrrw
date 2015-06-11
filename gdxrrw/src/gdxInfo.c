@@ -48,8 +48,11 @@ val2str (gdxHandle_t h, double val, char *s)
 #define RETLIST_LEN   10
 
 /* the gateway routine for gdxInfo.
- * This is very similar to gdxdump: it prints everything on R command prompt.
-*/
+ * If dump=T, dump out the content of the GDX file to the session/screen,
+ * using a format similar to gdxdump.
+ * If not, return meta-information about the symbols in the GDX file,
+ * either as a list or in a data frame.
+ */
 SEXP
 gdxInfo (SEXP args)
 {
@@ -124,10 +127,7 @@ gdxInfo (SEXP args)
   /* first arg is function name - ignore it */
   arglen = length(args);
 
-  /* ----------------- Check proper number of inputs ------------
-   * Function should follow specification of
-   * gdxInfo ('gdxName',dump=LGLSXP)
-   * -----------------------------------------------------------------------*/
+  /* ----------------- Check the inputs ------------ */
   if (5 != arglen) {
     error ("usage: %s(gdxName=NULL, dump=TRUE, returnList=FALSE, returnDF=FALSE) - incorrect arg count", funcName);
   }
