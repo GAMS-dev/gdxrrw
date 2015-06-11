@@ -1584,21 +1584,20 @@ int
 getEnvVar (const char *evName, shortStringBuf_t evVal)
 {
 #if defined(_WIN32)
-  const char evName[] = "PATH";
   char *s;
   size_t len;
 
   evVal[0] = '\0';
   len = GetEnvironmentVariable (evName, NULL, 0);
   if (0 == len)
-    Rprintf ("%s is not set!\n", evName);
+    return 1;
   else {
     s = (char *) malloc(len);
     if (NULL == s)
-      Rprintf ("%s could not be read: malloc failure!\n", evName);
+      return 1;
     else {
       (void) GetEnvironmentVariable (evName, s, len);
-      Rprintf ("%s = %s\n", evName, s);
+      (void) CHAR2ShortStr (s, evVal);
       free(s);
     }
   }
@@ -1612,6 +1611,7 @@ getEnvVar (const char *evName, shortStringBuf_t evVal)
     return 1;                   /* not set */
   else
     (void) CHAR2ShortStr (s, evVal);
-  return 0;
 #endif
+
+  return 0;
 } /* getEnvVar */
