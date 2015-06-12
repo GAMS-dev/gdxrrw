@@ -46,11 +46,13 @@ and running GAMS.
 Before you can use any R package, you must load
 it.  The \rrw{} package also depends on the GDX shared libraries found
 in the GAMS system directory.  The \texttt{igdx} command is useful for
-controlling this linkage:
+setting and querying this linkage between \rrw{} and GAMS.  For
+example, the usage below checks for the GAMS system directory in the
+environment variable \texttt{R_GAMS_SYSDIR}.
 <<loadPackage>>=
 library(gdxrrw)
-# igdx('/path/to/GAMS/sysdir') if not taken from environment
-igdx()
+igdx('')
+if (! igdx(silent=T)) stop ('Could not load GDX API')
 @
 
 Our starting point is a modified version of the transport model from
@@ -58,6 +60,7 @@ the GAMS model library where all of the data inputs and outputs are
 done via GDX.  Running this model is easy:
 <<genData>>=
 gms <- system.file('doc','transport.gms',package='gdxrrw', mustWork=T)
+if (windows) gms <- gsub("/","\\\\",gms)
 ingdx <- system.file('doc','inputs.gdx',package='gdxrrw', mustWork=T)
 rc <- gams(paste0(gms, " --INPUT=", ingdx))
 @
@@ -90,7 +93,8 @@ to the original inputs, and verify that the solution with this data is unchanged
 wgdx.lst('intest',list(I,J,a,b,c))
 rc <- system2('gdxdiff', paste('intest.gdx', ingdx), stdout=F)
 if (0 != rc) stop ('gdxdiff says intest.gdx and inputs.gdx differ: rc = ',rc)
-gams(paste(gms, '--INPUT intest.gdx --OUTPUT outtest.gdx'))
+rc <- gams(paste(gms, '--INPUT intest.gdx --OUTPUT outtest.gdx'))
+if (0 != rc) stop ('gams failed: rc = ',rc)
 # system2('gams', 'transport.gms --INPUT intest.gdx --OUTPUT outtest.gdx')
 zlst <- rgdx('outputs.gdx',list(name='z'))
 z <- zlst$val
