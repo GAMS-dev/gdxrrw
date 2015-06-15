@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <strings.h>
 #include <math.h>
 #include <assert.h>
 
@@ -378,6 +379,27 @@ static void prefixPath (shortStringBuf_t pre)
   preLen = strlen (pre);
   if (0 == preLen)
     return;
+#if defined(_WIN32)
+  pthLen = GetEnvironmentVariable ("PATH", NULL, 0);
+  tmp = (char *) malloc (preLen + 1 + pthLen + 1);
+  if (NULL == tmp)
+    error ("malloc failure!!!");
+  strcpy (tmp, pre);
+  if (pthLen > 0) {             /* PATH was non-empty */
+    int tLen;
+    tmp[preLen] = ';';
+    tLen = GetEnvironmentVariable ("PATH", tmp + preLen + 1, pthLen);
+    if (tLen != (pthLen - 1))
+      error ("Error prefixing PATH");
+    /* now check unlikely case that pre was already the start of the PATH */
+    if (0 == strncasecmp (tmp+preLen+1, pre, preLen)) {
+      free (tmp);
+      return;
+    }
+  }
+  (void) SetEnvironmentVariable("PATH", tmp);
+  free (tmp);
+#else
   pth = getenv ("PATH");
   pthLen = 0;
   if (NULL != pth) {
@@ -399,7 +421,29 @@ static void prefixPath (shortStringBuf_t pre)
     tmp[preLen] = '\0';
   (void) setenv ("PATH", tmp, 1);
   free(tmp);
+#endif
 } /* prefixPath */
+
+/* remove one set of quotes from buf, either single or double
+ * assumes matching quotes are first/last chars of buf
+ */
+static void deQuote (shortStringBuf_t buf)
+{
+  size_t len;
+  int i;
+
+  len = strlen(buf);
+  if (len < 2)
+    return;
+  if (('\'' != buf[0]) && ('"' != buf[0]))
+    return;
+  if (buf[0] != buf[len-1])
+    return;
+  for (i = 0;  i < (int)len-2;  i++) {
+    buf[i] = buf[i+1];
+  }
+  buf[i] = '\0';
+} /* deQuote */
 
 
 /* gateway routine for igdx(gamsSysDir, silent, returnStr)
@@ -442,6 +486,7 @@ SEXP igdx (SEXP args)
   }
   gdxLoaded = gdxLibraryLoaded();
 
+  sysDir[0] = '\0';
   if (TYPEOF(sysDirExp) != NILSXP) { /* we should have gamsSysDir */
     if (TYPEOF(sysDirExp) != STRSXP) {
       error ("usage: %s(gamsSysDir, ...) - gamsSysDir must be a string", funcName);
@@ -449,6 +494,7 @@ SEXP igdx (SEXP args)
     sd1 = CHAR(STRING_ELT(sysDirExp, 0));
     sd2 = R_ExpandFileName(sd1); /* interpret ~ as home directory */
     (void) CHAR2ShortStr (sd2, sysDir);
+    deQuote (sysDir);
 
     if (gdxLoaded) {
       (void) gdxLibraryUnload ();
@@ -481,24 +527,25 @@ SEXP igdx (SEXP args)
           Rprintf ("Environment variable R_GAMS_SYSDIR not set:"
                    " no GDX API there\n");
       }
-      else if (0 == strlen(sysDir)) {
-        if (! isSilent) {
-          Rprintf ("Environment variable R_GAMS_SYSDIR is empty:"
-                   " no GDX API there\n");
-        }
-      }
       else {
-        rc = gdxGetReadyD (sysDir, msgBuf, sizeof(msgBuf));
-        if (! isSilent) {
-          if (0 == rc) {
-            Rprintf ("Error loading the GDX API from R_GAMS_SYSDIR=%s\n", sysDir);
-            Rprintf ("%s\n", msgBuf);
+        deQuote (sysDir);
+        if (0 == strlen(sysDir)) {
+          if (! isSilent) {
+            Rprintf ("Environment variable R_GAMS_SYSDIR is empty:"
+                     " no GDX API there\n");
           }
-          else
-            Rprintf ("GDX API loaded from R_GAMS_SYSDIR=%s\n", sysDir);
         }
-        Rprintf ("DEBUG: R_GAMS_SYSDIR=%s popping to PATH\n", sysDir);
-        prefixPath (sysDir);
+        else {
+          rc = gdxGetReadyD (sysDir, msgBuf, sizeof(msgBuf));
+          if (! isSilent) {
+            if (0 == rc) {
+              Rprintf ("Error loading the GDX API from R_GAMS_SYSDIR=%s\n", sysDir);
+              Rprintf ("%s\n", msgBuf);
+            }
+            else
+              Rprintf ("GDX API loaded from R_GAMS_SYSDIR=%s\n", sysDir);
+          }
+        }
       }
     } /* try R_GAMS_SYSDIR */
 
@@ -531,6 +578,14 @@ SEXP igdx (SEXP args)
   else {
     if (! isSilent)
       Rprintf ("The GDX library has not been loaded\n");
+  }
+
+  if (gdxLoaded && (TYPEOF(sysDirExp) != NILSXP)) {
+    /* we loaded the GDX API: also prefix the PATH */
+    if ('\0' != sysDir[0])
+      prefixPath (sysDir);
+    else if ('\0' != loadPath[0])
+      prefixPath (loadPath);
   }
 
   if (isReturnStr) {
