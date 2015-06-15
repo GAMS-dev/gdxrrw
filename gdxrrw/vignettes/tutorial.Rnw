@@ -55,9 +55,10 @@ igdx('')
 if (! igdx(silent=T)) stop ('Could not load GDX API')
 @
 
-Our starting point is a modified version of the transport model from
-the GAMS model library where all of the data inputs and outputs are
-done via GDX.  Running this model is easy:
+Our starting point is a basic transport model where all of the data
+inputs and outputs are done via GDX.  Running this model is easy once
+we figure out how to get it from the \texttt{doc} subdirectory of the
+package:
 <<genData>>=
 gms <- system.file('doc','transport.gms',package='gdxrrw', mustWork=T)
 isWindows <- ("mingw32" == R.Version()$os)
@@ -69,7 +70,7 @@ if (0 != rc) stop ('GAMS run failed: rc = ',rc)
 @
 
 For reference, we have included the GDX file \texttt{outputs.gdx}
-produced by the run above in the doc directory.
+produced by the run above in the \texttt{doc} directory.
 <<inCase>>=
 if (! file.exists('outputs.gdx')) {
   ogdx <- system.file('doc','outputs.gdx',package='gdxrrw', mustWork=T)
