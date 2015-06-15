@@ -368,6 +368,39 @@ SEXP gams (SEXP args)
   return result;
 } /* gams */
 
+/* prefix the PATH with arg pre, if not already there in front */
+static void prefixPath (shortStringBuf_t pre)
+{
+  const char *pth;
+  char *tmp;
+  size_t pthLen, preLen;
+
+  preLen = strlen (pre);
+  if (0 == preLen)
+    return;
+  pth = getenv ("PATH");
+  pthLen = 0;
+  if (NULL != pth) {
+    pthLen = strlen (pth);
+    if (0 == strncmp (pth, pre, preLen)) {
+      return;
+    }
+  }
+  tmp = (char *) malloc (preLen + 1 + pthLen + 1);
+  if (NULL == tmp)
+    error ("malloc failure!!!");
+  memcpy (tmp, pre, preLen);
+  if (pthLen > 0) {
+    tmp[preLen] = ':';
+    memcpy (tmp+preLen+1, pth, pthLen);
+    tmp[preLen+1+pthLen] = '\0';
+  }
+  else
+    tmp[preLen] = '\0';
+  (void) setenv ("PATH", tmp, 1);
+  free(tmp);
+} /* prefixPath */
+
 
 /* gateway routine for igdx(gamsSysDir, silent, returnStr)
  * If gamsSysDir==NULL, print usage information and current state of GDX loading
@@ -464,6 +497,8 @@ SEXP igdx (SEXP args)
           else
             Rprintf ("GDX API loaded from R_GAMS_SYSDIR=%s\n", sysDir);
         }
+        Rprintf ("DEBUG: R_GAMS_SYSDIR=%s popping to PATH\n", sysDir);
+        prefixPath (sysDir);
       }
     } /* try R_GAMS_SYSDIR */
 
