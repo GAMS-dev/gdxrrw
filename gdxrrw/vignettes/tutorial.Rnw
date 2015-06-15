@@ -30,10 +30,10 @@
 In this tutorial introduction to \rrw{} we carry out a small modeling
 exercise.  We consider a common use case in which one starts with a
 self-contained, fully-functional GAMS model that reads from and writes
-to GDX.  This model will run in the same way whether run in or
-independently from R.  Without changing the model source, can control
-the model behavior by passing it different commands and by giving it
-different data sources.
+to GDX.  The GAMS source for the model is not R-specific; it works
+equally well with or independently of R.  Without changing the model
+source, we can control the model behavior by passing it flags that
+control the GDX data input and output used.
 
 It's worth noting that this tutorial assumes the user is familar with
 GAMS and to a lesser extent with R.
@@ -48,7 +48,7 @@ it.  The \rrw{} package also depends on the GDX shared libraries found
 in the GAMS system directory.  The \texttt{igdx} command is useful for
 setting and querying this linkage between \rrw{} and GAMS.  For
 example, the usage below checks for the GAMS system directory in the
-environment variable \texttt{R_GAMS_SYSDIR}.
+environment variable \texttt{R\_GAMS\_SYSDIR}.
 <<loadPackage>>=
 library(gdxrrw)
 igdx('')
