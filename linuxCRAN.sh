@@ -1,5 +1,8 @@
 #!/bin/bash
 
+xtra=`svn st --no-ignore | wc -l`
+[ "0" = "$xtra" ] || { echo "unversioned files found!!" ; exit ; }
+
 cmd="R CMD build gdxrrw"
 eval $cmd || { rc=$? ; echo "failed cmd: $cmd" ; echo "rc=$rc" ; exit ; }
 
