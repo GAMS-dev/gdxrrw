@@ -60,7 +60,8 @@ the GAMS model library where all of the data inputs and outputs are
 done via GDX.  Running this model is easy:
 <<genData>>=
 gms <- system.file('doc','transport.gms',package='gdxrrw', mustWork=T)
-if (windows) gms <- gsub("/","\\\\",gms)
+isWindows <- ("mingw32" == R.Version()$os)
+if (isWindows) gms <- gsub("/","\\",gms,fixed=TRUE)
 ingdx <- system.file('doc','inputs.gdx',package='gdxrrw', mustWork=T)
 rc <- gams(paste0(gms, " --INPUT=", ingdx))
 @
