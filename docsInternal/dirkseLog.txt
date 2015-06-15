@@ -2,7 +2,8 @@ Some helpful commands:
 assume $rrw is the dir containing the package tree, i.e. the gdxrrw
 directory, or https://svn.gams.com/source/share/gdxrrw in our case.
 
-================ Linux (ike, 64-bit Redhat) ================
+
+=================== Linux (ike, 64-bit Redhat) ==============================
 Typically we start with
   gg2 alpha ; gup ; gll  (to put a GAMS sysdir in the PATH)
 OR
@@ -13,10 +14,8 @@ R CMD INSTALL gdxrrw
 R CMD REMOVE gdxrrw  {to remove, or undo an install}
 R CMD check gdxrrw
 
-# with R 2.14, R CMD build cannot be used for making binaries, instead
-# do:
+# to make a binary distribution, do:
 R CMD INSTALL gdxrrw --build
-# to create the binary gdxrrw_X.Y.Z_R_x86_64-redhat-linux-gnu.tar.gz
 
 # to build and check locally
 R CMD check gdxrrw ; echo "check rc = $?"
@@ -24,13 +23,7 @@ R CMD check gdxrrw ; echo "check rc = $?"
 # this command creates a source distribution: gdxrrw_X.Y.Z.tar.gz
 R CMD build gdxrrw
 
--- unneeded/old stuff
-# R CMD INSTALL -l ~/R/x86_64-redhat-linux-gnu-library/2.13 gdxrrw  no -l needed
-# --binary flag no longer supported
-# R CMD build gdxrrw --binary {what we want to avoid user compiling}
-
-
-======== Windows (beale, Steve's 64-bit Windows 8 Dell laptop) ========
+=========== Windows (beale, Steve's 64-bit Windows 8 Dell laptop) ===========
 # do these from a normal command prompt, not one started from the
 # Visual Studio menu.
 
@@ -40,11 +33,6 @@ R --no-init-file CMD INSTALL gdxrrw
 R CMD REMOVE  gdxrrw    {to remove, or undo an install}
 R CMD INSTALL gdxrrw --build  {binary package gdxrrw_X.Y.Z.zip for distribution}
 R CMD build gdxrrw            {source package gdxrrw_X.Y.Z.tar.gz for distribution}
-
-# ##  with .libPaths() set to include C:\\R\\2.12 the -l flag is not necessary
-# ## R CMD INSTALL -l C:\R\2.12 gdxrrw
-# ## R CMD REMOVE  -l C:\R\2.12 gdxrrw  {to remove, or undo an install}
-
 
 
 ================ Mac OSX (what Mac machine will we use?) ================
@@ -57,8 +45,6 @@ single-arch compilers.
 R CMD INSTALL gdxrrw
 R CMD INSTALL gdxrrw --build
 R CMD build gdxrrw && R CMD check gdxrrw_X.Y.Z.tar.gz ; echo "check rc = $?"
-
-# R CMD INSTALL -l ~/Library/R/2.13/library gdxrrw #  no need to set -l
 
 
 ================ Misc ================
