@@ -63,7 +63,9 @@ gms <- system.file('doc','transport.gms',package='gdxrrw', mustWork=T)
 isWindows <- ("mingw32" == R.Version()$os)
 if (isWindows) gms <- gsub("/","\\",gms,fixed=TRUE)
 ingdx <- system.file('doc','inputs.gdx',package='gdxrrw', mustWork=T)
+if (isWindows) ingdx <- gsub("/","\\",ingdx,fixed=TRUE)
 rc <- gams(paste0(gms, " --INPUT=", ingdx))
+if (0 != rc) stop ('GAMS run failed: rc = ',rc)
 @
 
 For reference, we have included the GDX file \texttt{outputs.gdx}
@@ -172,12 +174,12 @@ print(paste('Model status:',ms))
 
 \section{Abnormal Results}
 
-Things often fail to go as planned.  A GAMS run indicates this with a
-nonzero return code.  For example, we could point to a non-existent
-GDX input:
+Things often fail to go as planned.  In many cases, this is indicated
+by a nonzero return code from a GAMS run.  For example, we could point
+to a non-existent GDX input:
 <<missingGDX>>=
 rc <- gams('transport --INPUT notHere')
-if (0 == rc) print ("normal gams return") else print ("abnormal gams return")
+if (0 == rc) print ("SHOULD NOT GET HERE") else print ("abnormal gams return as expected")
 @
 
 Another case to consider is an infeasible model.  This is not an
@@ -192,8 +194,7 @@ a2[rows,2] <- a2[rows,2] - 100
 wgdx.lst('inInf',list(I,J,a2,b,c))
 gams(paste(gms,'--INPUT inInf.gdx --OUTPUT outInf.gdx'))
 ms <- rgdx.scalar('outInf.gdx','modelStat')
-if (4 == ms) print ("The model is infeasible")
+if (4 == ms) print ("Reduced supply makes model infeasible")
 @
 
 \end{document}
- 
