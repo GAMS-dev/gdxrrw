@@ -800,14 +800,16 @@ libloader(const char *dllPath, const char *dllName, char *msgBuf, int msgBufSize
   if (! isLoaded) {
     if (NULL != dllPath && '\0' != *dllPath) {
       strncpy(dllNameBuf, dllPath, sizeof(dllNameBuf)-1);
-      dllNameBuf[sizeof(dllNameBuf)-2] = '\0';
+      dllNameBuf[sizeof(dllNameBuf)-1] = '\0';
+      if ('\0' == dllNameBuf[sizeof(dllNameBuf)-2]) {
 #if defined(_WIN32)
-      if ('\\' != dllNameBuf[strlen(dllNameBuf)])
-        strcat(dllNameBuf,"\\");
+        if ('\\' != dllNameBuf[strlen(dllNameBuf)])
+          strcat(dllNameBuf,"\\");
 #else
-      if ('/' != dllNameBuf[strlen(dllNameBuf)])
-        strcat(dllNameBuf,"/");
+        if ('/' != dllNameBuf[strlen(dllNameBuf)])
+          strcat(dllNameBuf,"/");
 #endif
+      }
     }
     else {
       dllNameBuf[0] = '\0';
