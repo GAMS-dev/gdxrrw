@@ -813,13 +813,15 @@ libloader(const char *dllPath, const char *dllName, char *msgBuf, int msgBufSize
       dllNameBuf[0] = '\0';
     }
     if (NULL != dllName && '\0' != *dllName) {
-      strncat(dllNameBuf, dllName, sizeof(dllNameBuf)-strlen(dllNameBuf));
-      dllNameBuf[sizeof(dllNameBuf)-1] = '\0';
+      strncat(dllNameBuf, dllName, sizeof(dllNameBuf)-strlen(dllNameBuf)-1);
     }
     else {
-      strncat(dllNameBuf, GMS_DLL_PREFIX GMS_DLL_BASENAME, sizeof(dllNameBuf)-strlen(dllNameBuf));
-      strncat(dllNameBuf, gms_dll_suffix                 , sizeof(dllNameBuf)-strlen(dllNameBuf));
-      strncat(dllNameBuf, GMS_DLL_EXTENSION              , sizeof(dllNameBuf)-strlen(dllNameBuf));
+      strncat(dllNameBuf, GMS_DLL_PREFIX GMS_DLL_BASENAME,
+	      sizeof(dllNameBuf)-strlen(dllNameBuf)-1);
+      strncat(dllNameBuf, gms_dll_suffix,
+	      sizeof(dllNameBuf)-strlen(dllNameBuf)-1);
+      strncat(dllNameBuf, GMS_DLL_EXTENSION,
+	      sizeof(dllNameBuf)-strlen(dllNameBuf)-1);
     }
     isLoaded = ! XLibraryLoad (dllNameBuf, msgBuf, msgBufSize);
     if (isLoaded) {
