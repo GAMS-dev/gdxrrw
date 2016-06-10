@@ -309,7 +309,7 @@ mkHPFilter (SEXP uFilter, hpFilter_t *hpf)
     /* Rprintf ("       k = %2d:  %s  %d  %d\n", k, uelString, uelInt, dummy); */
     if (! found) {                /* not found */
       allFound = 0;
-      isOrdered = 0;            /* for now insist all are found to be ordered */
+      isOrdered = allFound; /* for now insist all are found to be ordered */
     }
     else if (isOrdered) {
       if (uelInt > lastUelInt)

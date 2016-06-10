@@ -740,6 +740,7 @@ createUelOut(SEXP val, SEXP uelOut, dType_t dType, dForm_t dForm)
   } /* if sparse .. else .. */
 } /* createUelOut */
 
+#if 0                         /* used for debugging */
 /* dumpUELs: dump the strings in sVecVec
  * sVecVec is the UEL info for one symbol: a vector of string vectors,
  * one string vector for each symbol dimension
@@ -768,6 +769,7 @@ dumpUELs (SEXP sVecVec, wSpec_t *wSpec)
     }
   }
 } /* dumpUELs */
+#endif
 
 /* registerInputUEL: take the UEL strings in sVecVec and register them,
  * in the process storing their GDX indices in uelIndex[kk]

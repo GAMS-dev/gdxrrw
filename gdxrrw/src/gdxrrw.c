@@ -372,7 +372,9 @@ SEXP gams (SEXP args)
 /* prefix the PATH with arg pre, if not already there in front */
 static void prefixPath (shortStringBuf_t pre)
 {
+#if ! defined(_WIN32)
   const char *pth;
+#endif
   char *tmp;
   size_t pthLen, preLen;
 
