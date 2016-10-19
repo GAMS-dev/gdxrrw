@@ -38,6 +38,7 @@ tests <- c(
     "tWriteSetText", "tWriteSetTextDF",
     "tWriteLst",
     "tWriteSV",
+    "tWriteFromTbl",
     "tWriteEquTypes",
     "tWriteVarField", "tWriteVarSort", "tWriteVarOrder",
     "tWriteVarTypesSparse", "tWriteVarFUels",
