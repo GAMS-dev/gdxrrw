@@ -376,19 +376,19 @@ processDF <- function(df, msg)
   uels <- c()
   if (! isSet) {
     v <- matrix(0, nrow=nr, ncol=symDim+1)
-    v[,symDim+1] <- df[,symDim+1]
+    v[,symDim+1] <- df[[symDim+1]]
   } else {
     v <- matrix(0, nrow=nr, ncol=symDim)
   }
   for (j in c(1:symDim)) {
-    v[,j] <- as.numeric(df[,j])
-    uels <- c(uels,list(levels(df[,j])))
+    v[,j] <- as.numeric(df[[j]])
+    uels <- c(uels,list(levels(df[[j]])))
   }
   o$val <- v
   o$uels <- uels
   if (haveTe) {
     # warning ("(",msg,")[[", symDim+1, "]] is ignored set text")
-    o$te <- df[,(symDim+1)]
+    o$te <- df[[(symDim+1)]]
   }
   o
 } # processDF
