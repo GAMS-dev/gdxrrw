@@ -3,7 +3,10 @@
 #### wanted lists can be produced with    dump("listName",file="")
 
 if (! require(gdxrrw))      stop ("gdxrrw package is not available")
-if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
+
+# this test is good to run prior to any GDX library being loaded,
+# since it tests a bug that is turfed up in that case
+# if (0 == igdx(silent=TRUE)) stop ("the gdx shared library has not been loaded")
 
 source ("chkSame.R")
 reqIdent <- TRUE
