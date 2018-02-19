@@ -112,16 +112,20 @@ chkRgdxDF <- function(f1, f2, reqIdent=TRUE) {
     if (is.factor(fc1)) {
       if (! is.factor(fc2))   return (mb(paste("column", j,"is.factor mismatch")))
       if (nlevels(fc1) != nlevels(fc2)) return (mb(paste("column", j,"nlevels mismatch")))
-      lvl1 <- levels(fc1)
-      lvl2 <- levels(fc2)
-      for (k in c(1:nlevels(fc1))) {
-        if (! identical(lvl1[[k]], lvl2[[k]]))  return (mb(paste("column", j,"level",k,"mismatch")))
+      if (nlevels(fc1) > 0) {
+        lvl1 <- levels(fc1)
+        lvl2 <- levels(fc2)
+        for (k in c(1:nlevels(fc1))) {
+          if (! identical(lvl1[[k]], lvl2[[k]]))  return (mb(paste("column", j,"level",k,"mismatch")))
+        }
       }
       if (length(fc1) != length(fc2))   return (mb(paste("column", j,"length mismatch")))
-      iv1 <- as.integer(fc1)
-      iv2 <- as.integer(fc2)
-      for (k in c(1:length(fc1))) {
-        if (iv1[[k]] != iv2[[k]]) return (mb(paste("column", j,"item",k,"mismatch")))
+      if (length(fc1) > 0) {
+        iv1 <- as.integer(fc1)
+        iv2 <- as.integer(fc2)
+        for (k in c(1:length(fc1))) {
+          if (iv1[[k]] != iv2[[k]]) return (mb(paste("column", j,"item",k,"mismatch")))
+        }
       }
     }
     else if (is.vector(fc1)) {
