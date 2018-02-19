@@ -35,6 +35,7 @@ tests <- c(
     "tReadEqu",
     "tReadDFNames",
     "tReadCompr",
+    "tReadEmpty",
     "tWriteSparse1", "tWriteSparse2", "tWriteFull1", "tWriteFull2",
     "tWriteSetText", "tWriteSetTextDF",
     "tWriteLst",
