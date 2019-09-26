@@ -1,8 +1,8 @@
 Package: gdxrrw
 Title: An Interface Between 'GAMS' and R
-Version: 1.0.4
+Version: 1.0.5
 Depends: R (>= 2.14)
-Date: 2018-02-19
+Date: 2019-09-26
 SystemRequirements: GAMS (>= 24.2.1)
 Authors@R: c(person("Steve","Dirkse", role=c("aut","cre"),
 	             email="R@gams.com"),
@@ -15,6 +15,6 @@ Description: A data interface between 'GAMS' and R.  The 'GAMS'
   transfer data between 'GDX' and R, and some related utility
   functions.
 URL: http://www.gams.com
-License: EPL
+License: EPL2 with Secondary License GPL-2.0 or greater
 Imports: reshape2
 LazyData: no
