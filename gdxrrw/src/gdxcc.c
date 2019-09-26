@@ -593,6 +593,7 @@ static int
 XLibraryLoad (const char *dllName, char *errBuf, int errBufSize)
 {
   char *errMsg;
+  char checkMsg[256];
   const char *symName;
   int rc, elen, cl;
   char *ebuf;
@@ -633,8 +634,8 @@ XLibraryLoad (const char *dllName, char *errBuf, int errBufSize)
   LOADIT_ERR_OK(gdxSetLoadPath, "CgdxSetLoadPath");
   LOADIT_ERR_OK(gdxGetLoadPath, "CgdxGetLoadPath");
 #define CheckAndLoad(f,nargs,prefix) \
-  if (!XCheck(#f,nargs,s,errBuf)) \
-    {f = &d_##f; goto symMissing;} \
+  if (!XCheck(#f,nargs,s,checkMsg)) \
+    {symName=prefix #f;  errMsg=checkMsg;  goto symMissing;} \
   else { \
     LOADIT(f,prefix #f); \
   }
