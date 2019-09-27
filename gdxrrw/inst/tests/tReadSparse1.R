@@ -155,7 +155,7 @@ tryCatch({
                 domains=c("i","j"),
                 domInfo="full",
                 field="l",
-                varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx('trnsport',list(name='x'))
   chk <- chkRgdxRes (x, xwant, reqIdent=reqIdent)
   if (!chk$same) {
@@ -199,7 +199,7 @@ tryCatch({
                  domains=c("i","j","_field"),
                  domInfo="full",
                  field="all",
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx('trnsport',list(name='x',field='all'))
   # the marginals are not bit-exact, so not identical
   chk <- chkRgdxRes (x, xwantA, reqIdent=F)
@@ -215,7 +215,7 @@ tryCatch({
                 domains=character(0),
                 domInfo='NA',
                 field="l",
-                varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx('trnsport',list(name='z'))
   chk <- chkRgdxRes (z, zwant, reqIdent=reqIdent)
   if (!chk$same) {
@@ -234,7 +234,7 @@ tryCatch({
                  domains=c('_field'),
                  domInfo="NA",
                  field="all",
-                 varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                 varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx('trnsport',list(name='z',field='all'))
   chk <- chkRgdxRes (z, zwantA, reqIdent=reqIdent)
   if (!chk$same) {

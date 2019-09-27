@@ -90,7 +90,7 @@ tryCatch({
                  uels=list(iUels,jUels,kUels,fields),
                  domains=domainsf, domInfo="full",
                  field='all',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='sparse',field='alL'))
   chk <- chkRgdxRes (x, xwantA, reqIdent=reqIdent)
   if (!chk$same) {
@@ -114,7 +114,7 @@ tryCatch({
                  uels=list(iUels,jUels,kUels),
                  domains=domains, domInfo="full",
                  field='l',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='sparse',field='L'))
   chk <- chkRgdxRes (x, xwantL, reqIdent=reqIdent)
   if (!chk$same) {
@@ -141,7 +141,7 @@ tryCatch({
                  uels=list(iUels,jUels,kUels),
                  domains=domains, domInfo="full",
                  field='m',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='sparse',field='M'))
   chk <- chkRgdxRes (x, xwantM, reqIdent=reqIdent)
   if (!chk$same) {
@@ -170,7 +170,7 @@ tryCatch({
                   uels=list(iUels,jUels,kUels),
                   domains=domains, domInfo="full",
                   field='lo',
-                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                  varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='sparse',field='lo'))
   chk <- chkRgdxRes (x, xwantLo, reqIdent=reqIdent)
   if (!chk$same) {
@@ -198,7 +198,7 @@ tryCatch({
                   uels=list(iUels,jUels,kUels),
                   domains=domains, domInfo="full",
                   field='up',
-                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                  varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='sparse',field='up'))
   chk <- chkRgdxRes (x, xwantUp, reqIdent=reqIdent)
   if (!chk$same) {
@@ -224,7 +224,7 @@ tryCatch({
                  uels=list(iUels,jUels,kUels),
                  domains=domains, domInfo="full",
                  field='s',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='sparse',field='s'))
   chk <- chkRgdxRes (x, xwantS, reqIdent=reqIdent)
   if (!chk$same) {
@@ -275,7 +275,7 @@ tryCatch({
                  uels=list(f[[1]],f[[2]],f[[3]],fields),
                  domains=domainsf, domInfo="filtered",
                  field='all',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='sparse',uels=f,field='all'))
   chk <- chkRgdxRes (x, xwantA, reqIdent=reqIdent)
   if (!chk$same) {
@@ -296,7 +296,7 @@ tryCatch({
                  form="sparse",
                  uels=f, domains=domains, domInfo="filtered",
                  field='l',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='sparse',uels=f))
   chk <- chkRgdxRes (x, xwantL, reqIdent=reqIdent)
   if (!chk$same) {
@@ -315,7 +315,7 @@ tryCatch({
                  form="sparse",
                  uels=f, domains=domains, domInfo="filtered",
                  field='m',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='sparse',uels=f,field='M'))
   chk <- chkRgdxRes (x, xwantM, reqIdent=reqIdent)
   if (!chk$same) {
@@ -344,7 +344,7 @@ tryCatch({
                   form="sparse",
                   uels=f, domains=domains, domInfo="filtered",
                   field='lo',
-                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                  varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='sparse',uels=f,field='lo'))
   chk <- chkRgdxRes (x, xwantLo, reqIdent=reqIdent)
   if (!chk$same) {
@@ -368,7 +368,7 @@ tryCatch({
                   form="sparse",
                   uels=f, domains=domains, domInfo="filtered",
                   field='up',
-                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                  varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='sparse',uels=f,field='UP'))
   chk <- chkRgdxRes (x, xwantUp, reqIdent=reqIdent)
   if (!chk$same) {
@@ -394,7 +394,7 @@ tryCatch({
                  form="sparse",
                  uels=f, domains=domains, domInfo="filtered",
                  field='s',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='sparse',field='S',uels=f))
   chk <- chkRgdxRes (x, xwantS, reqIdent=reqIdent)
   if (!chk$same) {
@@ -439,7 +439,7 @@ tryCatch({
                  uels=cartfN,
                  domains=domainsf, domInfo="full",
                  field='all',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',field='all'))
   chk <- chkRgdxRes (x, xwantA, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -466,7 +466,7 @@ tryCatch({
                  uels=cartN,
                  domains=domains, domInfo="full",
                  field='l',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full'))
   chk <- chkRgdxRes (x, xwantL, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -487,7 +487,7 @@ tryCatch({
                  uels=cartN,
                  domains=domains, domInfo="full",
                  field='m',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',field='m'))
   chk <- chkRgdxRes (x, xwantM, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -509,7 +509,7 @@ tryCatch({
                   uels=cartN,
                   domains=domains, domInfo="full",
                   field='lo',
-                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                  varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',field='lo'))
   chk <- chkRgdxRes (x, xwantLo, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -530,7 +530,7 @@ tryCatch({
                   form="full",
                   uels=cartN, domains=domains, domInfo="full",
                   field='up',
-                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                  varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',field='up'))
   chk <- chkRgdxRes (x, xwantUp, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -550,7 +550,7 @@ tryCatch({
                  uels=cartN,
                  domains=domains, domInfo="full",
                  field='s',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',field='s'))
   chk <- chkRgdxRes (x, xwantS, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -583,7 +583,7 @@ tryCatch({
                  uels=dnames,
                  domains=domainsf, domInfo="filtered",
                  field='all',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',field='all',uels=f))
   chk <- chkRgdxRes (x, xwantA, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -609,7 +609,7 @@ tryCatch({
                  form="full",
                  uels=dnames, domains=domains, domInfo="filtered",
                  field='l',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',uels=f))
   chk <- chkRgdxRes (x, xwantL, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -630,7 +630,7 @@ tryCatch({
                  form="full",
                  uels=dnames, domains=domains, domInfo="filtered",
                  field='m',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',uels=f,field='M'))
   chk <- chkRgdxRes (x, xwantM, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -653,7 +653,7 @@ tryCatch({
                   form="full",
                   uels=dnames, domains=domains, domInfo="filtered",
                   field='lo',
-                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                  varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',uels=f,field='lo'))
   chk <- chkRgdxRes (x, xwantLo, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -676,7 +676,7 @@ tryCatch({
                   form="full",
                   uels=dnames, domains=domains, domInfo="filtered",
                   field='up',
-                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                  varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',uels=f,field='up'))
   chk <- chkRgdxRes (x, xwantUp, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -697,7 +697,7 @@ tryCatch({
                  form="full",
                  uels=dnames, domains=domains, domInfo="filtered",
                  field='s',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='x',form='full',uels=f,field='s'))
   chk <- chkRgdxRes (x, xwantS, T, reqIdent=reqIdent)
   if (!chk$same) {

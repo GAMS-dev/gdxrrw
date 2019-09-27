@@ -40,7 +40,7 @@ tryCatch({
                  form='sparse', uels=list(fields),
                  domains=userDomf, domInfo="NA",
                  field='all',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',field='all'))
   chk <- chkRgdxRes (x, xwantA, reqIdent=reqIdent)
   if (!chk$same) {
@@ -62,7 +62,7 @@ tryCatch({
                  form='sparse', uels=list(fields),
                  domains=userDomf, domInfo="NA",
                  field='all',
-                 varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                 varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',field='alL'))
   chk <- chkRgdxRes (y, ywantA, reqIdent=reqIdent)
   if (!chk$same) {
@@ -84,7 +84,7 @@ tryCatch({
                  form='sparse', uels=list(fields),
                  domains=userDomf, domInfo="NA",
                  field='all',
-                 varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                 varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',field='all'))
   chk <- chkRgdxRes (z, zwantA, reqIdent=reqIdent)
   if (!chk$same) {
@@ -101,7 +101,7 @@ tryCatch({
                  form='sparse', uels=list(),
                  domains=character(0), domInfo="NA",
                  field='l',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',field='L'))
   chk <- chkRgdxRes (x, xwantL, reqIdent=reqIdent)
   if (!chk$same) {
@@ -117,7 +117,7 @@ tryCatch({
                  form='sparse', uels=list(),
                  domains=character(0), domInfo="NA",
                  field='l',
-                 varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                 varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',field='L'))
   chk <- chkRgdxRes (y, ywantL, reqIdent=reqIdent)
   if (!chk$same) {
@@ -133,7 +133,7 @@ tryCatch({
                  form='sparse', uels=list(),
                  domains=character(0), domInfo="NA",
                  field='l',
-                 varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                 varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',field='L'))
   chk <- chkRgdxRes (z, zwantL, reqIdent=reqIdent)
   if (!chk$same) {
@@ -150,7 +150,7 @@ tryCatch({
                  form='sparse', uels=list(),
                  domains=character(0), domInfo="NA",
                  field='m',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',field='M'))
   chk <- chkRgdxRes (x, xwantM, reqIdent=reqIdent)
   if (!chk$same) {
@@ -166,7 +166,7 @@ tryCatch({
                  form='sparse', uels=list(),
                  domains=character(0), domInfo="NA",
                  field='m',
-                 varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                 varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',field='M'))
   chk <- chkRgdxRes (y, ywantM, reqIdent=reqIdent)
   if (!chk$same) {
@@ -182,7 +182,7 @@ tryCatch({
                  form='sparse', uels=list(),
                  domains=character(0), domInfo="NA",
                  field='m',
-                 varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                 varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',field='M'))
   chk <- chkRgdxRes (z, zwantM, reqIdent=reqIdent)
   if (!chk$same) {
@@ -200,7 +200,7 @@ tryCatch({
                   form='sparse', uels=list(),
                   domains=character(0), domInfo="NA",
                   field='lo',
-                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                  varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',field='lo'))
   chk <- chkRgdxRes (x, xwantLo, reqIdent=reqIdent)
   if (!chk$same) {
@@ -217,7 +217,7 @@ tryCatch({
                   form='sparse', uels=list(),
                   domains=character(0), domInfo="NA",
                   field='lo',
-                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                  varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',field='lo'))
   chk <- chkRgdxRes (y, ywantLo, reqIdent=reqIdent)
   if (!chk$same) {
@@ -233,7 +233,7 @@ tryCatch({
                   form='sparse', uels=list(),
                   domains=character(0), domInfo="NA",
                   field='lo',
-                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                  varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',field='lo'))
   chk <- chkRgdxRes (z, zwantLo, reqIdent=reqIdent)
   if (!chk$same) {
@@ -251,7 +251,7 @@ tryCatch({
                   form='sparse', uels=list(),
                   domains=character(0), domInfo="NA",
                   field='up',
-                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                  varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',field='up'))
   chk <- chkRgdxRes (x, xwantUp, reqIdent=reqIdent)
   if (!chk$same) {
@@ -267,7 +267,7 @@ tryCatch({
                   form='sparse', uels=list(),
                   domains=character(0), domInfo="NA",
                   field='up',
-                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                  varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',field='up'))
   chk <- chkRgdxRes (y, ywantUp, reqIdent=reqIdent)
   if (!chk$same) {
@@ -284,7 +284,7 @@ tryCatch({
                   form='sparse', uels=list(),
                   domains=character(0), domInfo="NA",
                   field='up',
-                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                  varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',field='up'))
   chk <- chkRgdxRes (z, zwantUp, reqIdent=reqIdent)
   if (!chk$same) {
@@ -302,7 +302,7 @@ tryCatch({
                  form='sparse', uels=list(),
                  domains=character(0), domInfo="NA",
                  field='s',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',field='s'))
   chk <- chkRgdxRes (x, xwantS, reqIdent=reqIdent)
   if (!chk$same) {
@@ -318,7 +318,7 @@ tryCatch({
                  form='sparse', uels=list(),
                  domains=character(0), domInfo="NA",
                  field='s',
-                 varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                 varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',field='s'))
   chk <- chkRgdxRes (y, ywantS, reqIdent=reqIdent)
   if (!chk$same) {
@@ -335,7 +335,7 @@ tryCatch({
                  form='sparse', uels=list(),
                  domains=character(0), domInfo="NA",
                  field='s',
-                 varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                 varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',field='s'))
   chk <- chkRgdxRes (z, zwantS, reqIdent=reqIdent)
   if (!chk$same) {
@@ -362,7 +362,7 @@ tryCatch({
                  form='sparse', uels=list(fields),
                  domains=userDomf, domInfo="filtered",
                  field='all',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',uels=f,field='all'))
   chk <- chkRgdxRes (x, xwantA, reqIdent=reqIdent)
   if (!chk$same) {
@@ -379,7 +379,7 @@ tryCatch({
                  form='sparse', uels=f,
                  domains=character(0), domInfo="filtered",
                  field='l',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',uels=f))
   chk <- chkRgdxRes (x, xwantL, reqIdent=reqIdent)
   if (!chk$same) {
@@ -395,7 +395,7 @@ tryCatch({
                  form='sparse', uels=f,
                  domains=character(0), domInfo="filtered",
                  field='l',
-                 varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                 varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',uels=f))
   chk <- chkRgdxRes (y, ywantL, reqIdent=reqIdent)
   if (!chk$same) {
@@ -411,7 +411,7 @@ tryCatch({
                  form='sparse', uels=f,
                  domains=character(0), domInfo="filtered",
                  field='l',
-                 varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                 varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',uels=f))
   chk <- chkRgdxRes (z, zwantL, reqIdent=reqIdent)
   if (!chk$same) {
@@ -428,7 +428,7 @@ tryCatch({
                  form='sparse', uels=f,
                  domains=character(0), domInfo="filtered",
                  field='m',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',uels=f,field='M'))
   chk <- chkRgdxRes (x, xwantM, reqIdent=reqIdent)
   if (!chk$same) {
@@ -444,7 +444,7 @@ tryCatch({
                  form='sparse', uels=f,
                  domains=character(0), domInfo="filtered",
                  field='m',
-                 varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                 varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',uels=f,field='M'))
   chk <- chkRgdxRes (y, ywantM, reqIdent=reqIdent)
   if (!chk$same) {
@@ -460,7 +460,7 @@ tryCatch({
                  form='sparse', uels=f,
                  domains=character(0), domInfo="filtered",
                  field='m',
-                 varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                 varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',uels=f,field='M'))
   chk <- chkRgdxRes (z, zwantM, reqIdent=reqIdent)
   if (!chk$same) {
@@ -478,7 +478,7 @@ tryCatch({
                   form='sparse', uels=f,
                   domains=character(0), domInfo="filtered",
                   field='lo',
-                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                  varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',uels=f,field='lo'))
   chk <- chkRgdxRes (x, xwantLo, reqIdent=reqIdent)
   if (!chk$same) {
@@ -495,7 +495,7 @@ tryCatch({
                   form='sparse', uels=f,
                   domains=character(0), domInfo="filtered",
                   field='lo',
-                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                  varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',uels=f,field='lo'))
   chk <- chkRgdxRes (y, ywantLo, reqIdent=reqIdent)
   if (!chk$same) {
@@ -511,7 +511,7 @@ tryCatch({
                   form='sparse', uels=f,
                   domains=character(0), domInfo="filtered",
                   field='lo',
-                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                  varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',uels=f,field='lo'))
   chk <- chkRgdxRes (z, zwantLo, reqIdent=reqIdent)
   if (!chk$same) {
@@ -529,7 +529,7 @@ tryCatch({
                   form='sparse', uels=f,
                   domains=character(0), domInfo="filtered",
                   field='up',
-                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                  varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',uels=f,field='UP'))
   chk <- chkRgdxRes (x, xwantUp, reqIdent=reqIdent)
   if (!chk$same) {
@@ -545,7 +545,7 @@ tryCatch({
                   form='sparse', uels=f,
                   domains=character(0), domInfo="filtered",
                   field='up',
-                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                  varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',uels=f,field='UP'))
   chk <- chkRgdxRes (y, ywantUp, reqIdent=reqIdent)
   if (!chk$same) {
@@ -562,7 +562,7 @@ tryCatch({
                   form='sparse', uels=f,
                   domains=character(0), domInfo="filtered",
                   field='up',
-                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                  varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',uels=f,field='UP'))
   chk <- chkRgdxRes (z, zwantUp, reqIdent=reqIdent)
   if (!chk$same) {
@@ -580,7 +580,7 @@ tryCatch({
                  form='sparse', uels=f,
                  domains=character(0), domInfo="filtered",
                  field='s',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='sparse',field='S',uels=f))
   chk <- chkRgdxRes (x, xwantS, reqIdent=reqIdent)
   if (!chk$same) {
@@ -596,7 +596,7 @@ tryCatch({
                  form='sparse', uels=f,
                  domains=character(0), domInfo="filtered",
                  field='s',
-                 varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                 varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='sparse',field='S',uels=f))
   chk <- chkRgdxRes (y, ywantS, reqIdent=reqIdent)
   if (!chk$same) {
@@ -613,7 +613,7 @@ tryCatch({
                  form='sparse', uels=f,
                  domains=character(0), domInfo="filtered",
                  field='s',
-                 varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                 varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='sparse',field='S',uels=f))
   chk <- chkRgdxRes (z, zwantS, reqIdent=reqIdent)
   if (!chk$same) {
@@ -639,7 +639,7 @@ tryCatch({
                  uels=list('_field'=fields),
                  domains=userDomf, domInfo="NA",
                  field='all',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',field='all'))
   chk <- chkRgdxRes (x, xwantA, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -662,7 +662,7 @@ tryCatch({
                  uels=list('_field'=fields),
                  domains=userDomf, domInfo="NA",
                  field='all',
-                 varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                 varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',field='all'))
   chk <- chkRgdxRes (y, ywantA, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -684,7 +684,7 @@ tryCatch({
                  form='full', uels=list('_field'=fields),
                  domains=userDomf, domInfo="NA",
                  field='all',
-                 varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                 varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',field='all'))
   chk <- chkRgdxRes (z, zwantA, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -701,7 +701,7 @@ tryCatch({
                  form='full', uels=list(),
                  domains=character(0), domInfo="NA",
                  field='l',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full'))
   chk <- chkRgdxRes (x, xwantL, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -717,7 +717,7 @@ tryCatch({
                  form='full', uels=list(),
                  domains=character(0), domInfo="NA",
                  field='l',
-                 varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                 varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full'))
   chk <- chkRgdxRes (y, ywantL, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -733,7 +733,7 @@ tryCatch({
                  form='full', uels=list(),
                  domains=character(0), domInfo="NA",
                  field='l',
-                 varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                 varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full'))
   chk <- chkRgdxRes (z, zwantL, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -750,7 +750,7 @@ tryCatch({
                  form='full', uels=list(),
                  domains=character(0), domInfo="NA",
                  field='m',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',field='m'))
   chk <- chkRgdxRes (x, xwantM, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -761,7 +761,7 @@ tryCatch({
                  form='full', uels=list(),
                  domains=character(0), domInfo="NA",
                  field='m',
-                 varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                 varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',field='m'))
   chk <- chkRgdxRes (y, ywantM, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -772,7 +772,7 @@ tryCatch({
                  form='full', uels=list(),
                  domains=character(0), domInfo="NA",
                  field='m',
-                 varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                 varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',field='m'))
   chk <- chkRgdxRes (z, zwantM, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -784,7 +784,7 @@ tryCatch({
                   form='full', uels=list(),
                   domains=character(0), domInfo="NA",
                   field='lo',
-                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                  varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',field='lo'))
   chk <- chkRgdxRes (x, xwantLo, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -795,7 +795,7 @@ tryCatch({
                   form='full', uels=list(),
                   domains=character(0), domInfo="NA",
                   field='lo',
-                 varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                 varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',field='lo'))
   chk <- chkRgdxRes (y, ywantLo, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -806,7 +806,7 @@ tryCatch({
                   form='full', uels=list(),
                   domains=character(0), domInfo="NA",
                   field='lo',
-                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                  varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',field='lo'))
   chk <- chkRgdxRes (z, zwantLo, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -818,7 +818,7 @@ tryCatch({
                   form='full', uels=list(),
                   domains=character(0), domInfo="NA",
                   field='up',
-                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                  varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',field='up'))
   chk <- chkRgdxRes (x, xwantUp, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -829,7 +829,7 @@ tryCatch({
                   form='full', uels=list(),
                   domains=character(0), domInfo="NA",
                   field='up',
-                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                  varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',field='up'))
   chk <- chkRgdxRes (y, ywantUp, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -840,7 +840,7 @@ tryCatch({
                   form='full', uels=list(),
                   domains=character(0), domInfo="NA",
                   field='up',
-                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                  varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',field='up'))
   chk <- chkRgdxRes (z, zwantUp, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -852,7 +852,7 @@ tryCatch({
                  form='full', uels=list(),
                  domains=character(0), domInfo="NA",
                  field='s',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',field='s'))
   chk <- chkRgdxRes (x, xwantS, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -863,7 +863,7 @@ tryCatch({
                  form='full', uels=list(),
                  domains=character(0), domInfo="NA",
                  field='s',
-                 varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                 varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',field='s'))
   chk <- chkRgdxRes (y, ywantS, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -874,7 +874,7 @@ tryCatch({
                  form='full', uels=list(),
                  domains=character(0), domInfo="NA",
                  field='s',
-                 varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                 varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',field='s'))
   chk <- chkRgdxRes (z, zwantS, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -922,7 +922,7 @@ tryCatch({
                  form='full', uels=f,
                  domains=character(0), domInfo="filtered",
                  field='l',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',uels=f))
   chk <- chkRgdxRes (x, xwantL, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -938,7 +938,7 @@ tryCatch({
                  form='full', uels=f,
                  domains=character(0), domInfo="filtered",
                  field='l',
-                 varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                 varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',uels=f))
   chk <- chkRgdxRes (y, ywantL, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -954,7 +954,7 @@ tryCatch({
                  form='full', uels=f,
                  domains=character(0), domInfo="filtered",
                  field='l',
-                 varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                 varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',uels=f))
   chk <- chkRgdxRes (z, zwantL, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -971,7 +971,7 @@ tryCatch({
                  form='full', uels=f,
                  domains=character(0), domInfo="filtered",
                  field='m',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',uels=f,field='M'))
   chk <- chkRgdxRes (x, xwantM, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -987,7 +987,7 @@ tryCatch({
                  form='full', uels=f,
                  domains=character(0), domInfo="filtered",
                  field='m',
-                 varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                 varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',uels=f,field='M'))
   chk <- chkRgdxRes (y, ywantM, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -1003,7 +1003,7 @@ tryCatch({
                  form='full', uels=f,
                  domains=character(0), domInfo="filtered",
                  field='m',
-                 varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                 varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',uels=f,field='M'))
   chk <- chkRgdxRes (z, zwantM, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -1020,7 +1020,7 @@ tryCatch({
                   form='full', uels=f,
                   domains=character(0), domInfo="filtered",
                   field='lo',
-                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                  varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',uels=f,field='lo'))
   chk <- chkRgdxRes (x, xwantLo, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -1036,7 +1036,7 @@ tryCatch({
                   form='full', uels=f,
                   domains=character(0), domInfo="filtered",
                   field='lo',
-                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                  varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',uels=f,field='lo'))
   chk <- chkRgdxRes (y, ywantLo, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -1052,7 +1052,7 @@ tryCatch({
                   form='full', uels=f,
                   domains=character(0), domInfo="filtered",
                   field='lo',
-                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                  varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',uels=f,field='lo'))
   chk <- chkRgdxRes (z, zwantLo, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -1069,7 +1069,7 @@ tryCatch({
                   form='full', uels=f,
                   domains=character(0), domInfo="filtered",
                   field='up',
-                  varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                  varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',uels=f,field='up'))
   chk <- chkRgdxRes (x, xwantUp, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -1085,7 +1085,7 @@ tryCatch({
                   form='full', uels=f,
                   domains=character(0), domInfo="filtered",
                   field='up',
-                  varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                  varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',uels=f,field='up'))
   chk <- chkRgdxRes (y, ywantUp, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -1101,7 +1101,7 @@ tryCatch({
                   form='full', uels=f,
                   domains=character(0), domInfo="filtered",
                   field='up',
-                  varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                  varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',uels=f,field='up'))
   chk <- chkRgdxRes (z, zwantUp, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -1118,7 +1118,7 @@ tryCatch({
                  form='full', uels=f,
                  domains=character(0), domInfo="filtered",
                  field='s',
-                 varTypeText='positive', typeCode=GMS_VARTYPE$POSITIVE)
+                 varTypeText='Positive', typeCode=GMS_VARTYPE$POSITIVE)
   x <- rgdx(fnIn,list(name='xpos0',form='full',uels=f,field='s'))
   chk <- chkRgdxRes (x, xwantS, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -1134,7 +1134,7 @@ tryCatch({
                  form='full', uels=f,
                  domains=character(0), domInfo="filtered",
                  field='s',
-                 varTypeText='binary', typeCode=GMS_VARTYPE$BINARY)
+                 varTypeText='Binary', typeCode=GMS_VARTYPE$BINARY)
   y <- rgdx(fnIn,list(name='y0',form='full',uels=f,field='s'))
   chk <- chkRgdxRes (y, ywantS, T, reqIdent=reqIdent)
   if (!chk$same) {
@@ -1150,7 +1150,7 @@ tryCatch({
                  form='full', uels=f,
                  domains=character(0), domInfo="filtered",
                  field='s',
-                 varTypeText='free', typeCode=GMS_VARTYPE$FREE)
+                 varTypeText='Free', typeCode=GMS_VARTYPE$FREE)
   z <- rgdx(fnIn,list(name='z',form='full',uels=f,field='s'))
   chk <- chkRgdxRes (z, zwantS, T, reqIdent=reqIdent)
   if (!chk$same) {
