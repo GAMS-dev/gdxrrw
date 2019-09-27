@@ -29,17 +29,6 @@
   in GDX.  If 'n'/FALSE/zero, do not squeeze out zeros: store explicit
   zeros in GDX.  If 'e', store zeros as EPS in the GDX.}
 }
-\details{
-  When writing sets, one can specify associated text for the set
-  elements written to GDX.  In most cases, it is clear what this aught
-  to be: non-empty text strings are stored in GDX, and NA results in no
-  associated text being stored.  How to handle the empty string is less
-  clear, so we use the \code{gdx.inventSetText} option introduced for
-  \code{\link{rgdx}} to control \code{wgdx} also.  In case
-  \code{options(gdx.inventSetText=F)}, we store an empty string as if no
-  text had been provided, otherwise we store the empty string
-  explicitly.
-}
 \author{Original coding by Rishabh Jain.  Adopted and packaged by
 Steve Dirkse.  Maintainer: \email{R@gams.com}}
 \note{

@@ -1864,8 +1864,6 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
     }
 
     if (wSpecPtr[iSym]->dForm == sparse) {
-      Rboolean inventSetText = INVENT_SET_TEXT_DEFAULT;
-
       dimVect = getAttrib(valData, R_DimSymbol);
       nColumns = INTEGER(dimVect)[1];
       nRows = INTEGER(dimVect)[0];
@@ -1885,9 +1883,6 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
           rc = gdxDataWriteMapStart (gdxHandle, wSpecPtr[iSym]->name, expText,
                                      nColumns, GMS_DT_SET, 0);
           vals[0] = 0;
-          if (teExp) {
-            inventSetText = getInventSetText (INVENT_SET_TEXT_DEFAULT);
-          }
         }
         if (!rc) {
           error("Error calling gdxDataWriteMapStart for symbol '%s': %s",
@@ -1935,15 +1930,14 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
             sExp = STRING_ELT(teExp, iRow);
             vals[0] = 0;
             if (sExp == R_NaString) {
-              /* NA always maps to <no associated text stored> */
+              /* NA always maps to empty string, i.e. 0==vals[0] */
               /* Rprintf ("  found R_NaString: no atext!\n"); */
             }
             else {
               s = CHAR(sExp);
-              if (s) {    /* NULL always maps to <no associated text stored> */
-                if (('\0' != *s) || (FALSE != inventSetText)) {
+              if (s) {    /* NULL always maps to empty string, i.e. 0==vals[0] */
+                if ('\0' != *s) {
                   /* nonempty string is always meaningful */
-                  /* if inventSetText!=F, empty string also significant: not mapped to <no text> */
                   rc = gdxAddSetText (gdxHandle, s, &txtIdx);
                   /* Rprintf ("  addSetText rc=%d  txtIdx=%d\n", rc, txtIdx); */
                   if (rc)
