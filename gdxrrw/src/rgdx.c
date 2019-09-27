@@ -385,7 +385,7 @@ SEXP rgdx (SEXP args)
   int foundTuple;
   int arglen, matched = -1;
   double *p, *dimVal;
-  char buf[3*sizeof(shortStringBuf_t)];
+  char buf[2*sizeof(shortStringBuf_t)+1024];  /* 1024 for rSpec_t::name */
   char strippedID[GMS_SSSIZE];
   char symName[GMS_SSSIZE];
   char symText[GMS_SSSIZE], msg[GMS_SSSIZE], stringEle[GMS_SSSIZE];
