@@ -111,6 +111,9 @@ tryCatch({
   }
   IJ1 <- rgdx(fnOut,   list(name='IJ',form='sparse',te=TRUE))
   teIJ1 <- teIJ0
+  if (is.na(IJ1$te[[4]])) {
+    teIJ1[[4]] <- NA_character_
+  }
   if (! identical(teIJ1,IJ1$te)) {
     stop (paste('With gdx.inventSetText=NA, inconsistent set text for IJ in file',fnOut))
   }
@@ -170,6 +173,9 @@ tryCatch({
   }
   IJ1 <- rgdx(fnOut,   list(name='IJ',form='sparse',te=TRUE))
   teIJ1 <- teIJ0
+  if (is.na(IJ1$te[[4]])) {
+    teIJ1[[4]] <- NA_character_
+  }
   if (! identical(teIJ1,IJ1$te)) {
     stop (paste('With gdx.inventSetText=NA, inconsistent set text for IJ in file',fnOut))
   }
