@@ -23,7 +23,7 @@ R CMD check gdxrrw ; echo "check rc = $?"
 # this command creates a source distribution: gdxrrw_X.Y.Z.tar.gz
 R CMD build gdxrrw
 
-=========== Windows (beale, Steve's 64-bit Windows 8 Dell laptop) ===========
+=========== Windows (xps15, Steve's 64-bit Windows 10 Dell laptop) ===========
 # do these from a normal command prompt, not one started from the
 # Visual Studio menu.
 
