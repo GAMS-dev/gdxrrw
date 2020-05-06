@@ -20,6 +20,11 @@ bike_gears0 <- function(nFront, nBack)
   return(r)
 }
 
+bike_gears1 <- function(nFront, nBack)
+{
+  .External(bike_gears_ext, nFront=nFront, nBack=nBack)
+}
+
 
 # typeCode constants for variables
 GMS_VARTYPE <- list(UNKNOWN=0L,

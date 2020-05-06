@@ -40,7 +40,7 @@ SEXP bike_gears (SEXP args)
   SEXP expr;
 
   arglen = length(args);
-  if (2 != arglen) {
+  if (3 != arglen) {            /* first arg is self or name ?? */
     error ("usage: %s(nFront, nBack) - incorrect arg count", funcName);
   }
 
