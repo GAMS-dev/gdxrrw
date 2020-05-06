@@ -1,0 +1,8 @@
+\name{biking}
+\docType{data}
+\alias{GMS_VARTYPE}
+
+\title{Constants used in \code{biking}}
+\description{Constants used in \code{biking} inputs/outputs, e.g. to
+  indicate variable or equation type.}
+\keyword{datasets}

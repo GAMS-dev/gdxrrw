@@ -1,0 +1,9 @@
+# Generate by Steve
+
+# export the functions
+export (biking_function)
+
+# export the constants used in the interface
+export (GMS_VARTYPE)
+
+importFrom (reshape2, melt)
