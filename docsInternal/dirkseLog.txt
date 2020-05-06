@@ -35,10 +35,8 @@ R CMD INSTALL gdxrrw --build  {binary package gdxrrw_X.Y.Z.zip for distribution}
 R CMD build gdxrrw            {source package gdxrrw_X.Y.Z.tar.gz for distribution}
 
 
-================ Mac OSX (what Mac machine will we use?) ================
-On OSX multi-arch binaries are built.  This requires the default
-compilers in /usr/bin, not the stuff in /usr/local/bin.  Be aware.
-Update: since R 3.0.0 the binary is a single-arch build
+================ Mac OSX (pete, Mohave) ================
+Since R 3.0.0 the binary is a single-arch build
 and contains only the x86_64 (64-bit Intel) architecture.  We can use
 single-arch compilers.
 
