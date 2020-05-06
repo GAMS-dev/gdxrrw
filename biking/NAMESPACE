@@ -1,7 +1,10 @@
 # Generate by Steve
 
+# useDynLib(biking, bike_gears_ext=bike_gears)
+
 # export the functions
 export (biking_function)
+export (bike_gears0)
 
 # export the constants used in the interface
 export (GMS_VARTYPE)

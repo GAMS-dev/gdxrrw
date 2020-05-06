@@ -8,6 +8,19 @@ biking_function <- function(love=TRUE) {
   }
 }
 
+bike_gears0 <- function(nFront, nBack)
+{
+  if (! is.integer(nFront)) {
+    stop ("Expected an integer (e.g. 3L) in nFront");
+  }
+  if (! is.integer(nBack)) {
+    stop ("Expected an integer (e.g. 7L) in nBack");
+  }
+  r <- nFront * nBack
+  return(r)
+}
+
+
 # typeCode constants for variables
 GMS_VARTYPE <- list(UNKNOWN=0L,
                     BINARY=1L,
