@@ -37,6 +37,8 @@
 #include <math.h>
 #include <assert.h>
 
+#include "gdxcc.h"
+#include "gclgms.h"
 #define _GDXRRW_MAIN_
 #include "globals.h"
 
@@ -76,7 +78,8 @@ SEXP igdx (SEXP args)
   if (NA_LOGICAL == isReturnStr) {
     isReturnStr = FALSE;
   }
-  gdxLoaded = 0;
+  gdxLoaded = gdxLibraryLoaded();
+
   if (TYPEOF(sysDirExp) != NILSXP) { /* we should have gamsSysDir */
     if (TYPEOF(sysDirExp) != STRSXP) {
       error ("usage: %s(gamsSysDir, ...) - gamsSysDir must be a string", funcName);
