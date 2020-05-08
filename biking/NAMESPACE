@@ -1,11 +1,12 @@
 # Generate by Steve
 
-useDynLib(biking, bike_gears_ext=bike_gears)
+useDynLib(biking, bike_gears_ext=bike_gears, igdxExt=igdx)
 
 # export the functions
 export (biking_function)
 export (bike_gears0)
 export (bike_gears1)
+export (igdx)
 
 # export the constants used in the interface
 export (GMS_VARTYPE)

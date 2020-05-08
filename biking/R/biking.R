@@ -25,6 +25,11 @@ bike_gears1 <- function(nFront, nBack)
   .External(bike_gears_ext, nFront=nFront, nBack=nBack)
 }
 
+igdx <- function(gamsSysDir = NULL, silent = FALSE, returnStr = FALSE)
+{
+  invisible(.External(igdxExt, gamsSysDir, silent=silent, returnStr=returnStr))
+}
+
 
 # typeCode constants for variables
 GMS_VARTYPE <- list(UNKNOWN=0L,
