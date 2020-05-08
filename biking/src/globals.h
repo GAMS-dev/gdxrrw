@@ -24,7 +24,6 @@
 # define MEMCPY memcpy
 #endif
 
-#if 0
 typedef int valIndex_t[GMS_MAX_INDEX_DIM]; /* data indices from sparse 'val' */
 typedef char shortStringBuf_t[GMS_SSSIZE];
 typedef void (GDX_CALLCONV *gdxGetLoadPath_t) (char *s);
@@ -104,6 +103,7 @@ typedef struct xpFilter {       /* xtreme-performance filter */
   domainType_t domType;         /* what type of domain info was the source? */
 } xpFilter_t;
 
+#if 0
 GDX_FUNCPTR(gdxGetLoadPath);
 #endif
 

@@ -11,7 +11,6 @@
 #include <math.h>
 #include <assert.h>
 
-#if 0
 #include "gdxcc.h"
 #include "gclgms.h"
 #include "globals.h"
@@ -52,6 +51,7 @@ checkForDuplicates (SEXP strExp)
   free (elements);
 } /* checkForDuplicates */
 
+#if 0
 /* ------------------ start of globally available functions --------------- */
 
 /* CHAR2ShortStr
