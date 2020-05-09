@@ -103,9 +103,8 @@ typedef struct xpFilter {       /* xtreme-performance filter */
   domainType_t domType;         /* what type of domain info was the source? */
 } xpFilter_t;
 
-#if 0
 GDX_FUNCPTR(gdxGetLoadPath);
-#endif
+
 
 /* ********** functions in gdxrrw.c **************** */
 SEXP
@@ -133,7 +132,6 @@ wgdx (SEXP args);
 
 #endif
 
-#if 0
 /* ********** functions in utils.c ********************** */
 char *
 CHAR2ShortStr (const char *from, shortStringBuf_t to);
@@ -174,10 +172,8 @@ int
 getNonZeroElements (gdxHandle_t h, int symIdx, dField_t dField);
 Rboolean
 getInventSetText (Rboolean defVal);
-#endif
 Rboolean
 exp2Boolean (SEXP exp);
-#if 0
 int
 isCompress (void);
 void
@@ -203,12 +199,8 @@ void
 showLibSearchPath (void);
 int
 getEnvVar (const char *evName, shortStringBuf_t evVal);
-#endif
-
 
 /* ****** global variables ****** */
-#if 0
-
 #if defined(_GDXRRW_MAIN_)
 
 #define _GDXRRW_EXTERN_
@@ -224,11 +216,7 @@ extern char ID[GMS_SSSIZE];
 
 #endif  /* defined(_GDXRRW_MAIN_) */
 
-#endif
-
-#if 0
 _GDXRRW_EXTERN_ int globalGams;
 _GDXRRW_EXTERN_ int gamsoIsUnset;
-#endif
 
 #endif /* ! defined(_GDXRRW_GLOBALS_H_) */

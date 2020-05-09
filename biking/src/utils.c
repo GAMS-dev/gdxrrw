@@ -51,7 +51,6 @@ checkForDuplicates (SEXP strExp)
   free (elements);
 } /* checkForDuplicates */
 
-#if 0
 /* ------------------ start of globally available functions --------------- */
 
 /* CHAR2ShortStr
@@ -896,8 +895,6 @@ getInventSetText (Rboolean defVal)
   return asLogical(o);
 } /* getInventSetText */
 
-#endif
-
 /* interpret an expression (probably an input arg) as a logical/boolean */
 Rboolean
 exp2Boolean (SEXP exp)
@@ -955,8 +952,6 @@ exp2Boolean (SEXP exp)
   }
   return NA_LOGICAL;
 } /* exp2Boolean */
-
-#if 0
 
 /* this method for global input "compress" */
 int isCompress (void)
@@ -1620,5 +1615,7 @@ getEnvVar (const char *evName, shortStringBuf_t evVal)
 
   return 0;
 } /* getEnvVar */
+
+#if 0
 
 #endif
