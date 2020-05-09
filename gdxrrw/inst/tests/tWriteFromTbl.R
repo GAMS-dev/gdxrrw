@@ -13,7 +13,7 @@ errFunc <- function(ex) {
   FALSE
 } # errFunc
 
-ok <- library(dplyr,logical.return=T)
+suppressWarnings(ok <- library(dplyr,logical.return=T))
 if (!ok) {
   print (paste0("test of wgdx on ", testName, ": SKIPPED"))
   invisible(TRUE)
