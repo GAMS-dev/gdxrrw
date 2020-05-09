@@ -182,10 +182,11 @@ callGams (const char *gamsCmd)
   }
   (void) CHAR2ShortStr (gamsCmd, jobString);
 
-  cmdLine = malloc(strlen(gamsExeName) + 1 + strlen(jobString)
+  cmdLine = malloc(strlen(gamsExeName) + 2 + 1 + strlen(jobString)
                    + 1 + 6);
-  strcpy (cmdLine, gamsExeName);
-  strcat (cmdLine, " ");
+  strcpy (cmdLine, "\"");
+  strcat (cmdLine, gamsExeName);
+  strcat (cmdLine, "\" ");
   strcat (cmdLine, jobString);
 
   /* Check for "logoption" */
