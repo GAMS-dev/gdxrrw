@@ -1702,6 +1702,7 @@ writeGdx (char *gdxFileName, int symListLen, SEXP *symList,
   if (errNum || 0 == rc)
     error("Could not open gdx file with gdxOpenWrite: %s", getGDXErrorMsg());
 
+  gdxStoreDomainSetsSet (gdxHandle, 0);
   gdxGetSpecialValues (gdxHandle, sVals);
 #if 0
   d64.u64 = 0x7fffffffffffffff; /* positive QNaN, mantissa all on */
