@@ -1344,11 +1344,14 @@ XLibraryLoad (const char *dllName, char *errBuf, int errBufSize)
 
 } /* XLibraryLoad */
 
+#include "loadpathutil.h"
+
 static int
 libloader(const char *dllPath, const char *dllName, char *msgBuf, int msgBufSize)
 {
 
   char dllNameBuf[512];
+  size_t sz;
   int myrc = 0;
   char gms_dll_suffix[4];
 
@@ -1397,13 +1400,16 @@ libloader(const char *dllPath, const char *dllName, char *msgBuf, int msgBufSize
     if (NULL != dllPath && '\0' != *dllPath) {
       strncpy(dllNameBuf, dllPath, sizeof(dllNameBuf)-1);
       dllNameBuf[sizeof(dllNameBuf)-1] = '\0';
+      sz = strlen(dllNameBuf);
+      if ((sz+1) < sizeof(dllNameBuf)) { /* check we have room to tack on something else */
 #if defined(_WIN32)
-      if ('\\' != dllNameBuf[strlen(dllNameBuf)])
-        strcat(dllNameBuf,"\\");
+        if ('\\' != dllNameBuf[sz])
+          strcat(dllNameBuf,"\\");
 #else
-      if ('/' != dllNameBuf[strlen(dllNameBuf)])
-        strcat(dllNameBuf,"/");
+        if ('/' != dllNameBuf[sz])
+          strcat(dllNameBuf,"/");
 #endif
+      }
     }
     else {
       dllNameBuf[0] = '\0';
@@ -1421,8 +1427,17 @@ libloader(const char *dllPath, const char *dllName, char *msgBuf, int msgBufSize
     }
     isLoaded = ! XLibraryLoad (dllNameBuf, msgBuf, msgBufSize);
     if (isLoaded) {
-      if (NULL != gdxSetLoadPath && NULL != dllPath && '\0' != *dllPath) {
-        gdxSetLoadPath(dllPath);
+      if (NULL != gdxSetLoadPath) {
+        if (NULL != dllPath && '\0' != *dllPath) { /* we have something in dllPath */
+          gdxSetLoadPath(dllPath);
+        }
+        else {                  /* get a dllPath so we can load it */
+          char myLoadPath[256];
+          myLoadPath[0] = '\0';
+          loadPathHack (myLoadPath, gdxClose);
+          if (strlen(myLoadPath) > 0)
+            gdxSetLoadPath (myLoadPath);
+        }
       }
       else {                            /* no setLoadPath call found */
         myrc |= 2;
