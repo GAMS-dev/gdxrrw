@@ -922,7 +922,7 @@ int  GDX_CALLCONV d_gdxStoreDomainSets (gdxHandle_t pgdx)
 
 void GDX_CALLCONV d_gdxStoreDomainSetsSet (gdxHandle_t pgdx, const int x)
 {
-  int d_s[]={0,15};
+  // int d_s[]={0,15};
   GAMS_UNUSED(pgdx)
   GAMS_UNUSED(x)
   printNoReturn(gdxStoreDomainSetsSet,1)
