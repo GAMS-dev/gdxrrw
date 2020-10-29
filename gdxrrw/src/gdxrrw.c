@@ -43,7 +43,7 @@
 #include "globals.h"
 
 /* The version info below changes when this file is updated */
-char ID[GMS_SSSIZE] = "$Id$"; 
+char ID[GMS_SSSIZE] = "$Id$";
 
 /* -------------------- Method declaration -----------------------*/
 
