@@ -2,7 +2,7 @@ Package: gdxrrw
 Title: An Interface Between 'GAMS' and R
 Version: 1.0.8
 Depends: R (>= 3.0)
-Date: 2020-10-29
+Date: 2020-12-10
 SystemRequirements: GAMS (>= 33.0.0)
 Authors@R: c(person("Steve","Dirkse", role=c("aut","cre"),
 	             email="R@gams.com"),

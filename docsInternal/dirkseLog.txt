@@ -12,16 +12,15 @@ cd $rrw
 
 R CMD INSTALL gdxrrw
 R CMD REMOVE gdxrrw  {to remove, or undo an install}
-R CMD check gdxrrw
 
 # to make a binary distribution, do:
 R CMD INSTALL gdxrrw --build
 
-# to build and check locally
-R CMD check gdxrrw ; echo "check rc = $?"
-
 # this command creates a source distribution: gdxrrw_X.Y.Z.tar.gz
 R CMD build gdxrrw
+
+# and it is good practice to check this source distro:
+R CMD check gdxrrw_X.Y.Z.tar.gz
 
 =========== Windows (xps15, Steve's 64-bit Windows 10 Dell laptop) ===========
 # do these from a normal command prompt, not one started from the
