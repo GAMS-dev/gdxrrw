@@ -1,0 +1,111 @@
+Version 1.0.8
+========================
+-use new GDX API to make writing more memory-efficient
+-update test script to load GDX shared lib
+
+Version 1.0.6
+========================
+-gams function now handles spacey GAMS sysdir on non-Windows
+
+Version 1.0.5
+========================
+-change casing of variable type names to be consistent with GAMS convention
+-clean up error messages for missing entry points in GDX shared library
+-wgdx no longer reacts to option(gdx.inventSetText) - GDX now stores empty strings uniquely
+
+Version 1.0.4
+========================
+-handle empty factors when checking data frames
+-fix errors when reading empty data into a dataframe with compressed=T
+
+Version 1.0.3
+========================
+-fix problem loading a compressed GDX file (gdxSetLoadPath was called incorrectly)
+
+Version 1.0.2
+========================
+-various config, doc, and source cleanups to try make CRAN happy
+-updates to way names are handled (data frame column names == indexing set names)
+-adjust to handle dplyr tbl format as input
+
+Version 0.5.4
+========================
+-query option gdx.inventSetText and use to control set text when GDX contains none
+-add check.names arg to rgdx.param, rgdx.set: like check.names in data.frame
+-add te=FALSE arg to rgdx.set
+-query option gdx.inventSetText and use to control behavior when writing empty string for set text
+-fix bug in wgdx.reshape when also reordering index columns where the time column is not rightmost
+-enable set text when writing dataframes to GDX
+-fix handling for R NaN values
+-move tests from extdata to tests
+-add domInfo field or attribute containing meta-information about the domain, e.g. domInfo=“full” when reading a GDX containing full domain info. Other possible values include “none”, “relaxed”, “compressed”, and “filtered. As a consequence, we don't return domain names of “_compressed” and “_user” any more. Instead, we return the -best domain names we have, and the user can check domInfo to see how what is returned relates to what is in the GDX file. Thanks Wietse!
+-add domInfo to data frame returned by gdxInfo, and add some missing text and domain columns in this dataframe
+
+Version 0.4.0
+========================
+-implement writing of variables and equations. In the process, re-implement/fix/test the variable and equation reading and writing for all field specs.
+-implement field='all' for variable and equation reading/writing.
+-fix mixup of .lo/.up fields when reading variables or equations
+-fix problem when reading zero scalars
+-fix filtered scalar read: corner case
+-fix gams() call so it uses the GAMS sysdir (the GDX load path, really) as set or shown by igdx()
+-update igdx() to allow return of GDX load path
+-update wgdx() to accept any and all outputs from rgdx() - ignoring some unexpected fields, etc.
+-various fixes to reduced time and memory requirements, fix memory leaks, improve error messages, etc.
+expand wgdx.lst functionality to accept multiple arguments with symbol data. Each arg contains data for a single symbol or is a list of such args. Drop wgdx.df and -wgdx.scalar at the same time, subsumed by wgdx.lst.
+-document allowed requestList elements
+-add domain symbol names to dimnames of return$val when form='full'
+add code to read and write aliases as aliases. Previous versions of rgdx() returned the data for set K when reading aliases for K. A new arg to rgdx, followAlias=TRUE, -controls this behavior.
+-write relaxed domain info to GDX when available (i.e. when specified by the user)
+-write relaxed domain info also when writing a data-frame
+-check for NA when reading factors as sets, abort if found
+-fix reading sets or parameters as dataframes: subtle bug when card(implied_index_set) >= 1e+5
+
+Version 0.2.0
+========================
+-internal code reorganized
+-several fixes for memory allocation bugs: thanks gctorture!
+-tests expanded and reorganized
+-fix bugs when te=TRUE (i.e. when we read text elements with sets)
+-set dimnames for output $val and $te when form=full: allows access to data directly via UEL labels.
+-dramatic speedup for common use cases when using user-provided UEL filters
+-use the domain information in the GDX file as the default domain
+-better support for set aliases
+-fix to domain information in gdxInfo
+-add new arg useDomInfo=TRUE to rgdx family
+-add $domains to rgdx output: returns domain info from GDX file if available
+
+Version 0.0-4
+========================
+-fix unsqueezed read of variable/equation
+-fix issue with backward compatibility and GLIBC on Linux
+-add capability to return symbol info from a GDX file: gdxInfo (gdxName,dump=TRUE,returnList=FALSE,returnDF=FALSE)
+-fix rgdx.scalar for zero scalars
+-fix NULL returns (make them invisible), some other returns now invisible also
+add an experimental wgdx.reshape wrapper to facilitate reshaping/preparing dataframes for writing to GDX. This wrapper is subject to change, and comments are welcomed. -A vignette is available [here].
+-add silent=FALSE arg to igdx
+
+Version 0.0-3
+========================
+-fix gams(x) so x is like the command line, not just the GAMS source file name
+-remove output=std global control for form of output
+-add a flag similar to the GDXXRW squeeze = yes | no flag for handling zeros
+when reading GDX, default squeeze = TRUE/nonzero/'yes' squeezes zero and EPS out of the data returned to R, while squeeze = FALSE/0/'no' returns the zeros and EPS -values. This only matters when the data is returned in a sparse format.
+when writing GDX, default squeeze = 'yes' doesn't store zeros in GDX. With squeeze = 'no' zero values are stored explicitly in GDX. With squeeze = 'eps' zero values -are stored as EPS in GDX.
+-fix and update the treatment of GAMS special values (NA, UNDF, +/- infinity, EPS) and zero.
+-build and install with a NAMESPACE - required with the new R 2.14 and supported previous to that.
+
+Version 0.0-2
+========================
+-fix the double usage of the file “eurodist.gdx” in extdata.
+-optional arg “compress=FALSE” to rgdx.param and rgdx.set so factors are compressed instead of having levels running over the whole range of UELs
+-optional arg “ts=FALSE” to all rgdx wrappers to get the explanatory text returned as an attribute
+-rgdx.param: change default name of value column from val to value
+-gams() crashed or failed if no data is passed back
+-remove the crosstab option to rgdx.param: better to use the recast function from the reshape package
+-rgdx returns the symbol name using the case from GDX, not the case as specified in the search
+-add wrappers for writing data to GDX: wgdx.df, wgdx.scalar, and wgdx.lst
+
+Version 0.0-1
+========================
+-Initial alpha release
