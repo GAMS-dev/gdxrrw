@@ -1,8 +1,0 @@
-useDynLib(statgdx, gdxInfoExt=gdxInfo, igdxExt=igdx,
-          gdxLoadExt=gdxLoad, gdxUnLoadExt=gdxUnLoad)
-
-# export the functions: the ones in statgdx.R, not the externals above!!
-export (gdxInfo, igdx)
-
-# export the constants used in the interface
-export (GMS_VARTYPE, GMS_EQUTYPE)
