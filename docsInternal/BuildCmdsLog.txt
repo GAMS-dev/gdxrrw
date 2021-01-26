@@ -1,13 +1,16 @@
-Some helpful commands:
-assume $rrw is the dir containing the package tree, i.e. the gdxrrw
-directory, or https://svn.gams.com/source/share/gdxrrw in our case.
+Here we have some helpful commands useful for building/testing the
+gdxrrw package.
+
+N.B.: assume $rrw is the dir containing the package tree.  This is
+also the top level of the git repo, or the directory containing the
+README.md file.
 
 
-=================== Linux (ike, 64-bit Redhat) ==============================
-Typically we start with
-  gg2 alpha ; gup ; gll  (to put a GAMS sysdir in the PATH)
-OR
-you can have one set via an R .First function
+=================== Linux (Fedora release 32) =========================
+To INSTALL or build or test, it works well to NOT have library(gdxrrw)
+set in .Rprofile but to have
+R_GAMS_SYSDIR=/path/to/GAMS/sysdir
+
 cd $rrw
 
 R CMD INSTALL gdxrrw
@@ -16,7 +19,7 @@ R CMD REMOVE gdxrrw  {to remove, or undo an install}
 # to make a binary distribution, do:
 R CMD INSTALL gdxrrw --build
 
-# this command creates a source distribution: gdxrrw_X.Y.Z.tar.gz
+# to make a source distribution gdxrrw_X.Y.Z.tar.gz, do:
 R CMD build gdxrrw
 
 # and it is good practice to check this source distro:
