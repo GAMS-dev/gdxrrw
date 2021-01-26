@@ -1,0 +1,10 @@
+# object files and other build leftovers
+gdxrrw/src/*.o
+gdxrrw/src/gdxrrw.so
+gdxrrw.Rcheck
+
+# package files
+gdxrrw_?.?.?.tar.gz
+gdxrrw_?.?.?_*tar.gz
+gdxrrw_?.?.?.tgz
+gdxrrw_?.?.?.zip
