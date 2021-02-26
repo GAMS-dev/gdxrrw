@@ -1,3 +1,8 @@
+Version 1.0.9
+========================
+-start using GitHub-based devtools compatible distribution scheme
+-decruft
+
 Version 1.0.8
 ========================
 -use new GDX API to make writing more memory-efficient
