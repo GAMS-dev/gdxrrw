@@ -2270,8 +2270,6 @@ wgdx (SEXP args)
   shortStringBuf_t gdxFileName;
   int arglen;
   char zeroSqueeze;
-  char strippedID[GMS_SSSIZE];
-
 
   arglen = length(args);
   if (arglen == 1) {
@@ -2291,10 +2289,7 @@ wgdx (SEXP args)
 
   msgInit ();
   if (0 == strcmp("?", gdxFileName)) {
-    int n = (int)strlen (ID);
-    memcpy (strippedID, ID+1, n-2);
-    strippedID[n-2] = '\0';
-    Rprintf ("R-file source info: %s\n", strippedID);
+    Rprintf ("For version information, try packageVersion('gdxrrw')\n");
     return R_NilValue;
   } /* if audit run */
 

@@ -223,7 +223,6 @@ int gamsoIsUnset = 0;
 #define _GDXRRW_EXTERN_ extern
 extern gdxHandle_t gdxHandle;
 extern int gamsoIsUnset;
-extern char ID[GMS_SSSIZE];
 
 #endif  /* defined(_GDXRRW_MAIN_) */
 

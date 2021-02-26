@@ -60,9 +60,6 @@
 #define _GDXRRW_MAIN_
 #include "globals.h"
 
-/* The version info below changes when this file is updated */
-char ID[GMS_SSSIZE] = "$Id$"; 
-
 /* -------------------- Method declaration -----------------------*/
 
 /* return the absolute pathname for the gams sysdir,
@@ -351,7 +348,6 @@ SEXP gams (SEXP args)
   SEXP result = R_NilValue;
   const char *argStr;
   int rc, arglen;
-  char strippedID[GMS_SSSIZE];
 
   globalGams = 1;
   arglen = length(args);
@@ -372,10 +368,7 @@ SEXP gams (SEXP args)
   argStr = CHAR(STRING_ELT(firstArg, 0));
 
   if (0 == strcmp("?", argStr)) {
-    int n = (int)strlen (ID);
-    memcpy (strippedID, ID+1, n-2);
-    strippedID[n-2] = '\0';
-    Rprintf ("R-file source info: %s\n", strippedID);
+    Rprintf ("For version information, try packageVersion('gdxrrw')\n");
     return R_NilValue;
   } /* if audit run */
 

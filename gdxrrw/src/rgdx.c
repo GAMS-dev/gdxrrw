@@ -399,7 +399,6 @@ SEXP rgdx (SEXP args)
   int arglen, matched = -1;
   double *p, *dimVal;
   char buf[2*sizeof(shortStringBuf_t)+1024];  /* 1024 for rSpec_t::name */
-  char strippedID[GMS_SSSIZE];
   char symName[GMS_SSSIZE];
   char symText[GMS_SSSIZE], msg[GMS_SSSIZE], stringEle[GMS_SSSIZE];
   char domInfoSrc[16] = "unknown";
@@ -454,10 +453,7 @@ SEXP rgdx (SEXP args)
 
   if (! withList) {
     if (0 == strcmp("?", gdxFileName)) {
-      int n = (int)strlen (ID);
-      memcpy (strippedID, ID+1, n-2);
-      strippedID[n-2] = '\0';
-      Rprintf ("R-file source info: %s\n", strippedID);
+      Rprintf ("For version information, try packageVersion('gdxrrw')\n");
       return R_NilValue;
     } /* if audit run */
   } /* if one arg, of character type */
