@@ -1,0 +1,181 @@
+def R_TOOLS_WINDOWS = "C:\\rtools40\\usr\\bin"
+
+def GAMS_FOR_LINUX = "/opt/gams/gams35.0_linux_x64_64_sfx"
+def GAMS_FOR_MACOS = "/Library/Frameworks/GAMS.framework/Versions/35/Resources"
+def GAMS_FOR_WINDOWS = "C:\\GAMS\\35"
+
+pipeline {
+    agent none
+
+    options {
+        parallelsAlwaysFailFast()
+        disableConcurrentBuilds()
+    }
+
+    stages {
+        stage('Build') {
+            parallel {
+                stage ('linux') {
+                    agent { label 'master' }
+                    environment {
+                        R_LIBS_USER="${env.WORKSPACE}/libpath"
+                        R_GAMS_SYSDIR="${GAMS_FOR_LINUX}"
+                        PATH="${GAMS_FOR_LINUX}:${PATH}"
+                    }
+                    steps {
+                        step([$class: 'WsCleanup'])
+                        checkout scm
+                        sh '''
+                            mkdir libpath
+                            R CMD INSTALL gdxrrw -l "$WORKSPACE/libpath" --build
+                        '''
+                        archiveArtifacts artifacts: '*.tar.gz', fingerprint: true
+                    }
+                }
+                stage ('windowsX64') {
+                    agent { label 'windowsX64' }
+                    environment {
+                        R_LIBS_USER="${env.WORKSPACE}/libpath"
+                        R_GAMS_SYSDIR="${GAMS_FOR_WINDOWS}"
+                        PATH="${R_TOOLS_WINDOWS};${GAMS_FOR_WINDOWS};${PATH}"
+                    }
+                    steps {
+                        step([$class: 'WsCleanup'])
+                        checkout scm
+                        bat '''
+                            mkdir libpath
+                            R CMD INSTALL gdxrrw -l "%WORKSPACE%/libpath" --build
+                        '''
+                        archiveArtifacts artifacts: '*.zip', fingerprint: true
+                    }
+                }
+                stage ('macos') {
+                    agent { label 'macos' }
+                    environment {
+                        R_LIBS_USER="${env.WORKSPACE}/libpath"
+                        R_GAMS_SYSDIR="${GAMS_FOR_MACOS}"
+                        PATH="${TEX_FOR_MACOS}:${GAMS_FOR_MACOS}:${PATH}"
+                    }
+                    steps {
+                        step([$class: 'WsCleanup'])
+                        checkout scm
+                        sh '''
+                            mkdir libpath
+                            R CMD INSTALL gdxrrw -l "$WORKSPACE/libpath" --build
+                        '''
+                        archiveArtifacts artifacts: '*.tgz', fingerprint: true
+                    }
+                }
+            }
+        }
+        stage('Test') {
+            parallel {
+                stage ('linux') {
+                    agent { label 'master' }
+                    environment {
+                        R_LIBS_USER="${env.WORKSPACE}/libpath"
+                        R_GAMS_SYSDIR="${GAMS_FOR_LINUX}"
+                        PATH="${GAMS_FOR_LINUX}:${PATH}"
+                    }
+                    steps {
+                        sh '''
+                            cd libpath/gdxrrw/tests
+                            Rscript tAll.R
+                        '''
+                    }
+                }
+                stage ('windowsX64') {
+                    agent { label 'windowsX64' }
+                    environment {
+                        R_LIBS_USER="${env.WORKSPACE}\\libpath"
+                        R_GAMS_SYSDIR="${GAMS_FOR_WINDOWS}"
+                        PATH="${GAMS_FOR_WINDOWS};${PATH}"
+                    }
+                    steps {
+                        bat '''
+                            cd libpath\\gdxrrw\\tests
+                            rscript tAll.R
+                        '''
+                    }
+                }
+                stage ('macos') {
+                    agent { label 'macos' }
+                    environment {
+                        R_LIBS_USER="${env.WORKSPACE}/libpath"
+                        R_GAMS_SYSDIR="${GAMS_FOR_MACOS}"
+                        PATH="${GAMS_FOR_MACOS}:${PATH}"
+                    }
+                    steps {
+                        sh '''
+                            cd libpath/gdxrrw/tests
+                            rscript tAll.R
+                        '''
+                    }
+                }
+            }
+        }
+        stage('Deploy to GitHub') {
+            agent { label 'master' }
+            when {
+                expression { return currentBuild.currentResult == "SUCCESS" }
+                tag pattern: "v\\d+\\.\\d+\\.\\d+.*", comparator: "REGEXP"
+            }
+            steps {
+                sh '''
+                    mkdir -p artifacts
+                '''
+                copyArtifacts filter: '*.tar.gz, *.tgz, *.zip', fingerprintArtifacts: true, projectName: '${JOB_NAME}', selector: specific('${BUILD_NUMBER}'), target: 'artifacts'
+                withCredentials([string(credentialsId: '18e8f0e0-f27a-4358-b70f-04acec1e9617', variable: 'GITHUB_TOKEN')]) {
+                    sh '''
+                        export GDXRRW_VERSION=$(grep "^Version:" gdxrrw/DESCRIPTION | cut -f2 -d" ")
+
+                        CHANGELOG=""
+
+                        foundFirst="false"
+                        while IFS="" read -r line
+                        do
+                            if [[ $line =~ ^Version.* ]] && [[ $foundFirst == "true" ]]; then
+                                break
+                            elif [[ $line =~ ^Version.* ]]; then
+                                CHANGELOG+=$line$'\n'
+                            foundFirst="true"
+                            else
+                                CHANGELOG+=$line$'\n'
+                            fi
+                        done < CHANGELOG
+
+                        ## GitHub parameters
+                        export GITHUB_TOKEN=${GITHUB_TOKEN}
+                        GITHUB_RELEASE_ADDRESS="https://github.com/GAMS-dev/gdxrrw/releases/tag/${TAG_NAME}"
+                        GITHUB_ORGA=GAMS-dev
+                        GITHUB_REPO=gdxrrw
+
+                        ## delete old release if needed
+                        RELEASE_DELETED=0
+                        github-release delete --user $GITHUB_ORGA --repo $GITHUB_REPO --tag ${TAG_NAME} && RELEASE_DELETED=0 || RELEASE_DELETED=1
+                        if [[ $RELEASE_DELETED -eq 0 ]]; then
+                            echo "Release deleted"
+                        else
+                            echo "No release to delete"
+                        fi
+
+                        ## create a GitHub release
+                        if [[ ${TAG_NAME} =~ ^v[0-9]+\\.[0-9]+\\.[0-9]+$ ]]; then
+                            github-release release --user $GITHUB_ORGA --repo $GITHUB_REPO --tag ${TAG_NAME} --description "${CHANGELOG}"
+                        elif [[ ${TAG_NAME} =~ ^v[0-9]+\\.[0-9]+\\.[0-9]+-rc$ ]]; then
+                            github-release release --user $GITHUB_ORGA --repo $GITHUB_REPO --tag ${TAG_NAME} --pre-release --description "${CHANGELOG}"
+                        fi
+
+                        if [[ ${TAG_NAME} =~ ^v[0-9]+\\.[0-9]+\\.[0-9]+$ ]]; then
+                            ## upload artifacts to GitHub
+                            cd artifacts
+                            ls -al
+                            parallel github-release upload -R --user $GITHUB_ORGA --repo $GITHUB_REPO --tag ${TAG_NAME} --name {} --file {} ::: *.*
+                        fi
+                    '''
+                }
+            }
+        }
+    }
+}
+
