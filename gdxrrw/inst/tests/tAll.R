@@ -87,6 +87,9 @@ if (quickMode) print ("N.B.: quickMode is on, some tests were skipped")
 if (nFails) {
   print (paste("Tests complete. ", nRuns,"tests run,",nFails,"tests FAILED"))
   for (nm in names(fTests)) print(paste0('  ',nm))
+  if (! doPrompt) {
+    stop (paste("FAIL:", nFails, "of", nRuns, "tests failed."))
+  }
 } else {
   print (paste("Testing complete.  All", nRuns,"tests PASSED"))
 }
