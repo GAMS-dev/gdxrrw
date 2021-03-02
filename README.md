@@ -71,76 +71,64 @@ R provides multiple ways to customize the environment at startup, e.g. to start 
 
 # Build Commands
 Here we have some helpful commands useful for building/testing the
-gdxrrw package.
+gdxrrw package.  Note that building binary or source packages are
+not necessary to simply build gdxrrw for your own use, and additional
+R packages (with their own requirements on installed software like
+tex, etc.) are required to build these binary or source packages.
 
-N.B.: assume `$rrw` is the dir containing the package tree.  This is
-also the top level of the git repo, or the directory containing the
-README.md file.
+We tend to build gdxrrw for 3 platforms, described here as an FYI and
+**not* as a list of requirements.  Our Linux build machine is
+currently Fedora Workstation 32, while our macOS machine is currently
+running Mohave.  Both use typical GCC compilers.  Our Windows builder
+is Windows 10.  To build R or R packages from source on Windows it is
+typical (perhaps even required) to use the RTools packaging of GCC
+available [here](https://cran.r-project.org/bin/windows/Rtools/ "RTools").
 
-## Linux (Fedora release 32)
 To INSTALL or build or test, it works well to NOT have library(gdxrrw)
-set in .Rprofile but to have
+set in .Rprofile but to have the environment variable
 ```
 R_GAMS_SYSDIR=/path/to/GAMS/sysdir
 ```
+set and inherited by the R process.
 
-Change the directory to `$rrw`.
+N.B.: assume `$rrw` is the dir containing the package tree.  This is
+also the top level of the git repo, or the directory containing the
+README.md file.  We assume that you first make this the current
+directory:
 ```
 cd $rrw
 ```
 
-* To install or remove/uninstall:
+### Install/remove
+To install or remove/uninstall:
 ```
 R CMD INSTALL gdxrrw
 R CMD REMOVE gdxrrw
 ```
-* To make a binary distribution, do:
+
+If the settings in your .Rprofile are getting in the way, you can
+direct R to not use  .Rprofile, for example:
+```
+R --no-init-file CMD INSTALL gdxrrw
+```
+
+### Binary distribution
+To make a platform-dependent binary distribution, do:
 ```
 R CMD INSTALL gdxrrw --build
 ```
 
+### Source distribution
 * To make a source distribution gdxrrw_X.Y.Z.tar.gz, do:
 ```
 R CMD build gdxrrw
 ```
 
-* And it is good practice to check this source distro:
+It is good practice to check this source distro:
 ```
 R CMD check gdxrrw_X.Y.Z.tar.gz
 ```
 
-## Windows
-Do these from a normal command prompt, not one started from the Visual Studio menu.
-
-```
-R                CMD INSTALL gdxrrw
-R --no-init-file CMD INSTALL gdxrrw
-```
-* To remove, or uninstall:
-```
-R CMD REMOVE  gdxrrw
-```
-
-* To make a binary package gdxrrw_X.Y.Z.zip for distribution:
-```
-R CMD INSTALL gdxrrw --build
-```
-
-* To make a source package gdxrrw_X.Y.Z.tar.gz for distribution
-```
-R CMD build gdxrrw
-```
-
-## Mac OSX
-Since R 3.0.0 the binary is a single-arch build
-and contains only the x86_64 (64-bit Intel) architecture.  We can use
-single-arch compilers.
-
-```
-R CMD INSTALL gdxrrw
-R CMD INSTALL gdxrrw --build
-R CMD build gdxrrw && R CMD check gdxrrw_X.Y.Z.tar.gz ; echo "check rc = $?"
-```
 
 # Feedback #
 We would love to get feedback on GDXRRW. Please direct your questions, comments, and suggestions to R@gams.com.
