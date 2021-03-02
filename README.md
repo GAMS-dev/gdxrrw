@@ -4,7 +4,7 @@ GDXRRW is an interface between General Algebraic Modeling System (GAMS) and R. I
 
 # How to install #
 
-GDXRRW package can be installed using devtools package. Devtools can be installed by running the following command in R.
+Devtools can be installed by running the following command in R.
 ```
 install.packages("devtools")
 ```
@@ -13,10 +13,14 @@ devtools can then be loaded
 ```
 library(devtools)
 ```
-
-GDXRRW can be installed as follows.
+The GDXRRW package depends on the reshape2 package. Running the following commands will install GDXRRW package and dependencies:
 ```
-install_github("GAMS-dev/gdxrrw")
+install_github("GAMS-dev/gdxrrw/gdxrrw")
+```
+
+For installing a specific version of GDXRRW, the following command can be used.
+```
+install_github("GAMS-dev/gdxrrw/gdxrrw@vX.Y.Z")
 ```
 
 # Checking if GDXRRW is installed correctly #
@@ -25,7 +29,7 @@ After you install GDXRRW you may want to verify that the installation is functio
 
 For GDXRRW to work it must load shared libraries from the GAMS system directory. One common problem is a failure to find the GAMS system directory and these shared libraries. The `igdx` command can be used to show what GAMS system directory GDXRRW has found (`igdx()`) and to point GDXRRW to a particular GAMS system directory if so desired (`igdx(“/usr/local/gams/24.4.1”)`). Depending on your system setup, environment variables, and how you start R, GDXRRW may not need any help finding the GAMS system directory, but the `igdx` command allows this binding to be queried and customized if desired.
 
-The R `sessionInfo()` command tells you the version number of packages you have loaded, including gdxrrw. If you need SVN revision info, some commands print that, e.g. `rgdx(“?”)`.
+The R `sessionInfo()` command tells you the version number of packages you have loaded, including gdxrrw.
 
 The help pages for the other GDXRRW functions include examples that you can run to quickly verify your system is working.
 
@@ -64,6 +68,79 @@ R provides multiple ways to customize the environment at startup, e.g. to start 
 	* `Sys.getenv(“R_LIBS_USER”)` helps to find user-installed packages
 	* `Sys.getenv(“R_USER”)` helps to locate the .Rprofile file, especially on Windows
 * To get version information: `R.Version`
+
+# Build Commands
+Here we have some helpful commands useful for building/testing the
+gdxrrw package.
+
+N.B.: assume `$rrw` is the dir containing the package tree.  This is
+also the top level of the git repo, or the directory containing the
+README.md file.
+
+## Linux (Fedora release 32)
+To INSTALL or build or test, it works well to NOT have library(gdxrrw)
+set in .Rprofile but to have
+```
+R_GAMS_SYSDIR=/path/to/GAMS/sysdir
+```
+
+Change the directory to `$rrw`.
+```
+cd $rrw
+```
+
+* To install or remove/uninstall:
+```
+R CMD INSTALL gdxrrw
+R CMD REMOVE gdxrrw
+```
+* To make a binary distribution, do:
+```
+R CMD INSTALL gdxrrw --build
+```
+
+* To make a source distribution gdxrrw_X.Y.Z.tar.gz, do:
+```
+R CMD build gdxrrw
+```
+
+* And it is good practice to check this source distro:
+```
+R CMD check gdxrrw_X.Y.Z.tar.gz
+```
+
+## Windows
+Do these from a normal command prompt, not one started from the Visual Studio menu.
+
+```
+R                CMD INSTALL gdxrrw
+R --no-init-file CMD INSTALL gdxrrw
+```
+* To remove, or uninstall:
+```
+R CMD REMOVE  gdxrrw
+```
+
+* To make a binary package gdxrrw_X.Y.Z.zip for distribution:
+```
+R CMD INSTALL gdxrrw --build
+```
+
+* To make a source package gdxrrw_X.Y.Z.tar.gz for distribution
+```
+R CMD build gdxrrw
+```
+
+## Mac OSX
+Since R 3.0.0 the binary is a single-arch build
+and contains only the x86_64 (64-bit Intel) architecture.  We can use
+single-arch compilers.
+
+```
+R CMD INSTALL gdxrrw
+R CMD INSTALL gdxrrw --build
+R CMD build gdxrrw && R CMD check gdxrrw_X.Y.Z.tar.gz ; echo "check rc = $?"
+```
 
 # Feedback #
 We would love to get feedback on GDXRRW. Please direct your questions, comments, and suggestions to R@gams.com.
