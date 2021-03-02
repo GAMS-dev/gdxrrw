@@ -2,9 +2,13 @@
 
 GDXRRW is an interface between General Algebraic Modeling System (GAMS) and R. It includes functions to transfer data between GDX and R and a function to call gams from within R.
 
-# How to install #
+# How to install from GitHub #
 
-Devtools can be installed by running the following command in R.
+The R devtools package allows packages that are hosted on GitHub to be
+installed directly from there.  This is a convenient way to install
+GDXRRW.
+
+The devtools package is installed by running the following command in R.
 ```
 install.packages("devtools")
 ```
@@ -13,12 +17,14 @@ devtools can then be loaded
 ```
 library(devtools)
 ```
-The GDXRRW package depends on the reshape2 package. Running the following commands will install GDXRRW package and dependencies:
+
+Installation from GitHub will install a package and all of its
+prerequisites (in this case the reshape2 package):
 ```
 install_github("GAMS-dev/gdxrrw/gdxrrw")
 ```
 
-For installing a specific version of GDXRRW, the following command can be used.
+To install a specific version of GDXRRW, the following command can be used.
 ```
 install_github("GAMS-dev/gdxrrw/gdxrrw@vX.Y.Z")
 ```
@@ -69,9 +75,10 @@ R provides multiple ways to customize the environment at startup, e.g. to start 
 	* `Sys.getenv(“R_USER”)` helps to locate the .Rprofile file, especially on Windows
 * To get version information: `R.Version`
 
-# Build Commands
+# Other Build Commands
 Here we have some helpful commands useful for building/testing the
-gdxrrw package.  Note that building binary or source packages are
+gdxrrw package if you are not using devtools().  Note that building
+binary or source packages are
 not necessary to simply build gdxrrw for your own use, and additional
 R packages (with their own requirements on installed software like
 tex, etc.) are required to build these binary or source packages.
