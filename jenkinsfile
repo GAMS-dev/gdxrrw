@@ -176,6 +176,26 @@ pipeline {
                 }
             }
         }
+        stage('Mirror Wiki to GitHub') {
+            agent { label 'master' }
+            when {
+                expression { return currentBuild.currentResult == "SUCCESS" }
+                tag pattern: "v\\d+\\.\\d+\\.\\d+.*", comparator: "REGEXP"
+            }
+            steps {
+                withCredentials([file(credentialsId: '929c2dc4-ebee-43cc-a594-62a8cb9196a3', variable: 'GITLAB_KEY_FILE')]) {
+                    sh '''
+                        ssh-agent bash -c 'ssh-add ${GITLAB_KEY_FILE}; git clone git@git.gams.com:devel/gdxrrw.wiki.git'
+                    '''
+                }
+                withCredentials([string(credentialsId: '18e8f0e0-f27a-4358-b70f-04acec1e9617', variable: 'GITHUB_TOKEN')]) {
+                    sh '''
+                        cd gdxrrw.wiki
+                        git push --mirror https://mrmontag:${GITHUB_TOKEN}@github.com/GAMS-dev/gdxrrw.wiki.git
+                    '''
+                }
+            }
+        }
     }
 }
 
