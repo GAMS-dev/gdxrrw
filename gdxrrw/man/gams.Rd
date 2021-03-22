@@ -23,7 +23,7 @@ Steve Dirkse.  Maintainer: \email{R@gams.com}}
 \examples{
   \dontrun{
     gams("trnsport.gms")
-    gams("myModel.gms lp=BDMLP --JOB_ID=case00")
+    gams("myModel.gms lp=SOPLEX --JOB_ID=case00")
   }
 }
 \keyword{ data }
