@@ -196,6 +196,44 @@ pipeline {
                 }
             }
         }
+        stage('Deploy to CloudFront') {
+            agent { label 'master' }
+            when {
+                expression { return currentBuild.currentResult == "SUCCESS" }
+                tag pattern: "v\\d+\\.\\d+\\.\\d+.*", comparator: "REGEXP"
+            }
+            steps {
+                sh '''
+                    mkdir -p artifacts
+                '''
+                copyArtifacts filter: '*.tgz *.tar.gz *.zip', fingerprintArtifacts: true, projectName: '${JOB_NAME}', selector: specific('${BUILD_NUMBER}'), target: 'artifacts'
+                withCredentials([string(credentialsId: 'bcd47003-0790-442d-ba1f-5538b4b5482c', variable: 'S3_URL'), string(credentialsId: '3ca54edd-0357-407f-84bf-317fa1b4c20d', variable: 'S3_ACCESS_KEY'), string(credentialsId: 'f4bd9039-889c-401b-b0c6-455b73147c7c', variable: 'S3_SECRET_KEY')]) {
+                    sh '''#!/bin/bash -xe
+
+                        ## change to artifact location
+                        cd artifacts
+
+                        ## folder name which matches the current tag, like v0.10.2 or v0.11.0-rc
+                        FOLDER_NAME="${TAG_NAME}"
+
+                        ## create gdxrrw version directory
+                        mkdir -p $FOLDER_NAME
+
+                        ## move artifacts to correct location
+                        mv *.tgz *.tar.gz *.zip $FOLDER_NAME
+
+                        ## URL to S3 gdxrrw
+                        URL=${S3_URL}/gdxrrw
+
+                        ## S3 upload to gams.com
+                        s3cmd sync --acl-public ./ $URL --access_key=${S3_ACCESS_KEY} --secret_key=${S3_SECRET_KEY}
+
+                        ## S3 content listing
+                        s3cmd ls -r $URL --access_key=${S3_ACCESS_KEY} --secret_key=${S3_SECRET_KEY}
+                    '''
+                }
+            }
+        }
     }
 }
 
