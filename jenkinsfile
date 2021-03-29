@@ -126,7 +126,7 @@ pipeline {
                 '''
                 copyArtifacts filter: '*.tar.gz, *.tgz, *.zip', fingerprintArtifacts: true, projectName: '${JOB_NAME}', selector: specific('${BUILD_NUMBER}'), target: 'artifacts'
                 withCredentials([string(credentialsId: '18e8f0e0-f27a-4358-b70f-04acec1e9617', variable: 'GITHUB_TOKEN')]) {
-                    sh '''
+                    sh '''#!/bin/bash -xe
                         export GDXRRW_VERSION=$(grep "^Version:" gdxrrw/DESCRIPTION | cut -f2 -d" ")
 
                         CHANGELOG=""
