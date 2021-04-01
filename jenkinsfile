@@ -28,6 +28,7 @@ pipeline {
                         sh '''
                             mkdir libpath
                             R CMD INSTALL gdxrrw -l "$WORKSPACE/libpath" --build
+                            R CMD build gdxrrw
                         '''
                         archiveArtifacts artifacts: '*.tar.gz', fingerprint: true
                     }
