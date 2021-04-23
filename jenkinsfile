@@ -179,10 +179,6 @@ pipeline {
         }
         stage('Mirror Wiki to GitHub') {
             agent { label 'master' }
-            when {
-                expression { return currentBuild.currentResult == "SUCCESS" }
-                tag pattern: "v\\d+\\.\\d+\\.\\d+.*", comparator: "REGEXP"
-            }
             steps {
                 withCredentials([file(credentialsId: '929c2dc4-ebee-43cc-a594-62a8cb9196a3', variable: 'GITLAB_KEY_FILE')]) {
                     sh '''
